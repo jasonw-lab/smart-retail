@@ -7,8 +7,10 @@ import java.util.List;
 
 import com.youlai.boot.modules.product.model.entity.PmsSku;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * 商品视图对象
@@ -16,13 +18,12 @@ import lombok.Setter;
  * @author youlaitech
  * @since 2025-03-04 22:51
  */
-@Getter
-@Setter
-@Schema( description = "商品视图对象")
-public class PmsSpuPageVO implements Serializable {
+@Data
+@Accessors(chain = true)
+public class PmsSpuPageVO {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+//    @Serial
+//    private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键")
     private Long id;

@@ -1,6 +1,8 @@
 import request from "@/utils/request";
 import { AxiosPromise } from "axios";
 
+const PMS_CATEGORY_BASE_URL = "/api/v1/categories";
+
 /**
  * 获取商品分类列表
  *
@@ -8,7 +10,7 @@ import { AxiosPromise } from "axios";
  */
 export function listCategories(queryParams: object) {
   return request({
-    url: "/mall-pms/api/v1/categories",
+    url: `${PMS_CATEGORY_BASE_URL}`,
     method: "get",
     params: queryParams,
   });
@@ -21,7 +23,7 @@ export function listCategories(queryParams: object) {
  */
 export function getCategoryOptions(): AxiosPromise<OptionType[]> {
   return request({
-    url: "/mall-pms/api/v1/categories/options",
+    url: `${PMS_CATEGORY_BASE_URL}/options`,
     method: "get",
   });
 }
@@ -33,7 +35,7 @@ export function getCategoryOptions(): AxiosPromise<OptionType[]> {
  */
 export function getCategoryDetail(id: number) {
   return request({
-    url: "/mall-pms/api/v1/categories/" + id,
+    url: `${PMS_CATEGORY_BASE_URL}/${id}`,
     method: "get",
   });
 }
@@ -45,7 +47,7 @@ export function getCategoryDetail(id: number) {
  */
 export function addCategory(data: object) {
   return request({
-    url: "/mall-pms/api/v1/categories",
+    url: `${PMS_CATEGORY_BASE_URL}`,
     method: "post",
     data: data,
   });
@@ -59,7 +61,7 @@ export function addCategory(data: object) {
  */
 export function updateCategory(id: number, data: object) {
   return request({
-    url: "/mall-pms/api/v1/categories/" + id,
+    url: `${PMS_CATEGORY_BASE_URL}/${id}`,
     method: "put",
     data: data,
   });
@@ -72,7 +74,7 @@ export function updateCategory(id: number, data: object) {
  */
 export function deleteCategories(ids: string) {
   return request({
-    url: "/mall-pms/api/v1/categories/" + ids,
+    url: `/mall-pms/api/v1/categories/${ids}`,
     method: "delete",
   });
 }
@@ -85,7 +87,7 @@ export function deleteCategories(ids: string) {
  */
 export function updateCategoryPart(id: number, data: object) {
   return request({
-    url: "/mall-pms/api/v1/categories/" + id,
+    url: `/mall-pms/api/v1/categories/${id}`,
     method: "patch",
     data: data,
   });

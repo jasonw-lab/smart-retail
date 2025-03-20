@@ -44,6 +44,7 @@ const AuthAPI = {
   getCaptcha() {
     return request<any, CaptchaInfo>({
       url: `${AUTH_BASE_URL}/captcha`,
+      // url: "/youlai-auth/api/v1/auth/captcha",
       method: "get",
     });
   },

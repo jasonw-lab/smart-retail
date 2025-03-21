@@ -29,56 +29,56 @@ const GoodsAPI = {
     });
   },
 
-  // /**
-  //  * 获取商品详情
-  //  *
-  //  * @param id
-  //  */
-  // export function getSpuDetail(id: string): AxiosPromise<GoodsDetail> {
-  //   return request({
-  //     url: `${PMS_SPUS_BASE_URL}/${id}/detail`,
-  //     method: "get",
-  //   });
-  // }
-  //
-  // /**
-  //  * 添加商品
-  //  *
-  //  * @param data
-  //  */
-  // export function addSpu(data: object) {
-  //   return request({
-  //     url: `${PMS_SPUS_BASE_URL}`,
-  //     method: "post",
-  //     data: data,
-  //   });
-  // }
-  //
-  // /**
-  //  * 修改商品
-  //  *
-  //  * @param id
-  //  * @param data
-  //  */
-  // export function updateSpu(id: number, data: object) {
-  //   return request({
-  //     url: `${PMS_SPUS_BASE_URL}/${id}`,
-  //     method: "put",
-  //     data: data,
-  //   });
-  // }
-  //
-  // /**
-  //  * 删除商品
-  //  *
-  //  * @param ids
-  //  */
-  // export function deleteSpu(ids: string) {
-  //   return request({
-  //     url: `${PMS_SPUS_BASE_URL}/${ids}`,
-  //     method: "delete",
-  //   });
-  // }
+  /**
+   * 获取商品详情
+   *
+   * @param id
+   */
+ getSpuDetail(id: string): AxiosPromise<GoodsDetail> {
+    return request({
+      url: `${PMS_SPUS_BASE_URL}/${id}/detail`,
+      method: "get",
+    });
+  },
+
+  /**
+   * 添加商品
+   *
+   * @param data
+   */
+addSpu(data: object) {
+    return request({
+      url: `${PMS_SPUS_BASE_URL}`,
+      method: "post",
+      data: data,
+    });
+  },
+
+  /**
+   * 修改商品
+   *
+   * @param id
+   * @param data
+   */
+ updateSpu(id: number, data: object) {
+    return request({
+      url: `${PMS_SPUS_BASE_URL}/${id}`,
+      method: "put",
+      data: data,
+    });
+  },
+
+  /**
+   * 删除商品
+   *
+   * @param ids
+   */
+ deleteSpu(ids: string) {
+    return request({
+      url: `${PMS_SPUS_BASE_URL}/${ids}`,
+      method: "delete",
+    });
+  },
 };
 
 export default GoodsAPI;

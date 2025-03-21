@@ -153,12 +153,14 @@ onMounted(() => {
     <!-- 搜索表单 -->
     <el-form ref="queryFormRef" :model="queryParams" :inline="true">
       <el-form-item>
-        <el-button type="success" @click="handleAdd"
-          ><i-ep-plus />新增</el-button
-        >
-        <el-button type="danger" click="handleDelete" :disabled="multiple"
-          ><i-ep-delete /> 删除</el-button
-        >
+        <el-button type="success" @click="handleAdd">
+          <i-ep-plus />
+          新增
+        </el-button>
+        <el-button type="danger" click="handleDelete" :disabled="multiple">
+          <i-ep-delete />
+          删除
+        </el-button>
       </el-form-item>
 
       <el-form-item prop="name">
@@ -167,8 +169,9 @@ onMounted(() => {
 
       <el-form-item>
         <el-button type="primary" @click="handleQuery">
-          <i-ep-search /> 搜索</el-button
-        >
+          <i-ep-search />
+          搜索
+        </el-button>
         <el-button @click="resetQuery"> <i-ep-refresh />重置</el-button>
       </el-form-item>
     </el-form>
@@ -214,8 +217,8 @@ onMounted(() => {
             plain
             @click="handleDelete(scope.row)"
           >
-            <i-ep-delete
-          /></el-button>
+            <i-ep-delete />
+          </el-button>
         </template>
       </el-table-column>
     </el-table>

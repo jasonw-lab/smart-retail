@@ -4,9 +4,11 @@ import GoodsInfo from "./components/GoodsInfo.vue";
 import GoodsAttribute from "./components/GoodsAttribute.vue";
 import GoodsStock from "./components/GoodsStock.vue";
 
-import { getSpuDetail } from "@/api/pms/goods";
+import GoodsAPI from "@/api/pms/goods";
 import { useRoute } from "vue-router";
 import { GoodsDetail } from "@/api/pms/goods/types";
+
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 const route = useRoute();
 
@@ -27,7 +29,7 @@ function loadData() {
   const goodsId = route.query.goodsId as string;
 
   if (goodsId) {
-    getSpuDetail(goodsId).then((response) => {
+    GoodsAPI.getSpuDetail(goodsId).then((response) => {
       state.goodsInfo = response.data;
       state.goodsInfo.originPrice = (state.goodsInfo.originPrice as any) / 100;
       state.goodsInfo.price = (state.goodsInfo.price as any) / 100;

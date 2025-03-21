@@ -7,10 +7,12 @@ defineOptions({
 
 import { useRouter } from "vue-router";
 // import GoodsAPI, { getSpuPage, deleteSpu } from "@/api/pms/goods";
-import GoodsAPI, { getSpuPage, deleteSpu } from "@/api/pms/goods";
-import { getCategoryOptions } from "@/api/pms/category";
+import GoodsAPI, { getSpuPage } from "@/api/pms/goods";
+import CategoryAPI, { getCategoryOptions } from "@/api/pms/category";
 import { moneyFormatter } from "@/utils/filter";
 import { Goods, GoodsQuery } from "@/api/pms/goods/types";
+
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 const dataTableRef = ref(ElTable);
 const router = useRouter();
@@ -73,25 +75,25 @@ function handleUpdate(row: any) {
   });
 }
 
-// function handleDelete(row: any) {
-//   const ids = row.id || state.ids.join(",");
-//   ElMessageBox.confirm("是否确认删除选中的数据项?", "警告", {
-//     confirmButtonText: "确定",
-//     cancelButtonText: "取消",
-//     type: "warning",
-//   })
-//     .then(function () {
-//       return deleteSpu(ids);
-//     })
-//     .then(() => {
-//       ElMessage.success("删除成功");
-//       handleQuery();
-//     });
-// }
-
 function handleDelete(row: any) {
-  return
+  const ids = row.id || state.ids.join(",");
+  ElMessageBox.confirm("是否确认删除选中的数据项?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(function () {
+      return GoodsAPI.deleteSpu(ids);
+    })
+    .then(() => {
+      ElMessage.success("删除成功");
+      handleQuery();
+    });
 }
+
+// function handleDelete(row: any) {
+//   return;
+// }
 
 function handleRowClick(row: any) {
   dataTableRef.value.toggleRowSelection(row);
@@ -102,9 +104,18 @@ function handleSelectionChange(selection: any) {
 }
 
 onMounted(() => {
-  getCategoryOptions().then(({ data }) => {
+  // getCategoryOptions().then(({ data }) => {
+  //   categoryOptions.value = data;
+  // });
+  // CategoryAPI.getCategoryOptions().then(({ data }) => {
+  //   categoryOptions.value = data;
+  // });
+
+  CategoryAPI.getCategoryOptions().then((data) => {
     categoryOptions.value = data;
+    // categoryOptions.value = response.data;
   });
+
   handleQuery();
 });
 </script>
@@ -128,26 +139,42 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleQuery">
-            <i-ep-search />
+          <!--          <el-button type="primary" @click="handleQuery">-->
+          <!--            <i-ep-search />-->
+          <!--            搜索-->
+          <!--          </el-button>-->
+          <!--          <el-button @click="resetQuery">-->
+          <!--            <i-ep-refresh />-->
+          <!--            重置-->
+          <!--          </el-button>-->
+
+          <el-button type="primary" icon="search" @click="handleQuery()">
             搜索
           </el-button>
-          <el-button @click="resetQuery">
-            <i-ep-refresh />
+
+          <el-button icon="refresh" @click="resetQuery()">
             重置
           </el-button>
+
         </el-form-item>
       </el-form>
     </div>
 
     <el-card>
       <template #header>
-        <el-button type="success" @click="handleAdd">
-          <i-ep-plus />
+<!--        <el-button type="success" @click="handleAdd">-->
+<!--          <i-ep-plus />-->
+<!--          新增-->
+        <!--        </el-button>-->
+<!--        <el-button type="danger" :disabled="ids.length === 0" @click="handleDelete">-->
+<!--          <i-ep-delete />-->
+<!--          删除-->
+<!--        </el-button>-->
+
+        <el-button type="success" icon="plus" @click="handleAdd()">
           新增
         </el-button>
-        <el-button type="danger" :disabled="ids.length === 0" @click="handleDelete">
-          <i-ep-delete />
+        <el-button type="danger" icon="delete" :disabled="ids.length === 0" @click="handleDelete()">
           删除
         </el-button>
       </template>

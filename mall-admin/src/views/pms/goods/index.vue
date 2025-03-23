@@ -6,15 +6,13 @@ defineOptions({
 });
 
 import { useRouter } from "vue-router";
-// import GoodsAPI, { getSpuPage, deleteSpu } from "@/api/pms/goods";
-import GoodsAPI, { getSpuPage } from "@/api/pms/goods";
-import CategoryAPI, { getCategoryOptions } from "@/api/pms/category";
+import GoodsAPI from "@/api/pms/goods";
+import CategoryAPI from "@/api/pms/category";
 import { moneyFormatter } from "@/utils/filter";
 import { Goods, GoodsQuery } from "@/api/pms/goods/types";
+import { ElTable } from "element-plus";
 
-import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-
-const dataTableRef = ref(ElTable);
+const dataTableRef = ref<typeof ElTable | null>(null);
 const router = useRouter();
 
 const state = reactive({
@@ -91,12 +89,8 @@ function handleDelete(row: any) {
     });
 }
 
-// function handleDelete(row: any) {
-//   return;
-// }
-
 function handleRowClick(row: any) {
-  dataTableRef.value.toggleRowSelection(row);
+  dataTableRef.value?.toggleRowSelection(row);
 }
 
 function handleSelectionChange(selection: any) {
@@ -104,16 +98,8 @@ function handleSelectionChange(selection: any) {
 }
 
 onMounted(() => {
-  // getCategoryOptions().then(({ data }) => {
-  //   categoryOptions.value = data;
-  // });
-  // CategoryAPI.getCategoryOptions().then(({ data }) => {
-  //   categoryOptions.value = data;
-  // });
-
   CategoryAPI.getCategoryOptions().then((data) => {
-    categoryOptions.value = data;
-    // categoryOptions.value = response.data;
+    categoryOptions.value = data as OptionType[];
   });
 
   handleQuery();
@@ -139,44 +125,16 @@ onMounted(() => {
         </el-form-item>
 
         <el-form-item>
-          <!--          <el-button type="primary" @click="handleQuery">-->
-          <!--            <i-ep-search />-->
-          <!--            搜索-->
-          <!--          </el-button>-->
-          <!--          <el-button @click="resetQuery">-->
-          <!--            <i-ep-refresh />-->
-          <!--            重置-->
-          <!--          </el-button>-->
-
-          <el-button type="primary" icon="search" @click="handleQuery()">
-            搜索
-          </el-button>
-
-          <el-button icon="refresh" @click="resetQuery()">
-            重置
-          </el-button>
-
+          <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
+          <el-button icon="refresh" @click="resetQuery()">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
     <el-card>
       <template #header>
-<!--        <el-button type="success" @click="handleAdd">-->
-<!--          <i-ep-plus />-->
-<!--          新增-->
-        <!--        </el-button>-->
-<!--        <el-button type="danger" :disabled="ids.length === 0" @click="handleDelete">-->
-<!--          <i-ep-delete />-->
-<!--          删除-->
-<!--        </el-button>-->
-
-        <el-button type="success" icon="plus" @click="handleAdd()">
-          新增
-        </el-button>
-        <el-button type="danger" icon="delete" :disabled="ids.length === 0" @click="handleDelete()">
-          删除
-        </el-button>
+        <el-button type="success" icon="plus" @click="handleAdd()">新增</el-button>
+        <el-button type="danger" icon="delete" :disabled="ids.length === 0" @click="handleDelete({ id: ids })">删除</el-button>
       </template>
 
       <el-table
@@ -237,7 +195,6 @@ onMounted(() => {
       </el-table>
     </el-card>
 
-    <!-- 分页工具条 -->
     <pagination
       v-if="total > 0"
       v-model:page="queryParams.pageNum"

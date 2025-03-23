@@ -1,12 +1,20 @@
 package com.youlai.boot.modules.product.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.youlai.boot.modules.product.converter.PmsSpuConverter;
+import com.youlai.boot.modules.product.enums.AttributeTypeEnum;
 import com.youlai.boot.modules.product.mapper.PmsSpuMapper;
+import com.youlai.boot.modules.product.model.entity.PmsSku;
 import com.youlai.boot.modules.product.model.entity.PmsSpu;
+import com.youlai.boot.modules.product.model.entity.PmsSpuAttribute;
 import com.youlai.boot.modules.product.model.form.PmsSpuForm;
 import com.youlai.boot.modules.product.model.query.PmsSpuQuery;
+import com.youlai.boot.modules.product.model.vo.PmsSpuDetailVO;
 import com.youlai.boot.modules.product.model.vo.PmsSpuPageVO;
 import com.youlai.boot.modules.product.service.PmsSpuService;
+import com.youlai.boot.modules.product.service.SkuService;
+import com.youlai.boot.modules.product.service.SpuAttributeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,6 +37,10 @@ import cn.hutool.core.util.StrUtil;
 @RequiredArgsConstructor
 public class PmsSpuServiceImpl extends ServiceImpl<PmsSpuMapper, PmsSpu> implements PmsSpuService {
 
+    private final SkuService skuService;
+    private final SpuAttributeService spuAttributeService;
+//    private final MemberFeignClient memberFeignClient;
+//
     private final PmsSpuConverter pmsSpuConverter;
 
     /**
@@ -45,7 +57,43 @@ public class PmsSpuServiceImpl extends ServiceImpl<PmsSpuMapper, PmsSpu> impleme
         );
         return pageVO;
     }
-    
+
+    /**
+     * 获取商品详情
+     *
+     * @param spuId 商品ID
+     * @return 商品详情
+     */
+    @Override
+    public PmsSpuDetailVO getSpuDetail(Long spuId) {
+        PmsSpuDetailVO pmsSpuDetailVO = new PmsSpuDetailVO();
+
+        PmsSpu entity = this.getById(spuId);
+        Assert.isTrue(entity != null, "商品不存在");
+
+        BeanUtil.copyProperties(entity, pmsSpuDetailVO, "album");
+        pmsSpuDetailVO.setSubPicUrls(entity.getAlbum());
+
+        // 商品属性列表
+        List<PmsSpuAttribute> attrList = spuAttributeService.list(new LambdaQueryWrapper<PmsSpuAttribute>()
+                .eq(PmsSpuAttribute::getSpuId, spuId)
+                .eq(PmsSpuAttribute::getType, AttributeTypeEnum.ATTR.getValue()));
+        pmsSpuDetailVO.setAttrList(attrList);
+
+        // 商品规格列表
+        List<PmsSpuAttribute> specList = spuAttributeService.list(new LambdaQueryWrapper<PmsSpuAttribute>()
+                .eq(PmsSpuAttribute::getSpuId, spuId)
+                .eq(PmsSpuAttribute::getType, AttributeTypeEnum.SPEC.getValue()));
+        pmsSpuDetailVO.setSpecList(specList);
+
+        // 商品SKU列表
+        List<PmsSku> skuList = skuService.list(new LambdaQueryWrapper<PmsSku>().eq(PmsSku::getSpuId, spuId));
+        pmsSpuDetailVO.setSkuList(skuList);
+        return pmsSpuDetailVO;
+
+    }
+
+
     /**
      * 获取商品表单数据
      *

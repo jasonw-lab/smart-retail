@@ -574,7 +574,12 @@ function submitForm() {
           if (goodsId) {
             // 编辑商品提交
             GoodsAPI.updateSpu(goodsId, submitsData).then(() => {
-              router.push({ path: "/pms/goods" });
+              router.push({
+                path: "goods",
+                query: {
+                  date: new Date().getTime(),
+                },
+              });
               ElNotification({
                 title: "提示",
                 message: "编辑商品成功",

@@ -27,8 +27,9 @@ function loadData() {
   const goodsId = route.query.goodsId as string;
 
   if (goodsId) {
-    GoodsAPI.getSpuDetail(goodsId).then((response) => {
-      state.goodsInfo = response.data;
+    GoodsAPI.getSpuDetail(goodsId).then((data) => {
+      // state.goodsInfo = response.data;
+      state.goodsInfo = data;
       state.goodsInfo.originPrice = (state.goodsInfo.originPrice as any) / 100;
       state.goodsInfo.price = (state.goodsInfo.price as any) / 100;
       state.loaded = true;

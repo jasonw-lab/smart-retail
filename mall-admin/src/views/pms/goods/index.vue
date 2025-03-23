@@ -98,12 +98,21 @@ function handleSelectionChange(selection: any) {
 }
 
 onMounted(() => {
+  console.log("商品列表页面　onMounted");
   CategoryAPI.getCategoryOptions().then((data) => {
     categoryOptions.value = data as OptionType[];
   });
 
   handleQuery();
 });
+
+// 页面每次激活时执行的代码
+onActivated(() => {
+  console.log("激活了商品列表页面");
+  // 页面每次激活时执行的代码
+  handleQuery();
+});
+
 </script>
 
 <template>

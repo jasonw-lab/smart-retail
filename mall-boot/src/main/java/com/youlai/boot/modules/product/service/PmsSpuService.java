@@ -2,10 +2,16 @@ package com.youlai.boot.modules.product.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.youlai.boot.modules.product.model.dto.LockSkuDTO;
+import com.youlai.boot.modules.product.model.dto.SkuInfoDTO;
+import com.youlai.boot.modules.product.model.entity.PmsSku;
 import com.youlai.boot.modules.product.model.entity.PmsSpu;
 import com.youlai.boot.modules.product.model.form.PmsSpuForm;
 import com.youlai.boot.modules.product.model.query.PmsSpuQuery;
+import com.youlai.boot.modules.product.model.vo.PmsSpuDetailVO;
 import com.youlai.boot.modules.product.model.vo.PmsSpuPageVO;
+
+import java.util.List;
 
 /**
  * 商品服务类
@@ -22,6 +28,16 @@ public interface PmsSpuService extends IService<PmsSpu> {
      */
     IPage<PmsSpuPageVO> getPmsSpuPage(PmsSpuQuery queryParams);
 
+
+    /**
+     * Admin-获取商品详情
+     *
+     * @param id
+     * @return
+     */
+    PmsSpuDetailVO getSpuDetail(Long id);
+
+    
     /**
      * 获取商品表单数据
      *

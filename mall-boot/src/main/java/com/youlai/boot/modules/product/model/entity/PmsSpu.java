@@ -1,8 +1,11 @@
 package com.youlai.boot.modules.product.model.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.youlai.boot.common.base.BaseEntity;
 
@@ -50,7 +53,7 @@ public class PmsSpu extends BaseEntity {
     /**
      * 商品图册
      */
-    private String album;
+    private String[] album;
     /**
      * 单位
      */
@@ -67,4 +70,14 @@ public class PmsSpu extends BaseEntity {
      * 商品状态(0:下架 1:上架)
      */
     private Integer status;
+
+
+    @TableField(exist = false)
+    private String categoryName;
+
+    @TableField(exist = false)
+    private String brandName;
+
+    @TableField(exist = false)
+    private List<PmsSku> skuList;
 }

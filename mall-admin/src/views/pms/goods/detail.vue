@@ -8,8 +8,6 @@ import GoodsAPI from "@/api/pms/goods";
 import { useRoute } from "vue-router";
 import { GoodsDetail } from "@/api/pms/goods/types";
 
-import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-
 const route = useRoute();
 
 const state = reactive({
@@ -57,12 +55,7 @@ onMounted(() => {
 </script>
 <template>
   <div class="app-container">
-    <el-steps
-      :active="active"
-      process-status="finish"
-      finish-status="success"
-      simple
-    >
+    <el-steps :active="active" process-status="finish" finish-status="success" simple>
       <el-step title="选择商品分类" />
       <el-step title="填写商品信息" />
       <el-step title="设置商品属性" />

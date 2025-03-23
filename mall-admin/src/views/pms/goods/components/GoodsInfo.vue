@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Editor from "@/components/WangEditor/index.vue";
-
-// API 依赖
-import { getBrandList } from "@/api/pms/brand";
-
+import BrandAPI from "@/api/pms/brand";
+import { ElForm } from "element-plus";
+import MultiUpload from "@/components/Upload/MultiImageUpload.vue"; // Add this import
+import SingleUpload from "@/components/Upload/SingleImageUpload.vue"; // Add this import
 const emit = defineEmits(["prev", "next", "update:modelValue"]);
-const dataFormRef = ref(ElForm);
+const dataFormRef = ref<typeof ElForm | null>(null);
 
 const props = defineProps({
   modelValue: {
@@ -35,7 +35,7 @@ const state = reactive({
 const { brandOptions, rules } = toRefs(state);
 
 function loadData() {
-  getBrandList().then(({ data }) => {
+  BrandAPI.getBrandList().then((data) => {
     state.brandOptions = data;
   });
 }
@@ -45,7 +45,7 @@ function handlePrev() {
 }
 
 function handleNext() {
-  dataFormRef.value.validate((valid: any) => {
+  dataFormRef.value?.validate((valid: any) => {
     if (valid) {
       emit("next");
     }
@@ -60,12 +60,7 @@ onMounted(() => {
 <template>
   <div class="component-container">
     <div class="component-container__main">
-      <el-form
-        ref="dataFormRef"
-        :rules="rules"
-        :model="goodsInfo"
-        label-width="120px"
-      >
+      <el-form ref="dataFormRef" :rules="rules" :model="goodsInfo" label-width="120px">
         <el-form-item label="商品名称" prop="name">
           <el-input v-model="goodsInfo.name" style="width: 400px" />
         </el-form-item>
@@ -112,9 +107,7 @@ onMounted(() => {
     </div>
     <div class="component-container__footer">
       <el-button @click="handlePrev">上一步，选择商品分类</el-button>
-      <el-button type="primary" @click="handleNext"
-        >下一步，设置商品属性</el-button
-      >
+      <el-button type="primary" @click="handleNext">下一步，设置商品属性</el-button>
     </div>
   </div>
 </template>

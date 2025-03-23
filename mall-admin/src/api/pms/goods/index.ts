@@ -1,9 +1,8 @@
 import { GoodsDetail, GoodsPageResult, GoodsQuery } from "./types";
 import request from "@/utils/request";
 import { AxiosPromise } from "axios";
-import { UserPageVO } from "@/api/system/user";
 
-const PMS_SPUS_BASE_URL = "/api/v1/pmsSpus";
+const PMS_SPUS_BASE_URL = "/api/v1/spu";
 
 const GoodsAPI = {
   /**
@@ -34,7 +33,7 @@ const GoodsAPI = {
    *
    * @param id
    */
- getSpuDetail(id: string): AxiosPromise<GoodsDetail> {
+  getSpuDetail(id: string): AxiosPromise<GoodsDetail> {
     return request({
       url: `${PMS_SPUS_BASE_URL}/${id}/detail`,
       method: "get",
@@ -46,7 +45,7 @@ const GoodsAPI = {
    *
    * @param data
    */
-addSpu(data: object) {
+  addSpu(data: object) {
     return request({
       url: `${PMS_SPUS_BASE_URL}`,
       method: "post",
@@ -60,7 +59,7 @@ addSpu(data: object) {
    * @param id
    * @param data
    */
- updateSpu(id: number, data: object) {
+  updateSpu(id: number, data: object) {
     return request({
       url: `${PMS_SPUS_BASE_URL}/${id}`,
       method: "put",
@@ -73,7 +72,7 @@ addSpu(data: object) {
    *
    * @param ids
    */
- deleteSpu(ids: string) {
+  deleteSpu(ids: string) {
     return request({
       url: `${PMS_SPUS_BASE_URL}/${ids}`,
       method: "delete",

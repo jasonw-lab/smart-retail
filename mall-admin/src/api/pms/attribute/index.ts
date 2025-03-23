@@ -1,5 +1,7 @@
 import request from "@/utils/request";
 
+const PMS_BRAND_BASE_URL = "/api/v1/attributes";
+
 /**
  * 获取商品属性列表
  *
@@ -7,7 +9,7 @@ import request from "@/utils/request";
  */
 export function getAttributeList(params: object) {
   return request({
-    url: "/mall-pms/api/v1/attributes",
+    url: PMS_BRAND_BASE_URL,
     method: "get",
     params: params,
   });
@@ -20,7 +22,7 @@ export function getAttributeList(params: object) {
  */
 export function saveAttributeBatch(data: object) {
   return request({
-    url: "/mall-pms/api/v1/attributes/batch",
+    url: `${PMS_BRAND_BASE_URL}/batch`,
     method: "post",
     data: data,
   });

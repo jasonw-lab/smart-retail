@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { getAttributeList } from "@/api/pms/attribute";
+import { ElForm, ElButton } from "element-plus";
+import { Plus, Minus } from "@element-plus/icons-vue";
 
 const emit = defineEmits(["prev", "next", "update:modelValue"]);
 const dataFormRef = ref(ElForm);
@@ -83,34 +85,18 @@ function handleNext() {
       <el-card class="box-card">
         <template #header>
           <span>商品属性</span>
-          <el-button
-            style="float: right"
-            type="success"
-            size="small"
-            @click="handleAdd"
-            ><i-ep-plus />
+          <el-button style="float: right" type="success" size="small" @click="handleAdd">
+            <el-icon>
+              <Plus />
+            </el-icon>
             添加属性
           </el-button>
         </template>
-        <el-form
-          ref="dataFormRef"
-          :model="goodsInfo"
-          :rules="rules"
-          size="small"
-          :inline="true"
-        >
-          <el-table
-            :data="goodsInfo.attrList"
-            size="small"
-            highlight-current-row
-            border
-          >
+        <el-form ref="dataFormRef" :model="goodsInfo" :rules="rules" size="small" :inline="true">
+          <el-table :data="goodsInfo.attrList" size="small" highlight-current-row border>
             <el-table-column property="name" label="属性名称">
               <template #default="scope">
-                <el-form-item
-                  :prop="'attrList[' + scope.$index + '].name'"
-                  :rules="rules.name"
-                >
+                <el-form-item :prop="'attrList[' + scope.$index + '].name'" :rules="rules.name">
                   <el-input v-model="scope.row.name" />
                 </el-form-item>
               </template>
@@ -118,10 +104,7 @@ function handleNext() {
 
             <el-table-column property="value" label="属性值">
               <template #default="scope">
-                <el-form-item
-                  :prop="'attrList[' + scope.$index + '].value'"
-                  :rules="rules.value"
-                >
+                <el-form-item :prop="'attrList[' + scope.$index + '].value'" :rules="rules.value">
                   <el-input v-model="scope.row.value" />
                 </el-form-item>
               </template>
@@ -137,7 +120,10 @@ function handleNext() {
                     circle
                     plain
                     @click.stop="handleRemove(scope.$index)"
-                    ><i-ep-minus />
+                  >
+                    <el-icon>
+                      <Minus />
+                    </el-icon>
                   </el-button>
                 </el-form-item>
               </template>
@@ -148,9 +134,7 @@ function handleNext() {
     </div>
     <div class="component-container__footer">
       <el-button @click="handlePrev">上一步，填写商品信息</el-button>
-      <el-button type="primary" @click="handleNext"
-        >下一步，设置商品库存</el-button
-      >
+      <el-button type="primary" @click="handleNext">下一步，设置商品库存</el-button>
     </div>
   </div>
 </template>

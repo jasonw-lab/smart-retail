@@ -4,28 +4,16 @@
       <el-card class="box-card">
         <template #header>
           <span>商品规格</span>
-          <el-button
-            type="success"
-            size="small"
-            class="float-right"
-            @click="handleSpecAdd"
-          >
-            <i-ep-plus /> 添加规格项
+          <el-button type="success" size="small" class="float-right" @click="handleSpecAdd">
+            <el-icon>
+              <Plus />
+            </el-icon>
+            添加规格项
           </el-button>
         </template>
 
-        <el-form
-          ref="specFormRef"
-          :model="specForm"
-          :inline="true"
-          size="small"
-        >
-          <el-table
-            ref="specTableRef"
-            :data="specForm.specList"
-            row-key="id"
-            size="small"
-          >
+        <el-form ref="specFormRef" :model="specForm" :inline="true" size="small">
+          <el-table ref="specTableRef" :data="specForm.specList" row-key="id" size="small">
             <el-table-column align="center" width="50">
               <template #default>
                 <svg-icon class="drag-handler" icon-class="drag" />
@@ -49,12 +37,9 @@
             <el-table-column>
               <template #header>
                 规格值
-                <el-link
-                  type="danger"
-                  style="font-size: 12px"
-                  :underline="false"
-                  >（默认第一条规格包含图片）</el-link
-                >
+                <el-link type="danger" style="font-size: 12px" :underline="false">
+                  （默认第一条规格包含图片）
+                </el-link>
               </template>
 
               <template #default="scope">
@@ -92,7 +77,10 @@
                   size="small"
                   @click="handleSpecValueAdd(scope.$index)"
                 >
-                  <i-ep-plus /> 添加规格值
+                  <el-icon>
+                    <Plus />
+                  </el-icon>
+                  添加规格值
                 </el-button>
               </template>
             </el-table-column>
@@ -105,7 +93,10 @@
                   circle
                   plain
                   @click.stop="handleSpecRemove(scope.$index)"
-                  ><i-ep-minus />
+                >
+                  <el-icon>
+                    <Minus />
+                  </el-icon>
                 </el-button>
               </template>
             </el-table-column>
@@ -177,24 +168,49 @@
 </template>
 
 <script setup lang="ts">
-// API 引用
+import {
+  ElForm,
+  ElMessage,
+  ElButton,
+  ElCard,
+  ElFormItem,
+  ElInput,
+  ElLink,
+  ElTable,
+  ElTableColumn,
+  ElTag,
+  ElIcon,
+} from "element-plus";
+import { Plus, Minus } from "@element-plus/icons-vue";
+// import SvgIcon from "@/components/SvgIcon.vue";
+// import SingleUpload from "@/components/SingleUpload.vue";
 import { getAttributeList } from "@/api/pms/attribute";
-import { addSpu, updateSpu } from "@/api/pms/goods";
+import GoodsAPI from "@/api/pms/goods";
+import { useRouter } from "vue-router";
 
 const emit = defineEmits(["prev", "next", "update:modelValue"]);
-import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const specFormRef = ref(ElForm);
-const skuFormRef = ref(ElForm);
+// const specFormRef = ref(ElForm);
+// const skuFormRef = ref(ElForm);
+//
+// const props = defineProps({
+//   modelValue: {
+//     type: Object,
+//     default: () => {
+//       return {};
+//     },
+//   },
+// });
+
+const specFormRef = ref<typeof ElForm | null>(null);
+const skuFormRef = ref<typeof ElForm | null>(null);
 
 const props = defineProps({
   modelValue: {
     type: Object,
-    default: () => {
-      return {};
-    },
+    default: () => ({}),
   },
 });
 
@@ -229,8 +245,7 @@ const state = reactive({
   tagInputs: [{ value: undefined, visible: false }], // 规格值标签临时值和显隐控制
 });
 
-const { specForm, skuForm, specTitles, rules, colors, tagInputs } =
-  toRefs(state);
+const { specForm, skuForm, specTitles, rules, colors, tagInputs } = toRefs(state);
 
 watch(
   () => goodsInfo.value.categoryId,
@@ -268,9 +283,7 @@ watch(state.specForm.specList, () => {
 
 function loadData() {
   goodsInfo.value.specList.forEach((specItem: any) => {
-    const specIndex = state.specForm.specList.findIndex(
-      (item: any) => item.name == specItem.name
-    );
+    const specIndex = state.specForm.specList.findIndex((item: any) => item.name == specItem.name);
     if (specIndex > -1) {
       (state.specForm.specList[specIndex] as any).values.push({
         id: specItem.id,
@@ -280,9 +293,7 @@ function loadData() {
     } else {
       state.specForm.specList.push({
         name: specItem.name,
-        values: [
-          { id: specItem.id, value: specItem.value, picUrl: specItem.picUrl },
-        ],
+        values: [{ id: specItem.id, value: specItem.value, picUrl: specItem.picUrl }],
       });
     }
   });
@@ -338,11 +349,7 @@ function generateSkuList() {
   }
 
   const specList = JSON.parse(
-    JSON.stringify(
-      state.specForm.specList.filter(
-        (item) => item.values && item.values.length > 0
-      )
-    )
+    JSON.stringify(state.specForm.specList.filter((item) => item.values && item.values.length > 0))
   ); // 深拷贝，取有属性的规格项，否则笛卡尔积运算得到的SKU列表值为空
 
   const skuList = specList.reduce(
@@ -365,9 +372,7 @@ function generateSkuList() {
 
   skuList.forEach((item: any) => {
     item.specIds = item.specIds.substring(0, item.specIds.length - 1);
-    item.name = item.specValues
-      .substring(0, item.specValues.length - 1)
-      .replaceAll("_", " ");
+    item.name = item.specValues.substring(0, item.specValues.length - 1).replaceAll("_", " ");
     const specIdArr = item.specIds.split("|");
     const skus = goodsInfo.value.skuList.filter(
       (sku: any) =>
@@ -383,9 +388,7 @@ function generateSkuList() {
       item.price = sku.price / 100;
       item.stock = sku.stock;
     }
-    const specValueArr = item.specValues
-      .substring(0, item.specValues.length - 1)
-      .split("_"); // ['黑','6+128G','官方标配']
+    const specValueArr = item.specValues.substring(0, item.specValues.length - 1).split("_"); // ['黑','6+128G','官方标配']
     specValueArr.forEach((v: any, i: any) => {
       const key = "specValue" + (i + 1);
       item[key] = v;
@@ -444,9 +447,7 @@ function handleSpecValueAdd(specIndex: any) {
  */
 function handleSpecValueRemove(rowIndex: any, specValueId: any) {
   const specList = JSON.parse(JSON.stringify(state.specForm.specList));
-  const removeIndex = specList[rowIndex].values
-    .map((item: any) => item.id)
-    .indexOf(specValueId);
+  const removeIndex = specList[rowIndex].values.map((item: any) => item.id).indexOf(specValueId);
   specList[rowIndex].values.splice(removeIndex, 1);
   state.specForm.specList = specList;
   generateSkuList();
@@ -542,9 +543,9 @@ function submitForm() {
     ElMessage.warning("未添加商品库存");
     return false;
   }
-  specFormRef.value.validate((specValid: any) => {
+  specFormRef.value?.validate((specValid: any) => {
     if (specValid) {
-      skuFormRef.value.validate((skuValid: any) => {
+      skuFormRef.value?.validate((skuValid: any) => {
         if (skuValid) {
           // 重组商品的规格和SKU列表
           let submitsData = Object.assign({}, goodsInfo.value);
@@ -572,7 +573,7 @@ function submitForm() {
           const goodsId = goodsInfo.value.id;
           if (goodsId) {
             // 编辑商品提交
-            updateSpu(goodsId, submitsData).then(() => {
+            GoodsAPI.updateSpu(goodsId, submitsData).then(() => {
               router.push({ path: "/pms/goods" });
               ElNotification({
                 title: "提示",
@@ -582,7 +583,7 @@ function submitForm() {
             });
           } else {
             // 新增商品提交
-            addSpu(submitsData).then(() => {
+            GoodsAPI.addSpu(submitsData).then(() => {
               router.push({ path: "/pms/goods" });
               ElNotification({
                 title: "提示",

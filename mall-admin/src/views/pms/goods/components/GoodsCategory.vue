@@ -9,9 +9,9 @@
         @change="handleCategoryChange"
       />
       <div style="margin-top: 20px">
-        <el-link v-show="pathLabels.length > 0" type="info" :underline="false"
-          >您选择的商品分类:</el-link
-        >
+        <el-link v-show="pathLabels.length > 0" type="info" :underline="false">
+          您选择的商品分类:
+        </el-link>
         <el-link
           v-for="(item, index) in pathLabels"
           :key="index"
@@ -24,22 +24,24 @@
           <span
             v-show="index < pathLabels.length - 1"
             style="width: 1em; height: 1em; margin-left: 5px"
-            ><i-ep-caret-right
-          /></span>
+          >
+            <CaretRight />
+            />
+          </span>
         </el-link>
       </div>
     </div>
     <div class="component-container__footer">
-      <el-button type="primary" @click="handleNext"
-        >下一步，填写商品信息</el-button
-      >
+      <el-button type="primary" @click="handleNext">下一步，填写商品信息</el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 // API 引用
-import { getCategoryOptions } from "@/api/pms/category";
+import CategoryAPI from "@/api/pms/category";
+import { CaretRight } from "@element-plus/icons-vue";
+import { ElCascaderPanel, ElMessage } from "element-plus";
 
 const emit = defineEmits(["next", "update:modelValue"]);
 const props = defineProps({
@@ -64,7 +66,7 @@ const state = reactive({
 const { categoryOptions, pathLabels } = toRefs(state);
 
 function loadData() {
-  getCategoryOptions().then(({ data }) => {
+  CategoryAPI.getCategoryOptions().then((data) => {
     state.categoryOptions = data;
     if (goodsInfo.value.id) {
       nextTick(() => {

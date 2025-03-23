@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import CategoryAPI from "@/api/pms/category";
+import SingleUpload from "@/components/SingleUpload.vue";
 import {
-  listCategories,
-  addCategory,
-  updateCategory,
-  deleteCategories,
-} from "@/api/pms/category";
+  ElTree,
+  ElForm,
+  ElMessage,
+  ElMessageBox,
+  ElDialog,
+  ElButton,
+  ElImage,
+  ElRadioGroup,
+  ElRadio,
+  ElInput,
+} from "element-plus";
+import { Picture as EpPicture } from "@element-plus/icons-vue";
 
 const emit = defineEmits(["category-click"]);
 
@@ -49,12 +58,11 @@ const state = reactive({
   current: {} as any,
 });
 
-const { loading, categoryOptions, formData, rules, dialog, parent } =
-  toRefs(state);
+const { loading, categoryOptions, formData, rules, dialog, parent } = toRefs(state);
 
 function handleQuery() {
   state.loading = true;
-  listCategories(state.queryParam).then((response) => {
+  CategoryAPI.listCategories(state.queryParam).then((response) => {
     state.categoryOptions = [
       {
         id: 0,
@@ -110,7 +118,7 @@ function submitForm() {
   dataFormRef.value.validate((valid: any) => {
     if (valid) {
       if (state.formData.id) {
-        updateCategory(state.formData.id, state.formData).then(() => {
+        CategoryAPI.updateCategory(state.formData.id, state.formData).then(() => {
           ElMessage.success("修改成功");
           closeDialog();
           handleQuery();
@@ -120,7 +128,7 @@ function submitForm() {
         state.formData.parentId = parentCategory.id;
         state.formData.level = parentCategory.level + 1;
 
-        addCategory(state.formData).then(() => {
+        CategoryAPI.addCategory(state.formData).then(() => {
           ElMessage.success("新增成功");
           closeDialog();
           handleQuery();
@@ -137,7 +145,7 @@ function handleDelete(row: any) {
     cancelButtonText: "取消",
     type: "warning",
   }).then(() => {
-    deleteCategories(ids).then(() => {
+    CategoryAPI.deleteCategories(ids).then(() => {
       ElMessage.success("删除成功");
       handleQuery();
     });
@@ -180,7 +188,7 @@ onMounted(() => {
             >
               <template #error>
                 <div class="image-slot">
-                  <i-ep-picture />
+                  <EpPicture />
                 </div>
               </template>
             </el-image>
@@ -192,37 +200,32 @@ onMounted(() => {
               type="success"
               link
               @click.stop="handleAdd(scope.data)"
-              >新增</el-button
             >
+              新增
+            </el-button>
             <el-button
               v-show="scope.data.id !== 0"
               type="warning"
               link
               @click.stop="handleUpdate(scope.data)"
-              >编辑
+            >
+              编辑
             </el-button>
             <el-button
-              v-show="
-                scope.data.id &&
-                (!scope.data.children || scope.data.children.length <= 0)
-              "
+              v-show="scope.data.id && (!scope.data.children || scope.data.children.length <= 0)"
               type="danger"
               link
               @click.stop="handleDelete(scope.data)"
-              >删除</el-button
             >
+              删除
+            </el-button>
           </div>
         </div>
       </template>
     </el-tree>
 
     <el-dialog v-model="dialog.visible" :title="dialog.title" width="750px">
-      <el-form
-        ref="dataFormRef"
-        :model="formData"
-        :rules="rules"
-        label-width="100px"
-      >
+      <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="上级分类" prop="parentId">
           <el-input v-model="parent.name" readonly />
         </el-form-item>

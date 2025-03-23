@@ -1,5 +1,6 @@
 package com.youlai.boot.modules.product.model.form;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.youlai.boot.modules.product.model.entity.PmsSku;
 import lombok.Data;
 

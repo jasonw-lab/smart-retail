@@ -13,11 +13,11 @@
             />
             <div class="ml-5">
               <p>{{ greetings }}</p>
-              <p class="text-sm text-gray">今日天气晴朗，气温在15℃至25℃之间，东南风。</p>
+              <p class="text-sm text-gray">今日は晴れ、気温は15℃から25℃、南東の風。</p>
             </div>
           </div>
         </el-col>
-
+<!-- 
         <el-col :span="6" :xs="24">
           <el-row class="h-80px flex-y-center" :gutter="10">
             <el-col :span="10">
@@ -75,147 +75,161 @@
               </div>
             </el-col>
           </el-row>
-        </el-col>
+        </el-col> -->
       </el-row>
     </el-card>
 
-    <!-- 数据统计 -->
-    <el-row :gutter="10" class="mt-5">
-      <!-- 访客数(UV) -->
-      <el-col :span="12">
-        <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
-          <template #template>
-            <el-card>
-              <template #header>
-                <div>
-                  <el-skeleton-item variant="h3" style="width: 40%" />
-                  <el-skeleton-item variant="rect" style="float: right; width: 1em; height: 1em" />
-                </div>
-              </template>
-
-              <div class="flex-x-between">
-                <el-skeleton-item variant="text" style="width: 30%" />
-                <el-skeleton-item variant="circle" style="width: 2em; height: 2em" />
-              </div>
-              <div class="mt-5 flex-x-between">
-                <el-skeleton-item variant="text" style="width: 50%" />
-                <el-skeleton-item variant="text" style="width: 1em" />
-              </div>
-            </el-card>
+    <el-row :gutter="20" class="mt-4">
+      <!-- 総売上 -->
+      <el-col :span="6">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">総売上</span>
+              <el-tag type="success" size="small">本日</el-tag>
+            </div>
           </template>
-          <template v-if="!visitStatsLoading">
-            <el-card shadow="never">
-              <template #header>
-                <div class="flex-x-between">
-                  <span class="text-gray">访客数(UV)</span>
-                  <el-tag type="success" size="small">日</el-tag>
-                </div>
-              </template>
-
-              <div class="flex-x-between mt-2">
-                <div class="flex-y-center">
-                  <span class="text-lg">{{ visitStatsData.todayUvCount }}</span>
-                  <span
-                    :class="[
-                      'text-xs',
-                      'ml-2',
-                      computeGrowthRateClass(visitStatsData.uvGrowthRate),
-                    ]"
-                  >
-                    <el-icon>
-                      <Top v-if="visitStatsData.uvGrowthRate > 0" />
-                      <Bottom v-else-if="visitStatsData.uvGrowthRate < 0" />
-                    </el-icon>
-                    {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
-                  </span>
-                </div>
-                <div class="i-svg:visitor w-8 h-8" />
-              </div>
-
-              <div class="flex-x-between mt-2 text-sm text-gray">
-                <span>总访客数</span>
-                <span>{{ visitStatsData.totalUvCount }}</span>
-              </div>
-            </el-card>
-          </template>
-        </el-skeleton>
+          <div class="flex-x-between mt-2">
+            <div class="flex-y-center">
+              <span class="text-2xl font-bold">¥{{ formatNumber(totalSales) }}</span>
+              <span :class="['text-xs', 'ml-2', computeGrowthRateClass(salesGrowthRate)]">
+                <el-icon>
+                  <Top v-if="salesGrowthRate > 0" />
+                  <Bottom v-else-if="salesGrowthRate < 0" />
+                </el-icon>
+                {{ formatPercentage(salesGrowthRate) }}
+              </span>
+            </div>
+            <div class="i-svg:money w-8 h-8" />
+          </div>
+        </el-card>
       </el-col>
 
-      <!-- 浏览量(PV) -->
-      <el-col :span="12">
-        <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
-          <template #template>
-            <el-card>
-              <template #header>
-                <div>
-                  <el-skeleton-item variant="h3" style="width: 40%" />
-                  <el-skeleton-item variant="rect" style="float: right; width: 1em; height: 1em" />
-                </div>
-              </template>
-
-              <div class="flex-x-between">
-                <el-skeleton-item variant="text" style="width: 30%" />
-                <el-skeleton-item variant="circle" style="width: 2em; height: 2em" />
-              </div>
-              <div class="mt-5 flex-x-between">
-                <el-skeleton-item variant="text" style="width: 50%" />
-                <el-skeleton-item variant="text" style="width: 1em" />
-              </div>
-            </el-card>
+      <!-- 補充が必要な店舗数 -->
+      <el-col :span="6">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">補充が必要な店舗</span>
+              <el-tag type="warning" size="small">緊急</el-tag>
+            </div>
           </template>
-          <template v-if="!visitStatsLoading">
-            <el-card shadow="never">
-              <template #header>
-                <div class="flex-x-between">
-                  <span class="text-gray">浏览量(PV)</span>
-                  <el-tag type="primary" size="small">日</el-tag>
-                </div>
-              </template>
+          <div class="flex-x-between mt-2">
+            <div class="flex-y-center">
+              <span class="text-2xl font-bold">{{ restockStoreCount }}</span>
+              <span class="text-xs ml-2">店舗</span>
+            </div>
+            <div class="i-svg:store w-8 h-8" />
+          </div>
+        </el-card>
+      </el-col>
 
-              <div class="flex-x-between mt-2">
-                <div class="flex-y-center">
-                  <span class="text-lg">{{ visitStatsData.todayPvCount }}</span>
-                  <span
-                    :class="[
-                      'text-xs',
-                      'ml-2',
-                      computeGrowthRateClass(visitStatsData.pvGrowthRate),
-                    ]"
-                  >
-                    <el-icon>
-                      <Top v-if="visitStatsData.pvGrowthRate > 0" />
-                      <Bottom v-else-if="visitStatsData.pvGrowthRate < 0" />
-                    </el-icon>
-                    {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
-                  </span>
-                </div>
-                <div class="i-svg:browser w-8 h-8" />
-              </div>
-
-              <div class="flex-x-between mt-2 text-sm text-gray">
-                <span>总浏览量</span>
-                <span>{{ visitStatsData.totalPvCount }}</span>
-              </div>
-            </el-card>
+      <!-- 総店舗数 -->
+      <el-col :span="6">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">総店舗数</span>
+              <el-tag type="info" size="small">稼働中</el-tag>
+            </div>
           </template>
-        </el-skeleton>
+          <div class="flex-x-between mt-2">
+            <div class="flex-y-center">
+              <span class="text-2xl font-bold">{{ totalStoreCount }}</span>
+              <span class="text-xs ml-2">店舗</span>
+            </div>
+            <div class="i-svg:shop w-8 h-8" />
+          </div>
+        </el-card>
+      </el-col>
+
+      <!-- 総商品数 -->
+      <el-col :span="6">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">総商品数</span>
+              <el-tag type="primary" size="small">在庫</el-tag>
+            </div>
+          </template>
+          <div class="flex-x-between mt-2">
+            <div class="flex-y-center">
+              <span class="text-2xl font-bold">{{ totalProductCount }}</span>
+              <span class="text-xs ml-2">商品</span>
+            </div>
+            <div class="i-svg:goods w-8 h-8" />
+          </div>
+        </el-card>
       </el-col>
     </el-row>
 
+    <!-- 店舗別売上グラフ -->
+    <el-row :gutter="20" class="mt-4">
+      <el-col :span="16">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">店舗別売上</span>
+              <el-date-picker
+                v-model="dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="開始日"
+                end-placeholder="終了日"
+                size="small"
+                style="width: 200px;"
+              />
+            </div>
+          </template>
+          <div id="storeSalesChart" style="height: 400px"></div>
+        </el-card>
+      </el-col>
+
+      <!-- 商品別ランキング -->
+      <el-col :span="8">
+        <el-card shadow="never">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">商品別ランキング</span>
+              <el-tag type="success" size="small">TOP 5</el-tag>
+            </div>
+          </template>
+          <div class="product-ranking">
+            <div v-for="(item, index) in productRanking" :key="index" class="ranking-item">
+              <div class="flex-x-between items-center">
+                <div class="flex-y-center">
+                  <span class="ranking-number" :class="'top-' + (index + 1)">{{ index + 1 }}</span>
+                  <span class="ml-2">{{ item.name }}</span>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold">¥{{ formatNumber(item.sales) }}</div>
+                  <div class="text-xs text-gray">{{ item.count }}個</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 访问趋势统计图 -->
     <el-row :gutter="10" class="mt-5">
       <!-- 访问趋势统计图 -->
       <el-col :xs="24" :span="16">
         <el-card>
           <template #header>
             <div class="flex-x-between">
-              <span>访问趋势</span>
+              <span class="text-gray">総売上</span>
               <el-radio-group v-model="visitTrendDateRange" size="small">
-                <el-radio-button label="近7天" :value="7" />
-                <el-radio-button label="近30天" :value="30" />
+                <el-radio-button label="7日間" :value="7" />
+                <el-radio-button label="30日間" :value="30" />
+                <el-radio-button label="3ヶ月" :value="90" />
+                <el-radio-button label="半年" :value="180" />
+                <el-radio-button label="1年" :value="365" />
               </el-radio-group>
             </div>
           </template>
-          <ECharts :options="visitTrendChartOptions" height="400px" />
+          <v-chart class="chart" :option="chartOption" autoresize />
         </el-card>
       </el-col>
       <!-- 最新动态 -->
@@ -223,14 +237,14 @@
         <el-card>
           <template #header>
             <div class="flex-x-between">
-              <span class="header-title">最新动态</span>
+              <span class="header-title">最新情報</span>
               <el-link
                 type="primary"
                 :underline="false"
                 href="https://gitee.com/youlaiorg/vue3-element-admin/releases"
                 target="_blank"
               >
-                完整记录
+                全ての記録
                 <el-icon class="link-icon"><TopRight /></el-icon>
               </el-link>
             </div>
@@ -264,7 +278,7 @@
                       target="_blank"
                       :underline="false"
                     >
-                      详情
+                      詳細
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
                   </div>
@@ -279,26 +293,67 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, computed, watch, onUnmounted } from "vue";
+import * as echarts from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { LineChart, BarChart } from "echarts/charts";
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  ToolboxComponent,
+} from "echarts/components";
+import VChart from "vue-echarts";
+import { graphic } from "echarts/core";
+import { useUserStore } from "@/store/modules/user";
+import { formatGrowthRate } from "@/utils";
+import { dayjs } from "element-plus";
+import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log";
+
+// EChartsコンポーネントの登録
+echarts.use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  ToolboxComponent,
+]);
+
+interface VersionItem {
+  id: string;
+  title: string;
+  date: string;
+  content: string;
+  link: string;
+  tag?: string;
+}
+
 defineOptions({
   name: "Dashboard",
   inheritAttrs: false,
 });
 
-import { dayjs } from "element-plus";
-import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log";
-import { useUserStore } from "@/store/modules/user";
-import { formatGrowthRate } from "@/utils";
-
-interface VersionItem {
-  id: string;
-  title: string; // 版本标题（如：v2.4.0）
-  date: string; // 发布时间
-  content: string; // 版本描述
-  link: string; // 详情链接
-  tag?: string; // 版本标签（可选）
-}
-
 const userStore = useUserStore();
+
+/**
+ * 成長率に基づいてCSSクラスを計算する
+ * @param growthRate - 成長率
+ * @returns CSSクラス名
+ */
+const computeGrowthRateClass = (growthRate?: number): string => {
+  if (!growthRate) {
+    return "color-[--el-color-info]";
+  }
+  if (growthRate > 0) {
+    return "color-[--el-color-danger]";
+  } else if (growthRate < 0) {
+    return "color-[--el-color-success]";
+  } else {
+    return "color-[--el-color-info]";
+  }
+};
 
 // 当前通知公告列表
 const vesionList = ref<VersionItem[]>([
@@ -363,7 +418,91 @@ const visitStatsData = ref<VisitStatsVO>({
 // 访问趋势日期范围（单位：天）
 const visitTrendDateRange = ref(7);
 // 访问趋势图表配置
-const visitTrendChartOptions = ref();
+const chartOption = ref({
+  tooltip: {
+    trigger: "axis",
+  },
+  legend: {
+    data: ["総売上", "純利益"],
+    bottom: 0,
+  },
+  grid: {
+    left: "1%",
+    right: "5%",
+    bottom: "10%",
+    containLabel: true,
+  },
+  xAxis: {
+    type: "category",
+    data: [],
+    boundaryGap: false,
+  },
+  yAxis: {
+    type: "value",
+    splitLine: {
+      show: true,
+      lineStyle: {
+        type: "dashed",
+      },
+    },
+  },
+  series: [
+    {
+      name: "総売上",
+      type: "line",
+      data: [],
+      smooth: 0.5,
+      smoothMonotone: "x",
+      symbol: "none",
+      areaStyle: {
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: "rgba(64, 158, 255, 0.3)",
+          },
+          {
+            offset: 1,
+            color: "rgba(64, 158, 255, 0.1)",
+          },
+        ]),
+      },
+      itemStyle: {
+        color: "#4080FF",
+      },
+      lineStyle: {
+        width: 2,
+        color: "#4080FF",
+      },
+    },
+    {
+      name: "純利益",
+      type: "line",
+      data: [],
+      smooth: 0.5,
+      smoothMonotone: "x",
+      symbol: "none",
+      areaStyle: {
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: "rgba(103, 194, 58, 0.3)",
+          },
+          {
+            offset: 1,
+            color: "rgba(103, 194, 58, 0.1)",
+          },
+        ]),
+      },
+      itemStyle: {
+        color: "#67C23A",
+      },
+      lineStyle: {
+        width: 2,
+        color: "#67C23A",
+      },
+    },
+  ],
+});
 
 /**
  * 获取访客统计数据
@@ -378,124 +517,226 @@ const fetchVisitStatsData = () => {
     });
 };
 
-/**
- * 获取访问趋势数据，并更新图表配置
- */
+// データ生成処理を更新
+const generateSmoothData = (days: number, baseValue: number, volatility: number) => {
+  const data = [];
+  let currentValue = baseValue;
+  
+  // より滑らかな変動を生成
+  for (let i = 0; i < days; i++) {
+    // 前日からの変動を制限して急激な変化を防ぐ
+    const change = (Math.random() - 0.5) * volatility * Math.min(1, 5 / Math.sqrt(days));
+    currentValue = currentValue * (1 + change);
+    // 基準値から大きく離れすぎないように調整
+    currentValue = baseValue + (currentValue - baseValue) * 0.95;
+    data.push(Math.round(currentValue));
+  }
+  
+  return data;
+};
+
 const fetchVisitTrendData = () => {
   const startDate = dayjs()
     .subtract(visitTrendDateRange.value - 1, "day")
     .toDate();
-  const endDate = new Date();
 
-  LogAPI.getVisitTrend({
-    startDate: dayjs(startDate).format("YYYY-MM-DD"),
-    endDate: dayjs(endDate).format("YYYY-MM-DD"),
-  }).then((data) => {
-    updateVisitTrendChartOptions(data);
-  });
-};
-
-/**
- * 更新访问趋势图表的配置项
- *
- * @param data - 访问趋势数据
- */
-const updateVisitTrendChartOptions = (data: VisitTrendVO) => {
-  console.log("Updating visit trend chart options");
-
-  visitTrendChartOptions.value = {
-    tooltip: {
-      trigger: "axis",
-    },
-    legend: {
-      data: ["浏览量(PV)", "访客数(UV)"],
-      bottom: 0,
-    },
-    grid: {
-      left: "1%",
-      right: "5%",
-      bottom: "10%",
-      containLabel: true,
-    },
-    xAxis: {
-      type: "category",
-      data: data.dates,
-    },
-    yAxis: {
-      type: "value",
-      splitLine: {
-        show: true,
-        lineStyle: {
-          type: "dashed",
-        },
-      },
-    },
-    series: [
-      {
-        name: "浏览量(PV)",
-        type: "line",
-        data: data.pvList,
-        areaStyle: {
-          color: "rgba(64, 158, 255, 0.1)",
-        },
-        smooth: true,
-        itemStyle: {
-          color: "#4080FF",
-        },
-        lineStyle: {
-          color: "#4080FF",
-        },
-      },
-      {
-        name: "访客数(UV)",
-        type: "line",
-        data: data.ipList,
-        areaStyle: {
-          color: "rgba(103, 194, 58, 0.1)",
-        },
-        smooth: true,
-        itemStyle: {
-          color: "#67C23A",
-        },
-        lineStyle: {
-          color: "#67C23A",
-        },
-      },
-    ],
-  };
-};
-
-/**
- * 根据增长率计算对应的 CSS 类名
- *
- * @param growthRate - 增长率数值
- */
-const computeGrowthRateClass = (growthRate?: number): string => {
-  if (!growthRate) {
-    return "color-[--el-color-info]";
+  // 日付データの生成
+  const dates = [];
+  for (let i = 0; i < visitTrendDateRange.value; i++) {
+    const date = dayjs(startDate).add(i, "day").format("MM-DD");
+    dates.push(date);
   }
-  if (growthRate > 0) {
-    return "color-[--el-color-danger]";
-  } else if (growthRate < 0) {
-    return "color-[--el-color-success]";
+
+  // 期間に応じて基準値と変動幅を調整
+  const daysCount = visitTrendDateRange.value;
+  let baseValue, volatility;
+
+  if (daysCount <= 7) {
+    baseValue = 2000000;
+    volatility = 0.05;
+  } else if (daysCount <= 30) {
+    baseValue = 1800000;
+    volatility = 0.08;
+  } else if (daysCount <= 90) {
+    baseValue = 1600000;
+    volatility = 0.12;
+  } else if (daysCount <= 180) {
+    baseValue = 1500000;
+    volatility = 0.15;
   } else {
-    return "color-[--el-color-info]";
+    baseValue = 1400000;
+    volatility = 0.18;
+  }
+
+  // 売上データと利益データの生成
+  const salesData = generateSmoothData(daysCount, baseValue, volatility);
+  const profitData = salesData.map((sale) => Math.round(sale * (0.25 + Math.random() * 0.1)));
+
+  // チャートオプションの更新
+  chartOption.value.xAxis.data = dates;
+  chartOption.value.series[0].data = salesData;
+  chartOption.value.series[1].data = profitData;
+};
+
+// データ定義
+const totalSales = ref(0)
+const salesGrowthRate = ref(0)
+const restockStoreCount = ref(0)
+const totalStoreCount = ref(0)
+const totalProductCount = ref(0)
+const dateRange = ref([])
+const productRanking = ref([])
+const loading = ref(false)
+
+// 店舗別売上グラフのオプション
+const storeSalesChartOption = ref({
+  tooltip: {
+    trigger: "axis",
+    axisPointer: {
+      type: "shadow",
+    },
+  },
+  legend: {
+    data: ["売上", "前年比"],
+    bottom: 0,
+  },
+  grid: {
+    left: "3%",
+    right: "4%",
+    bottom: "10%",
+    containLabel: true,
+  },
+  xAxis: {
+    type: "category",
+    boundaryGap: true,
+    data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 30,
+    },
+  },
+  yAxis: {
+    type: "value",
+    splitLine: {
+      lineStyle: {
+        type: "dashed",
+      },
+    },
+  },
+  series: [
+    {
+      name: "売上",
+      type: "bar",
+      data: [],
+      itemStyle: {
+        color: "#409EFF",
+      },
+      barWidth: "30%",
+    },
+    {
+      name: "前年比",
+      type: "line",
+      data: [],
+      itemStyle: {
+        color: "#67C23A",
+      },
+      smooth: true,
+    },
+  ],
+});
+
+// 数値フォーマット
+const formatNumber = (num: number) => {
+  return num.toLocaleString()
+}
+
+// パーセンテージフォーマット
+const formatPercentage = (num: number) => {
+  return `${num > 0 ? '+' : ''}${num.toFixed(1)}%`
+}
+
+// データ取得後のグラフ更新
+const fetchDashboardData = async () => {
+  loading.value = true
+  try {
+    // TODO: APIからデータを取得する処理を実装
+    // 仮のデータ
+    totalSales.value = 210000
+    salesGrowthRate.value = 15.5
+    restockStoreCount.value = 3
+    totalStoreCount.value = 10
+    totalProductCount.value = 150
+
+    // 商品ランキングの仮データ
+    productRanking.value = [
+      { name: 'チキン', sales: 21000, count: 3, growth: 12.5 },
+      { name: 'ハンバーガー', sales: 18000, count: 5, growth: 8.3 },
+      { name: 'サンドイッチ', sales: 15000, count: 4, growth: -2.1 },
+      { name: 'サラダ', sales: 12000, count: 6, growth: 15.7 },
+      { name: 'ドリンク', sales: 10000, count: 8, growth: 5.2 }
+    ]
+
+    // グラフデータの仮データ
+    const stores = ['店舗A', '店舗B', '店舗C', '店舗D', '店舗E']
+    const currentSales = [15000, 12000, 18000, 20000, 16000]
+    const previousSales = [13000, 11000, 16000, 18000, 14000]
+
+    storeSalesChartOption.value.xAxis.data = stores
+    storeSalesChartOption.value.series[0].data = currentSales
+    storeSalesChartOption.value.series[1].data = previousSales
+
+    // グラフの更新
+    updateStoreSalesChart()
+  } catch (error) {
+    console.error('ダッシュボードデータの取得に失敗しました:', error)
+    ElMessage.error('データの取得に失敗しました')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 日付範囲変更時の処理
+const handleDateRangeChange = () => {
+  fetchDashboardData()
+}
+
+// 店舗別売上グラフの初期化
+const initStoreSalesChart = () => {
+  const chartDom = document.getElementById('storeSalesChart');
+  if (chartDom) {
+    const myChart = echarts.init(chartDom);
+    myChart.setOption(storeSalesChartOption.value);
+    return myChart;
+  }
+  return null;
+};
+
+// 店舗別売上グラフの更新
+const updateStoreSalesChart = () => {
+  const chart = initStoreSalesChart();
+  if (chart) {
+    chart.setOption(storeSalesChartOption.value);
   }
 };
 
-// 监听访问趋势日期范围的变化，重新获取趋势数据
-watch(
-  () => visitTrendDateRange.value,
-  (newVal) => {
-    console.log("Visit trend date range changed:", newVal);
-    fetchVisitTrendData();
-  },
-  { immediate: true }
-);
-
-// 组件挂载后加载访客统计数据和通知公告数据
+// コンポーネントのマウント時にグラフを初期化
 onMounted(() => {
-  fetchVisitStatsData();
+  fetchVisitTrendData();
+  fetchDashboardData();
+});
+
+// コンポーネントのアンマウント時にクリーンアップ
+onUnmounted(() => {
+  // クリーンアップが必要な処理があればここに記述
+});
+
+// 監視処理の設定
+watch(visitTrendDateRange, () => {
+  fetchVisitTrendData();
+});
+
+watch(dateRange, () => {
+  fetchDashboardData();
 });
 </script>
 
@@ -532,6 +773,47 @@ onMounted(() => {
       line-height: 1.5;
       color: var(--el-text-color-secondary);
     }
+  }
+
+  .product-ranking {
+    .ranking-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .ranking-number {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
+      border-radius: 50%;
+      background: #f5f7fa;
+      color: #909399;
+
+      &.top-1 {
+        background: #f56c6c;
+        color: white;
+      }
+
+      &.top-2 {
+        background: #e6a23c;
+        color: white;
+      }
+
+      &.top-3 {
+        background: #409eff;
+        color: white;
+      }
+    }
+  }
+
+  .chart {
+    height: 400px;
   }
 }
 </style>

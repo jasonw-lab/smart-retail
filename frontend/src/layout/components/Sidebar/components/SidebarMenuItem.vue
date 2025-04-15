@@ -134,6 +134,70 @@ function resolvePath(routePath: string) {
 </script>
 
 <style lang="scss">
+.el-menu-item {
+  position: relative;
+  margin: 4px 8px;
+  height: 50px;
+  line-height: 50px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover, &.is-active {
+    background: linear-gradient(90deg, var(--el-color-primary-light-8), transparent) !important;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 20px;
+      background: var(--el-color-primary);
+      border-radius: 0 4px 4px 0;
+    }
+  }
+
+  &.is-active {
+    background: linear-gradient(90deg, var(--el-color-primary-light-8), transparent) !important;
+    color: var(--el-color-primary) !important;
+    font-weight: bold;
+  }
+}
+
+.el-sub-menu {
+  .el-sub-menu__title {
+    margin: 4px 8px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(90deg, var(--el-color-primary-light-9), transparent) !important;
+    }
+  }
+
+  &.is-active {
+    > .el-sub-menu__title {
+      color: var(--el-color-primary) !important;
+      font-weight: bold;
+    }
+  }
+
+  .el-menu {
+    background: transparent;
+    
+    .el-menu-item {
+      background: transparent;
+      
+      &:hover {
+        background: linear-gradient(90deg, var(--el-color-primary-light-9), transparent) !important;
+      }
+    }
+  }
+}
+
 .hideSidebar {
   .submenu-title-noDropdown {
     position: relative;
@@ -188,14 +252,26 @@ function resolvePath(routePath: string) {
 }
 
 html.dark {
-  .el-menu-item:hover {
-    background-color: $menu-hover;
+  .el-menu-item, .el-sub-menu__title {
+    &:hover {
+      background: linear-gradient(90deg, rgba(64, 158, 255, 0.1), transparent) !important;
+    }
+  }
+
+  .el-menu-item.is-active {
+    background: linear-gradient(90deg, rgba(64, 158, 255, 0.15), transparent) !important;
   }
 }
 
 html.sidebar-color-blue {
-  .el-menu-item:hover {
-    background-color: $menu-hover;
+  .el-menu-item, .el-sub-menu__title {
+    &:hover {
+      background: linear-gradient(90deg, rgba(64, 158, 255, 0.1), transparent) !important;
+    }
+  }
+
+  .el-menu-item.is-active {
+    background: linear-gradient(90deg, rgba(64, 158, 255, 0.15), transparent) !important;
   }
 }
 </style>

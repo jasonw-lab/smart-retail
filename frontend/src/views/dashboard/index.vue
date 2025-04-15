@@ -17,7 +17,7 @@
             </div>
           </div>
         </el-col>
-<!-- 
+        <!-- 
         <el-col :span="6" :xs="24">
           <el-row class="h-80px flex-y-center" :gutter="10">
             <el-col :span="10">
@@ -36,41 +36,6 @@
                 <el-divider direction="vertical" />
                 <el-link href="https://gitcode.com/youlai/vue3-element-admin" target="_blank">
                   <div class="i-svg:gitcode text-lg color-#FF9A2E" />
-                </el-link>
-              </div>
-            </el-col>
-
-            <el-col :span="10">
-              <div class="font-bold color-#4080ff text-sm flex-y-center">
-                <el-icon class="mr-2px"><Document /></el-icon>
-                文档
-              </div>
-              <div class="mt-3">
-                <el-link href="https://juejin.cn/post/7228990409909108793" target="_blank">
-                  <div class="i-svg:juejin text-lg" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link
-                  href="https://youlai.blog.csdn.net/article/details/130191394"
-                  target="_blank"
-                >
-                  <div class="i-svg:csdn text-lg" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://www.cnblogs.com/haoxianrui/p/17331952.html" target="_blank">
-                  <div class="i-svg:cnblogs text-lg" />
-                </el-link>
-              </div>
-            </el-col>
-
-            <el-col :span="4">
-              <div class="font-bold color-#f76560 text-sm flex-y-center">
-                <el-icon class="mr-2px"><VideoCamera /></el-icon>
-                视频
-              </div>
-              <div class="mt-3">
-                <el-link href="https://www.bilibili.com/video/BV1eFUuYyEFj" target="_blank">
-                  <div class="i-svg:bilibili text-lg" />
                 </el-link>
               </div>
             </el-col>
@@ -177,7 +142,7 @@
                 start-placeholder="開始日"
                 end-placeholder="終了日"
                 size="small"
-                style="width: 200px;"
+                style="width: 160px"
               />
             </div>
           </template>
@@ -237,14 +202,14 @@
         <el-card>
           <template #header>
             <div class="flex-x-between">
-              <span class="header-title">最新情報</span>
+              <span class="header-title">アラート情報</span>
               <el-link
                 type="primary"
                 :underline="false"
-                href="https://gitee.com/youlaiorg/vue3-element-admin/releases"
+                href="/inventory"
                 target="_blank"
               >
-                全ての記録
+                在庫管理
                 <el-icon class="link-icon"><TopRight /></el-icon>
               </el-link>
             </div>
@@ -253,32 +218,32 @@
           <el-scrollbar height="400px">
             <el-timeline class="p-3">
               <el-timeline-item
-                v-for="(item, index) in vesionList"
+                v-for="(item, index) in alertList"
                 :key="index"
                 :timestamp="item.date"
                 placement="top"
-                :color="index === 0 ? '#67C23A' : '#909399'"
+                :color="item.type === 'danger' ? '#F56C6C' : '#E6A23C'"
                 :hollow="index !== 0"
                 size="large"
               >
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div>
                     <el-text tag="strong">{{ item.title }}</el-text>
-                    <el-tag v-if="item.tag" :type="index === 0 ? 'success' : 'info'" size="small">
-                      {{ item.tag }}
+                    <el-tag :type="item.type" size="small">
+                      {{ item.type === 'danger' ? '緊急' : '警告' }}
                     </el-tag>
                   </div>
 
                   <el-text class="version-content">{{ item.content }}</el-text>
 
-                  <div v-if="item.link">
+                  <div>
                     <el-link
-                      :type="index === 0 ? 'primary' : 'info'"
-                      :href="item.link"
+                      :type="item.type"
+                      href="/inventory"
                       target="_blank"
                       :underline="false"
                     >
-                      詳細
+                      在庫確認
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
                   </div>
@@ -403,9 +368,9 @@ const greetings = computed(() => {
   }
 });
 
-// 访客统计数据加载状态
+// 訪客统计数据加载状态
 const visitStatsLoading = ref(true);
-// 访客统计数据
+// 訪客统计数据
 const visitStatsData = ref<VisitStatsVO>({
   todayUvCount: 0,
   uvGrowthRate: 0,
@@ -517,11 +482,10 @@ const fetchVisitStatsData = () => {
     });
 };
 
-// データ生成処理を更新
+// より滑らかな変動を生成
 const generateSmoothData = (days: number, baseValue: number, volatility: number) => {
   const data = [];
   let currentValue = baseValue;
-  
   // より滑らかな変動を生成
   for (let i = 0; i < days; i++) {
     // 前日からの変動を制限して急激な変化を防ぐ
@@ -531,7 +495,6 @@ const generateSmoothData = (days: number, baseValue: number, volatility: number)
     currentValue = baseValue + (currentValue - baseValue) * 0.95;
     data.push(Math.round(currentValue));
   }
-  
   return data;
 };
 
@@ -579,14 +542,14 @@ const fetchVisitTrendData = () => {
 };
 
 // データ定義
-const totalSales = ref(0)
-const salesGrowthRate = ref(0)
-const restockStoreCount = ref(0)
-const totalStoreCount = ref(0)
-const totalProductCount = ref(0)
-const dateRange = ref([])
-const productRanking = ref([])
-const loading = ref(false)
+const totalSales = ref(0);
+const salesGrowthRate = ref(0);
+const restockStoreCount = ref(0);
+const totalStoreCount = ref(0);
+const totalProductCount = ref(0);
+const dateRange = ref([]);
+const productRanking = ref([]);
+const loading = ref(false);
 
 // 店舗別売上グラフのオプション
 const storeSalesChartOption = ref({
@@ -597,7 +560,7 @@ const storeSalesChartOption = ref({
     },
   },
   legend: {
-    data: ["売上", "前年比"],
+    data: ["売上", "目標"],
     bottom: 0,
   },
   grid: {
@@ -634,11 +597,11 @@ const storeSalesChartOption = ref({
       barWidth: "30%",
     },
     {
-      name: "前年比",
+      name: "目標",
       type: "line",
       data: [],
       itemStyle: {
-        color: "#67C23A",
+        color: "#F56C6C",
       },
       smooth: true,
     },
@@ -647,62 +610,62 @@ const storeSalesChartOption = ref({
 
 // 数値フォーマット
 const formatNumber = (num: number) => {
-  return num.toLocaleString()
-}
+  return num.toLocaleString();
+};
 
 // パーセンテージフォーマット
 const formatPercentage = (num: number) => {
-  return `${num > 0 ? '+' : ''}${num.toFixed(1)}%`
-}
+  return `${num > 0 ? "+" : ""}${num.toFixed(1)}%`;
+};
 
 // データ取得後のグラフ更新
 const fetchDashboardData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     // TODO: APIからデータを取得する処理を実装
     // 仮のデータ
-    totalSales.value = 210000
-    salesGrowthRate.value = 15.5
-    restockStoreCount.value = 3
-    totalStoreCount.value = 10
-    totalProductCount.value = 150
+    totalSales.value = 210000;
+    salesGrowthRate.value = 15.5;
+    restockStoreCount.value = 3;
+    totalStoreCount.value = 10;
+    totalProductCount.value = 150;
 
     // 商品ランキングの仮データ
     productRanking.value = [
-      { name: 'チキン', sales: 21000, count: 3, growth: 12.5 },
-      { name: 'ハンバーガー', sales: 18000, count: 5, growth: 8.3 },
-      { name: 'サンドイッチ', sales: 15000, count: 4, growth: -2.1 },
-      { name: 'サラダ', sales: 12000, count: 6, growth: 15.7 },
-      { name: 'ドリンク', sales: 10000, count: 8, growth: 5.2 }
-    ]
+      { name: "チキン", sales: 21000, count: 3, growth: 12.5 },
+      { name: "ハンバーガー", sales: 18000, count: 5, growth: 8.3 },
+      { name: "サンドイッチ", sales: 15000, count: 4, growth: -2.1 },
+      { name: "サラダ", sales: 12000, count: 6, growth: 15.7 },
+      { name: "ドリンク", sales: 10000, count: 8, growth: 5.2 },
+    ];
 
     // グラフデータの仮データ
-    const stores = ['店舗A', '店舗B', '店舗C', '店舗D', '店舗E']
-    const currentSales = [15000, 12000, 18000, 20000, 16000]
-    const previousSales = [13000, 11000, 16000, 18000, 14000]
+    const stores = ["店舗A", "店舗B", "店舗C", "店舗D", "店舗E"];
+    const currentSales = [15000, 12000, 18000, 20000, 16000];
+    const previousSales = [13000, 11000, 16000, 18000, 14000];
 
-    storeSalesChartOption.value.xAxis.data = stores
-    storeSalesChartOption.value.series[0].data = currentSales
-    storeSalesChartOption.value.series[1].data = previousSales
+    storeSalesChartOption.value.xAxis.data = stores;
+    storeSalesChartOption.value.series[0].data = currentSales;
+    storeSalesChartOption.value.series[1].data = previousSales;
 
     // グラフの更新
-    updateStoreSalesChart()
+    updateStoreSalesChart();
   } catch (error) {
-    console.error('ダッシュボードデータの取得に失敗しました:', error)
-    ElMessage.error('データの取得に失敗しました')
+    console.error("ダッシュボードデータの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 日付範囲変更時の処理
-const handleDateRangeChange = () => {
-  fetchDashboardData()
-}
+watch(dateRange, () => {
+  fetchDashboardData();
+});
 
 // 店舗別売上グラフの初期化
 const initStoreSalesChart = () => {
-  const chartDom = document.getElementById('storeSalesChart');
+  const chartDom = document.getElementById("storeSalesChart");
   if (chartDom) {
     const myChart = echarts.init(chartDom);
     myChart.setOption(storeSalesChartOption.value);
@@ -730,14 +693,35 @@ onUnmounted(() => {
   // クリーンアップが必要な処理があればここに記述
 });
 
-// 監視処理の設定
+// 期間変更時にグラフを更新
 watch(visitTrendDateRange, () => {
   fetchVisitTrendData();
 });
 
-watch(dateRange, () => {
-  fetchDashboardData();
-});
+// アラート情報の定義
+const alertList = ref([
+  {
+    id: "1",
+    title: "在庫切れ警告",
+    date: "2024-03-20 10:30:00",
+    content: "チキンの在庫が10個を下回りました。緊急の補充が必要です。",
+    type: "danger",
+  },
+  {
+    id: "2",
+    title: "在庫警告",
+    date: "2024-03-20 09:15:00",
+    content: "ハンバーガーの在庫が20個を下回りました。補充を検討してください。",
+    type: "warning",
+  },
+  {
+    id: "3",
+    title: "在庫警告",
+    date: "2024-03-19 16:45:00",
+    content: "サンドイッチの在庫が15個を下回りました。補充を検討してください。",
+    type: "warning",
+  },
+]);
 </script>
 
 <style lang="scss" scoped>

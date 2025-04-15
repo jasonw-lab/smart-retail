@@ -2,6 +2,7 @@ package com.youlai.boot.modules.product.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.youlai.boot.common.base.BaseEntity;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import lombok.Data;
  * @since 2022/2/6
  */
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PmsSku extends BaseEntity {
 
     @TableId(type = IdType.AUTO)

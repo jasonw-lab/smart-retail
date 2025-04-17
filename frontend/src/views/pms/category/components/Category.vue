@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CategoryAPI from "@/api/pms/category";
-import SingleUpload from "@/components/SingleUpload.vue";
+// import SingleUpload from "@/components/SingleUpload.vue";
 import {
   ElTree,
   ElForm,

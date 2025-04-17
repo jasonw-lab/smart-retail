@@ -272,6 +272,11 @@ import { useUserStore } from "@/store/modules/user";
 import { formatGrowthRate } from "@/utils";
 import { dayjs } from "element-plus";
 import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log";
+import DashboardAPI from "@/api/dashboard";
+import type { DashboardData, ProductRankingItem, StoreData, AlertItem, SalesTrendData } from "@/api/dashboard";
+import { ElMessage } from "element-plus";
+import { getOverview, getProductRanking, getStoreData, getAlerts, getSalesTrend } from "@/api/dashboard";
+import { formatDate } from "@/utils/format";
 
 // EChartsコンポーネントの登録
 echarts.use([
@@ -323,7 +328,7 @@ interface ChartData {
     data: Array<string>;
     boundaryGap: boolean;
     axisLabel?: {
-      formatter?: (value: number) => string;
+      formatter?: (value: string) => string;
     };
   };
   yAxis: {
@@ -356,13 +361,14 @@ interface ChartData {
   }>;
 }
 
+// 売上推移のチャートオプション
 const chartOption = ref<ChartData>({
   tooltip: {
     trigger: "axis",
-    formatter: function(params: any) {
-      return params.map((item: any) => {
+    formatter: function(_params: any) {
+      return _params.map((item: any) => {
         return `${item.seriesName}: ¥${formatNumber(item.value)}`;
-      }).join('<br/>');
+      }).join("<br/>");
     }
   },
   legend: {
@@ -380,8 +386,8 @@ const chartOption = ref<ChartData>({
     data: [],
     boundaryGap: false,
     axisLabel: {
-      formatter: (value: string) => {
-        const date = dayjs(value, "MM-DD");
+      formatter: (_value: string) => {
+        const date = dayjs(_value, "MM-DD");
         return date.format("MM月DD日");
       }
     }
@@ -389,7 +395,7 @@ const chartOption = ref<ChartData>({
   yAxis: {
     type: "value",
     axisLabel: {
-      formatter: (value: number) => `¥${formatNumber(value)}`
+      formatter: (_value: number) => `¥${formatNumber(_value)}`
     },
     splitLine: {
       show: true,
@@ -398,38 +404,7 @@ const chartOption = ref<ChartData>({
       }
     }
   },
-  series: [
-    {
-      name: "総売上",
-      type: "line",
-      data: [],
-      smooth: 0.5,
-      smoothMonotone: "x",
-      symbol: "none",
-      itemStyle: {
-        color: "#4080FF"
-      },
-      lineStyle: {
-        width: 2,
-        color: "#4080FF"
-      }
-    },
-    {
-      name: "純利益",
-      type: "line",
-      data: [],
-      smooth: 0.5,
-      smoothMonotone: "x",
-      symbol: "none",
-      itemStyle: {
-        color: "#67C23A"
-      },
-      lineStyle: {
-        width: 2,
-        color: "#67C23A"
-      }
-    }
-  ]
+  series: []
 });
 
 defineOptions({
@@ -512,59 +487,70 @@ const fetchVisitStatsData = () => {
 const generateSmoothData = (days: number, baseValue: number, volatility: number) => {
   const data = [];
   let currentValue = baseValue;
-  // より滑らかな変動を生成
   for (let i = 0; i < days; i++) {
-    // 前日からの変動を制限して急激な変化を防ぐ
     const change = (Math.random() - 0.5) * volatility * Math.min(1, 5 / Math.sqrt(days));
     currentValue = currentValue * (1 + change);
-    // 基準値から大きく離れすぎないように調整
     currentValue = baseValue + (currentValue - baseValue) * 0.95;
     data.push(Math.round(currentValue));
   }
   return data;
 };
 
-const fetchVisitTrendData = () => {
-  const startDate = dayjs()
-    .subtract(visitTrendDateRange.value - 1, "day")
-    .toDate();
-
-  // 日付データの生成
-  const dates = [];
-  for (let i = 0; i < visitTrendDateRange.value; i++) {
-    const date = dayjs(startDate).add(i, "day").format("MM-DD");
-    dates.push(date);
+// 売上推移データの取得
+const fetchVisitTrendData = async () => {
+  try {
+    const res = await DashboardAPI.getSalesTrend();
+    if (res.code === "00000" && res.data) {
+      const { dates, sales, profits } = res.data;
+      chartOption.value.xAxis.data = dates;
+      chartOption.value.series = [
+        {
+          name: "総売上",
+          type: "line",
+          data: sales,
+          smooth: 0.3,
+          symbol: "none",
+          areaStyle: {
+            opacity: 0.1,
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#409EFF" },
+              { offset: 1, color: "#FFFFFF" }
+            ])
+          },
+          itemStyle: {
+            color: "#409EFF"
+          },
+          lineStyle: {
+            width: 3,
+            color: "#409EFF"
+          }
+        },
+        {
+          name: "純利益",
+          type: "line",
+          data: profits,
+          smooth: 0.3,
+          symbol: "none",
+          areaStyle: {
+            opacity: 0.1,
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#67C23A" },
+              { offset: 1, color: "#FFFFFF" }
+            ])
+          },
+          itemStyle: {
+            color: "#67C23A"
+          },
+          lineStyle: {
+            width: 3,
+            color: "#67C23A"
+          }
+        }
+      ];
+    }
+  } catch (error) {
+    console.error("売上推移データの取得に失敗しました:", error);
   }
-
-  // 期間に応じて基準値と変動幅を調整
-  const daysCount = visitTrendDateRange.value;
-  let baseValue, volatility;
-
-  if (daysCount <= 7) {
-    baseValue = 2000000;
-    volatility = 0.05;
-  } else if (daysCount <= 30) {
-    baseValue = 1800000;
-    volatility = 0.08;
-  } else if (daysCount <= 90) {
-    baseValue = 1600000;
-    volatility = 0.12;
-  } else if (daysCount <= 180) {
-    baseValue = 1500000;
-    volatility = 0.15;
-  } else {
-    baseValue = 1400000;
-    volatility = 0.18;
-  }
-
-  // 売上データと利益データの生成
-  const salesData = generateSmoothData(daysCount, baseValue, volatility);
-  const profitData = salesData.map((sale) => Math.round(sale * (0.25 + Math.random() * 0.1)));
-
-  // チャートオプションの更新
-  chartOption.value.xAxis.data = dates;
-  chartOption.value.series[0].data = salesData;
-  chartOption.value.series[1].data = profitData;
 };
 
 // データ定義
@@ -574,47 +560,11 @@ const restockStoreCount = ref(0);
 const totalStoreCount = ref(0);
 const totalProductCount = ref(0);
 const dateRange = ref([]);
-const stores = ["東京店", "大阪店", "名古屋店", "福岡店", "札幌店"];
-const currentSales = [15000, 12000, 18000, 20000, 16000];
-const previousSales = [13000, 11000, 16000, 18000, 14000];
-const productRanking = ref<ProductRankingItem[]>([
-  {
-    name: "チキン",
-    sales: 21000,
-    count: 3,
-    growth: 12.5,
-    image: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=100&h=100&fit=crop"
-  },
-  {
-    name: "ハンバーガー",
-    sales: 18000,
-    count: 5,
-    growth: 8.3,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100&h=100&fit=crop"
-  },
-  {
-    name: "サンドイッチ",
-    sales: 15000,
-    count: 4,
-    growth: -2.1,
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&h=100&fit=crop"
-  },
-  {
-    name: "サラダ",
-    sales: 12000,
-    count: 6,
-    growth: 15.7,
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
-  },
-  {
-    name: "ドリンク",
-    sales: 10000,
-    count: 8,
-    growth: 5.2,
-    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=100&h=100&fit=crop"
-  }
-]);
+const productRanking = ref<ProductRankingItem[]>([]);
 const loading = ref(false);
+const alertList = ref<AlertItem[]>([]);
+const storeSalesChart = ref<echarts.ECharts | null>(null);
+const salesTrendChart = ref<echarts.ECharts | null>(null);
 
 // 店舗別売上グラフのオプション
 const storeSalesChartOption = ref({
@@ -626,7 +576,7 @@ const storeSalesChartOption = ref({
     formatter: function(params: any) {
       return params.map((item: any) => {
         return `${item.seriesName}: ¥${formatNumber(item.value)}`;
-      }).join('<br/>');
+      }).join("<br/>");
     }
   },
   legend: {
@@ -688,111 +638,89 @@ const formatPercentage = (num: number) => {
   return `${num > 0 ? "+" : ""}${num.toFixed(1)}%`;
 };
 
-// LocalStorageのキー
-const STORAGE_KEYS = {
-  DATE_RANGE: 'dashboard_date_range',
-  STORE_SALES: 'dashboard_store_sales',
-  STORE_TARGETS: 'dashboard_store_targets'
-};
-
-// データの保存
-const saveToLocalStorage = () => {
-  if (dateRange.value) {
-    localStorage.setItem(STORAGE_KEYS.DATE_RANGE, JSON.stringify({
-      start: dateRange.value[0],
-      end: dateRange.value[1]
-    }));
-  }
-  localStorage.setItem(STORAGE_KEYS.STORE_SALES, JSON.stringify(currentSales));
-  localStorage.setItem(STORAGE_KEYS.STORE_TARGETS, JSON.stringify(previousSales));
-};
-
-// データの復元
-const loadFromLocalStorage = () => {
-  try {
-    const savedDateRange = localStorage.getItem(STORAGE_KEYS.DATE_RANGE);
-    if (savedDateRange) {
-      const { start, end } = JSON.parse(savedDateRange);
-      dateRange.value = [start, end];
-    }
-
-    const savedSales = localStorage.getItem(STORAGE_KEYS.STORE_SALES);
-    const savedTargets = localStorage.getItem(STORAGE_KEYS.STORE_TARGETS);
-
-    if (savedSales) {
-      storeSalesChartOption.value.series[0].data = JSON.parse(savedSales);
-    }
-    if (savedTargets) {
-      storeSalesChartOption.value.series[1].data = JSON.parse(savedTargets);
-    }
-
-    updateStoreSalesChart();
-  } catch (error) {
-    console.error('データの復元に失敗しました:', error);
-  }
-};
-
 // データ取得後のグラフ更新
 const fetchDashboardData = async () => {
-  loading.value = true;
   try {
-    // TODO: APIからデータを取得する処理を実装
-    // 仮のデータ
-    totalSales.value = 210000;
-    salesGrowthRate.value = 15.5;
-    restockStoreCount.value = 3;
-    totalStoreCount.value = 10;
-    totalProductCount.value = 150;
+    loading.value = true;
+    const [dashboardRes, productRankingRes, storeDataRes, alertsRes, salesTrendRes] = await Promise.all([
+      DashboardAPI.getDashboardData(),
+      DashboardAPI.getProductRanking(),
+      DashboardAPI.getStoreData(),
+      DashboardAPI.getAlerts() as ApiResponse<AlertItem[]>,
+      DashboardAPI.getSalesTrend(),
+    ]);
 
-    // 商品ランキングの仮データ
-    productRanking.value = [
-      {
-        name: "チキン",
-        sales: 21000,
-        count: 3,
-        growth: 12.5,
-        image: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=100&h=100&fit=crop"
-      },
-      {
-        name: "ハンバーガー",
-        sales: 18000,
-        count: 5,
-        growth: 8.3,
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=100&h=100&fit=crop"
-      },
-      {
-        name: "サンドイッチ",
-        sales: 15000,
-        count: 4,
-        growth: -2.1,
-        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&h=100&fit=crop"
-      },
-      {
-        name: "サラダ",
-        sales: 12000,
-        count: 6,
-        growth: 15.7,
-        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
-      },
-      {
-        name: "ドリンク",
-        sales: 10000,
-        count: 8,
-        growth: 5.2,
-        image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=100&h=100&fit=crop"
-      }
-    ];
+    if (dashboardRes.code === "00000" && dashboardRes.data) {
+      totalSales.value = dashboardRes.data.totalSales;
+      salesGrowthRate.value = dashboardRes.data.salesGrowthRate;
+      restockStoreCount.value = dashboardRes.data.restockStoreCount;
+      totalStoreCount.value = dashboardRes.data.totalStoreCount;
+      totalProductCount.value = dashboardRes.data.totalProductCount;
+    }
 
-    // グラフデータの仮データ
-    storeSalesChartOption.value.xAxis.data = stores;
-    storeSalesChartOption.value.series[0].data = currentSales;
-    storeSalesChartOption.value.series[1].data = previousSales;
+    if (productRankingRes.code === "00000" && productRankingRes.data) {
+      productRanking.value = productRankingRes.data;
+    }
 
-    // グラフの更新
-    updateStoreSalesChart();
-    
-    // データの保存
-    saveToLocalStorage();
+    if (alertsRes.code === "00000" && alertsRes.data) {
+      alertList.value = alertsRes.data;
+    }
+
+    if (storeDataRes.code === "00000" && storeDataRes.data) {
+      const storeData = storeDataRes.data;
+      storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
+      storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
+      storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
+    }
+
+    if (salesTrendRes.code === "00000" && salesTrendRes.data) {
+      const { dates, sales, profits } = salesTrendRes.data;
+      chartOption.value.xAxis.data = dates;
+      chartOption.value.series = [
+        {
+          name: "総売上",
+          type: "line",
+          data: sales,
+          smooth: 0.3,
+          symbol: "none",
+          areaStyle: {
+            opacity: 0.1,
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#409EFF" },
+              { offset: 1, color: "#FFFFFF" }
+            ])
+          },
+          itemStyle: {
+            color: "#409EFF"
+          },
+          lineStyle: {
+            width: 3,
+            color: "#409EFF"
+          }
+        },
+        {
+          name: "純利益",
+          type: "line",
+          data: profits,
+          smooth: 0.3,
+          symbol: "none",
+          areaStyle: {
+            opacity: 0.1,
+            color: new graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#67C23A" },
+              { offset: 1, color: "#FFFFFF" }
+            ])
+          },
+          itemStyle: {
+            color: "#67C23A"
+          },
+          lineStyle: {
+            width: 3,
+            color: "#67C23A"
+          }
+        }
+      ];
+    }
   } catch (error) {
     console.error("ダッシュボードデータの取得に失敗しました:", error);
     ElMessage.error("データの取得に失敗しました");
@@ -804,7 +732,18 @@ const fetchDashboardData = async () => {
 // 日付範囲変更時の処理
 watch(dateRange, () => {
   fetchDashboardData();
-  saveToLocalStorage();
+});
+
+// コンポーネントのマウント時にデータを取得
+onMounted(() => {
+  fetchDashboardData();
+  updateStoreSalesChart();
+  updateSalesTrendChart();
+});
+
+// 期間変更時にグラフを更新
+watch(visitTrendDateRange, () => {
+  fetchDashboardData();
 });
 
 // 店舗別売上グラフの初期化
@@ -819,56 +758,173 @@ const initStoreSalesChart = () => {
 };
 
 // 店舗別売上グラフの更新
-const updateStoreSalesChart = () => {
-  const chart = initStoreSalesChart();
-  if (chart) {
-    chart.setOption(storeSalesChartOption.value);
+const updateStoreSalesChart = async () => {
+  try {
+    const res = await DashboardAPI.getStoreData();
+    if (res.code === "00000" && res.data) {
+      const storeData = res.data;
+      const storeNames = storeData.map((store) => store.name);
+      const salesData = storeData.map((store) => store.sales);
+      const profitData = storeData.map((store) => store.profit);
+
+      if (storeSalesChart.value) {
+        storeSalesChart.value.setOption({
+          xAxis: {
+            data: storeNames,
+          },
+          series: [
+            {
+              name: "売上",
+              data: salesData,
+            },
+            {
+              name: "利益",
+              data: profitData,
+            },
+          ],
+        });
+      }
+    } else {
+      ElMessage.error(res.msg || "データの取得に失敗しました");
+    }
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
   }
 };
 
-// コンポーネントのマウント時にデータを復元
-onMounted(() => {
-  loadFromLocalStorage();
-  if (!dateRange.value || !dateRange.value.length) {
-    fetchDashboardData();
+// 日付フォーマット関数
+const formatDate = (date: Date) => {
+  return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
+};
+
+// 店舗売上データの取得
+const fetchStoreData = async () => {
+  try {
+    const res = await DashboardAPI.getStoreData() as ApiResponse<StoreData[]>;
+    if (res.code === "00000" && res.data) {
+      const storeData = res.data;
+      storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
+      storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
+      storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
+    }
+  } catch (error) {
+    console.error("店舗売上データの取得に失敗しました:", error);
   }
-  fetchVisitTrendData();
-});
+};
 
-// コンポーネントのアンマウント時にクリーンアップ
-onUnmounted(() => {
-  // クリーンアップが必要な処理があればここに記述
-});
-
-// 期間変更時にグラフを更新
-watch(visitTrendDateRange, () => {
-  fetchVisitTrendData();
-});
-
-// アラート情報の定義
-const alertList = ref<AlertItem[]>([
-  {
-    id: "1",
-    title: "在庫切れ警告",
-    date: "2024-03-20 10:30:00",
-    content: "チキンの在庫が10個を下回りました。緊急の補充が必要です。",
-    type: "danger"
-  },
-  {
-    id: "2",
-    title: "在庫警告",
-    date: "2024-03-20 09:15:00",
-    content: "ハンバーガーの在庫が20個を下回りました。補充を検討してください。",
-    type: "warning"
-  },
-  {
-    id: "3",
-    title: "在庫警告",
-    date: "2024-03-19 16:45:00",
-    content: "サンドイッチの在庫が15個を下回りました。補充を検討してください。",
-    type: "warning"
+// 売上トレンドデータの更新
+const updateSalesTrendChart = async () => {
+  try {
+    const res = await DashboardAPI.getSalesTrend();
+    if (res.code === "00000" && res.data) {
+      const { dates, sales, profits } = res.data;
+      if (salesTrendChart.value) {
+        salesTrendChart.value.setOption({
+          xAxis: {
+            data: dates,
+          },
+          series: [
+            {
+              name: "売上",
+              data: sales,
+            },
+            {
+              name: "利益",
+              data: profits,
+            },
+          ],
+        });
+      }
+    } else {
+      ElMessage.error(res.msg || "データの取得に失敗しました");
+    }
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
   }
-]);
+};
+
+interface StoreData {
+  name: string;
+  sales: number;
+  profit: number;
+}
+
+interface ApiResponse<T> {
+  code: string;
+  data: T;
+  msg: string;
+}
+
+interface OverviewData {
+  totalSales: number;
+  totalOrders: number;
+  totalUsers: number;
+  totalProducts: number;
+}
+
+interface ProductRankingData {
+  id: number;
+  name: string;
+  sales: number;
+  image: string;
+}
+
+interface AlertData {
+  id: number;
+  type: string;
+  title: string;
+  content: string;
+  time: string;
+}
+
+const updateOverviewData = async () => {
+  try {
+    const res = await DashboardAPI.getDashboardData();
+    if (res.code === "00000") {
+      const data = res.data;
+      totalSales.value = data.totalSales;
+      salesGrowthRate.value = data.salesGrowthRate;
+      restockStoreCount.value = data.restockStoreCount;
+      totalStoreCount.value = data.totalStoreCount;
+      totalProductCount.value = data.totalProductCount;
+    } else {
+      ElMessage.error(res.msg || "データの取得に失敗しました");
+    }
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
+  }
+};
+
+const updateProductRanking = async () => {
+  try {
+    const res = await DashboardAPI.getProductRanking();
+    if (res.code === "00000") {
+      productRanking.value = res.data;
+    } else {
+      ElMessage.error(res.msg || "データの取得に失敗しました");
+    }
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
+  }
+};
+
+const updateAlerts = async () => {
+  try {
+    const res = await DashboardAPI.getAlerts() as ApiResponse<AlertItem[]>;
+    if (res.code === "00000") {
+      alertList.value = res.data;
+    } else {
+      ElMessage.error(res.msg || "データの取得に失敗しました");
+    }
+  } catch (error) {
+    console.error("データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
+  }
+};
 </script>
 
 <style lang="scss" scoped>

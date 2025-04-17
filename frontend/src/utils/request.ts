@@ -7,7 +7,6 @@ import router from "@/router";
 
 // 创建 axios 实例
 const service = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_API,
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
   paramsSerializer: (params) => qs.stringify(params),
@@ -16,6 +15,13 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // URLが/mockで始まる場合はモックAPI、それ以外は実際のAPIを使用
+    // if (config.url?.startsWith("/mock-api")) {
+    //   config.baseURL = "";
+    // } else {
+      config.baseURL = import.meta.env.VITE_APP_BASE_API;
+    // }
+
     const accessToken = getAccessToken();
     // 如果 Authorization 设置为 no-auth，则不携带 Token，用于登录、刷新 Token 等接口
     if (config.headers.Authorization !== "no-auth" && accessToken) {
@@ -40,6 +46,11 @@ service.interceptors.response.use(
     if (code === ResultEnum.SUCCESS) {
       return data;
     }
+
+    // // モックAPIの場合は直接データを返す
+    // if (response.config.url?.startsWith("/mock-api")) {
+    //   return response.data;
+    // }
 
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "Error"));

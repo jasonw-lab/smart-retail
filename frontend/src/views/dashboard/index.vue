@@ -56,13 +56,15 @@
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">¥{{ formatNumber(totalSales) }}</span>
-              <span :class="['text-xs', 'ml-2', computeGrowthRateClass(salesGrowthRate)]">
+              <span class="text-2xl font-bold">¥{{ formatNumber(dashboardData.totalSales) }}</span>
+              <span
+                :class="['text-xs', 'ml-2', computeGrowthRateClass(dashboardData.salesGrowthRate)]"
+              >
                 <el-icon>
                   <Top v-if="salesGrowthRate > 0" />
                   <Bottom v-else-if="salesGrowthRate < 0" />
                 </el-icon>
-                {{ formatPercentage(salesGrowthRate) }}
+                {{ formatPercentage(dashboardData.salesGrowthRate) }}
               </span>
             </div>
             <div class="i-svg:money w-8 h-8" />
@@ -81,7 +83,7 @@
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ restockStoreCount }}</span>
+              <span class="text-2xl font-bold">{{ dashboardData.restockStoreCount }}</span>
               <span class="text-xs ml-2">店舗</span>
             </div>
             <div class="i-svg:store w-8 h-8" />
@@ -100,7 +102,7 @@
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ totalStoreCount }}</span>
+              <span class="text-2xl font-bold">{{ dashboardData.totalStoreCount }}</span>
               <span class="text-xs ml-2">店舗</span>
             </div>
             <div class="i-svg:shop w-8 h-8" />
@@ -119,7 +121,7 @@
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ totalProductCount }}</span>
+              <span class="text-2xl font-bold">{{ dashboardData.totalProductCount }}</span>
               <span class="text-xs ml-2">商品</span>
             </div>
             <div class="i-svg:goods w-8 h-8" />
@@ -161,7 +163,7 @@
               <el-tag type="success" size="small">TOP 5</el-tag>
             </div>
           </template>
-          <div class="product-ranking" style="height: 400px; overflow-y: auto;">
+          <div class="product-ranking" style="height: 400px; overflow-y: auto">
             <div v-for="(item, index) in productRanking" :key="index" class="ranking-item">
               <div class="flex-x-between items-center">
                 <div class="flex-y-center">
@@ -228,19 +230,14 @@
                   <div>
                     <el-text tag="strong">{{ item.title }}</el-text>
                     <el-tag :type="item.type" size="small">
-                      {{ item.type === 'danger' ? '緊急' : '警告' }}
+                      {{ item.type === "danger" ? "緊急" : "警告" }}
                     </el-tag>
                   </div>
 
                   <el-text class="version-content">{{ item.content }}</el-text>
 
                   <div>
-                    <el-link
-                      :type="item.type"
-                      href="/inventory"
-                      target="_blank"
-                      :underline="false"
-                    >
+                    <el-link :type="item.type" href="/inventory" target="_blank" :underline="false">
                       在庫確認
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
@@ -272,11 +269,24 @@ import { useUserStore } from "@/store/modules/user";
 import { formatGrowthRate } from "@/utils";
 import { dayjs } from "element-plus";
 import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log";
-import DashboardAPI from "@/api/dashboard";
-import type { DashboardData, ProductRankingItem, StoreData, AlertItem, SalesTrendData } from "@/api/dashboard";
+import DashboardAPI, { DashboardDataVO } from "@/api/dashboard";
+import type {
+  DashboardData,
+  ProductRankingItem,
+  StoreData,
+  AlertItem,
+  SalesTrendData,
+} from "@/api/dashboard";
 import { ElMessage } from "element-plus";
-import { getOverview, getProductRanking, getStoreData, getAlerts, getSalesTrend } from "@/api/dashboard";
+import {
+  getOverview,
+  getProductRanking,
+  getStoreData,
+  getAlerts,
+  getSalesTrend,
+} from "@/api/dashboard";
 import { formatDate } from "@/utils/format";
+import { DictDataForm } from "@/api/system/dict-data";
 
 // EChartsコンポーネントの登録
 echarts.use([
@@ -365,21 +375,23 @@ interface ChartData {
 const chartOption = ref<ChartData>({
   tooltip: {
     trigger: "axis",
-    formatter: function(_params: any) {
-      return _params.map((item: any) => {
-        return `${item.seriesName}: ¥${formatNumber(item.value)}`;
-      }).join("<br/>");
-    }
+    formatter: function (_params: any) {
+      return _params
+        .map((item: any) => {
+          return `${item.seriesName}: ¥${formatNumber(item.value)}`;
+        })
+        .join("<br/>");
+    },
   },
   legend: {
     data: ["総売上", "純利益"],
-    bottom: 0
+    bottom: 0,
   },
   grid: {
     left: "1%",
     right: "5%",
     bottom: "10%",
-    containLabel: true
+    containLabel: true,
   },
   xAxis: {
     type: "category",
@@ -389,22 +401,22 @@ const chartOption = ref<ChartData>({
       formatter: (_value: string) => {
         const date = dayjs(_value, "MM-DD");
         return date.format("MM月DD日");
-      }
-    }
+      },
+    },
   },
   yAxis: {
     type: "value",
     axisLabel: {
-      formatter: (_value: number) => `¥${formatNumber(_value)}`
+      formatter: (_value: number) => `¥${formatNumber(_value)}`,
     },
     splitLine: {
       show: true,
       lineStyle: {
-        type: "dashed"
-      }
-    }
+        type: "dashed",
+      },
+    },
   },
-  series: []
+  series: [],
 });
 
 defineOptions({
@@ -453,6 +465,14 @@ const greetings = computed(() => {
   } else {
     return "おやすみなさい。良い夢を🌛";
   }
+});
+
+const dashboardData = reactive<DashboardDataVO>({
+  totalSales: 0,
+  salesGrowthRate: 0,
+  restockStoreCount: 0,
+  totalStoreCount: 0,
+  totalProductCount: 0,
 });
 
 // 訪客统计数据加载状态
@@ -514,16 +534,16 @@ const fetchVisitTrendData = async () => {
             opacity: 0.1,
             color: new graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: "#409EFF" },
-              { offset: 1, color: "#FFFFFF" }
-            ])
+              { offset: 1, color: "#FFFFFF" },
+            ]),
           },
           itemStyle: {
-            color: "#409EFF"
+            color: "#409EFF",
           },
           lineStyle: {
             width: 3,
-            color: "#409EFF"
-          }
+            color: "#409EFF",
+          },
         },
         {
           name: "純利益",
@@ -535,17 +555,17 @@ const fetchVisitTrendData = async () => {
             opacity: 0.1,
             color: new graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: "#67C23A" },
-              { offset: 1, color: "#FFFFFF" }
-            ])
+              { offset: 1, color: "#FFFFFF" },
+            ]),
           },
           itemStyle: {
-            color: "#67C23A"
+            color: "#67C23A",
           },
           lineStyle: {
             width: 3,
-            color: "#67C23A"
-          }
-        }
+            color: "#67C23A",
+          },
+        },
       ];
     }
   } catch (error) {
@@ -573,11 +593,11 @@ const storeSalesChartOption = ref({
     axisPointer: {
       type: "shadow",
     },
-    formatter: function(params: any) {
+    formatter: function (params: any) {
       return params.map((item: any) => {
         return `${item.seriesName}: ¥${formatNumber(item.value)}`;
       }).join("<br/>");
-    }
+    },
   },
   legend: {
     data: ["売上", "目標"],
@@ -600,6 +620,9 @@ const storeSalesChartOption = ref({
   },
   yAxis: {
     type: "value",
+    axisLabel: {
+      formatter: (value: number) => `¥${formatNumber(value)}`,
+    },
     splitLine: {
       lineStyle: {
         type: "dashed",
@@ -623,13 +646,18 @@ const storeSalesChartOption = ref({
       itemStyle: {
         color: "#F56C6C",
       },
-      smooth: true,
+      lineStyle: {
+        width: 2,
+        type: "dashed",
+      },
+      symbol: "none",
     },
   ],
 });
 
 // 数値フォーマット
-const formatNumber = (num: number) => {
+const formatNumber = (num: number | undefined | null) => {
+  if (num === undefined || num === null) return "0";
   return num.toLocaleString();
 };
 
@@ -638,43 +666,72 @@ const formatPercentage = (num: number) => {
   return `${num > 0 ? "+" : ""}${num.toFixed(1)}%`;
 };
 
+// 店舗別売上グラフの初期化
+const initStoreSalesChart = () => {
+  const chartDom = document.getElementById("storeSalesChart");
+  if (chartDom) {
+    // storeSalesChart.value = echarts.init(chartDom);
+    // storeSalesChart.value.setOption(storeSalesChartOption.value);
+    const myChart = echarts.init(chartDom);
+    myChart.setOption(storeSalesChartOption.value);
+    return myChart;
+  }
+  return null;
+};
+
+// 店舗別売上グラフの更新
+const updateStoreSalesChart = () => {
+  // if (storeSalesChart.value) {
+  //   storeSalesChart.value.setOption(storeSalesChartOption.value);
+  // }
+  const chart = initStoreSalesChart();
+  if (chart) {
+    chart.setOption(storeSalesChartOption.value);
+  }
+};
+
+// コンポーネントのマウント時にデータを取得
+onMounted(() => {
+  fetchDashboardData();
+  initStoreSalesChart();
+});
+
 // データ取得後のグラフ更新
 const fetchDashboardData = async () => {
   try {
     loading.value = true;
-    const [dashboardRes, productRankingRes, storeDataRes, alertsRes, salesTrendRes] = await Promise.all([
-      DashboardAPI.getDashboardData(),
-      DashboardAPI.getProductRanking(),
-      DashboardAPI.getStoreData(),
-      DashboardAPI.getAlerts() as ApiResponse<AlertItem[]>,
-      DashboardAPI.getSalesTrend(),
-    ]);
+    const [dashboardRes, productRankingRes, storeDataRes, alertsRes, salesTrendRes] =
+      await Promise.all([
+        DashboardAPI.getDashboardData(),
+        DashboardAPI.getProductRanking(),
+        DashboardAPI.getStoreData(),
+        DashboardAPI.getAlerts(),
+        DashboardAPI.getSalesTrend(),
+      ]);
 
-    if (dashboardRes.code === "00000" && dashboardRes.data) {
-      totalSales.value = dashboardRes.data.totalSales;
-      salesGrowthRate.value = dashboardRes.data.salesGrowthRate;
-      restockStoreCount.value = dashboardRes.data.restockStoreCount;
-      totalStoreCount.value = dashboardRes.data.totalStoreCount;
-      totalProductCount.value = dashboardRes.data.totalProductCount;
+    Object.assign(dashboardData, dashboardRes);
+
+    // 店舗別売上グラフ
+    if (storeDataRes) {
+      storeSalesChartOption.value.xAxis.data = storeDataRes.map((store) => store.name);
+      storeSalesChartOption.value.series[0].data = storeDataRes.map((store) => store.sales);
+      storeSalesChartOption.value.series[1].data = storeDataRes.map((store) => store.target);
+      updateStoreSalesChart();
     }
 
-    if (productRankingRes.code === "00000" && productRankingRes.data) {
-      productRanking.value = productRankingRes.data;
+    // 商品ランキング
+    if (productRankingRes) {
+      productRanking.value = productRankingRes;
     }
 
-    if (alertsRes.code === "00000" && alertsRes.data) {
-      alertList.value = alertsRes.data;
+    // アラート情報
+    if (alertsRes) {
+      alertList.value = alertsRes;
     }
 
-    if (storeDataRes.code === "00000" && storeDataRes.data) {
-      const storeData = storeDataRes.data;
-      storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
-      storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
-      storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
-    }
-
-    if (salesTrendRes.code === "00000" && salesTrendRes.data) {
-      const { dates, sales, profits } = salesTrendRes.data;
+    // 売上推移
+    if (salesTrendRes) {
+      const { dates, sales, profits } = salesTrendRes;
       chartOption.value.xAxis.data = dates;
       chartOption.value.series = [
         {
@@ -687,16 +744,16 @@ const fetchDashboardData = async () => {
             opacity: 0.1,
             color: new graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: "#409EFF" },
-              { offset: 1, color: "#FFFFFF" }
-            ])
+              { offset: 1, color: "#FFFFFF" },
+            ]),
           },
           itemStyle: {
-            color: "#409EFF"
+            color: "#409EFF",
           },
           lineStyle: {
             width: 3,
-            color: "#409EFF"
-          }
+            color: "#409EFF",
+          },
         },
         {
           name: "純利益",
@@ -708,19 +765,20 @@ const fetchDashboardData = async () => {
             opacity: 0.1,
             color: new graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: "#67C23A" },
-              { offset: 1, color: "#FFFFFF" }
-            ])
+              { offset: 1, color: "#FFFFFF" },
+            ]),
           },
           itemStyle: {
-            color: "#67C23A"
+            color: "#67C23A",
           },
           lineStyle: {
             width: 3,
-            color: "#67C23A"
-          }
-        }
+            color: "#67C23A",
+          },
+        },
       ];
     }
+
   } catch (error) {
     console.error("ダッシュボードデータの取得に失敗しました:", error);
     ElMessage.error("データの取得に失敗しました");
@@ -734,84 +792,30 @@ watch(dateRange, () => {
   fetchDashboardData();
 });
 
-// コンポーネントのマウント時にデータを取得
-onMounted(() => {
-  fetchDashboardData();
-  updateStoreSalesChart();
-  updateSalesTrendChart();
-});
-
 // 期間変更時にグラフを更新
 watch(visitTrendDateRange, () => {
   fetchDashboardData();
 });
-
-// 店舗別売上グラフの初期化
-const initStoreSalesChart = () => {
-  const chartDom = document.getElementById("storeSalesChart");
-  if (chartDom) {
-    const myChart = echarts.init(chartDom);
-    myChart.setOption(storeSalesChartOption.value);
-    return myChart;
-  }
-  return null;
-};
-
-// 店舗別売上グラフの更新
-const updateStoreSalesChart = async () => {
-  try {
-    const res = await DashboardAPI.getStoreData();
-    if (res.code === "00000" && res.data) {
-      const storeData = res.data;
-      const storeNames = storeData.map((store) => store.name);
-      const salesData = storeData.map((store) => store.sales);
-      const profitData = storeData.map((store) => store.profit);
-
-      if (storeSalesChart.value) {
-        storeSalesChart.value.setOption({
-          xAxis: {
-            data: storeNames,
-          },
-          series: [
-            {
-              name: "売上",
-              data: salesData,
-            },
-            {
-              name: "利益",
-              data: profitData,
-            },
-          ],
-        });
-      }
-    } else {
-      ElMessage.error(res.msg || "データの取得に失敗しました");
-    }
-  } catch (error) {
-    console.error("データの取得に失敗しました:", error);
-    ElMessage.error("データの取得に失敗しました");
-  }
-};
 
 // 日付フォーマット関数
 const formatDate = (date: Date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 
-// 店舗売上データの取得
-const fetchStoreData = async () => {
-  try {
-    const res = await DashboardAPI.getStoreData() as ApiResponse<StoreData[]>;
-    if (res.code === "00000" && res.data) {
-      const storeData = res.data;
-      storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
-      storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
-      storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
-    }
-  } catch (error) {
-    console.error("店舗売上データの取得に失敗しました:", error);
-  }
-};
+// // 店舗売上データの取得
+// const fetchStoreData = async () => {
+//   try {
+//     const res = await DashboardAPI.getStoreData() as ApiResponse<StoreData[]>;
+//     if (res.code === "00000" && res.data) {
+//       const storeData = res.data;
+//       storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
+//       storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
+//       storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
+//     }
+//   } catch (error) {
+//     console.error("店舗売上データの取得に失敗しました:", error);
+//   }
+// };
 
 // 売上トレンドデータの更新
 const updateSalesTrendChart = async () => {
@@ -914,7 +918,7 @@ const updateProductRanking = async () => {
 
 const updateAlerts = async () => {
   try {
-    const res = await DashboardAPI.getAlerts() as ApiResponse<AlertItem[]>;
+    const res = (await DashboardAPI.getAlerts()) as ApiResponse<AlertItem[]>;
     if (res.code === "00000") {
       alertList.value = res.data;
     } else {

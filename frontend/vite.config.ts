@@ -44,6 +44,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       port: +env.VITE_APP_PORT,
       open: true,
       proxy: {
+        // "/mock-api": {
+        //   target: "http://localhost:5173",
+        //   changeOrigin: true,
+        //   // rewrite: (path) => path.replace(/^\/mock-api/, ""), // /mock-api を取り除く
+        // },
         // 代理 /dev-api 的请求
         [env.VITE_APP_BASE_API]: {
           changeOrigin: true,
@@ -56,6 +61,20 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     plugins: [
       vue(),
       env.VITE_MOCK_DEV_SERVER === "true" ? mockDevServerPlugin() : null,
+      //
+      // mockDevServerPlugin({
+      //   // include: ["mock/**/*.ts"],
+      //   include: ["mock/*.ts"],
+      //   // build: {
+      //   //   serverPort: 9090,
+      //   // },
+      //   // mockPath: 'mock', // モックデータが置かれたディレクトリ
+      //   // prefix: "/mock-api",
+      //   log: true,
+      //   // serverPort: 9090,
+      //   cors: true,
+      //   // build: true,
+      // }),
       UnoCSS(),
       // 自动导入配置 https://github.com/sxzz/element-plus-best-practices/blob/main/vite.config.ts
       AutoImport({

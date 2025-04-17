@@ -36,7 +36,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         // 参考文档: https://cn.vuejs.org/guide/built-ins/keep-alive.html#include-exclude
         name: "Dashboard",
         meta: {
-          title: "dashboard",
+          title: "Home",
           icon: "homepage",
           affix: true,
           keepAlive: true,
@@ -63,6 +63,53 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "MyNotice",
         component: () => import("@/views/system/notice/components/MyNotice.vue"),
         meta: { title: "我的通知", icon: "user", hidden: true },
+      },
+    ],
+  },
+
+  {
+    path: "/product",
+    component: Layout,
+    name: "Product",
+    meta: { title: "商品管理", icon: "el-icon-Goods" },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/product/index.vue"),
+        name: "ProductList",
+        meta: { title: "商品一覧", icon: "el-icon-Goods" },
+      },
+    ],
+  },
+  {
+    path: "/inventory",
+    component: Layout,
+    name: "Inventory",
+    meta: { title: "在庫管理", icon: "el-icon-Box" },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/inventory/index.vue"),
+        name: "InventoryList",
+        meta: { title: "在庫一覧", icon: "el-icon-Box" },
+      },
+      {
+        path: "restock",
+        component: () => import("@/views/inventory/restock.vue"),
+        name: "InventoryRestock",
+        meta: { title: "入庫管理", icon: "el-icon-CirclePlus" },
+      },
+      {
+        path: "shipping",
+        component: () => import("@/views/inventory/shipping.vue"),
+        name: "InventoryShipping",
+        meta: { title: "出庫管理", icon: "el-icon-Van" },
+      },
+      {
+        path: "alert",
+        component: () => import("@/views/inventory/alert.vue"),
+        name: "InventoryAlert",
+        meta: { title: "アラート管理", icon: "el-icon-Bell" },
       },
     ],
   },

@@ -5,7 +5,7 @@ const DASHBOARD_BASE_URL = "/api/v1/dashboard";
 const DashboardAPI = {
   /** ダッシュボードの概要データを取得 */
   getDashboardData() {
-    return request<any, DashboardData>({
+    return request<any, DashboardDataVO>({
       url: `${DASHBOARD_BASE_URL}/overview`,
       method: "get",
     });
@@ -55,7 +55,7 @@ const DashboardAPI = {
 export default DashboardAPI;
 
 /** ダッシュボード概要データ */
-export interface DashboardData {
+export interface DashboardDataVO {
   /** 総売上 */
   totalSales: number;
   /** 売上成長率 */

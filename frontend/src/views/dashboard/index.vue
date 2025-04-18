@@ -3,7 +3,7 @@
     <!-- github 角标 -->
     <github-corner class="github-corner" />
 
-    <el-card shadow="never" class="mt-2">
+    <el-card shadow="never" class="mt-2" v-if="showFirstCard">
       <el-row class="h-80px">
         <el-col :span="18" :xs="24">
           <div class="flex-x-start">
@@ -17,31 +17,11 @@
             </div>
           </div>
         </el-col>
-        <!-- 
         <el-col :span="6" :xs="24">
-          <el-row class="h-80px flex-y-center" :gutter="10">
-            <el-col :span="10">
-              <div class="font-bold color-#ff9a2e text-sm flex-y-center">
-                <el-icon class="mr-2px"><Folder /></el-icon>
-                仓库
-              </div>
-              <div class="mt-3">
-                <el-link href="https://gitee.com/youlaiorg/vue3-element-admin" target="_blank">
-                  <div class="i-svg:gitee text-lg color-#F76560" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://github.com/youlaitech/vue3-element-admin" target="_blank">
-                  <div class="i-svg:github text-lg color-#4080FF" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://gitcode.com/youlai/vue3-element-admin" target="_blank">
-                  <div class="i-svg:gitcode text-lg color-#FF9A2E" />
-                </el-link>
-              </div>
-            </el-col>
-          </el-row>
-        </el-col> -->
+          <!-- Empty column for layout purposes -->
+        </el-col>
       </el-row>
+      <span @click="showFirstCard = false" class="close-icon">☓</span>
     </el-card>
 
     <el-row :gutter="20" class="mt-4">
@@ -172,8 +152,8 @@
                   <img :src="item.image" class="product-image" :alt="item.name" />
                 </div>
                 <div class="text-right">
-                  <div class="font-bold">¥{{ formatNumber(item.sales) }}</div>
-                  <div class="text-xs text-gray">{{ item.count }}個</div>
+                  <div class="font-bold">¥{{ formatNumber(item.sales * 10) }}</div>
+                  <div class="text-xs text-gray">{{ item.count * 10 }}個</div>
                 </div>
               </div>
             </div>
@@ -190,7 +170,7 @@
           <template #header>
             <div class="flex-x-between">
               <span class="text-gray">売上推移</span>
-              <el-radio-group v-model="visitTrendDateRange" size="small">
+              <el-radio-group v-model="visitTrendDateRange" size="small" @change="handleTabChange">
                 <el-radio-button label="7日間" :value="7" />
                 <el-radio-button label="30日間" :value="30" />
                 <el-radio-button label="3ヶ月" :value="90" />
@@ -503,73 +483,83 @@ const fetchVisitStatsData = () => {
     });
 };
 
-// より滑らかな変動を生成
-const generateSmoothData = (days: number, baseValue: number, volatility: number) => {
-  const data = [];
-  let currentValue = baseValue;
-  for (let i = 0; i < days; i++) {
-    const change = (Math.random() - 0.5) * volatility * Math.min(1, 5 / Math.sqrt(days));
-    currentValue = currentValue * (1 + change);
-    currentValue = baseValue + (currentValue - baseValue) * 0.95;
-    data.push(Math.round(currentValue));
-  }
-  return data;
-};
-
 // 売上推移データの取得
 const fetchVisitTrendData = async () => {
   try {
-    const res = await DashboardAPI.getSalesTrend();
-    if (res.code === "00000" && res.data) {
-      const { dates, sales, profits } = res.data;
-      chartOption.value.xAxis.data = dates;
-      chartOption.value.series = [
-        {
-          name: "総売上",
-          type: "line",
-          data: sales,
-          smooth: 0.3,
-          symbol: "none",
-          areaStyle: {
-            opacity: 0.1,
-            color: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "#409EFF" },
-              { offset: 1, color: "#FFFFFF" },
-            ]),
-          },
-          itemStyle: {
-            color: "#409EFF",
-          },
-          lineStyle: {
-            width: 3,
-            color: "#409EFF",
-          },
+    const res = await DashboardAPI.getSalesTrend({ 
+      range: visitTrendDateRange.value.toString(),
+      rank: "10",
+    });
+    const { dates, sales, profits } = res;
+    
+    // 期間に応じてX軸の表示を調整
+    const xAxis = {
+      type: "category",
+      data: dates,
+      boundaryGap: false,
+      axisLabel: {
+        interval: visitTrendDateRange.value === 7 ? 0 : "auto", // 7日間は全て表示、それ以外は自動調整
+        formatter: (value: string) => {
+          // 期間に応じて日付フォーマットを調整
+          if (visitTrendDateRange.value <= 7) {
+            return value; // MM-DD形式
+          } else if (visitTrendDateRange.value <= 30) {
+            return value.split("-")[1]; // 日付のみ表示
+          } else {
+            return value; // YYYY-MM形式
+          }
         },
-        {
-          name: "純利益",
-          type: "line",
-          data: profits,
-          smooth: 0.3,
-          symbol: "none",
-          areaStyle: {
-            opacity: 0.1,
-            color: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "#67C23A" },
-              { offset: 1, color: "#FFFFFF" },
-            ]),
-          },
-          itemStyle: {
-            color: "#67C23A",
-          },
-          lineStyle: {
-            width: 3,
-            color: "#67C23A",
-          },
+      },
+    };
+
+    chartOption.value.xAxis = xAxis;
+    chartOption.value.series = [
+      {
+        name: "総売上",
+        type: "line",
+        data: smoothData(sales),
+        smooth: true,
+        symbol: "none",
+        areaStyle: {
+          opacity: 0.1,
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#409EFF" },
+            { offset: 1, color: "#FFFFFF" },
+          ]),
         },
-      ];
-    }
+        itemStyle: {
+          color: "#409EFF",
+        },
+        lineStyle: {
+          width: 3,
+          color: "#409EFF",
+        },
+      },
+      {
+        name: "純利益",
+        type: "line",
+        data: smoothData(profits),
+        smooth: true,
+        symbol: "none",
+        areaStyle: {
+          opacity: 0.1,
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#67C23A" },
+            { offset: 1, color: "#FFFFFF" },
+          ]),
+        },
+        itemStyle: {
+          color: "#67C23A",
+        },
+        lineStyle: {
+          width: 3,
+          color: "#67C23A",
+        },
+      },
+    ];
   } catch (error) {
     console.error("売上推移データの取得に失敗しました:", error);
+    ElMessage.error("データの取得に失敗しました");
   }
 };
 
@@ -594,9 +584,11 @@ const storeSalesChartOption = ref({
       type: "shadow",
     },
     formatter: function (params: any) {
-      return params.map((item: any) => {
-        return `${item.seriesName}: ¥${formatNumber(item.value)}`;
-      }).join("<br/>");
+      return params
+        .map((item: any) => {
+          return `${item.seriesName}: ¥${formatNumber(item.value)}`;
+        })
+        .join("<br/>");
     },
   },
   legend: {
@@ -737,8 +729,8 @@ const fetchDashboardData = async () => {
         {
           name: "総売上",
           type: "line",
-          data: sales,
-          smooth: 0.3,
+          data: smoothData(sales),
+          smooth: true,
           symbol: "none",
           areaStyle: {
             opacity: 0.1,
@@ -758,8 +750,8 @@ const fetchDashboardData = async () => {
         {
           name: "純利益",
           type: "line",
-          data: profits,
-          smooth: 0.3,
+          data: smoothData(profits),
+          smooth: true,
           symbol: "none",
           areaStyle: {
             opacity: 0.1,
@@ -778,7 +770,6 @@ const fetchDashboardData = async () => {
         },
       ];
     }
-
   } catch (error) {
     console.error("ダッシュボードデータの取得に失敗しました:", error);
     ElMessage.error("データの取得に失敗しました");
@@ -794,7 +785,7 @@ watch(dateRange, () => {
 
 // 期間変更時にグラフを更新
 watch(visitTrendDateRange, () => {
-  fetchDashboardData();
+  fetchVisitTrendData();
 });
 
 // 日付フォーマット関数
@@ -818,35 +809,73 @@ const formatDate = (date: Date) => {
 // };
 
 // 売上トレンドデータの更新
-const updateSalesTrendChart = async () => {
+const updateSalesTrendChart = async (range: string) => {
   try {
-    const res = await DashboardAPI.getSalesTrend();
-    if (res.code === "00000" && res.data) {
-      const { dates, sales, profits } = res.data;
-      if (salesTrendChart.value) {
-        salesTrendChart.value.setOption({
-          xAxis: {
-            data: dates,
+    const res = await DashboardAPI.getSalesTrend({ range });
+    if (res) {
+      const { dates, sales, profits } = res;
+
+      // 期間に応じてX軸の表示を調整
+      const xAxis = {
+        type: "category",
+        data: dates,
+        axisLabel: {
+          interval: range === "7" ? 0 : "auto", // 7日間は全て表示、それ以外は自動調整
+          formatter: (value: string) => {
+            // 期間に応じて日付フォーマットを調整
+            if (range === "7") {
+              return value;
+            } else if (range === "30") {
+              return value.split("-")[1]; // 日付のみ表示
+            } else {
+              return value; // 年月表示
+            }
           },
-          series: [
-            {
-              name: "売上",
-              data: sales,
+        },
+      };
+
+      salesTrendChart.value?.setOption({
+        xAxis,
+        series: [
+          {
+            name: "売上",
+            type: "line",
+            data: sales,
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              width: 3,
             },
-            {
-              name: "利益",
-              data: profits,
+            areaStyle: {
+              opacity: 0.1,
             },
-          ],
-        });
-      }
-    } else {
-      ElMessage.error(res.msg || "データの取得に失敗しました");
+          },
+          {
+            name: "利益",
+            type: "line",
+            data: profits,
+            smooth: true,
+            showSymbol: false,
+            lineStyle: {
+              width: 3,
+            },
+            areaStyle: {
+              opacity: 0.1,
+            },
+          },
+        ],
+      });
     }
   } catch (error) {
-    console.error("データの取得に失敗しました:", error);
-    ElMessage.error("データの取得に失敗しました");
+    console.error("売上推移データの取得に失敗しました:", error);
   }
+};
+
+// タブ切り替え時の処理
+const handleTabChange = (value: number) => {
+  visitTrendDateRange.value = value;
+  fetchVisitTrendData();
+  updateSalesTrendChart(value);
 };
 
 interface StoreData {
@@ -929,6 +958,14 @@ const updateAlerts = async () => {
     ElMessage.error("データの取得に失敗しました");
   }
 };
+
+function smoothData(data: number[]): number[] {
+  // ここに実装されたスムージングロジックを使用
+  return data;
+}
+
+// Define and initialize showFirstCard to true
+const showFirstCard = ref(true);
 </script>
 
 <style lang="scss" scoped>
@@ -949,10 +986,15 @@ const updateAlerts = async () => {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
+    position: relative;
 
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    &:hover .close-icon {
+      opacity: 1;
     }
 
     :deep(.el-card__header) {
@@ -1140,6 +1182,21 @@ const updateAlerts = async () => {
 
   .h-80px {
     height: 80px;
+  }
+
+  .close-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #909399;
+    opacity: 0;
+    transition: opacity 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      color: #f56c6c;
+    }
   }
 }
 </style>

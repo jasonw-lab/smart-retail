@@ -36,10 +36,11 @@ const DashboardAPI = {
   },
 
   /** 売上推移データを取得 */
-  getSalesTrend() {
+  getSalesTrend(params?: { range?: string; rank?: string }) {
     return request<any, SalesTrendData>({
       url: `${DASHBOARD_BASE_URL}/sales-trend`,
       method: "get",
+      params,
     });
   },
 

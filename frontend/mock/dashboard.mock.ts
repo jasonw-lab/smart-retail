@@ -74,12 +74,45 @@ const mockAlerts = [
   },
 ];
 
-// 売上推移のモックデータ
-const mockSalesTrend = {
-  dates: ["03-01", "03-02", "03-03", "03-04", "03-05", "03-06", "03-07"],
-  sales: [1500000, 1800000, 1600000, 2000000, 1900000, 2200000, 2100000],
-  profits: [375000, 450000, 400000, 500000, 475000, 550000, 525000],
+// 売上推移のモックデータ生成関数
+const generateSalesTrendData = (days: number) => {
+  const dates = [];
+  const sales = [];
+  const profits = [];
+  const now = new Date();
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - i);
+    
+    let dateFormat = "MM-DD";
+    if (days > 30) {
+      dateFormat = "YYYY-MM";
+    }
+    dates.push(dayjs(date).format(dateFormat));
+    
+    const baseSales = 1000000 + Math.random() * 2000000;
+    const salesValue = Math.floor(baseSales * (0.85 + Math.sin(i / 10) * 0.15)); // Sinusoidal fluctuation
+    sales.push(salesValue);
+    
+    const profitRate = 0.2 + Math.random() * 0.1;
+    profits.push(Math.floor(salesValue * profitRate));
+  }
+  
+  return {
+    dates,
+    sales: smoothData(sales),
+    profits: smoothData(profits),
+  };
 };
+
+// Generate smooth data for different time ranges
+const mockSalesTrend3Months = generateSalesTrendData(90);
+const mockSalesTrend6Months = generateSalesTrendData(180);
+const mockSalesTrend1Year = generateSalesTrendData(365);
+
+// 売上推移のモックデータ
+const mockSalesTrend = generateSalesTrendData(7); // デフォルトは7日間
 
 // 店舗データのモック
 const mockStoreData = () => {
@@ -144,6 +177,22 @@ const formatDate = (date: Date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 
+// データを滑らかにする関数
+const smoothData = (data: number[]) => {
+  const smoothed = [...data];
+  const windowSize = 3; // 移動平均のウィンドウサイズ
+
+  for (let i = windowSize; i < data.length - windowSize; i++) {
+    let sum = 0;
+    for (let j = -windowSize; j <= windowSize; j++) {
+      sum += data[i + j];
+    }
+    smoothed[i] = Math.round(sum / (windowSize * 2 + 1));
+  }
+
+  return smoothed;
+};
+
 export default defineMock([
   {
     url: "dashboard/overview",
@@ -175,10 +224,14 @@ export default defineMock([
   {
     url: "dashboard/sales-trend",
     method: ["GET"],
-    body: {
-      code: "00000",
-      data: mockSalesTrend,
-      msg: "一切ok",
+    body: ({ query }) => {
+      const range = query?.range ? parseInt(query.range as string) : 7;
+      const rank = query?.rank ? parseInt(query.rank as string) : 10;
+      return {
+        code: "00000",
+        data: generateSalesTrendData(range),
+        msg: "一切ok",
+      };
     },
   },
   {

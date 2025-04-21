@@ -74,6 +74,22 @@ const mockAlerts = [
   },
 ];
 
+// データを滑らかにする関数
+const smoothData = (data: number[]) => {
+  const smoothed = [...data];
+  const windowSize = 3; // 移動平均のウィンドウサイズ
+
+  for (let i = windowSize; i < data.length - windowSize; i++) {
+    let sum = 0;
+    for (let j = -windowSize; j <= windowSize; j++) {
+      sum += data[i + j];
+    }
+    smoothed[i] = Math.round(sum / (windowSize * 2 + 1));
+  }
+
+  return smoothed;
+};
+
 // 売上推移のモックデータ生成関数
 const generateSalesTrendData = (days: number) => {
   const dates = [];
@@ -175,22 +191,6 @@ const mockData = () => {
 // 日付フォーマット関数
 const formatDate = (date: Date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
-};
-
-// データを滑らかにする関数
-const smoothData = (data: number[]) => {
-  const smoothed = [...data];
-  const windowSize = 3; // 移動平均のウィンドウサイズ
-
-  for (let i = windowSize; i < data.length - windowSize; i++) {
-    let sum = 0;
-    for (let j = -windowSize; j <= windowSize; j++) {
-      sum += data[i + j];
-    }
-    smoothed[i] = Math.round(sum / (windowSize * 2 + 1));
-  }
-
-  return smoothed;
 };
 
 export default defineMock([

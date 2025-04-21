@@ -43,11 +43,13 @@ export default defineMockApi([
     url: "dashboard/product-ranking",
     method: ["GET"],
     response: (req, res) => {
-      res.end(JSON.stringify({
-        code: "00000",
-        data: mockProductRanking,
-        msg: "一切ok",
-      }));
+      res.end(
+        JSON.stringify({
+          code: "00000",
+          data: mockProductRanking,
+          msg: "一切ok",
+        })
+      );
     },
   },
 ]); 

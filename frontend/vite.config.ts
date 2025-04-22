@@ -60,21 +60,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     },
     plugins: [
       vue(),
-      env.VITE_MOCK_DEV_SERVER === "true" ? mockDevServerPlugin() : null,
-      //
-      // mockDevServerPlugin({
-      //   // include: ["mock/**/*.ts"],
-      //   include: ["mock/*.ts"],
-      //   // build: {
-      //   //   serverPort: 9090,
-      //   // },
-      //   // mockPath: 'mock', // モックデータが置かれたディレクトリ
-      //   // prefix: "/mock-api",
-      //   log: true,
-      //   // serverPort: 9090,
-      //   cors: true,
-      //   // build: true,
-      // }),
+      env.VITE_MOCK_DEV_SERVER === "true" ? mockDevServerPlugin({
+        include: ["mock/**/*.ts"],
+        log: true,
+        cors: true,
+      }) : null,
       UnoCSS(),
       // 自动导入配置 https://github.com/sxzz/element-plus-best-practices/blob/main/vite.config.ts
       AutoImport({

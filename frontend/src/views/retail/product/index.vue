@@ -12,10 +12,13 @@
           />
         </el-form-item>
         <el-form-item label="カテゴリ" prop="category">
-          <el-select v-model="queryParams.category" placeholder="カテゴリを選択" clearable>
-            <el-option label="食品" value="food" />
-            <el-option label="飲料" value="drink" />
-            <el-option label="菓子" value="snack" />
+          <el-select v-model="queryParams.category" placeholder="カテゴリを選択" clearable fit-input-width>
+            <el-option
+              v-for="category in categories"
+              :key="category.id"
+              :label="category.name"
+              :value="category.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -41,25 +44,35 @@
         style="width: 100%"
       >
         <el-table-column type="index" label="No." width="50" />
-        <el-table-column prop="name" label="商品名" min-width="150" />
-        <el-table-column prop="category" label="カテゴリ" width="100">
+        <el-table-column prop="name" label="商品名" min-width="150">
           <template #default="{ row }">
-            <el-tag :type="getCategoryType(row.category)" size="small">
-              {{ getCategoryText(row.category) }}
-            </el-tag>
+            <div class="flex items-center justify-between">
+              <span>{{ row.name }}</span>
+              <el-image
+                :src="row.imageUrl"
+                :preview-src-list="[row.imageUrl]"
+                :initial-index="0"
+                preview-teleported
+                fit="cover"
+                class="w-10 h-10 ml-2 cursor-pointer"
+                :z-index="2000"
+              />
+            </div>
           </template>
         </el-table-column>
+        <el-table-column prop="categoryName" label="カテゴリ" width="120" />
         <el-table-column prop="price" label="価格" width="100">
           <template #default="{ row }">
             ¥{{ formatNumber(row.price) }}
           </template>
         </el-table-column>
         <el-table-column prop="stock" label="在庫数" width="100" />
-        <el-table-column prop="expiryDays" label="賞味期限" width="100">
+        <el-table-column prop="expiryDate" label="賞味期限" width="120">
           <template #default="{ row }">
-            {{ row.expiryDays }}日
+            {{ formatDate(row.expiryDate) }}
           </template>
         </el-table-column>
+        <el-table-column prop="sales" label="売上数" width="100" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button
@@ -110,10 +123,13 @@
           <el-input v-model="productForm.name" placeholder="商品名を入力" />
         </el-form-item>
         <el-form-item label="カテゴリ" prop="category">
-          <el-select v-model="productForm.category" placeholder="カテゴリを選択">
-            <el-option label="食品" value="food" />
-            <el-option label="飲料" value="drink" />
-            <el-option label="菓子" value="snack" />
+          <el-select v-model="productForm.category" placeholder="カテゴリを選択" fit-input-width>
+            <el-option
+              v-for="category in categories"
+              :key="category.id"
+              :label="category.name"
+              :value="category.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="価格" prop="price">
@@ -155,27 +171,49 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import RetailCategoryAPI from "@/api/retail/product/category";
+import RetailProductAPI from "@/api/retail/product/list";
+import dayjs from "dayjs";
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  price: number;
+  stock: number;
+  sales: number;
+  imageUrl: string;
+  description: string;
+  expiryDate: string;
+}
 
 // 検索パラメータ
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   productName: "",
-  category: undefined,
+  category: undefined as number | undefined,
 });
 
 // 商品一覧データ
 const loading = ref(false);
-const productList = ref([]);
+const productList = ref<Product[]>([]);
 const total = ref(0);
+const categories = ref<Category[]>([]);
 
 // ダイアログ
 const dialogVisible = ref(false);
 const dialogType = ref("add");
 const productForm = reactive({
-  id: undefined,
+  id: undefined as number | undefined,
   name: "",
-  category: "food",
+  category: 1,
   price: 0,
   expiryDays: 7,
   description: "",
@@ -197,33 +235,30 @@ const productRules = {
   ],
 };
 
-// データ取得
+// カテゴリ一覧を取得
+const getCategories = async () => {
+  try {
+    const res = await RetailCategoryAPI.getList();
+    categories.value = res;
+  } catch (error) {
+    console.error("カテゴリ一覧の取得に失敗しました:", error);
+  }
+};
+
+// 商品一覧を取得
 const getList = async () => {
   loading.value = true;
   try {
-    // TODO: APIからデータを取得する処理を実装
-    // 仮のデータ
-    productList.value = [
-      {
-        id: 1,
-        name: "チキン",
-        category: "food",
-        price: 700,
-        stock: 15,
-        expiryDays: 7,
-      },
-      {
-        id: 2,
-        name: "コーラ",
-        category: "drink",
-        price: 200,
-        stock: 30,
-        expiryDays: 180,
-      },
-    ];
-    total.value = 2;
+    const res = await RetailProductAPI.getList({
+      page: queryParams.pageNum,
+      pageSize: queryParams.pageSize,
+      keyword: queryParams.productName,
+      categoryId: queryParams.category,
+    });
+    productList.value = res.list;
+    total.value = res.total;
   } catch (error) {
-    console.error("データ取得エラー:", error);
+    console.error("商品一覧の取得に失敗しました:", error);
   } finally {
     loading.value = false;
   }
@@ -254,27 +289,29 @@ const handleCurrentChange = (val: number) => {
   getList();
 };
 
-// カテゴリのタグタイプ取得
-const getCategoryType = (category: string) => {
-  const types = {
-    food: "success",
-    drink: "primary",
-    snack: "warning",
+// カテゴリのタグタイプを取得
+const getCategoryType = (category: string): "success" | "warning" | "info" | "primary" | "danger" => {
+  const categoryMap: Record<string, "success" | "warning" | "info" | "primary" | "danger"> = {
+    食品: "success",
+    飲料: "primary",
+    日用品: "warning",
+    雑貨: "info",
   };
-  return types[category] || "info";
+  return categoryMap[category] || "info";
 };
 
 // カテゴリのテキスト取得
-const getCategoryText = (category: string) => {
-  const texts = {
-    food: "食品",
-    drink: "飲料",
-    snack: "菓子",
-  };
-  return texts[category] || "不明";
+const getCategoryText = (categoryId: number) => {
+  const category = categories.value.find(c => c.id === categoryId);
+  return category ? category.name : "不明";
 };
 
-// 数値フォーマット
+// 日付フォーマット関数
+const formatDate = (date: string) => {
+  return date ? dayjs(date).format("YYYY-MM-DD") : "";
+};
+
+// 数値フォーマット関数
 const formatNumber = (num: number) => {
   return num.toLocaleString();
 };
@@ -284,7 +321,7 @@ const handleAdd = () => {
   dialogType.value = "add";
   productForm.id = undefined;
   productForm.name = "";
-  productForm.category = "food";
+  productForm.category = 1;
   productForm.price = 0;
   productForm.expiryDays = 7;
   productForm.description = "";
@@ -329,6 +366,7 @@ const submitForm = () => {
 };
 
 onMounted(() => {
+  getCategories();
   getList();
 });
 </script>
@@ -336,5 +374,40 @@ onMounted(() => {
 <style scoped>
 .product-container {
   padding: 20px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 120px !important;
+}
+
+:deep(.el-select-dropdown__item) {
+  padding: 0 30px 0 20px !important;
+  min-width: fit-content;
+}
+
+:deep(.el-select__popper.el-popper) {
+  min-width: fit-content !important;
+}
+
+:deep(.el-select) {
+  min-width: 120px;
+}
+
+:deep(.el-image-viewer__close) {
+  right: 40px;
+  top: 40px;
+  width: 40px;
+  height: 40px;
+  background-color: #606266;
+}
+
+:deep(.el-image-viewer__wrapper) {
+  touch-action: none;
+}
+
+:deep(.el-image-viewer__img) {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 </style> 

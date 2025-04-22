@@ -68,14 +68,14 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   {
-    path: "/product",
+    path: "/retail/product",
     component: Layout,
     name: "Product",
     meta: { title: "商品管理", icon: "el-icon-Goods" },
     children: [
       {
         path: "list",
-        component: () => import("@/views/product/index.vue"),
+        component: () => import("@/views/retail/product/index.vue"),
         name: "ProductList",
         meta: { title: "商品一覧", icon: "el-icon-Goods" },
       },

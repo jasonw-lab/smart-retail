@@ -22,7 +22,7 @@
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.name"
+              :value="category.id"
             />
           </el-select>
         </el-form-item>
@@ -60,7 +60,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="categoryName" label="カテゴリ" width="120" />
+        <el-table-column prop="categoryName" label="カテゴリ" width="120">
+          <template #default="{ row }">
+            {{ row.categoryName || categories.find((c: Category) => c.id === row.categoryId)?.name || "その他" }}
+          </template>
+        </el-table-column>
         <el-table-column prop="price" label="価格" width="100">
           <template #default="{ row }">¥{{ formatNumber(row.price) }}</template>
         </el-table-column>
@@ -92,6 +96,7 @@
         />
       </div>
     </el-card>
+
     <!-- 商品編集ダイアログ -->
     <el-dialog
       v-model="dialogVisible"
@@ -103,12 +108,12 @@
           <el-input v-model="productForm.name" />
         </el-form-item>
         <el-form-item label="カテゴリー" prop="categoryId">
-          <el-select v-model="productForm.categoryName" placeholder="カテゴリーを選択">
+          <el-select v-model="productForm.categoryId" placeholder="カテゴリーを選択">
             <el-option
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.name"
+              :value="category.id"
             />
           </el-select>
         </el-form-item>
@@ -123,6 +128,9 @@
             v-model="productForm.expiryDate"
             type="date"
             placeholder="有効期限を選択"
+            :disabled-date="disabledDate"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
           />
         </el-form-item>
         <el-form-item label="説明" prop="description">
@@ -174,14 +182,28 @@ const categories = ref<Category[]>([]);
 const dialogVisible = ref(false);
 const dialogType = ref<"add" | "edit">("add");
 const productFormRef = ref<FormInstance>();
-const productForm = reactive({
-  id: undefined as number | undefined,
+
+// 商品フォームの型定義
+interface ProductForm {
+  id?: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  price: number;
+  stock: number;
+  expiryDate: string;
+  description: string;
+  imageUrl: string;
+}
+
+// 商品フォームの初期化
+const productForm = reactive<ProductForm>({
   name: "",
-  categoryId: undefined as number | undefined,
+  categoryId: 1,
   categoryName: "",
   price: 0,
   stock: 0,
-  expiryDate: "",
+  expiryDate: dayjs().add(1, "month").format("YYYY-MM-DD"),
   description: "",
   imageUrl: "",
 });
@@ -206,7 +228,7 @@ const getCategories = async () => {
 
 // 商品一覧を取得
 const getList = async () => {
-  if (loading.value) return; // 既にロード中の場合は処理をスキップ
+  if (loading.value) return;
 
   loading.value = true;
   try {
@@ -216,10 +238,15 @@ const getList = async () => {
       keyword: queryParams.productName,
       categoryId: queryParams.category,
     });
-    productList.value = res.list;
+    // カテゴリ名を設定
+    productList.value = res.list.map((product) => ({
+      ...product,
+      categoryName: categories.value.find((c: Category) => c.id === product.categoryId)?.name || "その他",
+    }));
     total.value = res.total;
   } catch (error) {
     console.error("商品一覧の取得に失敗しました:", error);
+    ElMessage.error("商品一覧の取得に失敗しました");
   } finally {
     loading.value = false;
   }
@@ -269,10 +296,10 @@ const handleAdd = () => {
   dialogType.value = "add";
   productForm.id = undefined;
   productForm.name = "";
-  productForm.categoryId = undefined;
+  productForm.categoryId = 1;
   productForm.price = 0;
   productForm.stock = 0;
-  productForm.expiryDate = "";
+  productForm.expiryDate = dayjs().add(1, "month").format("YYYY-MM-DD");
   productForm.description = "";
   productForm.imageUrl = "";
   dialogVisible.value = true;
@@ -282,7 +309,16 @@ const handleAdd = () => {
 const handleEdit = (row: Product) => {
   dialogType.value = "edit";
   dialogVisible.value = true;
-  Object.assign(productForm, row);
+  // フォームデータを設定
+  productForm.id = row.id;
+  productForm.name = row.name;
+  productForm.categoryId = row.categoryId;
+  productForm.categoryName = row.categoryName;
+  productForm.price = row.price;
+  productForm.stock = row.stock;
+  productForm.expiryDate = row.expiryDate || dayjs().add(1, "month").format("YYYY-MM-DD");
+  productForm.description = row.description || "";
+  productForm.imageUrl = row.imageUrl || "";
 };
 
 // 削除
@@ -311,21 +347,29 @@ const submitForm = async () => {
     if (valid) {
       try {
         if (dialogType.value === "add") {
-          await RetailProductAPI.create(productForm);
+          const { id, categoryName, ...createData } = productForm;
+          await RetailProductAPI.create(createData);
           ElMessage.success("商品を追加しました");
-        } else {
-          await RetailProductAPI.update(productForm.id!, productForm);
+        } else if (productForm.id) {
+          const { categoryName, ...updateData } = productForm;
+          await RetailProductAPI.update(updateData);
           ElMessage.success("商品を更新しました");
         }
         dialogVisible.value = false;
         getList();
       } catch (error) {
+        console.error("商品の保存に失敗しました:", error);
         ElMessage.error(
           dialogType.value === "add" ? "商品の追加に失敗しました" : "商品の更新に失敗しました"
         );
       }
     }
   });
+};
+
+// 日付選択の無効化関数
+const disabledDate = (date: Date) => {
+  return date < new Date();
 };
 
 onMounted(() => {

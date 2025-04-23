@@ -12,12 +12,17 @@
           />
         </el-form-item>
         <el-form-item label="カテゴリ" prop="category">
-          <el-select v-model="queryParams.category" placeholder="カテゴリを選択" clearable fit-input-width>
+          <el-select
+            v-model="queryParams.category"
+            placeholder="カテゴリを選択"
+            clearable
+            fit-input-width
+          >
             <el-option
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.id"
+              :value="category.name"
             />
           </el-select>
         </el-form-item>
@@ -37,12 +42,7 @@
         </div>
       </template>
 
-      <el-table
-        v-loading="loading"
-        :data="productList"
-        border
-        style="width: 100%"
-      >
+      <el-table v-loading="loading" :data="productList" border style="width: 100%">
         <el-table-column type="index" label="No." width="50" />
         <el-table-column prop="name" label="商品名" min-width="150">
           <template #default="{ row }">
@@ -62,9 +62,7 @@
         </el-table-column>
         <el-table-column prop="categoryName" label="カテゴリ" width="120" />
         <el-table-column prop="price" label="価格" width="100">
-          <template #default="{ row }">
-            ¥{{ formatNumber(row.price) }}
-          </template>
+          <template #default="{ row }">¥{{ formatNumber(row.price) }}</template>
         </el-table-column>
         <el-table-column prop="stock" label="在庫数" width="100" />
         <el-table-column prop="expiryDate" label="賞味期限" width="120">
@@ -75,20 +73,8 @@
         <el-table-column prop="sales" label="売上数" width="100" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              link
-              @click="handleEdit(row)"
-            >
-              編集
-            </el-button>
-            <el-button
-              type="danger"
-              link
-              @click="handleDelete(row)"
-            >
-              削除
-            </el-button>
+            <el-button type="primary" link @click="handleEdit(row)">編集</el-button>
+            <el-button type="danger" link @click="handleDelete(row)">削除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -106,63 +92,51 @@
         />
       </div>
     </el-card>
-
     <!-- 商品編集ダイアログ -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogType === 'add' ? '商品新規登録' : '商品編集'"
-      width="500px"
+      :title="dialogType === 'add' ? '商品追加' : '商品編集'"
+      width="50%"
     >
-      <el-form
-        ref="productForm"
-        :model="productForm"
-        :rules="productRules"
-        label-width="100px"
-      >
+      <el-form ref="productFormRef" :model="productForm" :rules="rules" label-width="120px">
         <el-form-item label="商品名" prop="name">
-          <el-input v-model="productForm.name" placeholder="商品名を入力" />
+          <el-input v-model="productForm.name" />
         </el-form-item>
-        <el-form-item label="カテゴリ" prop="category">
-          <el-select v-model="productForm.category" placeholder="カテゴリを選択" fit-input-width>
+        <el-form-item label="カテゴリー" prop="categoryId">
+          <el-select v-model="productForm.categoryName" placeholder="カテゴリーを選択">
             <el-option
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.id"
+              :value="category.name"
             />
           </el-select>
         </el-form-item>
         <el-form-item label="価格" prop="price">
-          <el-input-number
-            v-model="productForm.price"
-            :min="0"
-            :max="100000"
-            :step="10"
+          <el-input-number v-model="productForm.price" :min="0" />
+        </el-form-item>
+        <el-form-item label="在庫" prop="stock">
+          <el-input-number v-model="productForm.stock" :min="0" />
+        </el-form-item>
+        <el-form-item label="有効期限" prop="expiryDate">
+          <el-date-picker
+            v-model="productForm.expiryDate"
+            type="date"
+            placeholder="有効期限を選択"
           />
         </el-form-item>
-        <el-form-item label="賞味期限" prop="expiryDays">
-          <el-input-number
-            v-model="productForm.expiryDays"
-            :min="1"
-            :max="365"
-            :step="1"
-          />
-          <span class="ml-2">日</span>
+        <el-form-item label="説明" prop="description">
+          <el-input v-model="productForm.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="商品説明" prop="description">
-          <el-input
-            v-model="productForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="商品説明を入力"
-          />
+        <el-form-item label="画像URL" prop="imageUrl">
+          <el-input v-model="productForm.imageUrl" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
+        <span class="dialog-footer">
           <el-button @click="dialogVisible = false">キャンセル</el-button>
           <el-button type="primary" @click="submitForm">確定</el-button>
-        </div>
+        </span>
       </template>
     </el-dialog>
   </div>
@@ -173,24 +147,13 @@ import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import RetailCategoryAPI from "@/api/retail/product/category";
 import RetailProductAPI from "@/api/retail/product/list";
+import type { Product } from "@/api/retail/product/list";
 import dayjs from "dayjs";
+import type { FormInstance } from "element-plus";
 
 interface Category {
   id: number;
   name: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  categoryId: number;
-  categoryName: string;
-  price: number;
-  stock: number;
-  sales: number;
-  imageUrl: string;
-  description: string;
-  expiryDate: string;
 }
 
 // 検索パラメータ
@@ -209,30 +172,26 @@ const categories = ref<Category[]>([]);
 
 // ダイアログ
 const dialogVisible = ref(false);
-const dialogType = ref("add");
+const dialogType = ref<"add" | "edit">("add");
+const productFormRef = ref<FormInstance>();
 const productForm = reactive({
   id: undefined as number | undefined,
   name: "",
-  category: 1,
+  categoryId: undefined as number | undefined,
+  categoryName: "",
   price: 0,
-  expiryDays: 7,
+  stock: 0,
+  expiryDate: "",
   description: "",
+  imageUrl: "",
 });
 
 // バリデーションルール
-const productRules = {
-  name: [
-    { required: true, message: "商品名を入力してください", trigger: "blur" },
-  ],
-  category: [
-    { required: true, message: "カテゴリを選択してください", trigger: "change" },
-  ],
-  price: [
-    { required: true, message: "価格を入力してください", trigger: "blur" },
-  ],
-  expiryDays: [
-    { required: true, message: "賞味期限を入力してください", trigger: "blur" },
-  ],
+const rules = {
+  name: [{ required: true, message: "商品名を入力してください", trigger: "blur" }],
+  categoryId: [{ required: true, message: "カテゴリを選択してください", trigger: "change" }],
+  price: [{ required: true, message: "価格を入力してください", trigger: "blur" }],
+  expiryDate: [{ required: true, message: "賞味期限を入力してください", trigger: "blur" }],
 };
 
 // カテゴリ一覧を取得
@@ -247,6 +206,8 @@ const getCategories = async () => {
 
 // 商品一覧を取得
 const getList = async () => {
+  if (loading.value) return; // 既にロード中の場合は処理をスキップ
+
   loading.value = true;
   try {
     const res = await RetailProductAPI.getList({
@@ -266,12 +227,14 @@ const getList = async () => {
 
 // 検索処理
 const handleQuery = () => {
+  if (loading.value) return; // ロード中は新しい検索を防止
   queryParams.pageNum = 1;
   getList();
 };
 
 // リセット処理
 const resetQuery = () => {
+  if (loading.value) return; // ロード中はリセットを防止
   queryParams.productName = "";
   queryParams.category = undefined;
   handleQuery();
@@ -279,31 +242,16 @@ const resetQuery = () => {
 
 // ページサイズ変更
 const handleSizeChange = (val: number) => {
+  if (loading.value) return; // ロード中はページサイズ変更を防止
   queryParams.pageSize = val;
   getList();
 };
 
 // ページ番号変更
 const handleCurrentChange = (val: number) => {
+  if (loading.value) return; // ロード中はページ番号変更を防止
   queryParams.pageNum = val;
   getList();
-};
-
-// カテゴリのタグタイプを取得
-const getCategoryType = (category: string): "success" | "warning" | "info" | "primary" | "danger" => {
-  const categoryMap: Record<string, "success" | "warning" | "info" | "primary" | "danger"> = {
-    食品: "success",
-    飲料: "primary",
-    日用品: "warning",
-    雑貨: "info",
-  };
-  return categoryMap[category] || "info";
-};
-
-// カテゴリのテキスト取得
-const getCategoryText = (categoryId: number) => {
-  const category = categories.value.find(c => c.id === categoryId);
-  return category ? category.name : "不明";
 };
 
 // 日付フォーマット関数
@@ -321,48 +269,63 @@ const handleAdd = () => {
   dialogType.value = "add";
   productForm.id = undefined;
   productForm.name = "";
-  productForm.category = 1;
+  productForm.categoryId = undefined;
   productForm.price = 0;
-  productForm.expiryDays = 7;
+  productForm.stock = 0;
+  productForm.expiryDate = "";
   productForm.description = "";
+  productForm.imageUrl = "";
   dialogVisible.value = true;
 };
 
 // 編集
-const handleEdit = (row: any) => {
+const handleEdit = (row: Product) => {
   dialogType.value = "edit";
-  productForm.id = row.id;
-  productForm.name = row.name;
-  productForm.category = row.category;
-  productForm.price = row.price;
-  productForm.expiryDays = row.expiryDays;
-  productForm.description = row.description || "";
   dialogVisible.value = true;
+  Object.assign(productForm, row);
 };
 
 // 削除
-const handleDelete = (row: any) => {
-  ElMessageBox.confirm(
-    `商品「${row.name}」を削除してもよろしいですか？`,
-    "警告",
-    {
-      confirmButtonText: "確定",
-      cancelButtonText: "キャンセル",
-      type: "warning",
+const handleDelete = (row: Product) => {
+  ElMessageBox.confirm(`商品「${row.name}」を削除してもよろしいですか？`, "警告", {
+    confirmButtonText: "確定",
+    cancelButtonText: "キャンセル",
+    type: "warning",
+  }).then(async () => {
+    try {
+      await RetailProductAPI.delete(row.id);
+      ElMessage.success("商品を削除しました");
+      getList();
+    } catch (error) {
+      console.error("商品の削除に失敗しました:", error);
+      ElMessage.error("商品の削除に失敗しました");
     }
-  ).then(() => {
-    // TODO: 削除処理を実装
-    ElMessage.success("削除処理を実装してください");
   });
 };
 
 // フォーム送信
-const submitForm = () => {
-  // TODO: フォーム送信処理を実装
-  ElMessage.success(
-    dialogType.value === "add" ? "新規登録処理を実装してください" : "更新処理を実装してください"
-  );
-  dialogVisible.value = false;
+const submitForm = async () => {
+  if (!productFormRef.value) return;
+
+  await productFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        if (dialogType.value === "add") {
+          await RetailProductAPI.create(productForm);
+          ElMessage.success("商品を追加しました");
+        } else {
+          await RetailProductAPI.update(productForm.id!, productForm);
+          ElMessage.success("商品を更新しました");
+        }
+        dialogVisible.value = false;
+        getList();
+      } catch (error) {
+        ElMessage.error(
+          dialogType.value === "add" ? "商品の追加に失敗しました" : "商品の更新に失敗しました"
+        );
+      }
+    }
+  });
 };
 
 onMounted(() => {
@@ -410,4 +373,4 @@ onMounted(() => {
   user-select: none;
   -webkit-user-select: none;
 }
-</style> 
+</style>

@@ -52,9 +52,9 @@
     <!-- 在庫一覧 -->
     <el-card shadow="never">
       <template #header>
-        <div class="flex-x-between">
+        <div class="flex justify-between items-center">
           <span>在庫一覧</span>
-          <el-button type="primary" @click="handleExport">エクスポート</el-button>
+          <el-button icon="download" @click="handleExport">エクスポート</el-button>
         </div>
       </template>
 
@@ -183,6 +183,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { InventoryAPI, type Inventory, type HistoryItem } from "@/api/retail/inventory";
+import { exportToCSV } from "@/utils/exportCsv";
 import dayjs from "dayjs";
 
 // 検索パラメータ
@@ -294,8 +295,21 @@ const handleCurrentChange = (val: number) => {
 };
 
 // エクスポート処理
-const handleExport = () => {
-  ElMessage.success("エクスポート処理を実装してください");
+const handleExport = async () => {
+  try {
+    const params = { ...queryParams, page: 1, pageSize: 1000 };
+    const response = await InventoryAPI.getList(params);
+    const data = response.list || [];
+    exportToCSV(data, [
+      { key: "storeName", label: "店舗名" },
+      { key: "productName", label: "商品名" },
+      { key: "stock", label: "在庫数" },
+      { key: "expiryDate", label: "賞味期限" },
+      { key: "status", label: "状態" },
+    ], "inventory-list.csv");
+  } catch (e) {
+    ElMessage.error("エクスポートに失敗しました");
+  }
 };
 
 // 賞味期限のタグタイプ取得

@@ -193,6 +193,7 @@ import { ElMessage } from "element-plus";
 import type { FormInstance } from "element-plus";
 import InboundInventoryAPI from "@/api/retail/inventory/in";
 import type { InboundItem, InboundListParams, UpdateInboundDto } from "@/api/retail/inventory/in";
+import { exportToCSV } from "@/utils/exportCsv";
 
 // 検索フォームの参照
 const queryFormRef = ref<FormInstance>();
@@ -284,8 +285,26 @@ const handleCurrentChange = (val: number) => {
 };
 
 // 履歴のエクスポート
-const handleExport = () => {
-  ElMessage.success("入庫履歴をエクスポートしました");
+const handleExport = async () => {
+  try {
+    const params = { ...queryParams, page: 1, pageSize: 1000 };
+    const response = await InboundInventoryAPI.getList(params);
+    const data = response.list || [];
+    exportToCSV(data, [
+      { key: "createTime", label: "登録日時" },
+      { key: "storeName", label: "店舗" },
+      { key: "productName", label: "商品名" },
+      { key: "quantity", label: "入庫数" },
+      { key: "lotNumber", label: "ロット番号" },
+      { key: "expiryDate", label: "賞味期限" },
+      { key: "restockType", label: "入庫タイプ" },
+      { key: "shippingTime", label: "入庫日時" },
+      { key: "operator", label: "担当者" },
+      { key: "remarks", label: "備考" },
+    ], "restock-history.csv");
+  } catch (e) {
+    ElMessage.error("エクスポートに失敗しました");
+  }
 };
 
 // 更新フォーム

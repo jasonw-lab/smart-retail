@@ -204,6 +204,7 @@ import { ElMessage } from "element-plus";
 import type { FormInstance } from "element-plus";
 import OutboundInventoryAPI from "@/api/retail/inventory/out";
 import type { OutboundItem, OutboundListParams, CreateOutboundDto, UpdateOutboundDto } from "@/api/retail/inventory/out";
+import { exportToCSV } from "@/utils/exportCsv";
 
 // 検索フォーム
 const queryForm = ref<FormInstance>();
@@ -387,8 +388,25 @@ const handleCurrentChange = (val: number) => {
 };
 
 // エクスポート
-const handleExport = () => {
-  ElMessage.success("出庫履歴をエクスポートしました");
+const handleExport = async () => {
+  try {
+    const params = { ...queryParams, page: 1, pageSize: 1000 };
+    const response = await OutboundInventoryAPI.getList(params);
+    const data = response.list || [];
+    exportToCSV(data, [
+      { key: "createTime", label: "登録日時" },
+      { key: "storeName", label: "店舗" },
+      { key: "productName", label: "商品名" },
+      { key: "quantity", label: "出庫数" },
+      { key: "outboundType", label: "出庫タイプ" },
+      { key: "status", label: "ステータス" },
+      { key: "shippingTime", label: "出庫日時" },
+      { key: "operator", label: "担当者" },
+      { key: "remarks", label: "備考" },
+    ], "shipping-list.csv");
+  } catch (e) {
+    ElMessage.error("エクスポートに失敗しました");
+  }
 };
 
 // 日時フォーマット関数

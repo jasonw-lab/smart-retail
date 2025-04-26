@@ -137,6 +137,7 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
+import { exportToCSV } from "@/utils/exportCsv";
 import type { FormInstance } from "element-plus";
 
 // フォームの参照
@@ -263,7 +264,15 @@ const handleRefresh = () => {
 
 // データのエクスポート
 const handleExport = () => {
-  ElMessage.success("アラート一覧をエクスポートしました");
+  exportToCSV(alertList.value, [
+    { key: "date", label: "発生日時" },
+    { key: "storeName", label: "店舗" },
+    { key: "productName", label: "商品名" },
+    { key: "alertType", label: "アラート種別" },
+    { key: "currentValue", label: "現在値" },
+    { key: "threshold", label: "閾値" },
+    { key: "status", label: "状態" },
+  ], "alert-list.csv");
 };
 
 // ページサイズの変更

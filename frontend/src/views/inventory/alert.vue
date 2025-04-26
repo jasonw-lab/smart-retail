@@ -62,8 +62,8 @@
         <div class="flex justify-between items-center">
           <span>アラート一覧</span>
           <div>
-            <el-button type="primary" @click="handleRefresh">更新</el-button>
-            <el-button type="success" @click="handleExport">エクスポート</el-button>
+            <el-button type="success" icon="refresh" @click="handleRefresh">更新</el-button>
+            <el-button icon="download" @click="handleExport">エクスポート</el-button>
           </div>
         </div>
       </template>
@@ -155,7 +155,7 @@ const loading = ref(false);
 const alertList = ref([
   {
     date: "2024-03-20 10:00:00",
-    storeName: "店舗A",
+    storeName: "東京本店",
     productName: "商品A",
     alertType: "low_stock",
     currentValue: 5,
@@ -164,7 +164,7 @@ const alertList = ref([
   },
   {
     date: "2024-03-20 09:30:00",
-    storeName: "店舗B",
+    storeName: "横浜駅前店",
     productName: "商品B",
     alertType: "expiry",
     currentValue: "2024-03-27",

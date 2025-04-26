@@ -189,7 +189,7 @@ const getList = async () => {
     storeList.value = [
       {
         id: 1,
-        name: "店舗A",
+        name: "東京本店",
         address: "東京都渋谷区代々木1-1-1",
         phone: "03-1234-5678",
         status: "active",
@@ -197,7 +197,7 @@ const getList = async () => {
       },
       {
         id: 2,
-        name: "店舗B",
+        name: "横浜駅前店",
         address: "東京都新宿区新宿2-2-2",
         phone: "03-2345-6789",
         status: "maintenance",

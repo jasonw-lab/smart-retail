@@ -1,6 +1,8 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import setupPlugins from "@/plugins";
+import ElementPlus from "element-plus";
+import customJa from "@/lang/package/ja-element-plus";
 
 // 暗黑主题样式
 import "element-plus/theme-chalk/dark/css-vars.css";
@@ -18,4 +20,7 @@ import "default-passive-events";
 const app = createApp(App);
 // 注册插件
 app.use(setupPlugins);
+app.use(ElementPlus, {
+  locale: customJa,
+});
 app.mount("#app");

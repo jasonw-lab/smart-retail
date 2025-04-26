@@ -47,11 +47,6 @@ service.interceptors.response.use(
       return data;
     }
 
-    // // モックAPIの場合は直接データを返す
-    // if (response.config.url?.startsWith("/mock-api")) {
-    //   return response.data;
-    // }
-
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "Error"));
   },

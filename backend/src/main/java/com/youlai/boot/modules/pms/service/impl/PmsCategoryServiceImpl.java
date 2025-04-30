@@ -8,7 +8,7 @@ import com.youlai.boot.common.model.Option;
 import com.youlai.boot.modules.pms.mapper.PmsCategoryMapper;
 import com.youlai.boot.modules.pms.model.entity.PmsCategory;
 import com.youlai.boot.modules.pms.model.vo.CategoryVO;
-import com.youlai.boot.modules.pms.service.CategoryService;
+import com.youlai.boot.modules.pms.service.PmsCategoryService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ import java.util.Optional;
  * @author haoxr
  */
 @Service
-public class CategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCategory> implements CategoryService {
+public class PmsCategoryServiceImpl extends ServiceImpl<PmsCategoryMapper, PmsCategory> implements PmsCategoryService {
 
 
     /**

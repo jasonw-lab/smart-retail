@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * @author wangjw
+ */
 @Tag(name = "商品管理API")
 @RestController
 @RequestMapping("/api/v1/retail/products")

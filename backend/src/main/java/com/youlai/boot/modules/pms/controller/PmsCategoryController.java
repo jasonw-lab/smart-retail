@@ -5,7 +5,7 @@ import com.youlai.boot.common.model.Option;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.modules.pms.model.entity.PmsCategory;
 import com.youlai.boot.modules.pms.model.vo.CategoryVO;
-import com.youlai.boot.modules.pms.service.CategoryService;
+import com.youlai.boot.modules.pms.service.PmsCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,20 +27,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PmsCategoryController {
 
-    private final CategoryService categoryService;
+    private final PmsCategoryService pmsCategoryService;
 //    private final AttributeService attributeService;
 
     @Operation(summary = "商品分类列表")
     @GetMapping
     public Result<List<CategoryVO>> getCategoryList() {
-        List<CategoryVO> list = categoryService.getCategoryList(null);
+        List<CategoryVO> list = pmsCategoryService.getCategoryList(null);
         return Result.success(list);
     }
 
     @Operation(summary = "商品分类级联列表")
     @GetMapping("/options")
     public Result getCategoryOptions() {
-        List<Option> list = categoryService.getCategoryOptions();
+        List<Option> list = pmsCategoryService.getCategoryOptions();
         return Result.success(list);
     }
 
@@ -49,14 +49,14 @@ public class PmsCategoryController {
     public Result detail(
             @Parameter(name = "商品分类ID") @PathVariable Long id
     ) {
-        PmsCategory category = categoryService.getById(id);
+        PmsCategory category = pmsCategoryService.getById(id);
         return Result.success(category);
     }
 
     @Operation(summary = "新增商品分类")
     @PostMapping
     public Result addCategory(@RequestBody PmsCategory category) {
-        Long id = categoryService.saveCategory(category);
+        Long id = pmsCategoryService.saveCategory(category);
         return Result.success(id);
     }
 
@@ -67,7 +67,7 @@ public class PmsCategoryController {
             @RequestBody PmsCategory category
     ) {
         category.setId(id);
-        id = categoryService.saveCategory(category);
+        id = pmsCategoryService.saveCategory(category);
         return Result.success(id);
     }
 
@@ -89,7 +89,7 @@ public class PmsCategoryController {
         LambdaUpdateWrapper<PmsCategory> updateWrapper = new LambdaUpdateWrapper<PmsCategory>()
                 .eq(PmsCategory::getId, id);
         updateWrapper.set(category.getVisible() != null, PmsCategory::getVisible, category.getVisible());
-        boolean result = categoryService.update(updateWrapper);
+        boolean result = pmsCategoryService.update(updateWrapper);
         return Result.judge(result);
     }
 }

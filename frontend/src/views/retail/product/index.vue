@@ -113,7 +113,7 @@
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.id"
+              :value="category.name"
             />
           </el-select>
         </el-form-item>
@@ -164,6 +164,11 @@ interface Category {
   name: string;
 }
 
+interface ProductListResponse {
+  list: Product[];
+  total: number;
+}
+
 // 検索パラメータ
 const queryParams = reactive({
   pageNum: 1,
@@ -199,7 +204,7 @@ interface ProductForm {
 // 商品フォームの初期化
 const productForm = reactive<ProductForm>({
   name: "",
-  categoryId: 1,
+  categoryId: undefined as unknown as number,
   categoryName: "",
   price: 0,
   stock: 0,
@@ -233,17 +238,21 @@ const getList = async () => {
   loading.value = true;
   try {
     const res = await RetailProductAPI.getList({
-      page: queryParams.pageNum,
+      pageNum: queryParams.pageNum,
       pageSize: queryParams.pageSize,
-      keyword: queryParams.productName,
+      productName: queryParams.productName,
       categoryId: queryParams.category,
     });
-    // カテゴリ名を設定
-    productList.value = res.list.map((product) => ({
-      ...product,
-      categoryName: categories.value.find((c: Category) => c.id === product.categoryId)?.name || "その他",
-    }));
-    total.value = res.total;
+
+    if (res.list) {
+      productList.value = res.list.map((product) => ({
+        ...product,
+        categoryName: categories.value.find((c: Category) => c.id === product.categoryId)?.name || "その他",
+      }));
+      total.value = res.total;
+    } else {
+      ElMessage.error("商品一覧の取得に失敗しました");
+    }
   } catch (error) {
     console.error("商品一覧の取得に失敗しました:", error);
     ElMessage.error("商品一覧の取得に失敗しました");
@@ -254,14 +263,14 @@ const getList = async () => {
 
 // 検索処理
 const handleQuery = () => {
-  if (loading.value) return; // ロード中は新しい検索を防止
+  if (loading.value) return;
   queryParams.pageNum = 1;
   getList();
 };
 
 // リセット処理
 const resetQuery = () => {
-  if (loading.value) return; // ロード中はリセットを防止
+  if (loading.value) return;
   queryParams.productName = "";
   queryParams.category = undefined;
   handleQuery();
@@ -269,14 +278,14 @@ const resetQuery = () => {
 
 // ページサイズ変更
 const handleSizeChange = (val: number) => {
-  if (loading.value) return; // ロード中はページサイズ変更を防止
+  if (loading.value) return;
   queryParams.pageSize = val;
   getList();
 };
 
 // ページ番号変更
 const handleCurrentChange = (val: number) => {
-  if (loading.value) return; // ロード中はページ番号変更を防止
+  if (loading.value) return;
   queryParams.pageNum = val;
   getList();
 };
@@ -296,7 +305,8 @@ const handleAdd = () => {
   dialogType.value = "add";
   productForm.id = undefined;
   productForm.name = "";
-  productForm.categoryId = 1;
+  productForm.categoryId = undefined as unknown as number;
+  productForm.categoryName = "";
   productForm.price = 0;
   productForm.stock = 0;
   productForm.expiryDate = dayjs().add(1, "month").format("YYYY-MM-DD");
@@ -313,7 +323,7 @@ const handleEdit = (row: Product) => {
   productForm.id = row.id;
   productForm.name = row.name;
   productForm.categoryId = row.categoryId;
-  productForm.categoryName = row.categoryName;
+  productForm.categoryName = row.categoryName || "";
   productForm.price = row.price;
   productForm.stock = row.stock;
   productForm.expiryDate = row.expiryDate || dayjs().add(1, "month").format("YYYY-MM-DD");

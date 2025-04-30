@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author wangjw
+ */
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -24,8 +27,8 @@ public class ProductServiceImpl implements ProductService {
     public PageResult<ProductPageVO> getProductPage(ProductPageQuery queryParams) {
         Page<Product> page = new Page<>(queryParams.getPageNum(), queryParams.getPageSize());
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        if (queryParams.getKeyword() != null && !queryParams.getKeyword().isEmpty()) {
-            wrapper.like(Product::getName, queryParams.getKeyword());
+        if (queryParams.getProductName() != null && !queryParams.getProductName().isEmpty()) {
+            wrapper.like(Product::getName, queryParams.getProductName());
         }
         if (queryParams.getCategoryId() != null) {
             wrapper.eq(Product::getCategoryId, queryParams.getCategoryId());

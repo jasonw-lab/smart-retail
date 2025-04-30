@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author <a href="mailto:xianrui0365@163.com">haoxr</a>
  */
-public interface CategoryService extends IService<PmsCategory> {
+public interface PmsCategoryService extends IService<PmsCategory> {
 
 
     /**

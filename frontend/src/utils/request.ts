@@ -4,6 +4,7 @@ import { useUserStoreHook } from "@/store/modules/user";
 import { ResultEnum } from "@/enums/ResultEnum";
 import { getAccessToken } from "@/utils/auth";
 import router from "@/router";
+import { ElMessage } from "element-plus";
 
 // 创建 axios 实例
 const service = axios.create({
@@ -11,6 +12,13 @@ const service = axios.create({
   headers: { "Content-Type": "application/json;charset=utf-8" },
   paramsSerializer: (params) => qs.stringify(params),
 });
+
+// レスポンスの型定義
+export interface ApiResponse<T = any> {
+  code: string;
+  data: T;
+  msg: string;
+}
 
 // 请求拦截器
 service.interceptors.request.use(

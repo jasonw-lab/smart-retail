@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.modules.product.mapper.PmsSpuMapper">
+<mapper namespace="com.youlai.boot.modules.pms.mapper.PmsSpuMapper">
 
-    <resultMap id="BaseResultMap" type="com.youlai.boot.modules.product.model.vo.PmsSpuPageVO">
+    <resultMap id="BaseResultMap" type="com.youlai.boot.modules.pms.model.vo.PmsSpuPageVO">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
@@ -18,7 +18,7 @@
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="categoryName" column="categoryName" jdbcType="VARCHAR"/>
         <result property="brandName" column="brandName" jdbcType="VARCHAR"/>
-        <collection property="skuList" column="id" select="com.youlai.boot.modules.product.mapper.PmsSkuMapper.getSkuListBySpuId">
+        <collection property="skuList" column="id" select="com.youlai.boot.modules.pms.mapper.PmsSkuMapper.getSkuListBySpuId">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="name" column="name" jdbcType="VARCHAR"/>
             <result property="skuSn" column="sku_sn" jdbcType="VARCHAR"/>

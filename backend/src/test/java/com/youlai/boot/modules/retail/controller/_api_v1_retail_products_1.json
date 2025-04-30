@@ -1,0 +1,19 @@
+{
+  "code" : "00000",
+  "data" : {
+    "id" : "1",
+    "createTime" : "2025-04-28 20:00:53",
+    "updateTime" : "2025-04-28 20:00:53",
+    "name" : "プレミアムコーヒー",
+    "code" : "P0001",
+    "price" : 980.0,
+    "stock" : 100,
+    "description" : "高品質なコーヒー豆を使用したプレミアムコーヒー",
+    "categoryId" : "1",
+    "categoryName" : "飲料",
+    "sales" : 50,
+    "imageUrl" : "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop",
+    "expiryDate" : "2024-12-31"
+  },
+  "msg" : "一切ok"
+}

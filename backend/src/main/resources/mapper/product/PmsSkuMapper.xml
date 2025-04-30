@@ -2,10 +2,10 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.modules.product.mapper.PmsSkuMapper">
+<mapper namespace="com.youlai.boot.modules.pms.mapper.PmsSkuMapper">
 
     <!-- 根据商品ID获取商品库存单元列表 -->
-    <select id="getSkuListBySpuId" resultType="com.youlai.boot.modules.product.model.entity.PmsSku">
+    <select id="getSkuListBySpuId" resultType="com.youlai.boot.modules.pms.model.entity.PmsSku">
         SELECT
             id,
             NAME,

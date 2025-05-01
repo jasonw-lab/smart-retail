@@ -15,6 +15,7 @@
 </template>
 
 <script lang="ts" setup>
+import defaultSettings from "@/settings";
 import { ShoppingBag, ShoppingCart } from "@element-plus/icons-vue";
 
 defineProps({
@@ -65,9 +66,9 @@ defineProps({
 
   .title {
     flex-shrink: 0;
-    margin-left: 12px;
-    font-size: 18px;
-    font-weight: 600;
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: bold;
     color: $sidebar-logo-text-color;
     white-space: nowrap;
     background: linear-gradient(135deg, #409eff, #67c23a);

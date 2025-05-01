@@ -35,7 +35,7 @@
             </div>
             <el-divider />
             <div class="flex-x-between">
-              <el-link type="primary" :underline="false" @click="handleViewMoreNotice">
+              <el-link type="primary" underline="never" @click="handleViewMoreNotice">
                 <span class="text-xs">查看更多</span>
                 <el-icon class="text-xs">
                   <ArrowRight />
@@ -44,7 +44,7 @@
               <el-link
                 v-if="noticeList.length > 0"
                 type="primary"
-                :underline="false"
+                underline="never"
                 @click="handleMarkAllAsRead"
               >
                 <span class="text-xs">全部已读</span>
@@ -87,14 +87,14 @@
 </template>
 
 <script setup lang="ts">
-import NoticeAPI, { NoticePageVO, NoticeDetailVO } from "@/api/system/notice";
+import NoticeAPI, { NoticePageVO, NoticeDetailVO } from "@/api/system/notice.api";
 import router from "@/router";
 
 const noticeList = ref<NoticePageVO[]>([]);
 const noticeDialogVisible = ref(false);
 const noticeDetail = ref<NoticeDetailVO | null>(null);
 
-import { useStomp } from "@/hooks/useStomp";
+import { useStomp } from "@/hooks/websocket/core/useStomp";
 const { subscribe, unsubscribe, isConnected } = useStomp();
 
 watch(
@@ -149,7 +149,7 @@ function handleReadNotice(id: string) {
 
 // 查看更多
 function handleViewMoreNotice() {
-  router.push({ path: "/myNotice" });
+  router.push({ name: "MyNotice" });
 }
 
 // 全部已读

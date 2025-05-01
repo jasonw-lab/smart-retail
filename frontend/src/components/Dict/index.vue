@@ -23,12 +23,7 @@
     :style="style"
     @change="handleChange"
   >
-    <el-radio
-      v-for="option in options"
-      :key="option.value"
-      :label="option.label"
-      :value="option.value"
-    >
+    <el-radio v-for="option in options" :key="option.value" :value="option.value">
       {{ option.label }}
     </el-radio>
   </el-radio-group>
@@ -40,12 +35,7 @@
     :style="style"
     @change="handleChange"
   >
-    <el-checkbox
-      v-for="option in options"
-      :key="option.value"
-      :label="option.label"
-      :value="option.value"
-    >
+    <el-checkbox v-for="option in options" :key="option.value" :value="option.value">
       {{ option.label }}
     </el-checkbox>
   </el-checkbox-group>
@@ -100,32 +90,24 @@ const selectedValue = ref<any>(
       : undefined
 );
 
-// 监听 modelValue 变化
+// 监听 modelValue 和 options 的变化
 watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (props.type === "checkbox") {
-      selectedValue.value = Array.isArray(newValue) ? newValue : [];
+  [() => props.modelValue, () => options.value],
+  ([newValue, newOptions]) => {
+    if (newOptions.length > 0 && newValue !== undefined) {
+      if (props.type === "checkbox") {
+        selectedValue.value = Array.isArray(newValue) ? newValue : [];
+      } else {
+        const matchedOption = newOptions.find(
+          (option) => String(option.value) === String(newValue)
+        );
+        selectedValue.value = matchedOption?.value;
+      }
     } else {
-      selectedValue.value = newValue?.toString() || "";
+      selectedValue.value = undefined;
     }
   },
   { immediate: true }
-);
-
-// 监听 options 变化并重新匹配 selectedValue
-watch(
-  () => options.value,
-  (newOptions) => {
-    // options 加载后，确保 selectedValue 可以正确匹配到 options
-    if (newOptions.length > 0 && selectedValue.value !== undefined) {
-      const matchedOption = newOptions.find((option) => option.value === selectedValue.value);
-      if (!matchedOption && props.type !== "checkbox") {
-        // 如果找不到匹配项，清空选中
-        selectedValue.value = "";
-      }
-    }
-  }
 );
 
 // 监听 selectedValue 的变化并触发 update:modelValue
@@ -134,7 +116,17 @@ function handleChange(val: any) {
 }
 
 // 获取字典数据
-onMounted(() => {
-  options.value = dictStore.getDictionary(props.code);
+onMounted(async () => {
+  await dictStore.loadDictItems(props.code);
+  options.value = dictStore.getDictItems(props.code);
 });
+
+// 监听字典数据变化，确保WebSocket更新时刷新选项
+watch(
+  () => dictStore.getDictItems(props.code),
+  (newItems) => {
+    options.value = newItems;
+  },
+  { deep: true }
+);
 </script>

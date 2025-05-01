@@ -245,10 +245,10 @@ import {
 } from "echarts/components";
 import VChart from "vue-echarts";
 import { graphic } from "echarts/core";
-import { useUserStore } from "@/store/modules/user";
+import { useUserStore } from "@/store/modules/user.store";
 import { formatGrowthRate } from "@/utils";
 import { dayjs } from "element-plus";
-import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log";
+import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log.api";
 import DashboardAPI, { DashboardDataVO } from "@/api/dashboard";
 import type {
   DashboardData,

@@ -25,8 +25,18 @@
                 LEFT JOIN sys_role r ON sur.role_id = r.id
         <where>
             u.is_deleted = 0
-            <!-- 超级管理员不显示在列表 -->
-            AND r.name != '${@com.youlai.boot.common.constant.SystemConstants@ROOT_ROLE_CODE}'
+            <!-- 非超级管理员用户限制查看超级管理员  -->
+            <if test="!queryParams.isRoot">
+                AND NOT EXISTS (
+                SELECT
+                    1
+                FROM sys_user_role sur
+                    INNER JOIN sys_role r ON sur.role_id = r.id
+                WHERE
+                    sur.user_id = u.id
+                    AND r.code = '${@com.youlai.boot.common.constant.SystemConstants@ROOT_ROLE_CODE}'
+                )
+            </if>
             <if test='queryParams.keywords!=null and queryParams.keywords.trim() neq ""'>
                 AND (
                     u.username LIKE CONCAT('%',#{queryParams.keywords},'%')
@@ -39,12 +49,6 @@
             </if>
             <if test='queryParams.deptId!=null'>
                 AND concat(',',concat(d.tree_path,',',d.id),',') like concat('%,',#{queryParams.deptId},',%')
-            </if>
-            <if test='queryParams.roleIds!=null and queryParams.roleIds.size > 0'>
-                AND sur.role_id in
-                <foreach collection="queryParams.roleIds" item="roleId" open="(" close=")" separator=",">
-                    #{roleId}
-                </foreach>
             </if>
             <if test="queryParams.createTime != null and queryParams.createTime.size > 0">
                 <if test="queryParams.createTime[0] != null and queryParams.createTime[0] != ''">
@@ -115,7 +119,7 @@
     </select>
 
     <!-- 用户认证信息映射 -->
-    <resultMap id="UserAuthMap" type="com.youlai.boot.system.model.dto.UserAuthInfo">
+    <resultMap id="AuthCredentialsMap" type="com.youlai.boot.core.security.model.UserAuthCredentials">
         <id property="userId" column="userId" jdbcType="BIGINT"/>
         <result property="username" column="username" jdbcType="VARCHAR"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>
@@ -127,7 +131,7 @@
     </resultMap>
 
     <!-- 根据用户名获取用户的认证信息 -->
-    <select id="getUserAuthInfo" resultMap="UserAuthMap">
+    <select id="getAuthCredentialsByUsername" resultMap="AuthCredentialsMap">
         SELECT
             t1.id userId,
             t1.username,
@@ -145,7 +149,7 @@
     </select>
 
     <!-- 根据微信openid获取用户的认证信息  -->
-    <select id="getUserAuthInfoByOpenId" resultMap="UserAuthMap">
+    <select id="getAuthCredentialsByOpenId" resultMap="AuthCredentialsMap">
         SELECT
             t1.id userId,
             t1.username,
@@ -163,7 +167,7 @@
     </select>
 
     <!-- 根据手机号获取用户的认证信息 -->
-    <select id="getUserAuthInfoByMobile" resultMap="UserAuthMap">
+    <select id="getAuthCredentialsByMobile" resultMap="AuthCredentialsMap">
         SELECT
             t1.id userId,
             t1.username,
@@ -194,6 +198,17 @@
                 LEFT JOIN sys_dept d ON u.dept_id = d.id
         <where>
             u.is_deleted = 0
+            <if test="!isRoot">
+            AND NOT EXISTS (
+                SELECT
+                    1
+                FROM sys_user_role sur
+                    INNER JOIN sys_role r ON sur.role_id = r.id
+                WHERE
+                    sur.user_id = u.id
+                    AND r.code = '${@com.youlai.boot.common.constant.SystemConstants@ROOT_ROLE_CODE}'
+            )
+            </if>
             <if test='keywords!=null and keywords.trim() neq ""'>
                 AND (u.username LIKE CONCAT('%',#{keywords},'%')
                 OR u.nickname LIKE CONCAT('%',#{keywords},'%')

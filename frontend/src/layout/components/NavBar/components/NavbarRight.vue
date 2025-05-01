@@ -27,10 +27,10 @@
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item @click="handleProfileClick">
-            {{ $t("navbar.profile") }}
+            {{ t("navbar.profile") }}
           </el-dropdown-item>
           <el-dropdown-item divided @click="logout">
-            {{ $t("navbar.logout") }}
+            {{ t("navbar.logout") }}
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -43,11 +43,12 @@
   </div>
 </template>
 <script setup lang="ts">
+const { t } = useI18n();
 import defaultSettings from "@/settings";
-import { DeviceEnum } from "@/enums/DeviceEnum";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useAppStore, useSettingsStore, useUserStore, useTagsViewStore } from "@/store";
 
-import { SidebarColorEnum, ThemeEnum } from "@/enums/ThemeEnum";
+import { SidebarColor, ThemeMode } from "@/enums/settings/theme.enum";
 
 const appStore = useAppStore();
 const settingStore = useSettingsStore();
@@ -68,19 +69,18 @@ function handleProfileClick() {
 // 根据主题和侧边栏配色方案选择 navbar 右侧的样式类
 const navbarRightClass = computed(() => {
   // 如果暗黑主题
-  if (settingStore.theme === ThemeEnum.DARK) {
+  if (settingStore.theme === ThemeMode.DARK) {
     return "navbar__right--white";
   }
 
   // 如果侧边栏是经典蓝
-
-  if (settingStore.sidebarColorScheme === SidebarColorEnum.CLASSIC_BLUE) {
+  if (settingStore.sidebarColorScheme === SidebarColor.CLASSIC_BLUE) {
     return "navbar__right--white";
   }
 });
 
 /**
- * 注销登出
+ * 注销登录
  */
 function logout() {
   ElMessageBox.confirm("确定注销并退出系统吗？", "提示", {
@@ -108,10 +108,11 @@ function logout() {
   justify-content: center;
 
   & > * {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 40px;
     height: $navbar-height;
-    line-height: $navbar-height;
     color: var(--el-text-color);
     text-align: center;
     cursor: pointer;
@@ -142,6 +143,12 @@ function logout() {
 .layout-top .navbar__right--white > *,
 .layout-mix .navbar__right--white > * {
   color: #fff;
+
+  // 强制所有svg图标为白色（包括通知图标）
+  :deep(svg) {
+    color: #fff;
+    fill: #fff;
+  }
 }
 
 .dark .navbar__right > *:hover {

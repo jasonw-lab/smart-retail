@@ -2,7 +2,6 @@ package com.youlai.boot.system.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
-import com.youlai.boot.system.enums.MenuTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 菜单实体
  *
- * @author Ray
+ * @author Ray.Hao
  * @since 2023/3/6
  */
 @TableName("sys_menu")
@@ -37,7 +36,7 @@ public class Menu {
     /**
      * 菜单类型(1-菜单；2-目录；3-外链；4-按钮权限)
      */
-    private MenuTypeEnum type;
+    private Integer type;
 
     /**
      * 路由名称（Vue Router 中定义的路由名称）

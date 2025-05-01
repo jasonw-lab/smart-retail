@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.youlai.boot.common.constant.RedisConstants;
 import com.youlai.boot.core.security.exception.CaptchaValidationException;
 import com.youlai.boot.core.security.model.SysUserDetails;
-import com.youlai.boot.system.model.dto.UserAuthInfo;
+import com.youlai.boot.core.security.model.UserAuthCredentials;
 import com.youlai.boot.system.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,29 +49,30 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
         String inputVerifyCode = (String) authentication.getCredentials();
 
         // 根据手机号获取用户信息
-        UserAuthInfo userAuthInfo = userService.getUserAuthInfoByMobile(mobile);
+        UserAuthCredentials userAuthCredentials = userService.getAuthCredentialsByMobile(mobile);
 
-        if (userAuthInfo == null) {
+        if (userAuthCredentials == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
 
         // 检查用户状态是否有效
-        if (ObjectUtil.notEqual(userAuthInfo.getStatus(), 1)) {
+        if (ObjectUtil.notEqual(userAuthCredentials.getStatus(), 1)) {
             throw new DisabledException("用户已被禁用");
         }
 
         // 校验发送短信验证码的手机号是否与当前登录用户一致
-        String cachedVerifyCode = (String) redisTemplate.opsForValue().get(RedisConstants.SMS_LOGIN_CODE_PREFIX + mobile);
+        String cacheKey = StrUtil.format(RedisConstants.Captcha.SMS_LOGIN_CODE, mobile);
+        String cachedVerifyCode = (String) redisTemplate.opsForValue().get(cacheKey);
 
         if (!StrUtil.equals(inputVerifyCode, cachedVerifyCode)) {
             throw new CaptchaValidationException("验证码错误");
         } else {
             // 验证成功后删除验证码
-            redisTemplate.delete(RedisConstants.SMS_LOGIN_CODE_PREFIX + mobile);
+            redisTemplate.delete(cacheKey);
         }
 
         // 构建认证后的用户详情信息
-        SysUserDetails userDetails = new SysUserDetails(userAuthInfo);
+        SysUserDetails userDetails = new SysUserDetails(userAuthCredentials);
 
         // 创建已认证的 SmsAuthenticationToken
         return SmsAuthenticationToken.authenticated(

@@ -1,7 +1,7 @@
 package com.youlai.boot.system.controller;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.youlai.boot.common.annotation.Log;
@@ -19,7 +19,7 @@ import com.youlai.boot.system.model.dto.UserImportDTO;
 import com.youlai.boot.system.model.entity.User;
 import com.youlai.boot.system.model.form.*;
 import com.youlai.boot.system.model.query.UserPageQuery;
-import com.youlai.boot.system.model.vo.UserInfoVO;
+import com.youlai.boot.system.model.dto.CurrentUserDTO;
 import com.youlai.boot.system.model.vo.UserPageVO;
 import com.youlai.boot.system.model.vo.UserProfileVO;
 import com.youlai.boot.system.service.UserService;
@@ -128,15 +128,15 @@ public class UserController {
     @Operation(summary = "获取当前登录用户信息")
     @GetMapping("/me")
     @Log(value = "获取当前登录用户信息", module = LogModuleEnum.USER)
-    public Result<UserInfoVO> getCurrentUserInfo() {
-        UserInfoVO userInfoVO = userService.getCurrentUserInfo();
-        return Result.success(userInfoVO);
+    public Result<CurrentUserDTO> getCurrentUser() {
+        CurrentUserDTO currentUserDTO = userService.getCurrentUserInfo();
+        return Result.success(currentUserDTO);
     }
 
     @Operation(summary = "用户导入模板下载")
     @GetMapping("/template")
     @Log(value = "用户导入模板下载", module = LogModuleEnum.USER)
-    public void downloadTemplate(HttpServletResponse response) throws IOException {
+    public void downloadTemplate(HttpServletResponse response)  {
         String fileName = "用户导入模板.xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
@@ -144,10 +144,12 @@ public class UserController {
         String fileClassPath = "templates" + File.separator + "excel" + File.separator + fileName;
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(fileClassPath);
 
-        ServletOutputStream outputStream = response.getOutputStream();
-        ExcelWriter excelWriter = EasyExcel.write(outputStream).withTemplate(inputStream).build();
-
-        excelWriter.finish();
+        try (ServletOutputStream outputStream = response.getOutputStream();
+             ExcelWriter excelWriter = EasyExcel.write(outputStream).withTemplate(inputStream).build()) {
+            excelWriter.finish();
+        } catch (IOException e) {
+            throw new RuntimeException("用户导入模板下载失败", e);
+        }
     }
 
     @Operation(summary = "导入用户")
@@ -191,7 +193,7 @@ public class UserController {
 
     @Operation(summary = "重置用户密码")
     @PutMapping(value = "/{userId}/password/reset")
-    @PreAuthorize("@ss.hasPerm('sys:user:password:reset')")
+    @PreAuthorize("@ss.hasPerm('sys:user:reset-password')")
     public Result<?> resetPassword(
             @Parameter(description = "用户ID") @PathVariable Long userId,
             @RequestParam String password

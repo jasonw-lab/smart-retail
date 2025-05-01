@@ -97,8 +97,8 @@
 </template>
 
 <script setup lang="ts">
-import { useStomp } from "@/hooks/useStomp";
-import { useUserStoreHook } from "@/store/modules/user";
+import { useStomp } from "@/hooks/websocket/core/useStomp";
+import { useUserStoreHook } from "@/store/modules/user.store";
 
 const userStore = useUserStoreHook();
 // 用于手动调整 WebSocket 地址

@@ -46,11 +46,12 @@ import {
   UploadRawFile,
   UploadUserFile,
   UploadFile,
+  UploadFiles,
   UploadProgressEvent,
   UploadRequestOptions,
 } from "element-plus";
 
-import FileAPI, { FileInfo } from "@/api/file";
+import FileAPI, { FileInfo } from "@/api/file.api";
 
 const props = defineProps({
   /**
@@ -112,7 +113,7 @@ const props = defineProps({
 });
 
 const modelValue = defineModel("modelValue", {
-  type: [Array] as PropType<UploadFile[]>,
+  type: [Array] as PropType<FileInfo[]>,
   required: true,
   default: () => [],
 });
@@ -131,6 +132,8 @@ watch(
       return {
         name: name,
         url: item.url,
+        status: "success",
+        uid: getUid(),
       } as UploadFile;
     });
   },
@@ -145,7 +148,7 @@ watch(
 function handleBeforeUpload(file: UploadRawFile) {
   // 限制文件大小
   if (file.size > props.maxFileSize * 1024 * 1024) {
-    ElMessage.warning("上传图片不能大于" + props.maxFileSize + "M");
+    ElMessage.warning("上传文件不能大于" + props.maxFileSize + "M");
     return false;
   }
   return true;
@@ -188,13 +191,34 @@ const handleProgress = (event: UploadProgressEvent) => {
 /**
  * 上传成功
  */
-const handleSuccess = (fileInfo: FileInfo) => {
+const handleSuccess = (response: any, uploadFile: UploadFile, files: UploadFiles) => {
   ElMessage.success("上传成功");
-
-  modelValue.value = [
-    ...modelValue.value,
-    { name: fileInfo.name, url: fileInfo.url } as UploadFile,
-  ];
+  //只有当状态为success或者fail，代表文件上传全部完成了，失败也算完成
+  if (
+    files.every((file: UploadFile) => {
+      return file.status === "success" || file.status === "fail";
+    })
+  ) {
+    let fileInfos = [] as FileInfo[];
+    files.map((file: UploadFile) => {
+      if (file.status === "success") {
+        //只取携带response的才是刚上传的
+        let res = file.response as FileInfo;
+        if (res) {
+          fileInfos.push({ name: res.name, url: res.url } as FileInfo);
+        }
+      } else {
+        //失败上传 从fileList删掉，不展示
+        fileList.value.splice(
+          fileList.value.findIndex((e) => e.uid === file.uid),
+          1
+        );
+      }
+    });
+    if (fileInfos.length > 0) {
+      modelValue.value = [...modelValue.value, ...fileInfos];
+    }
+  }
 };
 
 /**
@@ -209,7 +233,6 @@ const handleError = (_error: any) => {
  * 删除文件
  */
 function handleRemove(fileUrl: string) {
-  console.log(fileUrl);
   FileAPI.delete(fileUrl).then(() => {
     modelValue.value = modelValue.value.filter((file) => file.url !== fileUrl);
   });
@@ -223,6 +246,12 @@ function handleDownload(file: UploadUserFile) {
   if (url) {
     FileAPI.download(url, name);
   }
+}
+
+/** 获取一个不重复的id */
+function getUid(): number {
+  // 时间戳左移13位（相当于乘以8192） + 4位随机数
+  return (Date.now() << 13) | Math.floor(Math.random() * 8192);
 }
 </script>
 <style lang="scss" scoped>

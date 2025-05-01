@@ -1,145 +1,45 @@
 <template>
-  <el-card shadow="never">
+  <div
+    class="rounded bg-[var(--el-bg-color)] border border-[var(--el-border-color)] p-5 h-full md:flex flex-1 flex-col md:overflow-auto"
+  >
     <!-- 表格工具栏 -->
-    <div class="flex-x-between mb-[10px]">
+    <div class="flex flex-col md:flex-row justify-between gap-y-2.5 mb-2.5">
       <!-- 左侧工具栏 -->
-      <div>
-        <template v-for="item in toolbar" :key="item">
-          <template v-if="typeof item === 'string'">
-            <!-- 新增 -->
-            <template v-if="item === 'add'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:${item}`]"
-                type="success"
-                icon="plus"
-                @click="handleToolbar(item)"
-              >
-                新增
-              </el-button>
-            </template>
-            <!-- 删除 -->
-            <template v-else-if="item === 'delete'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:${item}`]"
-                type="danger"
-                icon="delete"
-                :disabled="removeIds.length === 0"
-                @click="handleToolbar(item)"
-              >
-                删除
-              </el-button>
-            </template>
-            <!-- 导入 -->
-            <template v-else-if="item === 'import'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:${item}`]"
-                type="default"
-                icon="upload"
-                @click="handleToolbar(item)"
-              >
-                导入
-              </el-button>
-            </template>
-            <!-- 导出 -->
-            <template v-else-if="item === 'export'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:${item}`]"
-                type="default"
-                icon="download"
-                @click="handleToolbar(item)"
-              >
-                导出
-              </el-button>
-            </template>
-          </template>
-          <!-- 其他 -->
-          <template v-else-if="typeof item === 'object'">
-            <el-button
-              v-hasPerm="[`${contentConfig.pageName}:${item.auth}`]"
-              :icon="item.icon"
-              :type="item.type ?? 'default'"
-              @click="handleToolbar(item.name)"
-            >
-              {{ item.text }}
-            </el-button>
-          </template>
+      <div class="toolbar-left flex gap-y-2.5 gap-x-2 md:gap-x-3 flex-wrap">
+        <template v-for="btn in toolbarLeftBtn">
+          <el-button
+            v-hasPerm="btn.perm ?? '*:*:*'"
+            :disabled="btn.name === 'delete' && removeIds.length === 0"
+            v-bind="btn.attrs"
+            @click="handleToolbar(btn.name)"
+          >
+            {{ btn.text }}
+          </el-button>
         </template>
       </div>
       <!-- 右侧工具栏 -->
-      <div>
-        <template v-for="item in defaultToolbar" :key="item">
-          <template v-if="typeof item === 'string'">
-            <!-- 刷新 -->
-            <template v-if="item === 'refresh'">
-              <el-button icon="refresh" circle title="刷新" @click="handleToolbar(item)" />
+      <div class="toolbar-right flex gap-y-2.5 gap-x-2 md:gap-x-3 flex-wrap">
+        <template v-for="btn in toolbarRightBtn">
+          <el-popover v-if="btn.name === 'filter'" placement="bottom" trigger="click">
+            <template #reference>
+              <el-button v-bind="btn.attrs"></el-button>
             </template>
-            <!-- 筛选列 -->
-            <template v-else-if="item === 'filter'">
-              <el-popover placement="bottom" trigger="click">
-                <template #reference>
-                  <el-button icon="Operation" circle title="筛选列" />
-                </template>
-                <el-scrollbar max-height="350px">
-                  <template v-for="col in cols" :key="col">
-                    <el-checkbox v-if="col.prop" v-model="col.show" :label="col.label" />
-                  </template>
-                </el-scrollbar>
-              </el-popover>
-            </template>
-            <!-- 导出 -->
-            <template v-else-if="item === 'exports'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:export`]"
-                icon="download"
-                circle
-                title="导出"
-                @click="handleToolbar(item)"
-              />
-            </template>
-            <!-- 导入 -->
-            <template v-else-if="item === 'imports'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:import`]"
-                icon="upload"
-                circle
-                title="导入"
-                @click="handleToolbar(item)"
-              />
-            </template>
-            <!-- 搜索 -->
-            <template v-else-if="item === 'search'">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:query`]"
-                icon="search"
-                circle
-                title="搜索"
-                @click="handleToolbar(item)"
-              />
-            </template>
-          </template>
-          <!-- 其他 -->
-          <template v-else-if="typeof item === 'object'">
-            <template v-if="item.auth">
-              <el-button
-                v-hasPerm="[`${contentConfig.pageName}:${item.auth}`]"
-                :icon="item.icon"
-                circle
-                :title="item.title"
-                @click="handleToolbar(item.name)"
-              />
-            </template>
-            <template v-else>
-              <el-button
-                :icon="item.icon"
-                circle
-                :title="item.title"
-                @click="handleToolbar(item.name)"
-              />
-            </template>
-          </template>
+            <el-scrollbar max-height="350px">
+              <template v-for="col in cols" :key="col">
+                <el-checkbox v-if="col.prop" v-model="col.show" :label="col.label" />
+              </template>
+            </el-scrollbar>
+          </el-popover>
+          <el-button
+            v-else
+            v-hasPerm="btn.perm ?? '*:*:*'"
+            v-bind="btn.attrs"
+            @click="handleToolbar(btn.name)"
+          ></el-button>
         </template>
       </div>
     </div>
+
     <!-- 列表 -->
     <el-table
       ref="tableRef"
@@ -147,6 +47,7 @@
       v-bind="contentConfig.table"
       :data="pageData"
       :row-key="pk"
+      class="flex-1"
       @selection-change="handleSelectionChange"
       @filter-change="handleFilterChange"
     >
@@ -203,7 +104,7 @@
                   :active-text="col.activeText ?? ''"
                   :inactive-text="col.inactiveText ?? ''"
                   :validate-event="false"
-                  :disabled="!hasAuth(`${contentConfig.pageName}:modify`)"
+                  :disabled="!hasButtonPerm(col.prop)"
                   @change="
                     pageData.length > 0 && handleModify(col.prop, scope.row[col.prop], scope.row)
                   "
@@ -216,7 +117,7 @@
                 <el-input
                   v-model="scope.row[col.prop]"
                   :type="col.inputType ?? 'text'"
-                  :disabled="!hasAuth(`${contentConfig.pageName}:modify`)"
+                  :disabled="!hasButtonPerm(col.prop)"
                   @blur="handleModify(col.prop, scope.row[col.prop], scope.row)"
                 />
               </template>
@@ -257,52 +158,22 @@
             </template>
             <!-- 列操作栏 -->
             <template v-else-if="col.templet === 'tool'">
-              <template v-for="item in col.operat ?? ['edit', 'delete']" :key="item">
-                <template v-if="typeof item === 'string'">
-                  <!-- 编辑/删除 -->
-                  <template v-if="item === 'edit' || item === 'delete'">
-                    <el-button
-                      v-hasPerm="[`${contentConfig.pageName}:${item}`]"
-                      :type="item === 'edit' ? 'primary' : 'danger'"
-                      :icon="item"
-                      size="small"
-                      link
-                      @click="
-                        handleOperat({
-                          name: item,
-                          row: scope.row,
-                          column: scope.column,
-                          $index: scope.$index,
-                        })
-                      "
-                    >
-                      {{ item === "edit" ? "编辑" : "删除" }}
-                    </el-button>
-                  </template>
-                </template>
-                <!-- 其他 -->
-                <template v-else-if="typeof item === 'object'">
-                  <el-button
-                    v-if="item.render === undefined || item.render(scope.row)"
-                    v-bind="
-                      item.auth ? { 'v-hasPerm': [`${contentConfig.pageName}:${item.auth}`] } : {}
-                    "
-                    :icon="item.icon"
-                    :type="item.type ?? 'primary'"
-                    size="small"
-                    link
-                    @click="
-                      handleOperat({
-                        name: item.name,
-                        row: scope.row,
-                        column: scope.column,
-                        $index: scope.$index,
-                      })
-                    "
-                  >
-                    {{ item.text }}
-                  </el-button>
-                </template>
+              <template v-for="btn in tableToolbarBtn">
+                <el-button
+                  v-if="btn.render === undefined || btn.render(scope.row)"
+                  v-hasPerm="btn.perm ?? '*:*:*'"
+                  v-bind="btn.attrs"
+                  @click="
+                    handleOperate({
+                      name: btn.name,
+                      row: scope.row,
+                      column: scope.column,
+                      $index: scope.$index,
+                    })
+                  "
+                >
+                  {{ btn.text }}
+                </el-button>
               </template>
             </template>
             <!-- 自定义 -->
@@ -313,18 +184,18 @@
         </el-table-column>
       </template>
     </el-table>
+
     <!-- 分页 -->
-    <template v-if="showPagination">
-      <el-scrollbar>
-        <div class="mt-[12px]">
-          <el-pagination
-            v-bind="pagination"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+    <div v-if="showPagination" class="mt-4">
+      <el-scrollbar :class="['h-8!', { 'flex-x-end': contentConfig?.pagePosition === 'right' }]">
+        <el-pagination
+          v-bind="pagination"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
       </el-scrollbar>
-    </template>
+    </div>
+
     <!-- 导出弹窗 -->
     <el-dialog
       v-model="exportsModalVisible"
@@ -424,7 +295,7 @@
                     v-if="contentConfig.importTemplate"
                     type="primary"
                     icon="download"
-                    :underline="false"
+                    underline="never"
                     @click="handleDownloadTemplate"
                   >
                     下载模板
@@ -449,7 +320,7 @@
         </div>
       </template>
     </el-dialog>
-  </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -465,13 +336,12 @@ import {
   type TableInstance,
 } from "element-plus";
 import ExcelJS from "exceljs";
-import { reactive, ref } from "vue";
-import type { IContentConfig, IObject, IOperatData } from "./types";
+import { reactive, ref, computed } from "vue";
+import type { IContentConfig, IObject, IOperateData } from "./types";
+import type { IToolsButton } from "./types";
 
 // 定义接收的属性
-const props = defineProps<{
-  contentConfig: IContentConfig;
-}>();
+const props = defineProps<{ contentConfig: IContentConfig }>();
 // 定义自定义事件
 const emit = defineEmits<{
   addClick: [];
@@ -479,16 +349,86 @@ const emit = defineEmits<{
   searchClick: [];
   toolbarClick: [name: string];
   editClick: [row: IObject];
-  operatClick: [data: IOperatData];
   filterChange: [data: IObject];
+  operateClick: [data: IOperateData];
 }>();
+
+// 表格工具栏按钮配置
+const config = computed(() => props.contentConfig);
+const buttonConfig = reactive<Record<string, IObject>>({
+  add: { text: "新增", attrs: { icon: "plus", type: "success" }, perm: "add" },
+  delete: { text: "删除", attrs: { icon: "delete", type: "danger" }, perm: "delete" },
+  import: { text: "导入", attrs: { icon: "upload", type: "" }, perm: "import" },
+  export: { text: "导出", attrs: { icon: "download", type: "" }, perm: "export" },
+  refresh: { text: "刷新", attrs: { icon: "refresh", type: "" }, perm: "*:*:*" },
+  filter: { text: "筛选列", attrs: { icon: "operation", type: "" }, perm: "*:*:*" },
+  search: { text: "搜索", attrs: { icon: "search", type: "" }, perm: "search" },
+  imports: { text: "批量导入", attrs: { icon: "upload", type: "" }, perm: "imports" },
+  exports: { text: "批量导出", attrs: { icon: "download", type: "" }, perm: "exports" },
+  view: { text: "查看", attrs: { icon: "view", type: "primary" }, perm: "view" },
+  edit: { text: "编辑", attrs: { icon: "edit", type: "primary" }, perm: "edit" },
+});
 
 // 主键
 const pk = props.contentConfig.pk ?? "id";
-// 表格左侧工具栏
-const toolbar = props.contentConfig.toolbar ?? ["add", "delete"];
-// 表格右侧工具栏
-const defaultToolbar = props.contentConfig.defaultToolbar ?? ["refresh", "filter"];
+// 权限名称前缀
+const authPrefix = computed(() => props.contentConfig.permPrefix);
+
+// 获取按钮权限标识
+function getButtonPerm(action: string): string | null {
+  // 如果action已经包含完整路径(包含冒号)，则直接使用
+  if (action.includes(":")) {
+    return action;
+  }
+  // 否则使用权限前缀组合
+  return authPrefix.value ? `${authPrefix.value}:${action}` : null;
+}
+
+// 检查是否有权限
+function hasButtonPerm(action: string): boolean {
+  const perm = getButtonPerm(action);
+  // 如果没有设置权限标识，则默认具有权限
+  if (!perm) return true;
+  return hasAuth(perm);
+}
+
+// 创建工具栏按钮
+function createToolbar(toolbar: Array<string | IToolsButton>, attr = {}) {
+  return toolbar.map((item) => {
+    const isString = typeof item === "string";
+    return {
+      name: isString ? item : item?.name || "",
+      text: isString ? buttonConfig[item].text : item?.text,
+      attrs: {
+        ...attr,
+        ...(isString ? buttonConfig[item].attrs : item?.attrs),
+      },
+      render: isString ? undefined : (item?.render ?? undefined),
+      perm: isString
+        ? getButtonPerm(buttonConfig[item].perm)
+        : item?.perm
+          ? getButtonPerm(item.perm as string)
+          : "*:*:*",
+    };
+  });
+}
+
+// 左侧工具栏按钮
+const toolbarLeftBtn = computed(() => {
+  if (!config.value.toolbar || config.value.toolbar.length === 0) return [];
+  return createToolbar(config.value.toolbar, {});
+});
+
+// 右侧工具栏按钮
+const toolbarRightBtn = computed(() => {
+  if (!config.value.defaultToolbar || config.value.defaultToolbar.length === 0) return [];
+  return createToolbar(config.value.defaultToolbar, { circle: true });
+});
+
+// 表格操作工具栏
+const tableToolbar = config.value.cols[config.value.cols.length - 1].operat ?? ["edit", "delete"];
+const tableToolbarBtn = createToolbar(tableToolbar, { link: true, size: "small" });
+
 // 表格列
 const cols = ref(
   props.contentConfig.cols.map((col) => {
@@ -517,7 +457,7 @@ const pageData = ref<IObject[]>([]);
 // 显示分页
 const showPagination = props.contentConfig.pagination !== false;
 // 分页配置
-const defalutPagination = {
+const defaultPagination = {
   background: true,
   layout: "total, sizes, prev, pager, next, jumper",
   pageSize: 20,
@@ -527,8 +467,8 @@ const defalutPagination = {
 };
 const pagination = reactive(
   typeof props.contentConfig.pagination === "object"
-    ? { ...defalutPagination, ...props.contentConfig.pagination }
-    : defalutPagination
+    ? { ...defaultPagination, ...props.contentConfig.pagination }
+    : defaultPagination
 );
 // 分页相关的请求参数
 const request = props.contentConfig.request ?? {
@@ -545,6 +485,11 @@ const removeIds = ref<(number | string)[]>([]);
 function handleSelectionChange(selection: any[]) {
   selectionData.value = selection;
   removeIds.value = selection.map((item) => item[pk]);
+}
+
+// 获取行选中
+function getSelectionData() {
+  return selectionData.value;
 }
 
 // 刷新
@@ -564,19 +509,24 @@ function handleDelete(id?: number | string) {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
-  }).then(function () {
-    if (props.contentConfig.deleteAction) {
-      props.contentConfig.deleteAction(ids).then(() => {
-        ElMessage.success("删除成功");
-        removeIds.value = [];
-        //清空选中项
-        tableRef.value?.clearSelection();
-        handleRefresh(true);
-      });
-    } else {
-      ElMessage.error("未配置deleteAction");
-    }
-  });
+  })
+    .then(function () {
+      if (props.contentConfig.deleteAction) {
+        props.contentConfig
+          .deleteAction(ids)
+          .then(() => {
+            ElMessage.success("删除成功");
+            removeIds.value = [];
+            //清空选中项
+            tableRef.value?.clearSelection();
+            handleRefresh(true);
+          })
+          .catch(() => {});
+      } else {
+        ElMessage.error("未配置deleteAction");
+      }
+    })
+    .catch(() => {});
 }
 
 // 导出表单
@@ -628,7 +578,7 @@ function handleCloseExportsModal() {
 function handleExports() {
   const filename = exportsFormData.filename
     ? exportsFormData.filename
-    : props.contentConfig.pageName;
+    : props.contentConfig.permPrefix || "export";
   const sheetname = exportsFormData.sheetname ? exportsFormData.sheetname : "sheet";
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheetname);
@@ -646,7 +596,7 @@ function handleExports() {
         workbook.xlsx
           .writeBuffer()
           .then((buffer) => {
-            saveXlsx(buffer, filename);
+            saveXlsx(buffer, filename as string);
           })
           .catch((error) => console.log(error));
       });
@@ -660,7 +610,7 @@ function handleExports() {
     workbook.xlsx
       .writeBuffer()
       .then((buffer) => {
-        saveXlsx(buffer, filename);
+        saveXlsx(buffer, filename as string);
       })
       .catch((error) => console.log(error));
   }
@@ -837,16 +787,17 @@ function handleToolbar(name: string) {
 }
 
 // 操作列
-function handleOperat(data: IOperatData) {
+function handleOperate(data: IOperateData) {
   switch (data.name) {
-    case "edit":
-      emit("editClick", data.row);
-      break;
     case "delete":
-      handleDelete(data.row[pk]);
+      if (props.contentConfig?.deleteAction) {
+        handleDelete(data.row[pk]);
+      } else {
+        emit("operateClick", data);
+      }
       break;
     default:
-      emit("operatClick", data);
+      emit("operateClick", data);
       break;
   }
 }
@@ -969,7 +920,15 @@ function saveXlsx(fileData: any, fileName: string) {
 }
 
 // 暴露的属性和方法
-defineExpose({ fetchPageData, exportPageData, getFilterParams });
+defineExpose({ fetchPageData, exportPageData, getFilterParams, getSelectionData, handleRefresh });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.toolbar-left,
+.toolbar-right {
+  .el-button {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+</style>

@@ -8,4 +8,12 @@
 - backend/src/test/java/com/youlai/boot/modules/retail
 
 
-## 
+## front
+## APIの受信 
+- You can @ files here
+- APIの受信  
+フロント側画面でAPIレスポンスを受信して、画面上にデータ設定するとき、
+dataという構造はなしように
+ 例：
+res.data.list → res.list に変更
+res.data.total → res.total に変更

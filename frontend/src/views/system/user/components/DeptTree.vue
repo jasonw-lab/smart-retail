@@ -21,10 +21,10 @@
 </template>
 
 <script setup lang="ts">
-import DeptAPI from "@/api/system/dept";
+import DeptAPI from "@/api/system/dept.api";
 const props = defineProps({
   modelValue: {
-    type: [Number],
+    type: [String, Number],
     default: undefined,
   },
 });

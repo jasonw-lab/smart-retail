@@ -1,19 +1,18 @@
-import DeptAPI from "@/api/system/dept";
 import type { ISearchConfig } from "@/components/CURD/types";
+import { deptArr, stateArr } from "./options";
 
 const searchConfig: ISearchConfig = {
-  pageName: "sys:user",
+  permPrefix: "sys:user",
   formItems: [
     {
+      tips: "支持模糊搜索",
       type: "input",
       label: "关键字",
       prop: "keywords",
       attrs: {
         placeholder: "用户名/昵称/手机号",
         clearable: true,
-        style: {
-          width: "200px",
-        },
+        style: { width: "200px" },
       },
     },
     {
@@ -22,20 +21,17 @@ const searchConfig: ISearchConfig = {
       prop: "deptId",
       attrs: {
         placeholder: "请选择",
-        data: [],
+        data: deptArr,
         filterable: true,
         "check-strictly": true,
         "render-after-expand": false,
         clearable: true,
-        style: {
-          width: "150px",
-        },
+        style: { width: "200px" },
       },
-      async initFn(formItem) {
-        formItem.attrs.data = await DeptAPI.getOptions();
-        // 注意:如果initFn函数不是箭头函数,this会指向此配置项对象,那么也就可以用this来替代形参formItem
-        // this.attrs!.data = await DeptAPI.getOptions();
-      },
+      // async initFn(formItem) {
+      //   // 注意:如果initFn函数不是箭头函数,this会指向此配置项对象,那么也就可以用this来替代形参formItem
+      //   formItem.attrs.data = await DeptAPI.getOptions();
+      // },
     },
     {
       type: "select",
@@ -44,28 +40,21 @@ const searchConfig: ISearchConfig = {
       attrs: {
         placeholder: "全部",
         clearable: true,
-        style: {
-          width: "100px",
-        },
+        style: { width: "200px" },
       },
-      options: [
-        { label: "启用", value: 1 },
-        { label: "禁用", value: 0 },
-      ],
+      options: stateArr,
     },
     {
       type: "date-picker",
       label: "创建时间",
-      prop: "createAt",
+      prop: "createTime",
       attrs: {
         type: "daterange",
         "range-separator": "~",
         "start-placeholder": "开始时间",
         "end-placeholder": "截止时间",
         "value-format": "YYYY-MM-DD",
-        style: {
-          width: "240px",
-        },
+        style: { width: "200px" },
       },
     },
   ],

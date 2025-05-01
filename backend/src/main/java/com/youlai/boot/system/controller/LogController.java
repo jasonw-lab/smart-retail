@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
-
 
 /**
  * 日志控制层
@@ -24,7 +22,7 @@ import java.util.List;
  * @author Ray.Hao
  * @since 2.10.0
  */
-@Tag(name = "13.日志接口")
+@Tag(name = "10.日志接口")
 @RestController
 @RequestMapping("/api/v1/logs")
 @RequiredArgsConstructor

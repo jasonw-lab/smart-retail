@@ -7,7 +7,6 @@ import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.excel.util.StringUtils;
 import com.aliyun.oss.HttpMethod;
 import com.youlai.boot.common.enums.LogModuleEnum;
 import com.youlai.boot.common.util.IPUtils;
@@ -19,10 +18,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -61,22 +58,24 @@ public class LogAspect {
      *
      * @param joinPoint 切点
      */
-    @AfterReturning(pointcut = "logPointcut() && @annotation(logAnnotation)", returning = "jsonResult")
-    public void doAfterReturning(JoinPoint joinPoint, com.youlai.boot.common.annotation.Log logAnnotation, Object jsonResult) {
-        this.saveLog(joinPoint, null, jsonResult, logAnnotation);
+    @Around("logPointcut() && @annotation(logAnnotation)")
+    public Object doAround(ProceedingJoinPoint joinPoint, com.youlai.boot.common.annotation.Log logAnnotation) throws Throwable {
+        TimeInterval timer = DateUtil.timer();
+        Object result = null;
+        Exception exception = null;
+
+        try {
+            result = joinPoint.proceed();
+        } catch (Exception e) {
+            exception = e;
+            throw e;
+        } finally {
+            long executionTime = timer.interval(); // 执行时长
+            this.saveLog(joinPoint, exception, result, logAnnotation, executionTime);
+        }
+        return result;
     }
 
-
-    /**
-     * 拦截异常操作
-     *
-     * @param joinPoint 切点
-     * @param e         异常
-     */
-    @AfterThrowing(value = "logPointcut()", throwing = "e")
-    public void doAfterThrowing(JoinPoint joinPoint, Exception e) {
-        this.saveLog(joinPoint, e, null, null);
-    }
 
     /**
      * 保存日志
@@ -86,15 +85,11 @@ public class LogAspect {
      * @param jsonResult    响应结果
      * @param logAnnotation 日志注解
      */
-    private void saveLog(final JoinPoint joinPoint, final Exception e, Object jsonResult, com.youlai.boot.common.annotation.Log logAnnotation) {
+    private void saveLog(final JoinPoint joinPoint, final Exception e, Object jsonResult, com.youlai.boot.common.annotation.Log logAnnotation, long executionTime) {
         String requestURI = request.getRequestURI();
-
-        TimeInterval timer = DateUtil.timer();
-        // 执行方法
-        long executionTime = timer.interval();
-
         // 创建日志记录
         Log log = new Log();
+        log.setExecutionTime(executionTime);
         if (logAnnotation == null && e != null) {
             log.setModule(LogModuleEnum.EXCEPTION);
             log.setContent("系统发生异常");
@@ -129,7 +124,7 @@ public class LogAspect {
             }
         }
 
-        log.setExecutionTime(executionTime);
+
         // 获取浏览器和终端系统信息
         String userAgentString = request.getHeader("User-Agent");
         UserAgent userAgent = resolveUserAgent(userAgentString);
@@ -213,7 +208,7 @@ public class LogAspect {
      * @return UserAgent
      */
     public UserAgent resolveUserAgent(String userAgentString) {
-        if (StringUtils.isBlank(userAgentString)) {
+        if (StrUtil.isBlank(userAgentString)) {
             return null;
         }
         // 给userAgentStringMD5加密一次防止过长

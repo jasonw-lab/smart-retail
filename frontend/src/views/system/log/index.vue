@@ -1,6 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
+    <!-- 搜索区域 -->
+    <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item prop="keywords" label="关键字">
           <el-input
@@ -10,28 +11,35 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+
         <el-form-item prop="createTime" label="操作时间">
           <el-date-picker
             v-model="queryParams.createTime"
             :editable="false"
-            class="!w-[240px]"
             type="daterange"
             range-separator="~"
             start-placeholder="开始时间"
             end-placeholder="截止时间"
             value-format="YYYY-MM-DD"
+            style="width: 200px"
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <el-table v-loading="loading" :data="pageData" highlight-current-row border>
+    <el-card shadow="hover" class="data-table">
+      <el-table
+        v-loading="loading"
+        :data="pageData"
+        highlight-current-row
+        border
+        class="data-table__content"
+      >
         <el-table-column label="操作时间" prop="createTime" width="180" />
         <el-table-column label="操作人" prop="operator" width="120" />
         <el-table-column label="日志模块" prop="module" width="100" />
@@ -60,7 +68,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import LogAPI, { LogPageVO, LogPageQuery } from "@/api/system/log";
+import LogAPI, { LogPageVO, LogPageQuery } from "@/api/system/log.api";
 
 const queryFormRef = ref();
 
@@ -80,6 +88,7 @@ const pageData = ref<LogPageVO[]>();
 /** 查询 */
 function handleQuery() {
   loading.value = true;
+  queryParams.pageNum = 1;
   LogAPI.getPage(queryParams)
     .then((data) => {
       pageData.value = data.list;

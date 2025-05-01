@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <!-- 搜索区域 -->
+    <div class="search-container">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="queryParams.keywords"
@@ -11,7 +12,7 @@
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="search-buttons">
           <el-button type="primary" @click="handleQuery">
             <template #icon>
               <Search />
@@ -28,13 +29,14 @@
       </el-form>
     </div>
 
-    <el-card shadow="never" class="table-container">
+    <el-card shadow="hover" class="table-card">
       <el-table
         ref="dataTableRef"
         v-loading="loading"
         :data="pageData"
         highlight-current-row
         border
+        class="data-table__content"
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="表名" prop="tableName" min-width="100" />
@@ -417,18 +419,18 @@ import Codemirror from "codemirror-editor-vue3";
 import type { CmComponentRef } from "codemirror-editor-vue3";
 import type { EditorConfiguration } from "codemirror";
 
-import { FormTypeEnum } from "@/enums/FormTypeEnum";
-import { QueryTypeEnum } from "@/enums/QueryTypeEnum";
+import { FormTypeEnum } from "@/enums/codegen/form.enum";
+import { QueryTypeEnum } from "@/enums/codegen/query.enum";
 
 import GeneratorAPI, {
   TablePageVO,
   GenConfigForm,
   TablePageQuery,
   FieldConfig,
-} from "@/api/codegen";
+} from "@/api/codegen.api";
 
-import DictAPI from "@/api/system/dict";
-import MenuAPI from "@/api/system/menu";
+import DictAPI from "@/api/system/dict.api";
+import MenuAPI from "@/api/system/menu.api";
 
 interface TreeNode {
   label: string;
@@ -656,10 +658,7 @@ async function handleOpenDialog(tableName: string) {
   currentTableName.value = tableName;
   // 获取字典数据
   DictAPI.getList().then((data) => {
-    dictOptions.value = data.map((item) => ({
-      label: item.name,
-      value: item.dictCode,
-    }));
+    dictOptions.value = data;
     loading.value = true;
     GeneratorAPI.getGenConfig(tableName)
       .then((data) => {

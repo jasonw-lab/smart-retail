@@ -1,7 +1,8 @@
 <!-- 字典 -->
 <template>
   <div class="app-container">
-    <div class="search-bar">
+    <!-- 搜索区域 -->
+    <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
@@ -11,19 +12,27 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item>
+
+        <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery()">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <div class="mb-[10px]">
-        <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
-        <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
-        </el-button>
+    <el-card shadow="hover" class="data-table">
+      <div class="data-table__toolbar">
+        <div class="data-table__toolbar--actions">
+          <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
+          <el-button
+            type="danger"
+            :disabled="ids.length === 0"
+            icon="delete"
+            @click="handleDelete()"
+          >
+            删除
+          </el-button>
+        </div>
       </div>
 
       <el-table
@@ -31,6 +40,7 @@
         highlight-current-row
         :data="tableData"
         border
+        class="data-table__content"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
@@ -129,7 +139,7 @@ defineOptions({
   inherititems: false,
 });
 
-import DictAPI, { DictPageQuery, DictPageVO, DictForm } from "@/api/system/dict";
+import DictAPI, { DictPageQuery, DictPageVO, DictForm } from "@/api/system/dict.api";
 
 import router from "@/router";
 
@@ -165,6 +175,7 @@ const computedRules = computed(() => {
 // 查询
 function handleQuery() {
   loading.value = true;
+  queryParams.pageNum = 1;
   DictAPI.getPage(queryParams)
     .then((data) => {
       tableData.value = data.list;
@@ -198,7 +209,7 @@ function handleAddClick() {
  *
  * @param id 字典ID
  */
-function handleEditClick(id: number) {
+function handleEditClick(id: string) {
   dialog.visible = true;
   dialog.title = "修改字典";
   DictAPI.getFormData(id).then((data) => {
@@ -221,7 +232,7 @@ function handleSubmitClick() {
           })
           .finally(() => (loading.value = false));
       } else {
-        DictAPI.add(formData)
+        DictAPI.create(formData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -270,17 +281,12 @@ function handleDelete(id?: number) {
   );
 }
 
-// 打开字典数据
+// 打开字典项
 function handleOpenDictData(row: DictPageVO) {
   router.push({
-    path: "/system/dict-data",
+    path: "/system/dict-item",
     query: { dictCode: row.dictCode, title: "【" + row.name + "】字典数据" },
   });
-
-  /*  router.push({
-    name: "DictData",
-    params: { dictCode: row.dictCode, title: "【" + row.name + "】字典数据" },
-  }); */
 }
 
 onMounted(() => {

@@ -35,11 +35,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> implements ConfigService {
 
-
     private final ConfigConverter configConverter;
 
     private final RedisTemplate<String, Object> redisTemplate;
-
 
     /**
      * 系统启动完成后，加载系统配置到缓存
@@ -140,11 +138,11 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
      */
     @Override
     public boolean refreshCache() {
-        redisTemplate.delete(RedisConstants.SYSTEM_CONFIG_KEY);
+        redisTemplate.delete(RedisConstants.System.CONFIG);
         List<Config> list = this.list();
         if (list != null) {
             Map<String, String> map = list.stream().collect(Collectors.toMap(Config::getConfigKey, Config::getConfigValue));
-            redisTemplate.opsForHash().putAll(RedisConstants.SYSTEM_CONFIG_KEY, map);
+            redisTemplate.opsForHash().putAll(RedisConstants.System.CONFIG, map);
             return true;
         }
         return false;
@@ -159,7 +157,7 @@ public class ConfigServiceImpl extends ServiceImpl<ConfigMapper, Config> impleme
     @Override
     public Object getSystemConfig(String key) {
         if (StringUtils.isNotBlank(key)) {
-            return redisTemplate.opsForHash().get(RedisConstants.SYSTEM_CONFIG_KEY, key);
+            return redisTemplate.opsForHash().get(RedisConstants.System.CONFIG, key);
         }
         return null;
     }

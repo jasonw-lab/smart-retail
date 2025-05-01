@@ -17,7 +17,7 @@ import com.youlai.boot.shared.auth.enums.CaptchaTypeEnum;
 import com.youlai.boot.core.security.model.AuthenticationToken;
 import com.youlai.boot.shared.auth.model.CaptchaInfo;
 import com.youlai.boot.shared.auth.service.AuthService;
-import com.youlai.boot.core.security.manager.TokenManager;
+import com.youlai.boot.core.security.token.TokenManager;
 import com.youlai.boot.shared.sms.enums.SmsTypeEnum;
 import com.youlai.boot.shared.sms.service.SmsService;
 import lombok.RequiredArgsConstructor;
@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
             log.error("发送短信验证码失败", e);
         }
         // 缓存验证码至Redis，用于登录校验
-        redisTemplate.opsForValue().set(RedisConstants.SMS_LOGIN_CODE_PREFIX + mobile, code, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(StrUtil.format(RedisConstants.Captcha.SMS_LOGIN_CODE, mobile), code, 5, TimeUnit.MINUTES);
     }
 
     /**
@@ -152,10 +152,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout() {
         String token = SecurityUtils.getTokenFromRequest();
-        if (StrUtil.isNotBlank(token) && token.startsWith(SecurityConstants.JWT_TOKEN_PREFIX)) {
-            token = token.substring(SecurityConstants.JWT_TOKEN_PREFIX.length());
+        if (StrUtil.isNotBlank(token) && token.startsWith(SecurityConstants.BEARER_TOKEN_PREFIX )) {
+            token = token.substring(SecurityConstants.BEARER_TOKEN_PREFIX .length());
             // 将JWT令牌加入黑名单
-            tokenManager.blacklistToken(token);
+            tokenManager.invalidateToken(token);
             // 清除Security上下文
             SecurityContextHolder.clearContext();
         }
@@ -196,8 +196,12 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证码文本缓存至Redis，用于登录校验
         String captchaKey = IdUtil.fastSimpleUUID();
-        redisTemplate.opsForValue().set(SecurityConstants.CAPTCHA_CODE_PREFIX + captchaKey, captchaCode,
-                captchaProperties.getExpireSeconds(), TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(
+                StrUtil.format(RedisConstants.Captcha.IMAGE_CODE, captchaKey),
+                captchaCode,
+                captchaProperties.getExpireSeconds(),
+                TimeUnit.SECONDS
+        );
 
         return CaptchaInfo.builder()
                 .captchaKey(captchaKey)
@@ -214,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthenticationToken refreshToken(String refreshToken) {
         // 验证刷新令牌
-        boolean isValidate = tokenManager.validateToken(refreshToken);
+        boolean isValidate = tokenManager.validateRefreshToken(refreshToken);
 
         if (!isValidate) {
             throw new BusinessException(ResultCode.REFRESH_TOKEN_INVALID);

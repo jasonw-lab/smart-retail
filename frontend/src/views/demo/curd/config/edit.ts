@@ -1,21 +1,22 @@
-import UserAPI, { type UserForm } from "@/api/system/user";
+import UserAPI, { type UserForm } from "@/api/system/user.api";
 import type { IModalConfig } from "@/components/CURD/types";
-import { DeviceEnum } from "@/enums/DeviceEnum";
+import { DeviceEnum } from "@/enums/settings/device.enum";
 import { useAppStore } from "@/store";
+import { deptArr, roleArr } from "./options";
 
 const modalConfig: IModalConfig<UserForm> = {
-  pageName: "sys:user",
+  permPrefix: "sys:user",
   component: "drawer",
   drawer: {
     title: "修改用户",
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   pk: "id",
-  formAction: function (data) {
-    return UserAPI.update(data.id as number, data);
-  },
   beforeSubmit(data) {
-    console.log("提交之前处理", data);
+    console.log("beforeSubmit", data);
+  },
+  formAction: function (data) {
+    return UserAPI.update(data.id as string, data);
   },
   formItems: [
     {
@@ -44,17 +45,22 @@ const modalConfig: IModalConfig<UserForm> = {
       type: "tree-select",
       attrs: {
         placeholder: "请选择所属部门",
-        data: [],
+        data: deptArr, // setup，Vue会自动解包ref，不需要.value
         filterable: true,
         "check-strictly": true,
         "render-after-expand": false,
       },
+      // async initFn(formItem) {
+      //   // 注意:如果initFn函数不是箭头函数,this会指向此配置项对象,那么也就可以用this来替代形参formItem
+      //   formItem.attrs.data = await DeptAPI.getOptions();
+      // },
     },
     {
       type: "custom",
       label: "性别",
       prop: "gender",
       initialValue: 1,
+      attrs: { style: { width: "100%" } },
     },
     {
       label: "角色",
@@ -65,8 +71,11 @@ const modalConfig: IModalConfig<UserForm> = {
         placeholder: "请选择",
         multiple: true,
       },
-      options: [],
+      options: roleArr,
       initialValue: [],
+      // async initFn(formItem) {
+      //   formItem.options = await RoleAPI.getOptions();
+      // },
     },
     {
       type: "input",
@@ -105,6 +114,7 @@ const modalConfig: IModalConfig<UserForm> = {
       prop: "status",
       type: "switch",
       attrs: {
+        inlinePrompt: true,
         activeText: "正常",
         inactiveText: "禁用",
         activeValue: 1,

@@ -6,8 +6,8 @@ import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.event.AnalysisEventListener;
+import cn.idev.excel.context.AnalysisContext;
+import cn.idev.excel.event.AnalysisEventListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.youlai.boot.common.constant.SystemConstants;
 import com.youlai.boot.common.enums.StatusEnum;
@@ -50,7 +50,7 @@ public class UserImportListener extends AnalysisEventListener<UserImportDTO> {
 
     private final List<Role> roleList;
     private final List<Dept> deptList;
-    private final List<DictData> genderList;
+    private final List<DictItem> genderList;
 
     /**
      * 当前行
@@ -71,8 +71,8 @@ public class UserImportListener extends AnalysisEventListener<UserImportDTO> {
                         .select(Role::getId, Role::getCode));
         this.deptList = SpringUtil.getBean(DeptService.class)
                 .list(new LambdaQueryWrapper<Dept>().select(Dept::getId, Dept::getCode));
-        this.genderList = SpringUtil.getBean(DictDataService.class)
-                .list(new LambdaQueryWrapper<DictData>().eq(DictData::getDictCode, DictCodeEnum.GENDER.getValue()));
+        this.genderList = SpringUtil.getBean(DictItemService.class)
+                .list(new LambdaQueryWrapper<DictItem>().eq(DictItem::getDictCode, DictCodeEnum.GENDER.getValue()));
         this.excelResult = new ExcelResult();
     }
 
@@ -202,7 +202,7 @@ public class UserImportListener extends AnalysisEventListener<UserImportDTO> {
             return this.genderList.stream()
                     .filter(r -> r.getLabel().equals(genderLabel))
                     .findFirst()
-                    .map(DictData::getValue)
+                    .map(DictItem::getValue)
                     .map(Convert::toInt)
                     .orElse(null);
         }

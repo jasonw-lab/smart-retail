@@ -40,8 +40,8 @@ public class MyDataPermissionHandler implements DataPermissionHandler {
         // 获取当前用户的数据权限
         Integer dataScope = SecurityUtils.getDataScope();
         DataScopeEnum dataScopeEnum = IBaseEnum.getEnumByValue(dataScope, DataScopeEnum.class);
-        // 如果是全部数据权限，直接返回
-        if (DataScopeEnum.ALL.equals(dataScopeEnum)) {
+        // 如果是全部数据权限或者dataScopeEnum为null，直接返回
+        if (dataScopeEnum == null || DataScopeEnum.ALL.equals(dataScopeEnum)) {
             return where;
         }
         // 获取当前执行的接口类
@@ -72,6 +72,11 @@ public class MyDataPermissionHandler implements DataPermissionHandler {
      */
     @SneakyThrows
     public static Expression dataScopeFilter(String deptAlias, String deptIdColumnName, String userAlias, String userIdColumnName,DataScopeEnum dataScopeEnum, Expression where) {
+
+        // 如果dataScopeEnum为null，直接返回原始条件
+        if (dataScopeEnum == null) {
+            return where;
+        }
 
         // 获取部门和用户的别名
         String deptColumnName = StrUtil.isNotBlank(deptAlias) ? (deptAlias + StringPool.DOT + deptIdColumnName) : deptIdColumnName;
@@ -112,4 +117,3 @@ public class MyDataPermissionHandler implements DataPermissionHandler {
 
 
 }
-

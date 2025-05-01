@@ -1,6 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
+    <!-- 搜索区域 -->
+    <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="通知标题" prop="title">
           <el-input
@@ -10,7 +11,8 @@
             @keyup.enter="handleQuery()"
           />
         </el-form-item>
-        <el-form-item>
+
+        <el-form-item class="search-buttons">
           <el-button type="primary" @click="handleQuery()">
             <template #icon>
               <Search />
@@ -27,8 +29,14 @@
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <el-table ref="dataTableRef" v-loading="loading" :data="pageData" highlight-current-row>
+    <el-card shadow="hover" class="data-table">
+      <el-table
+        ref="dataTableRef"
+        v-loading="loading"
+        :data="pageData"
+        highlight-current-row
+        class="data-table__content"
+      >
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column label="通知标题" prop="title" min-width="200" />
         <el-table-column align="center" label="通知类型" width="150">
@@ -107,7 +115,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import NoticeAPI, { NoticePageVO, NoticePageQuery, NoticeDetailVO } from "@/api/system/notice";
+import NoticeAPI, { NoticePageVO, NoticePageQuery, NoticeDetailVO } from "@/api/system/notice.api";
 
 const queryFormRef = ref();
 const pageData = ref<NoticePageVO[]>([]);

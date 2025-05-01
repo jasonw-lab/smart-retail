@@ -1,93 +1,104 @@
-# mall-mini
+<div align="center">
+  <img alt="SmartRetail Pro" width="80" height="80" src="./src/assets/smartretail-logo.svg">
+  <h1>SmartRetail Pro</h1>
+
+  <img src="https://img.shields.io/badge/Vue-3.5.13-brightgreen.svg"/>
+  <img src="https://img.shields.io/badge/Vite-6.2.2-green.svg"/>
+  <img src="https://img.shields.io/badge/Element Plus-2.9.9-blue.svg"/>
+  <img src="https://img.shields.io/badge/license-MIT-green.svg"/>
+  
+
+</div>
+
+![](https://foruda.gitee.com/images/1708618984641188532/a7cca095_716974.png "rainbow.png")
 
 
 
-## Getting started
+## Project Overview
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+[√](https://github.com/ross-dev2024/mall-retail)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Product Management
+- **Product List**: A screen to browse and search all registered products. Filtering is possible by product status, category, price, etc.
+- **Product Registration/Edit**: A screen for registering new products or updating existing product information. Set product name, description, images, price, stock quantity, etc.
+- **Inventory Management**: A screen to check and update inventory status in real-time. Features include low stock alerts and incoming stock management.
+- **Category Management**: A screen to manage the hierarchical structure of product categories. Supports drag-and-drop reordering.
 
-## Add your files
+### Order Management
+- **Order List**: Displays a list of all orders with detailed information. Filtering is possible by order status, payment status, etc.
+- **Order Details**: Shows detailed information for individual orders. Manages order items, shipping information, billing information, etc.
+- **Shipping Management**: A screen for processing order shipments and tracking delivery status. Can integrate with logistics information.
+- **Returns/Cancellation Processing**: A screen for managing and processing return and cancellation requests.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### Customer Management
+- **Customer List**: Displays a list of registered customers with detailed information. Features search and filtering capabilities.
+- **Customer Details**: Centralized management of individual customer information, purchase history, inquiry history, etc.
+- **Membership Rank Management**: A screen for managing customer membership ranks and point systems.
+- **Marketing**: A screen for managing email newsletters and special offers.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/demolist/mall-mini.git
-git branch -M main
-git push -uf origin main
-```
+### System Features
 
-## Integrate with your tools
+- **System Functions**: Provides functional modules such as user management, role management, menu management, department management, and dictionary management.
+- **Permission Management**: Supports various permission management methods including dynamic routing, button permissions, role permissions, and data permissions.
 
-- [ ] [Set up project integrations](https://gitlab.com/demolist/mall-mini/-/settings/integrations)
+- **Core Features**: Provides features such as internationalization, multiple layouts, dark mode, full screen, watermark, API documentation, and code generator.
+- **Continuous Updates**: The project is continuously updated as open source, with tools and dependencies updated in real-time.
 
-## Collaborate with your team
+## Screenshots
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+TODO
 
-## Test and Deploy
+## Technology Stack
 
-Use the built-in continuous integration in GitLab.
+### Frontend
+- **Core Framework**: [Vue.js 3.5.13](https://vuejs.org/) - A progressive JavaScript framework for building reactive UI components
+- **Development Build Tool**: [Vite 6.2.2](https://vitejs.dev/) - A modern frontend tool that provides a fast development environment and optimized builds
+- **UI Library**: [Element Plus 2.9.9](https://element-plus.org/) - A design component library for Vue 3
+- **State Management**: [Pinia 3.0.2](https://pinia.vuejs.org/) - An intuitive and TypeScript-friendly state management library for Vue
+- **Routing**: [Vue Router 4.5.0](https://router.vuejs.org/) - A routing library for Vue applications
+- **Language**: [TypeScript 5.8.3](https://www.typescriptlang.org/) - Improves code quality and development efficiency through static typing
+- **HTTP Communication**: [Axios 1.8.4](https://axios-http.com/) - A Promise-based HTTP client for browsers and Node.js
+- **Internationalization**: [Vue I18n 11.1.3](https://vue-i18n.intlify.dev/) - An internationalization library for Vue applications
+- **Data Visualization**: [ECharts 5.6.0](https://echarts.apache.org/) - A powerful chart and data visualization library
+- **Editor**: [WangEditor 5.6.34](http://www.wangeditor.com/) - A modern web rich text editor
+- **CSS**: [Sass 1.86.3](https://sass-lang.com/) - An extension language that supports efficient CSS writing
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Development Tools
+- **Code Quality**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/) - Maintains code quality and style consistency
+- **Commit Management**: [Husky 9.1.7](https://typicode.github.io/husky/), [Commitlint 19.8.0](https://commitlint.js.org/) - Git hooks and commit message standardization
+- **Package Management**: [pnpm](https://pnpm.io/) - A fast and efficient Node.js package manager
+- **Auto Import**: [unplugin-auto-import 19.1.2](https://github.com/antfu/unplugin-auto-import) - Automatic import of components and functions
+- **Utility**: [UnoCSS 65.4.3](https://github.com/unocss/unocss) - An instant on-demand utility CSS engine
 
-***
+### Backend (Optional)
+- **Java**: [Spring Boot](https://spring.io/projects/spring-boot) - A Java framework for enterprise application development
+- **Node.js**: [Nest.js](https://nestjs.com/) - A framework for building efficient and scalable server-side applications
 
-# Editing this README
+## Project Setup
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+- **Environment Preparation**
 
-## Suggestions for a good README
+| Environment Type | Name                   |
+|----------------|------------------------|
+| **Development Tool** | [Visual Studio Code](https://code.visualstudio.com/Download) |
+| **Runtime Environment** | Node 18 or higher (recommended [22.9.0](https://npmmirror.com/mirrors/node/v22.9.0/)) |
+> ⚠️ Note: Node.js 20.6.0 has some compatibility issues, please avoid using it
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- **Quick Start**
 
-## Name
-Choose a self-explaining name for your project.
+```bash
+# Clone the code
+git clone https://github.com/ross-dev2024/mall-retail.git
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+# Move to the directory
+cd mall-retail
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+# Install pnpm
+npm install pnpm -g
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+# Install dependencies
+pnpm install
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+# Start
+pnpm run
+``` 

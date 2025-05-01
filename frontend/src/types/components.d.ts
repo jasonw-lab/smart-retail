@@ -19,6 +19,7 @@ declare module "vue" {
     ElBreadcrumbItem: (typeof import("element-plus/es"))["ElBreadcrumbItem"];
     ElButton: (typeof import("element-plus/es"))["ElButton"];
     ElCard: (typeof import("element-plus/es"))["ElCard"];
+    ElCascader: (typeof import("element-plus/es"))["ElCascader"];
     ElCheckbox: (typeof import("element-plus/es"))["ElCheckbox"];
     ElCheckboxGroup: (typeof import("element-plus/es"))["ElCheckboxGroup"];
     ElCol: (typeof import("element-plus/es"))["ElCol"];
@@ -36,6 +37,7 @@ declare module "vue" {
     ElIcon: (typeof import("element-plus/es"))["ElIcon"];
     ElImage: (typeof import("element-plus/es"))["ElImage"];
     ElInput: (typeof import("element-plus/es"))["ElInput"];
+    ElInputTag: (typeof import("element-plus/es"))["ElInputTag"];
     ElInputNumber: (typeof import("element-plus/es"))["ElInputNumber"];
     ElLink: (typeof import("element-plus/es"))["ElLink"];
     ElMenu: (typeof import("element-plus/es"))["ElMenu"];
@@ -55,6 +57,7 @@ declare module "vue" {
     ElTableColumn: (typeof import("element-plus/es"))["ElTableColumn"];
     ElTag: (typeof import("element-plus/es"))["ElTag"];
     ElText: (typeof import("element-plus/es"))["ElText"];
+    ElTimeSelect: (typeof import("element-plus/es"))["ElTimeSelect"];
     ElTooltip: (typeof import("element-plus/es"))["ElTooltip"];
     ElTree: (typeof import("element-plus/es"))["ElTree"];
     ElTreeSelect: (typeof import("element-plus/es"))["ElTreeSelect"];
@@ -73,7 +76,6 @@ declare module "vue" {
     NoticeDropdown: (typeof import("./../components/Notice/NoticeDropdown.vue"))["default"];
     LayoutSelect: (typeof import("./../layout/components/Settings/components/LayoutSelect.vue"))["default"];
     PageContent: (typeof import("./../components/CURD/PageContent.vue"))["default"];
-    PageForm: (typeof import("./../components/CURD/PageForm.vue"))["default"];
     PageModal: (typeof import("./../components/CURD/PageModal.vue"))["default"];
     PageSearch: (typeof import("./../components/CURD/PageSearch.vue"))["default"];
     Pagination: (typeof import("./../components/Pagination/index.vue"))["default"];
@@ -90,7 +92,6 @@ declare module "vue" {
     SizeSelect: (typeof import("./../components/SizeSelect/index.vue"))["default"];
     TableSelect: (typeof import("./../components/TableSelect/index.vue"))["default"];
     TagsView: (typeof import("./../layout/components/TagsView/index.vue"))["default"];
-    ThemeColorPicker: (typeof import("./../layout/components/Settings/components/ThemeColorPicker.vue"))["default"];
     WangEditor: (typeof import("./../components/WangEditor/index.vue"))["default"];
   }
   export interface ComponentCustomProperties {

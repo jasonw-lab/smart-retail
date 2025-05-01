@@ -6,9 +6,8 @@ import { setupRouter } from "@/router";
 import { setupStore } from "@/store";
 import { setupElIcons } from "./icons";
 import { setupPermission } from "./permission";
+import { setupWebSocket } from "./websocket";
 import { InstallCodeMirror } from "codemirror-editor-vue3";
-import ElementPlus from "element-plus";
-import ja from "element-plus/dist/locale/ja.mjs";
 
 export default {
   install(app: App<Element>) {
@@ -22,12 +21,10 @@ export default {
     setupI18n(app);
     // Element-plus图标
     setupElIcons(app);
-    // Element-plus日本語化
-    app.use(ElementPlus, {
-      locale: ja,
-    });
     // 路由守卫
     setupPermission();
+    // WebSocket服务
+    setupWebSocket();
     // 注册 CodeMirror
     app.use(InstallCodeMirror);
   },

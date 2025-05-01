@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import { ElMessage } from "element-plus";
 import { exportToCSV } from "@/utils/exportCsv";
 import type { FormInstance } from "element-plus";
@@ -153,7 +153,7 @@ const alertSettings = reactive({
 
 // アラート一覧
 const loading = ref(false);
-const alertList = ref([
+const allAlerts = ref([
   {
     date: "2024-03-20 10:00:00",
     storeName: "東京本店",
@@ -172,14 +172,137 @@ const alertList = ref([
     threshold: 7,
     status: "processing",
   },
-  // ... その他のダミーデータ
+  {
+    date: "2024-03-20 09:15:00",
+    storeName: "大阪梅田店",
+    productName: "商品C",
+    alertType: "low_stock",
+    currentValue: 8,
+    threshold: 15,
+    status: "pending",
+  },
+  {
+    date: "2024-03-20 08:45:00",
+    storeName: "名古屋栄店",
+    productName: "商品D",
+    alertType: "high_stock",
+    currentValue: 120,
+    threshold: 100,
+    status: "pending",
+  },
+  {
+    date: "2024-03-20 08:30:00",
+    storeName: "福岡天神店",
+    productName: "商品E",
+    alertType: "expiry",
+    currentValue: "2024-03-25",
+    threshold: 7,
+    status: "processing",
+  },
+  {
+    date: "2024-03-19 17:00:00",
+    storeName: "札幌大通店",
+    productName: "商品F",
+    alertType: "low_stock",
+    currentValue: 3,
+    threshold: 10,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 16:30:00",
+    storeName: "仙台駅前店",
+    productName: "商品G",
+    alertType: "high_stock",
+    currentValue: 150,
+    threshold: 100,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 16:00:00",
+    storeName: "広島本通店",
+    productName: "商品H",
+    alertType: "expiry",
+    currentValue: "2024-03-26",
+    threshold: 7,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 15:30:00",
+    storeName: "京都四条店",
+    productName: "商品I",
+    alertType: "low_stock",
+    currentValue: 7,
+    threshold: 15,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 15:00:00",
+    storeName: "神戸三宮店",
+    productName: "商品J",
+    alertType: "low_stock",
+    currentValue: 4,
+    threshold: 10,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 14:30:00",
+    storeName: "東京本店",
+    productName: "商品K",
+    alertType: "high_stock",
+    currentValue: 110,
+    threshold: 100,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 14:00:00",
+    storeName: "横浜駅前店",
+    productName: "商品L",
+    alertType: "expiry",
+    currentValue: "2024-03-24",
+    threshold: 7,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 13:30:00",
+    storeName: "大阪梅田店",
+    productName: "商品M",
+    alertType: "low_stock",
+    currentValue: 6,
+    threshold: 15,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 13:00:00",
+    storeName: "名古屋栄店",
+    productName: "商品N",
+    alertType: "low_stock",
+    currentValue: 2,
+    threshold: 10,
+    status: "resolved",
+  },
+  {
+    date: "2024-03-19 12:30:00",
+    storeName: "福岡天神店",
+    productName: "商品O",
+    alertType: "high_stock",
+    currentValue: 130,
+    threshold: 100,
+    status: "resolved",
+  }
 ]);
 
 // ページネーション
-const total = ref(100);
+const total = ref(allAlerts.value.length);
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
+});
+
+// 現在のページのアラートデータを計算
+const alertList = computed(() => {
+  const start = (queryParams.pageNum - 1) * queryParams.pageSize;
+  const end = start + queryParams.pageSize;
+  return allAlerts.value.slice(start, end);
 });
 
 // アラートタイプの表示テキスト
@@ -278,13 +401,12 @@ const handleExport = () => {
 // ページサイズの変更
 const handleSizeChange = (val: number) => {
   queryParams.pageSize = val;
-  // TODO: データの再取得
+  queryParams.pageNum = 1; // ページサイズ変更時は1ページ目に戻る
 };
 
 // ページ番号の変更
 const handleCurrentChange = (val: number) => {
   queryParams.pageNum = val;
-  // TODO: データの再取得
 };
 </script>
 

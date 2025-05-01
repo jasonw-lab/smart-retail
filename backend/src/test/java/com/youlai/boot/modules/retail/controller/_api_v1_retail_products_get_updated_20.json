@@ -1,0 +1,19 @@
+{
+  "code" : "00000",
+  "data" : {
+    "id" : "20",
+    "createTime" : "2025-04-30 12:21:48",
+    "updateTime" : "2025-04-30 12:33:18",
+    "name" : "Updated Test Product",
+    "code" : "TP001",
+    "price" : 199.99,
+    "stock" : 100,
+    "description" : "Test Description",
+    "categoryId" : "1",
+    "categoryName" : "Test Category",
+    "sales" : 0,
+    "imageUrl" : null,
+    "expiryDate" : null
+  },
+  "msg" : "一切ok"
+}

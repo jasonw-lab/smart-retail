@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#409eff"/>
+      <stop offset="100%" style="stop-color:#67c23a"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#gradient)">
+    <!-- ShoppingBag background -->
+    <path opacity="0.2" transform="scale(1.2)" d="M27,22H5c-1.1,0-2-0.9-2-2V8c0-1.1,0.9-2,2-2h4V5c0-2.8,2.2-5,5-5h4c2.8,0,5,2.2,5,5v1h4c1.1,0,2,0.9,2,2v12 C29,21.1,28.1,22,27,22z M5,8v12h22V8H5z M21,5c0-1.7-1.3-3-3-3h-4c-1.7,0-3,1.3-3,3v1h10V5z"/>
+    <!-- ShoppingCart foreground -->
+    <path d="M24,20c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S25.1,20,24,20z M13,20c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2 S14.1,20,13,20z M13.8,15h9.5l3.5-12H11.2l-1.4-3H3v2h6l4.8,14h10.4"/>
+  </g>
+</svg> 

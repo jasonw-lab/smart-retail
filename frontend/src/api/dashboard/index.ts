@@ -1,55 +1,68 @@
 import request from "@/utils/request";
+import { mockDashboardAPI } from "./mock";
 
 const DASHBOARD_BASE_URL = "/api/v1/dashboard";
 
 const DashboardAPI = {
   /** ダッシュボードの概要データを取得 */
   getDashboardData() {
-    return request<any, DashboardDataVO>({
-      url: `${DASHBOARD_BASE_URL}/overview`,
-      method: "get",
-    });
+    // Original implementation
+    // return request<any, DashboardDataVO>({
+    //   url: `${DASHBOARD_BASE_URL}/overview`,
+    //   method: "get",
+    // });
+    return mockDashboardAPI.getDashboardData();
   },
 
   /** 商品ランキングデータを取得 */
   getProductRanking() {
-    return request<any, ProductRankingItem[]>({
-      url: `${DASHBOARD_BASE_URL}/product-ranking`,
-      method: "get",
-    });
+    // Original implementation
+    // return request<any, ProductRankingItem[]>({
+    //   url: `${DASHBOARD_BASE_URL}/product-ranking`,
+    //   method: "get",
+    // });
+    return mockDashboardAPI.getProductRanking();
   },
 
   /** 店舗データを取得 */
   getStoreData() {
-    return request<any, StoreData[]>({
-      url: `${DASHBOARD_BASE_URL}/store-data`,
-      method: "get",
-    });
+    // Original implementation
+    // return request<any, StoreData[]>({
+    //   url: `${DASHBOARD_BASE_URL}/store-data`,
+    //   method: "get",
+    // });
+    return mockDashboardAPI.getStoreData();
   },
 
   /** アラート情報を取得 */
   getAlerts() {
-    return request<any, AlertItem[]>({
-      url: `${DASHBOARD_BASE_URL}/alerts`,
-      method: "get",
-    });
+    // Original implementation
+    // return request<any, AlertItem[]>({
+    //   url: `${DASHBOARD_BASE_URL}/alerts`,
+    //   method: "get",
+    // });
+    return mockDashboardAPI.getAlerts();
   },
 
   /** 売上推移データを取得 */
   getSalesTrend(params?: { range?: string; rank?: string }) {
-    return request<any, SalesTrendData>({
-      url: `${DASHBOARD_BASE_URL}/sales-trend`,
-      method: "get",
-      params,
-    });
+    // Original implementation
+    // return request<any, SalesTrendData>({
+    //   url: `${DASHBOARD_BASE_URL}/sales-trend`,
+    //   method: "get",
+    //   params,
+    // });
+    return mockDashboardAPI.getSalesTrend(params);
   },
 
   /** 店舗別売上を取得 */
   getStoreSales() {
-    return request<any, StoreSalesData[]>({
-      url: `${DASHBOARD_BASE_URL}/store-sales`,
-      method: "get",
-    });
+    // Original implementation
+    // return request<any, StoreSalesData[]>({
+    //   url: `${DASHBOARD_BASE_URL}/store-sales`,
+    //   method: "get",
+    // });
+    return mockDashboardAPI.getStoreSales();
   },
 };
 

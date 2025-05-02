@@ -34,6 +34,19 @@ public class PageResult<T> implements Serializable {
         return result;
     }
 
+    public static <T> PageResult<T> success(List<T> list, long total) {
+        PageResult<T> result = new PageResult<>();
+        result.setCode(ResultCode.SUCCESS.getCode());
+
+        Data<T> data = new Data<>();
+        data.setList(list);
+        data.setTotal(total);
+
+        result.setData(data);
+        result.setMsg(ResultCode.SUCCESS.getMsg());
+        return result;
+    }
+
     @lombok.Data
     public static class Data<T> {
 

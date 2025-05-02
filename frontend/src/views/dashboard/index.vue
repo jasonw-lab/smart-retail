@@ -189,7 +189,7 @@
           <template #header>
             <div class="flex-x-between">
               <span class="text-gray">アラート情報</span>
-              <el-link type="primary" :underline="false" href="/inventory" target="_blank">
+              <el-link type="primary" underline="never" href="/inventory" target="_blank">
                 在庫管理
                 <el-icon class="link-icon"><TopRight /></el-icon>
               </el-link>
@@ -217,7 +217,7 @@
                   <el-text class="version-content">{{ item.content }}</el-text>
 
                   <div>
-                    <el-link :type="item.type" href="/inventory" target="_blank" :underline="false">
+                    <el-link :type="item.type" href="/inventory" target="_blank" underline="never">
                       在庫確認
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
@@ -396,7 +396,50 @@ const chartOption = ref<ChartData>({
       },
     },
   },
-  series: [],
+  series: [
+    {
+      name: "総売上",
+      type: "line",
+      data: [],
+      smooth: 0.3,
+      symbol: "none",
+      areaStyle: {
+        opacity: 0.1,
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: "#409EFF" },
+          { offset: 1, color: "#FFFFFF" },
+        ]),
+      },
+      itemStyle: {
+        color: "#409EFF",
+      },
+      lineStyle: {
+        width: 3,
+        color: "#409EFF",
+      },
+    },
+    {
+      name: "純利益",
+      type: "line",
+      data: [],
+      smooth: 0.3,
+      symbol: "none",
+      areaStyle: {
+        opacity: 0.1,
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: "#67C23A" },
+          { offset: 1, color: "#FFFFFF" },
+        ]),
+      },
+      itemStyle: {
+        color: "#67C23A",
+      },
+      lineStyle: {
+        width: 3,
+        color: "#67C23A",
+      },
+    },
+  ],
 });
 
 defineOptions({
@@ -518,7 +561,7 @@ const fetchVisitTrendData = async () => {
         name: "総売上",
         type: "line",
         data: smoothData(sales),
-        smooth: true,
+        smooth: 0.3,
         symbol: "none",
         areaStyle: {
           opacity: 0.1,
@@ -539,7 +582,7 @@ const fetchVisitTrendData = async () => {
         name: "純利益",
         type: "line",
         data: smoothData(profits),
-        smooth: true,
+        smooth: 0.3,
         symbol: "none",
         areaStyle: {
           opacity: 0.1,
@@ -662,8 +705,11 @@ const formatPercentage = (num: number) => {
 const initStoreSalesChart = () => {
   const chartDom = document.getElementById("storeSalesChart");
   if (chartDom) {
-    // storeSalesChart.value = echarts.init(chartDom);
-    // storeSalesChart.value.setOption(storeSalesChartOption.value);
+    // 既存のインスタンスを破棄
+    const existingInstance = echarts.getInstanceByDom(chartDom);
+    if (existingInstance) {
+      existingInstance.dispose();
+    }
     const myChart = echarts.init(chartDom);
     myChart.setOption(storeSalesChartOption.value);
     return myChart;
@@ -730,7 +776,7 @@ const fetchDashboardData = async () => {
           name: "総売上",
           type: "line",
           data: smoothData(sales),
-          smooth: true,
+          smooth: 0.3,
           symbol: "none",
           areaStyle: {
             opacity: 0.1,
@@ -751,7 +797,7 @@ const fetchDashboardData = async () => {
           name: "純利益",
           type: "line",
           data: smoothData(profits),
-          smooth: true,
+          smooth: 0.3,
           symbol: "none",
           areaStyle: {
             opacity: 0.1,

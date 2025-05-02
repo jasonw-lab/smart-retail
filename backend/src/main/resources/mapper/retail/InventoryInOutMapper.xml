@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.modules.retail.mapper.InventoryInOutMapper">
+
+    <!-- 結果マッピング -->
+    <resultMap id="InventoryInOutResultMap" type="com.youlai.boot.modules.retail.model.vo.InventoryInOutVO">
+        <id property="id" column="id"/>
+        <result property="storeId" column="store_id"/>
+        <result property="storeName" column="store_name"/>
+        <result property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="lotNumber" column="lot_number"/>
+        <result property="expiryDate" column="expiry_date"/>
+        <result property="status" column="status"/>
+        <result property="outOperator" column="out_operator"/>
+        <result property="outTime" column="out_time"/>
+        <result property="outType" column="out_type"/>
+        <result property="inOperator" column="in_operator"/>
+        <result property="inTime" column="in_time"/>
+        <result property="inType" column="in_type"/>
+        <result property="remarks" column="remarks"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 入出庫情報のページング検索 -->
+    <select id="getInventoryInOutPage" resultMap="InventoryInOutResultMap">
+        SELECT
+            io.id,
+            io.store_id,
+            s.store_name,
+            io.product_id,
+            p.product_name,
+            io.quantity,
+            io.lot_number,
+            io.expiry_date,
+            io.status,
+            io.out_operator,
+            io.out_time,
+            io.out_type,
+            io.in_operator,
+            io.in_time,
+            io.in_type,
+            io.remarks,
+            io.create_time,
+            io.update_time
+        FROM
+            retail_inventory_in_out io
+        LEFT JOIN
+            retail_store s ON io.store_id = s.id
+        LEFT JOIN
+            retail_product p ON io.product_id = p.id
+        <where>
+            <if test="query.storeId != null">
+                AND io.store_id = #{query.storeId}
+            </if>
+            <if test="query.productId != null">
+                AND io.product_id = #{query.productId}
+            </if>
+            <if test="query.productName != null and query.productName != ''">
+                AND p.product_name LIKE CONCAT('%', #{query.productName}, '%')
+            </if>
+            <if test="query.lotNumber != null and query.lotNumber != ''">
+                AND io.lot_number LIKE CONCAT('%', #{query.lotNumber}, '%')
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND io.status = #{query.status}
+            </if>
+            <if test="query.outOperator != null and query.outOperator != ''">
+                AND io.out_operator LIKE CONCAT('%', #{query.outOperator}, '%')
+            </if>
+            <if test="query.outTimeStart != null">
+                AND io.out_time &gt;= #{query.outTimeStart}
+            </if>
+            <if test="query.outTimeEnd != null">
+                AND io.out_time &lt;= #{query.outTimeEnd}
+            </if>
+            <if test="query.outType != null and query.outType != ''">
+                AND io.out_type = #{query.outType}
+            </if>
+            <if test="query.inOperator != null and query.inOperator != ''">
+                AND io.in_operator LIKE CONCAT('%', #{query.inOperator}, '%')
+            </if>
+            <if test="query.inTimeStart != null">
+                AND io.in_time &gt;= #{query.inTimeStart}
+            </if>
+            <if test="query.inTimeEnd != null">
+                AND io.in_time &lt;= #{query.inTimeEnd}
+            </if>
+            <if test="query.inType != null and query.inType != ''">
+                AND io.in_type = #{query.inType}
+            </if>
+        </where>
+        ORDER BY io.create_time DESC
+    </select>
+
+</mapper>

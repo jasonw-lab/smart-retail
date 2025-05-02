@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,86 +34,18 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author wangjw
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-public class InventoryControllerRestAssuredTest {
-
-    @LocalServerPort
-    private int port;
-
-    private String baseUrl;
-    private String bearerToken;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    /**
-     * Bearer認証トークンを取得する
-     */
-    private String getBearerToken() {
-        Map<String, String> loginRequest = new HashMap<>();
-        loginRequest.put("username", "admin");
-        loginRequest.put("password", "123456");
-
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .body(loginRequest)
-                .when()
-                .post("http://localhost:" + port + "/api/v1/auth/login");
-
-        String token = response.path("data.accessToken");
-        assertNotNull(token, "認証トークンが取得できませんでした");
-        return "Bearer " + token;
-    }
+public class InventoryControllerRestAssuredTest extends BaseControllerTest {
 
     @BeforeEach
-    void setUp() {
-        RestAssured.port = port;
+    @Override
+    protected void setUp() {
+        super.setUp();
         baseUrl = "http://localhost:" + port + "/api/v1/inventory";
-        bearerToken = getBearerToken();
     }
 
     /**
-     * JSONレスポンスを整形して出力する
+     * GET /api/v1/inventory/list - 在庫一覧を取得するAPIのテスト
      */
-    private void prettyPrintJson(String title, ResponseBody body) {
-        System.out.println("\n===== " + title + " =====");
-        try {
-            String prettyJson = objectMapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(body.as(Map.class));
-            System.out.println(prettyJson);
-        } catch (Exception e) {
-            System.out.println("JSON整形エラー: " + e.getMessage());
-            System.out.println(body.asString());
-        }
-    }
-
-    /**
-     * レスポンスボディをJSONファイルとして保存する
-     */
-    private void saveResponseBodyAsJson(String urlPath, ResponseBody body) {
-        try {
-            // ディレクトリ作成
-            String dirPath = "target/test-responses";
-            Path directory = Paths.get(dirPath);
-            if (!Files.exists(directory)) {
-                Files.createDirectories(directory);
-            }
-
-            // URLからファイル名を生成
-            String fileName = urlPath.replaceAll("[^a-zA-Z0-9]", "_") + ".json";
-            Path filePath = directory.resolve(fileName);
-
-            // JSONを整形
-            Map<String, Object> jsonObject = body.as(Map.class);
-            String prettyJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
-
-            // ファイルに書き込み
-            Files.writeString(filePath, prettyJson);
-            System.out.println("JSONファイルを保存しました: " + filePath.toAbsolutePath());
-        } catch (Exception e) {
-            System.out.println("JSONファイル保存エラー: " + e.getMessage());
-        }
-    }
-
     @Test
     void testGetInventoryList() {
         // レスポンスデータを変数に格納
@@ -129,7 +62,9 @@ public class InventoryControllerRestAssuredTest {
         prettyPrintJson("在庫一覧取得レスポンス", responseBody);
         System.out.println("ステータスコード: " + response.getStatusCode());
         System.out.println("レスポンスコード: " + response.path("code"));
-        System.out.println("データ件数: " + response.path("data.size()"));
+        // Check if data exists before trying to get its size
+        Object data = response.path("data");
+        System.out.println("データ件数: " + (data != null ? response.path("data.size()") : "0"));
 
         // レスポンスボディをJSONファイルとして保存
         saveResponseBodyAsJson(baseUrl + "_list", responseBody);
@@ -141,6 +76,9 @@ public class InventoryControllerRestAssuredTest {
             .body("msg", equalTo("一切ok"));
     }
 
+    /**
+     * GET /api/v1/inventory/page - 在庫情報をページング検索するAPIのテスト
+     */
     @Test
     void testGetInventoryPage() {
         InventoryPageQuery query = new InventoryPageQuery();
@@ -175,6 +113,9 @@ public class InventoryControllerRestAssuredTest {
             .body("msg", equalTo("一切ok"));
     }
 
+    /**
+     * GET /api/v1/inventory/{id} - 在庫情報の詳細を取得するAPIのテスト
+     */
     @Test
     void testGetInventoryDetail() {
         Long inventoryId = 1L; // 実際のAPIでは既存のIDを使用
@@ -205,6 +146,9 @@ public class InventoryControllerRestAssuredTest {
             .body("msg", equalTo("一切ok"));
     }
 
+    /**
+     * GET /api/v1/inventory/product/{productId} - 商品IDによる在庫情報を取得するAPIのテスト
+     */
     @Test
     void testGetInventoryByProductId() {
         Long productId = 1L; // 実際のAPIでは既存の商品IDを使用
@@ -235,6 +179,9 @@ public class InventoryControllerRestAssuredTest {
             .body("msg", equalTo("一切ok"));
     }
 
+    /**
+     * GET /api/v1/inventory/store/{storeId} - 店舗IDによる在庫情報を取得するAPIのテスト
+     */
     @Test
     void testGetInventoryByStoreId() {
         Long storeId = 1L; // 実際のAPIでは既存の店舗IDを使用
@@ -265,14 +212,17 @@ public class InventoryControllerRestAssuredTest {
             .body("msg", equalTo("一切ok"));
     }
 
+    /**
+     * POST /api/v1/inventory - 在庫情報を登録するAPIのテスト
+     */
     @Test
     void testAddInventory() {
         // 在庫情報の作成
         InventoryForm form = new InventoryForm();
         form.setStoreId(1L);
         form.setProductId(1L);
-        form.setStock(10);
-        form.setExpiryDate("2024-12-31");
+        form.setQuantity(10);
+        form.setExpiryDate(LocalDate.parse("2024-12-31"));
         form.setStatus("normal");
         form.setLotNumber("LOT-TEST-001");
         form.setRemarks("テスト用在庫データ");
@@ -304,15 +254,18 @@ public class InventoryControllerRestAssuredTest {
             .body("data", equalTo(true));
     }
 
+    /**
+     * PUT /api/v1/inventory - 在庫情報を更新するAPIのテスト
+     */
     @Test
     void testUpdateInventory() {
         // 在庫情報の更新
         InventoryForm form = new InventoryForm();
-        form.setId(1L); // 実際のAPIでは既存のIDを使用
+        // ID is not part of the form, it's used in the URL path
         form.setStoreId(1L);
         form.setProductId(1L);
-        form.setStock(20);
-        form.setExpiryDate("2024-12-31");
+        form.setQuantity(20);
+        form.setExpiryDate(LocalDate.parse("2024-12-31"));
         form.setStatus("normal");
         form.setLotNumber("LOT-TEST-002");
         form.setRemarks("更新されたテスト用在庫データ");
@@ -344,6 +297,9 @@ public class InventoryControllerRestAssuredTest {
             .body("data", equalTo(true));
     }
 
+    /**
+     * DELETE /api/v1/inventory/{id} - 在庫情報を削除するAPIのテスト
+     */
     @Test
     void testDeleteInventory() {
         Long inventoryId = 1L; // 実際のAPIでは既存のIDを使用
@@ -375,6 +331,9 @@ public class InventoryControllerRestAssuredTest {
             .body("data", equalTo(true));
     }
 
+    /**
+     * PUT /api/v1/inventory/restock - 在庫を補充するAPIのテスト
+     */
     @Test
     void testRestockInventory() {
         Long inventoryId = 1L; // 実際のAPIでは既存のIDを使用
@@ -410,6 +369,9 @@ public class InventoryControllerRestAssuredTest {
             .body("data", equalTo(true));
     }
 
+    /**
+     * GET /api/v1/inventory/history/{id} - 在庫履歴を取得するAPIのテスト
+     */
     @Test
     void testGetInventoryHistory() {
         Long inventoryId = 1L; // 実際のAPIでは既存のIDを使用

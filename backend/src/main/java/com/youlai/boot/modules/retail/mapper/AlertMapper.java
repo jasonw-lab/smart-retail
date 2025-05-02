@@ -1,14 +1,14 @@
 package com.youlai.boot.modules.retail.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.youlai.boot.modules.retail.model.entity.Product;
+import com.youlai.boot.modules.retail.model.entity.Alert;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 商品管理マッパー
+ * アラートマッパー
  *
  * @author wangjw
  */
 @Mapper
-public interface ProductMapper extends BaseMapper<Product> {
+public interface AlertMapper extends BaseMapper<Alert> {
 }

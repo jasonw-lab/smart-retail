@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.modules.retail.mapper.InventoryMapper">
+
+    <!-- 在庫情報のページング検索 -->
+    <select id="getInventoryPage" resultType="com.youlai.boot.modules.retail.model.vo.InventoryVO">
+        SELECT
+            i.id,
+            i.store_id,
+            s.store_name,
+            i.product_id,
+            p.product_name,
+            i.stock,
+            i.expiry_date,
+            i.status,
+            i.lot_number,
+            i.remarks,
+            i.create_time,
+            i.update_time
+        FROM
+            retail_inventory i
+        LEFT JOIN
+            retail_store s ON i.store_id = s.id
+        LEFT JOIN
+            retail_product p ON i.product_id = p.id
+        <where>
+            <if test="query.storeId != null">
+                AND i.store_id = #{query.storeId}
+            </if>
+            <if test="query.productName != null and query.productName != ''">
+                AND p.product_name LIKE CONCAT('%', #{query.productName}, '%')
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND i.status = #{query.status}
+            </if>
+            <if test="query.lotNumber != null and query.lotNumber != ''">
+                AND i.lot_number LIKE CONCAT('%', #{query.lotNumber}, '%')
+            </if>
+            <if test="query.expiryDateStart != null and query.expiryDateStart != ''">
+                AND i.expiry_date >= #{query.expiryDateStart}
+            </if>
+            <if test="query.expiryDateEnd != null and query.expiryDateEnd != ''">
+                AND i.expiry_date &lt;= #{query.expiryDateEnd}
+            </if>
+        </where>
+        ORDER BY i.update_time DESC
+    </select>
+
+    <!-- 在庫情報の詳細取得 -->
+    <select id="getInventoryDetail" resultType="com.youlai.boot.modules.retail.model.vo.InventoryVO">
+        SELECT
+            i.id,
+            i.store_id,
+            s.store_name,
+            i.product_id,
+            p.product_name,
+            i.stock,
+            i.expiry_date,
+            i.status,
+            i.lot_number,
+            i.remarks,
+            i.create_time,
+            i.update_time
+        FROM
+            retail_inventory i
+        LEFT JOIN
+            retail_store s ON i.store_id = s.id
+        LEFT JOIN
+            retail_product p ON i.product_id = p.id
+        WHERE
+            i.id = #{id}
+    </select>
+
+    <!-- 商品IDによる在庫情報の取得 -->
+    <select id="getInventoryByProductId" resultType="com.youlai.boot.modules.retail.model.vo.InventoryVO">
+        SELECT
+            i.id,
+            i.store_id,
+            s.store_name,
+            i.product_id,
+            p.product_name,
+            i.stock,
+            i.expiry_date,
+            i.status,
+            i.lot_number,
+            i.remarks,
+            i.create_time,
+            i.update_time
+        FROM
+            retail_inventory i
+        LEFT JOIN
+            retail_store s ON i.store_id = s.id
+        LEFT JOIN
+            retail_product p ON i.product_id = p.id
+        WHERE
+            i.product_id = #{productId}
+    </select>
+
+    <!-- 店舗IDと商品IDによる在庫情報の取得 -->
+    <select id="getInventoryByStoreIdAndProductId" resultType="com.youlai.boot.modules.retail.model.vo.InventoryVO">
+        SELECT
+            i.id,
+            i.store_id,
+            s.store_name,
+            i.product_id,
+            p.product_name,
+            i.stock,
+            i.expiry_date,
+            i.status,
+            i.lot_number,
+            i.remarks,
+            i.create_time,
+            i.update_time
+        FROM
+            retail_inventory i
+        LEFT JOIN
+            retail_store s ON i.store_id = s.id
+        LEFT JOIN
+            retail_product p ON i.product_id = p.id
+        WHERE
+            i.store_id = #{storeId}
+            AND i.product_id = #{productId}
+    </select>
+
+</mapper>

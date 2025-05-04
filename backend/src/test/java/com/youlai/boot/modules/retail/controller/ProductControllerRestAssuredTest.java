@@ -192,7 +192,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         // レスポンスボディをJSONファイルとして保存
         saveResponseBodyAsJson(baseUrl + "_list_after_create", listResponseBody);
 
-        String productId = listResponse.path("data.find { it.name == 'Test Product' }.id");
+        String productId = listResponse.path("data.find { it.productName == 'Test Product' }.id");
         System.out.println("作成された商品ID: " + productId);
 
         assertNotNull(productId, "Created product not found");

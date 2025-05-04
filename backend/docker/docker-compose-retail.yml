@@ -1,0 +1,124 @@
+# 创建一个名为 "youlai-boot" 的桥接网络，在同一个网络中的容器可以通过容器名互相访问
+networks:
+  youlai-boot:
+    driver: bridge
+
+services:
+  mysql:
+    image: mysql:8.0.29
+    container_name: youlai-mysql
+    restart: unless-stopped # 重启策略：除非手动停止容器，否则自动重启
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG= en_US.UTF-8
+      - MYSQL_ROOT_PASSWORD=123456 #设置 root 用户的密码
+    volumes:
+      - ./mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
+      - ./mysql/data:/var/lib/mysql # 持久化 MySQL 数据
+      - ../sql/mysql:/docker-entrypoint-initdb.d # 初始化 SQL 脚本目录
+    ports:
+      - 3306:3306
+    networks:
+      - youlai-boot # 加入 "youlai-boot" 网络
+
+  nacos:
+    image: nacos/nacos-server:v2.2.3 # 使用 Nacos 2.2.3 镜像
+    container_name: youlai-nacos-server
+    restart: unless-stopped # 重启策略：除非手动停止容器，否则自动重启
+    environment:
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_DB_NAME=nacos_config
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=123456
+    volumes:
+      - ./logs:/home/nacos/logs
+    ports:
+      - 8848:8848
+      - 9848:9848
+    networks:
+      - youlai-boot # 加入 "mall" 网络
+    depends_on:
+      - mysql # 保证 MySQL 服务先启动
+
+  seata:
+    image: seataio/seata-server:1.7.1
+    container_name: youlai-seata-server
+    restart: unless-stopped #  指定了容器的重启策略，除了手动停止容器，其他情况都自动重启容器
+    environment:
+      - STORE_MODE=db
+      - SEATA_IP=192.168.0.199
+      - SEATA_PORT=8091
+    volumes:
+      - ./seata/config:/seata-server/resources
+      - ./seata/logs:/root/logs/seata
+    ports:
+      - 8091:8091
+      - 7091:7091
+    networks:
+      - youlai-boot
+    depends_on:
+      - nacos
+
+  redis:
+    image: redis:7.2.3
+    container_name: youlai-redis
+    restart: unless-stopped
+    command: redis-server /etc/redis/redis.conf --requirepass 123456 --appendonly no # 启动 Redis 服务并添加密码为：123456，默认不开启 Redis AOF 方式持久化配置
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./redis/data:/data
+      - ./redis/config/redis.conf:/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    networks:
+      - youlai-boot
+
+  minio:
+    image: minio/minio:latest
+    container_name: youlai-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio
+    networks:
+      - youlai-boot
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: youlai-rabbitmq
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - youlai-boot # 加入 "mall" 网络
+
+  xxl-job-admin:
+    image: xuxueli/xxl-job-admin:2.4.0
+    container_name: youlai-xxl-job-admin
+    restart: unless-stopped
+    environment:
+      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai --spring.datasource.username=root --spring.datasource.password=123456 --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
+    volumes:
+      - ./xxljob/logs:/data/applogs
+    ports:
+      - 8080:8080
+    networks:
+      - youlai-boot

@@ -1,0 +1,23 @@
+{
+  "code" : "00000",
+  "data" : {
+    "id" : "1",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "productCode" : "P0001",
+    "productName" : "プレミアムコーヒー",
+    "barcode" : "4901234567890",
+    "categoryId" : "1",
+    "categoryName" : "飲料",
+    "unitPrice" : 980.0,
+    "costPrice" : 500.0,
+    "unit" : "個",
+    "shelfLifeDays" : 180,
+    "supplierId" : "1",
+    "supplierName" : "コーヒー株式会社",
+    "description" : "高品質なコーヒー豆を使用したプレミアムコーヒー",
+    "imageUrl" : "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop",
+    "status" : "active"
+  },
+  "msg" : "一切ok"
+}

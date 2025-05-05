@@ -5,7 +5,9 @@ networks:
 
 services:
   retail-api:
-    image: demo/retail-api:1.0-SNAPSHOT
+    build:
+      context: ..
+      dockerfile: Dockerfile
     container_name: retail-api
     restart: unless-stopped
     ports:

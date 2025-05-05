@@ -69,8 +69,21 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Override
     public boolean createProduct(ProductForm form) {
-        Product product = productConverter.form2Entity(form);
-        return this.save(product);
+        // Check if product with the same code already exists
+        LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<Product>()
+                .eq(Product::getProductCode, form.getCode());
+        Product existingProduct = this.getOne(queryWrapper, false);
+
+        if (existingProduct != null) {
+            // If product exists, update it
+            Product product = productConverter.form2Entity(form);
+            product.setId(existingProduct.getId());
+            return this.updateById(product);
+        } else {
+            // If product doesn't exist, create a new one
+            Product product = productConverter.form2Entity(form);
+            return this.save(product);
+        }
     }
 
     @Override

@@ -1,0 +1,66 @@
+name: Deploy to Konoha VPS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Check for frontend changes
+        id: check_frontend
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^frontend/"; then
+            echo "::set-output name=changed::true"
+          else
+            echo "::set-output name=changed::false"
+          fi
+
+      - name: Check for backend changes
+        id: check_backend
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^backend/"; then
+            echo "::set-output name=changed::true"
+          else
+            echo "::set-output name=changed::false"
+          fi
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.PROJECT_PATH }} && git pull"
+
+          # Build frontend if there are changes
+          if [[ "${{ steps.check_frontend.outputs.changed }}" == "true" ]]; then
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.PROJECT_PATH }}/frontend && npm install && npm run build"
+
+            # Create directories for Vue apps if they don't exist
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.PROJECT_PATH }}/backend/docker/nginx/html/retail"
+
+            # Copy built frontend to nginx html directory
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cp -r ${{ secrets.PROJECT_PATH }}/frontend/dist/* ${{ secrets.PROJECT_PATH }}/backend/docker/nginx/html/retail/"
+          fi
+
+          # Restart containers if there are changes in frontend or backend
+          if [[ "${{ steps.check_frontend.outputs.changed }}" == "true" || "${{ steps.check_backend.outputs.changed }}" == "true" ]]; then
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.PROJECT_PATH }}/backend/docker && docker-compose -f docker-compose-retail.yml -p youlai-retail down"
+            ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.PROJECT_PATH }}/backend/docker && docker-compose -f docker-compose-retail.yml -p youlai-retail up -d --build"
+          fi

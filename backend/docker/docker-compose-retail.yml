@@ -9,9 +9,9 @@ services:
     container_name: youlai-mysql
     restart: unless-stopped # 重启策略：除非手动停止容器，否则自动重启
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Asia/Tokyo
       - LANG= en_US.UTF-8
-      - MYSQL_ROOT_PASSWORD=123456 #设置 root 用户的密码
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} #设置 root 用户的密码
     volumes:
       - ./mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
       - ./mysql/data:/var/lib/mysql # 持久化 MySQL 数据
@@ -32,7 +32,7 @@ services:
       - MYSQL_SERVICE_PORT=3306
       - MYSQL_SERVICE_DB_NAME=nacos_config
       - MYSQL_SERVICE_USER=root
-      - MYSQL_SERVICE_PASSWORD=123456
+      - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_PASSWORD}
     volumes:
       - ./logs:/home/nacos/logs
     ports:
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped #  指定了容器的重启策略，除了手动停止容器，其他情况都自动重启容器
     environment:
       - STORE_MODE=db
-      - SEATA_IP=192.168.0.199
+      - SEATA_IP=youlai-seata-server
       - SEATA_PORT=8091
     volumes:
       - ./seata/config:/seata-server/resources
@@ -66,9 +66,9 @@ services:
     image: redis:7.2.3
     container_name: youlai-redis
     restart: unless-stopped
-    command: redis-server /etc/redis/redis.conf --requirepass 123456 --appendonly no # 启动 Redis 服务并添加密码为：123456，默认不开启 Redis AOF 方式持久化配置
+    command: redis-server /etc/redis/redis.conf --requirepass ${REDIS_PASSWORD} --appendonly no # 启动 Redis 服务并添加密码，默认不开启 Redis AOF 方式持久化配置
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Asia/Tokyo
     volumes:
       - ./redis/data:/data
       - ./redis/config/redis.conf:/etc/redis/redis.conf
@@ -86,10 +86,10 @@ services:
       - 9000:9000
       - 9001:9001
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Asia/Tokyo
       - LANG=en_US.UTF-8
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./minio/data:/data
       - ./minio/config:/root/.minio
@@ -101,9 +101,9 @@ services:
     container_name: youlai-rabbitmq
     restart: unless-stopped
     environment:
-      - TZ=Asia/Shanghai
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin
+      - TZ=Asia/Tokyo
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     ports:
       - 5672:5672
       - 15672:15672
@@ -115,10 +115,63 @@ services:
     container_name: youlai-xxl-job-admin
     restart: unless-stopped
     environment:
-      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai --spring.datasource.username=root --spring.datasource.password=123456 --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
+      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo --spring.datasource.username=root --spring.datasource.password=${XXL_JOB_MYSQL_PASSWORD} --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
     volumes:
       - ./xxljob/logs:/data/applogs
     ports:
       - 8080:8080
     networks:
       - youlai-boot
+
+  retail-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: youlai-retail-app
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Tokyo
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mall_retail?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER-ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER-ADDR=nacos:8848
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESSKEY=${MINIO_ROOT_USER}
+      - MINIO_SECRETKEY=${MINIO_ROOT_PASSWORD}
+    ports:
+      - 8989:8989
+    networks:
+      - youlai-boot
+    depends_on:
+      - mysql
+      - redis
+      - nacos
+      - minio
+      - rabbitmq
+      - xxl-job-admin
+
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: youlai-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf/conf.d:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/logs:/var/log/nginx
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - youlai-boot
+    depends_on:
+      - retail-app

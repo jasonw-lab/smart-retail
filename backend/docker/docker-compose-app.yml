@@ -32,9 +32,9 @@ services:
       - MINIO_SECRETKEY=${MINIO_ROOT_PASSWORD}
     networks:
       - youlai-boot
-    depends_on:
-      - mysql
-      - redis
-      - minio
-      - rabbitmq
-      - xxl-job-admin
+    external_links:
+      - youlai-mysql:mysql
+      - youlai-redis:redis
+      - youlai-minio:minio
+      - youlai-rabbitmq:rabbitmq
+      - youlai-xxl-job-admin:xxl-job-admin

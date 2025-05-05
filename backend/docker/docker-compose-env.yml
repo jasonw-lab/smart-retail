@@ -13,9 +13,9 @@ services:
       - LANG= en_US.UTF-8
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} #设置 root 用户的密码
     volumes:
-      - ./mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
-      - ./mysql/data:/var/lib/mysql # 持久化 MySQL 数据
-      - ../sql/mysql:/docker-entrypoint-initdb.d # 初始化 SQL 脚本目录
+      - /mydata/mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
+      - /mydata/mysql/data:/var/lib/mysql # 持久化 MySQL 数据
+      - /mydata/sql/mysql:/docker-entrypoint-initdb.d # 初始化 SQL 脚本目录
     ports:
       - 3306:3306
     networks:
@@ -34,7 +34,7 @@ services:
       - MYSQL_SERVICE_USER=root
       - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_PASSWORD}
     volumes:
-      - ./logs:/home/nacos/logs
+      - /mydata/nacos/logs:/home/nacos/logs
     ports:
       - 8848:8848
       - 9848:9848
@@ -52,8 +52,8 @@ services:
       - SEATA_IP=youlai-seata-server
       - SEATA_PORT=8091
     volumes:
-      - ./seata/config:/seata-server/resources
-      - ./seata/logs:/root/logs/seata
+      - /mydata/seata/config:/seata-server/resources
+      - /mydata/seata/logs:/root/logs/seata
     ports:
       - 8091:8091
       - 7091:7091
@@ -70,8 +70,8 @@ services:
     environment:
       - TZ=Asia/Tokyo
     volumes:
-      - ./redis/data:/data
-      - ./redis/config/redis.conf:/etc/redis/redis.conf
+      - /mydata/redis/data:/data
+      - /mydata/redis/config/redis.conf:/etc/redis/redis.conf
     ports:
       - 6379:6379
     networks:
@@ -91,8 +91,8 @@ services:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
-      - ./minio/data:/data
-      - ./minio/config:/root/.minio
+      - /mydata/minio/data:/data
+      - /mydata/minio/config:/root/.minio
     networks:
       - youlai-boot
 
@@ -117,7 +117,7 @@ services:
     environment:
       PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo --spring.datasource.username=root --spring.datasource.password=${XXL_JOB_MYSQL_PASSWORD} --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
     volumes:
-      - ./xxljob/logs:/data/applogs
+      - /mydata/xxljob/logs:/data/applogs
     ports:
       - 8080:8080
     networks:
@@ -164,14 +164,15 @@ services:
     container_name: youlai-nginx
     restart: unless-stopped
     volumes:
-      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf/conf.d:/etc/nginx/conf.d
-      - ./nginx/html:/usr/share/nginx/html
-      - ./nginx/logs:/var/log/nginx
+      - /mydata/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - /mydata/nginx/conf/conf.d:/etc/nginx/conf.d
+      - /mydata/nginx/html:/usr/share/nginx/html
+      - /mydata/nginx/logs:/var/log/nginx
     ports:
       - 80:80
       - 443:443
     networks:
       - youlai-boot
-    depends_on:
-      - retail-app
+    # Removed dependency on retail-app as it's commented out
+    # depends_on:
+    #   - retail-app

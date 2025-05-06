@@ -104,11 +104,11 @@ oss:
   minio:
     # 服务Endpoint
     # MinIO configuration will be provided by environment variables in Docker
-    # endpoint: http://localhost:9000
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
     # 访问凭据
-    # access-key: minioadmin
+    access-key: ${MINIO_ACCESSKEY:minioadmin}
     # 凭据密钥
-    # secret-key: minioadmin
+    secret-key: ${MINIO_SECRETKEY:minioadmin}
     # 存储桶名称
     bucket-name: public
     # (可选)自定义域名，如果配置了域名，生成的文件URL是域名格式，未配置则URL则是IP格式 (eg: https://oss.youlai.tech)

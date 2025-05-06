@@ -5,15 +5,17 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://www.youlai.tech:3306/youlai_boot?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&autoReconnect=true&allowMultiQueries=true
-    username: youlai
-    password: 123456
+    # Database configuration will be provided by environment variables in Docker
+    # url: jdbc:mysql://www.youlai.tech:3306/youlai_boot?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&autoReconnect=true&allowMultiQueries=true
+    # username: youlai
+    # password: 123456
   data:
     redis:
       database: 11
-      host: www.youlai.tech
-      port: 6379
-      password: 123456
+      # Redis configuration will be provided by environment variables in Docker
+      # host: www.youlai.tech
+      # port: 6379
+      # password: 123456
       timeout: 10s
       lettuce:
         pool:
@@ -100,11 +102,12 @@ oss:
   # MinIO 对象存储服务
   minio:
     # 服务Endpoint
-    endpoint: http://localhost:9000
+    # MinIO configuration will be provided by environment variables in Docker
+    # endpoint: http://localhost:9000
     # 访问凭据
-    access-key: minioadmin
+    # access-key: minioadmin
     # 凭据密钥
-    secret-key: minioadmin
+    # secret-key: minioadmin
     # 存储桶名称
     bucket-name: public
     # (可选)自定义域名，如果配置了域名，生成的文件URL是域名格式，未配置则URL则是IP格式 (eg: https://oss.youlai.tech)

@@ -16,6 +16,7 @@ services:
     volumes:
       - /mydata/mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
       - /mydata/mysql/data:/var/lib/mysql # 持久化 MySQL 数据
+      - /mydata/mysql/log:/var/log/mysql #日志文件目录挂载
       - /mydata/sql/mysql:/docker-entrypoint-initdb.d # 初始化 SQL 脚本目录
     ports:
       - 3306:3306

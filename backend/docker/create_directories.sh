@@ -29,43 +29,4 @@ mkdir -p /mydata/nginx/conf/conf.d
 mkdir -p /mydata/nginx/html
 mkdir -p /mydata/nginx/logs
 
-# Get the script's directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-REPO_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"
-
-# Copy MySQL configuration files
-if [ -d "$REPO_ROOT/backend/docker/mysql/conf" ] && [ "$(ls -A $REPO_ROOT/backend/docker/mysql/conf)" ]; then
-    rm -rf /mydata/mysql/conf/*
-    cp -r "$REPO_ROOT/backend/docker/mysql/conf/"* /mydata/mysql/conf/
-    echo "MySQL configuration files copied successfully."
-else
-    echo "MySQL configuration directory is empty or does not exist. Skipping."
-fi
-
-# Copy Redis configuration files
-if [ -d "$REPO_ROOT/backend/docker/redis/config" ] && [ "$(ls -A $REPO_ROOT/backend/docker/redis/config)" ]; then
-    rm -rf /mydata/redis/config/*
-    cp -r "$REPO_ROOT/backend/docker/redis/config/"* /mydata/redis/config/
-    echo "Redis configuration files copied successfully."
-else
-    echo "Redis configuration directory is empty or does not exist. Skipping."
-fi
-
-# Copy Nginx configuration and html files
-if [ -d "$REPO_ROOT/backend/docker/nginx/conf" ] && [ "$(ls -A $REPO_ROOT/backend/docker/nginx/conf)" ]; then
-    rm -rf /mydata/nginx/conf/*
-    cp -r "$REPO_ROOT/backend/docker/nginx/conf/"* /mydata/nginx/conf/
-    echo "Nginx configuration files copied successfully."
-else
-    echo "Nginx configuration directory is empty or does not exist. Skipping."
-fi
-
-if [ -d "$REPO_ROOT/backend/docker/nginx/html" ] && [ "$(ls -A $REPO_ROOT/backend/docker/nginx/html)" ]; then
-    rm -rf /mydata/nginx/html/*
-    cp -r "$REPO_ROOT/backend/docker/nginx/html/"* /mydata/nginx/html/
-    echo "Nginx HTML files copied successfully."
-else
-    echo "Nginx HTML directory is empty or does not exist. Skipping."
-fi
-
-echo "All required directories have been created and files have been copied."
+# Copy Nginx configuration and html files (remove existing files before copy)

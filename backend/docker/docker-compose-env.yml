@@ -12,6 +12,7 @@ services:
       - TZ=Asia/Tokyo
       - LANG= en_US.UTF-8
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} #设置 root 用户的密码
+      - MYSQL_DATABASE=nacos_config #创建 nacos_config 数据库
     volumes:
       - /mydata/mysql/conf/my.cnf:/etc/my.cnf # 挂载 my.cnf 文件到容器的指定路径
       - /mydata/mysql/data:/var/lib/mysql # 持久化 MySQL 数据
@@ -20,6 +21,11 @@ services:
       - 3306:3306
     networks:
       - youlai-boot # 加入 "youlai-boot" 网络
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   nacos:
     image: nacos/nacos-server:v2.2.3 # 使用 Nacos 2.2.3 镜像
@@ -33,15 +39,25 @@ services:
       - MYSQL_SERVICE_DB_NAME=nacos_config
       - MYSQL_SERVICE_USER=root
       - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_PASSWORD}
+      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Tokyo
+      - NACOS_AUTH_ENABLE=false
+      - JVM_XMS=512m
+      - JVM_XMX=512m
+      - JVM_XMN=256m
+      - MYSQL_DATABASE_NUM=1
+      - NACOS_DATABASE=nacos_config
+      - MYSQL_SERVICE_DB_INIT=true
     volumes:
       - /mydata/nacos/logs:/home/nacos/logs
+      - /mydata/nacos/init.d:/home/nacos/init.d
     ports:
       - 8848:8848
       - 9848:9848
     networks:
       - youlai-boot # 加入 "mall" 网络
     depends_on:
-      - mysql # 保证 MySQL 服务先启动
+      mysql:
+        condition: service_healthy # 保证 MySQL 服务先启动且健康检查通过
 
   seata:
     image: seataio/seata-server:1.7.1

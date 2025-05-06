@@ -42,6 +42,15 @@ else
     echo "MySQL configuration directory is empty or does not exist. Skipping."
 fi
 
+# Copy Redis configuration files
+if [ -d "$REPO_ROOT/backend/docker/redis/config" ] && [ "$(ls -A $REPO_ROOT/backend/docker/redis/config)" ]; then
+    rm -rf /mydata/redis/config/*
+    cp -r "$REPO_ROOT/backend/docker/redis/config/"* /mydata/redis/config/
+    echo "Redis configuration files copied successfully."
+else
+    echo "Redis configuration directory is empty or does not exist. Skipping."
+fi
+
 # Copy Nginx configuration and html files
 if [ -d "$REPO_ROOT/backend/docker/nginx/conf" ] && [ "$(ls -A $REPO_ROOT/backend/docker/nginx/conf)" ]; then
     rm -rf /mydata/nginx/conf/*

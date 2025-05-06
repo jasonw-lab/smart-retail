@@ -27,7 +27,7 @@ RUN apk add --no-cache maven \
     && apk del maven
 
 # 指定容器启动时执行的命令 (使用JSON格式)
-CMD ["java", "-Xms512m", "-Xmx512m", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/app.jar"]
+CMD ["java", "-Xms512m", "-Xmx512m", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.profiles.active=prod", "-jar", "/app/app.jar"]
 
 # 暴露容器的端口
 EXPOSE 8989

@@ -18,7 +18,7 @@ services:
     environment:
       - TZ=Asia/Tokyo
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mall_retail?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/youlai_boot?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - SPRING_REDIS_HOST=redis

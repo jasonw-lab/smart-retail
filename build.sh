@@ -18,6 +18,7 @@ pnpm build
 
 # Create target directory if it doesn't exist
 echo "Creating target directory if it doesn't exist..."
+rm -rf /mydata/nginx/html/retail
 mkdir -p /mydata/nginx/html/retail
 
 # Copy the built assets to the target directory

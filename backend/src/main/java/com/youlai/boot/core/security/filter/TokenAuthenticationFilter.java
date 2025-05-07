@@ -39,6 +39,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // Skip token validation for captcha endpoint
+        String requestURI = request.getRequestURI();
+        if (requestURI.endsWith("/api/v1/auth/captcha")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 

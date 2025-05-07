@@ -70,6 +70,12 @@ public class SecurityConfig {
                             if (ArrayUtil.isNotEmpty(ignoreUrls)) {
                                 requestMatcherRegistry.requestMatchers(ignoreUrls).permitAll();
                             }
+                            requestMatcherRegistry
+                            .requestMatchers("/api/v1/auth/captcha").permitAll()
+                            .requestMatchers("/api/v1/auth/login/**").permitAll()
+                            .requestMatchers("/api/v1/auth/refresh-token").permitAll()
+                            .requestMatchers("/ws/**").permitAll();
+
                             // 其他所有请求需登录后访问
                             requestMatcherRegistry.anyRequest().authenticated();
                         }

@@ -9,6 +9,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import java.io.IOException;
  * @author wangtao
  * @since 2025/3/6 16:50
  */
+@Slf4j
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     /**
@@ -39,6 +41,17 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // Skip token validation for captcha endpoint
+        String requestURI = request.getRequestURI();
+
+//        // ログ出力：例外発生時にエラーログを記録
+//        log.info("requestURI ", requestURI);
+//
+//        if (requestURI.endsWith("/api/v1/auth/captcha")) {
+//            filterChain.doFilter(request, response);
+//            log.info("requestURI skip");
+//            return;
+//        }
 
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -61,6 +74,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
+            // ログ出力：例外発生時にエラーログを記録
+            log.error("Token authentication failed: {}", ex.getMessage(), ex);
+
             // 安全上下文清除保障（防止上下文残留）
             SecurityContextHolder.clearContext();
             ResponseUtils.writeErrMsg(response, ResultCode.ACCESS_TOKEN_INVALID);

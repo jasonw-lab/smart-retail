@@ -49,7 +49,7 @@ export default defineMock([
         },
         {
           value: 3,
-          label: "访问游客",
+          label: "访问游客 ",
         },
       ],
       msg: "一切ok",

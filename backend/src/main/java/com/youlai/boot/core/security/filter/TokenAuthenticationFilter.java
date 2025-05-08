@@ -44,14 +44,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         // Skip token validation for captcha endpoint
         String requestURI = request.getRequestURI();
 
-        // ログ出力：例外発生時にエラーログを記録
-        log.info("requestURI ", requestURI);
-
-        if (requestURI.endsWith("/api/v1/auth/captcha")) {
-            filterChain.doFilter(request, response);
-            log.info("requestURI skip");
-            return;
-        }
+//        // ログ出力：例外発生時にエラーログを記録
+//        log.info("requestURI ", requestURI);
+//
+//        if (requestURI.endsWith("/api/v1/auth/captcha")) {
+//            filterChain.doFilter(request, response);
+//            log.info("requestURI skip");
+//            return;
+//        }
 
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 

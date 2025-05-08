@@ -3,9 +3,18 @@
 # Exit on error
 set -e
 
+#source ~/.bashrc
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+echo "node version: $(node -v)"
+echo "npm version: $(npm -v)"
+
 echo "Starting build process for frontend..."
 
+
+
 # Navigate to the frontend directory
+git pull
 cd frontend
 
 # Install dependencies

@@ -46,7 +46,7 @@ cp -r ../../frontend/dist/* ./nginx/html/retail/
 ### 启动 Docker 容器
 
 ```bash
-docker-compose -f ./docker-compose-retail.yml -p youlai-retail up -d
+docker-compose -f ./docker-compose-env.yml -p youlai-retail up -d
 ```
 
 - p youlai-boot/youlai-retail 指定命名空间，避免与其他容器冲突，这里方便管理，统一管理和卸载
@@ -58,7 +58,7 @@ docker-compose -f ./docker-compose.yml -p youlai-boot down
 
 ## 卸载完整环境
 ```bash
-docker-compose -f ./docker-compose-retail.yml -p youlai-retail down
+docker-compose -f ./docker-compose-env.yml -p youlai-retail down
 ```
 
 ## 访问

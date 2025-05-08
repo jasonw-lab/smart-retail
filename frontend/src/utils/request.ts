@@ -15,10 +15,17 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const whiteList = ["/v1/auth/captcha", "/v1/auth/login"];
     const accessToken = getAccessToken();
-    // 如果 Authorization 设置为 no-auth，则不携带 Token
-    if (config.headers.Authorization !== "no-auth" && accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+
+    // 認証が不要なURLの場合はトークンを付けない
+    if (!whiteList.includes(config.url ?? "")) {
+      // 如果 Authorization 设置为 no-auth，则不携带 Token
+      if (config.headers.Authorization !== "no-auth" && accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      } else {
+        delete config.headers.Authorization;
+      }
     } else {
       delete config.headers.Authorization;
     }

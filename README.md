@@ -16,7 +16,7 @@
 
 ## プロジェクト概要
 
-[√](https://github.com/ross-dev2024/mall-retail)
+[√](https://github.com/jasonw-lab/smart-retail.git)
 
 ### 商品管理
 - **商品一覧**: 登録された全商品を閲覧・検索できる画面。商品のステータス、カテゴリー、価格などでフィルタリング可能。
@@ -93,7 +93,7 @@ TODO
 
 ```bash
 # コードのクローン
-git clone https://github.com/ross-dev2024/mall-retail.git
+git clone https://github.com/jasonw-lab/smart-retail.git.git
 
 # ディレクトリに移動
 cd mall-retail

@@ -16,7 +16,7 @@
 
 ## Project Overview
 
-[√](https://github.com/ross-dev2024/mall-retail)
+[√](https://github.com/jasonw-lab/smart-retail.git)
 
 ### Product Management
 - **Product List**: A screen to browse and search all registered products. Filtering is possible by product status, category, price, etc.
@@ -88,7 +88,7 @@ TODO
 
 ```bash
 # Clone the code
-git clone https://github.com/ross-dev2024/mall-retail.git
+git clone https://github.com/jasonw-lab/smart-retail.git.git
 
 # Move to the directory
 cd mall-retail

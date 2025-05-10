@@ -44,7 +44,7 @@ A script has been provided to create all the necessary directories:
 1. Run the `create_directories.sh` script to create all the necessary directories:
 
 ```bash
-sudo ./create_directories.sh
+sudo ./create_nginx_env.sh
 ```
 
 2. Create a `.env` file based on the `.env.example` file:

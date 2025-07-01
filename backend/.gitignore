@@ -2,6 +2,9 @@
 ### Example sysUserDetails template template
 ### Example sysUserDetails template
 
+# Environment variables
+.env
+
 # IntelliJ project files
 .idea
 *.iml

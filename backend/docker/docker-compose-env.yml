@@ -28,56 +28,56 @@ services:
       timeout: 5s
       retries: 10
 
-  nacos:
-    image: nacos/nacos-server:v2.2.3 # 使用 Nacos 2.2.3 镜像
-    container_name: youlai-nacos-server
-    restart: unless-stopped # 重启策略：除非手动停止容器，否则自动重启
-    environment:
-      - MODE=standalone
-      - SPRING_DATASOURCE_PLATFORM=mysql
-      - MYSQL_SERVICE_HOST=mysql
-      - MYSQL_SERVICE_PORT=3306
-      - MYSQL_SERVICE_DB_NAME=nacos_config
-      - MYSQL_SERVICE_USER=root
-      - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_PASSWORD}
-      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Tokyo
-      - NACOS_AUTH_ENABLE=false
-      - JVM_XMS=512m
-      - JVM_XMX=512m
-      - JVM_XMN=256m
-      - MYSQL_DATABASE_NUM=1
-      - NACOS_DATABASE=nacos_config
-      - MYSQL_SERVICE_DB_INIT=true
-    volumes:
-      - /mydata/nacos/logs:/home/nacos/logs
-      - /mydata/nacos/init.d:/home/nacos/init.d
-    ports:
-      - 8848:8848
-      - 9848:9848
-    networks:
-      - youlai-boot # 加入 "mall" 网络
-    depends_on:
-      mysql:
-        condition: service_healthy # 保证 MySQL 服务先启动且健康检查通过
+#  nacos:
+#    image: nacos/nacos-server:v2.2.3 # 使用 Nacos 2.2.3 镜像
+#    container_name: youlai-nacos-server
+#    restart: unless-stopped # 重启策略：除非手动停止容器，否则自动重启
+#    environment:
+#      - MODE=standalone
+#      - SPRING_DATASOURCE_PLATFORM=mysql
+#      - MYSQL_SERVICE_HOST=mysql
+#      - MYSQL_SERVICE_PORT=3306
+#      - MYSQL_SERVICE_DB_NAME=nacos_config
+#      - MYSQL_SERVICE_USER=root
+#      - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_PASSWORD}
+#      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Tokyo
+#      - NACOS_AUTH_ENABLE=false
+#      - JVM_XMS=512m
+#      - JVM_XMX=512m
+#      - JVM_XMN=256m
+#      - MYSQL_DATABASE_NUM=1
+#      - NACOS_DATABASE=nacos_config
+#      - MYSQL_SERVICE_DB_INIT=true
+#    volumes:
+#      - /mydata/nacos/logs:/home/nacos/logs
+#      - /mydata/nacos/init.d:/home/nacos/init.d
+#    ports:
+#      - 8848:8848
+#      - 9848:9848
+#    networks:
+#      - youlai-boot # 加入 "mall" 网络
+#    depends_on:
+#      mysql:
+#        condition: service_healthy # 保证 MySQL 服务先启动且健康检查通过
 
-  seata:
-    image: seataio/seata-server:1.7.1
-    container_name: youlai-seata-server
-    restart: unless-stopped #  指定了容器的重启策略，除了手动停止容器，其他情况都自动重启容器
-    environment:
-      - STORE_MODE=db
-      - SEATA_IP=youlai-seata-server
-      - SEATA_PORT=8091
-    volumes:
-      - /mydata/seata/config:/seata-server/resources
-      - /mydata/seata/logs:/root/logs/seata
-    ports:
-      - 8091:8091
-      - 7091:7091
-    networks:
-      - youlai-boot
-    depends_on:
-      - nacos
+#  seata:
+#    image: seataio/seata-server:1.7.1
+#    container_name: youlai-seata-server
+#    restart: unless-stopped #  指定了容器的重启策略，除了手动停止容器，其他情况都自动重启容器
+#    environment:
+#      - STORE_MODE=db
+#      - SEATA_IP=youlai-seata-server
+#      - SEATA_PORT=8091
+#    volumes:
+#      - /mydata/seata/config:/seata-server/resources
+#      - /mydata/seata/logs:/root/logs/seata
+#    ports:
+#      - 8091:8091
+#      - 7091:7091
+#    networks:
+#      - youlai-boot
+#    depends_on:
+#      - nacos
 
   redis:
     image: redis:7.2.3

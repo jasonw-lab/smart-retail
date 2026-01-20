@@ -29,6 +29,9 @@ mkdir -p /mydata/nginx/conf/conf.d
 mkdir -p /mydata/nginx/html
 mkdir -p /mydata/nginx/logs
 
+# Clean up legacy ec-demo include that conflicts with new snippet name
+rm -f /mydata/nginx/conf/conf.d/ec-demo.conf
+
 # Get the script's directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"

@@ -237,6 +237,19 @@ gh pr create --title "feat(scope): description (issue-XXX)" \
 - **Claude CLI では PR 作成まで**
 - 承認・マージは GitHub Web UI で手動実施
 
+### 8. Issue対応完了の記録
+- **PR マージ後**、`plan_issue.md` を更新
+- 該当 Issue のステータスを「対応完了」に変更
+- 完了日時とPR番号を記録
+
+```markdown
+## Issue一覧
+
+| Issue番号 | タイトル | ステータス | 担当 | 完了日 | PR |
+|----------|---------|----------|------|--------|-----|
+| issue-001 | 機能追加 | ✅ 完了 | - | 2026-01-29 | #123 |
+```
+
 ---
 
 **最終更新**: 2026年1月29日

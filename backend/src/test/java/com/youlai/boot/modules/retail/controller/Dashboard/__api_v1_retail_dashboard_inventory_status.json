@@ -1,0 +1,32 @@
+{
+  "code" : "00000",
+  "data" : [ {
+    "productId" : "1",
+    "productName" : "プレミアムコーヒー",
+    "productCode" : "P0001",
+    "storeId" : "1",
+    "storeName" : "東京本店",
+    "quantity" : 5,
+    "reorderPoint" : 10,
+    "status" : "LOW"
+  }, {
+    "productId" : "1",
+    "productName" : "プレミアムコーヒー",
+    "productCode" : "P0001",
+    "storeId" : "5",
+    "storeName" : "福岡博多店",
+    "quantity" : 7,
+    "reorderPoint" : 10,
+    "status" : "LOW"
+  }, {
+    "productId" : "1",
+    "productName" : "プレミアムコーヒー",
+    "productCode" : "P0001",
+    "storeId" : "3",
+    "storeName" : "金沢店",
+    "quantity" : 8,
+    "reorderPoint" : 10,
+    "status" : "LOW"
+  } ],
+  "msg" : "一切ok"
+}

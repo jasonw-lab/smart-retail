@@ -61,6 +61,8 @@
 
 ---
 
+sqlについては以下に格納　backend/sql
+
 ## 3. Issue一覧
 
 ### Phase 0: 基盤機能
@@ -593,40 +595,7 @@ frontend/src/api/retail/
 - **ECharts**: グラフ表示
 - **NoticeDropdown**: 通知表示
 
-### 6.3 開発フロー
-
-1. **ブランチ作成**
-   ```bash
-   git checkout develop
-   git checkout -b feature/issue-<番号>-<概要>
-   ```
-
-2. **実装**
-   - 1 Issue = 1 ブランチ
-   - バックエンド: ビジネスロジック + テストコードをセット作成
-   - フロントエンド: 画面 + API連携
-
-3. **テスト・ビルド確認**
-   - ビルドエラーがないことを確認
-   - テストケースが全て通ることを確認
-
-4. **動作確認（ユーザー目視）**
-   - テスト・ビルド完了後、一旦停止
-   - ユーザーが目視で動作確認
-
-5. **コミット・プッシュ**
-   ```bash
-   git add <files>
-   git commit -m "feat(retail): description (issue-XXX)"
-   git push -u origin feature/issue-XXX-description
-   ```
-
-6. **PR作成**
-   ```bash
-   gh pr create --title "feat(retail): description (issue-XXX)" \
-     --body "## Summary\n- ...\n\n## Test plan\n- [ ] ..." \
-     --base develop
-   ```
+**注**: 開発フローの詳細は `CLAUDE.md` を参照してください。
 
 ---
 
@@ -711,3 +680,22 @@ frontend/src/api/retail/
 ---
 
 **以上**
+
+---
+
+# QA
+
+※ AI同士のやり取り、Issue対応時は本セクション（# QA）を参照する必要はありません（人間向けの確認用）。
+
+## 時間 質問者
+
+Q1 ....
+
+---
+
+# レビュー指摘（追記）
+
+- `## 7. 補足事項` が重複しているため、どちらか片方を削除してください。
+- 表紙の **バージョン**（現在: 1.0）と「変更履歴」の最新バージョン（現在: 1.1）が不整合なので、最新がどちらかに統一してください。
+- Issueごとの「完了条件（DoD）」が成果物ベースで揃っている一方、レビュー観点（例: 例外系/権限/監査ログ/バリデーション、DBロールバック方針、API互換性）をテンプレ化すると運用が安定します。
+- Phase 2のE2Eテストは、使用ツール（例: Playwright/Cypress）と実行場所（CI/ローカル）、最低限のテストデータ投入手順を明記すると着手しやすいです。

@@ -118,4 +118,12 @@ public class AlertServiceImpl extends ServiceImpl<AlertMapper, Alert> implements
         alert.setResolved(true);
         return this.updateById(alert);
     }
+
+    @Override
+    public List<Alert> getRecentAlerts(Integer limit) {
+        LambdaQueryWrapper<Alert> queryWrapper = new LambdaQueryWrapper<Alert>()
+                .orderByDesc(Alert::getAlertDate)
+                .last("LIMIT " + limit);
+        return this.list(queryWrapper);
+    }
 }

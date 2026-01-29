@@ -1,0 +1,115 @@
+{
+  "code" : "00000",
+  "data" : [ {
+    "id" : "15",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "3",
+    "productId" : "2",
+    "lotNumber" : "LOT20240320-008",
+    "alertType" : "LOW_STOCK",
+    "alertMessage" : "在庫が少なくなっています。",
+    "alertDate" : "2024-03-21 00:00:00",
+    "resolved" : false
+  }, {
+    "id" : "14",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "2",
+    "productId" : "1",
+    "lotNumber" : "LOT20240320-007",
+    "alertType" : "EXPIRED",
+    "alertMessage" : "賞味期限が近づいています。",
+    "alertDate" : "2024-03-20 23:00:00",
+    "resolved" : false
+  }, {
+    "id" : "13",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "2",
+    "productId" : "1",
+    "lotNumber" : "LOT20240320-007",
+    "alertType" : "LOW_STOCK",
+    "alertMessage" : "在庫が少なくなっています。",
+    "alertDate" : "2024-03-20 22:00:00",
+    "resolved" : false
+  }, {
+    "id" : "12",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "1",
+    "productId" : "3",
+    "lotNumber" : "LOT20240320-006",
+    "alertType" : "EXPIRED",
+    "alertMessage" : "賞味期限が近づいています。",
+    "alertDate" : "2024-03-20 21:00:00",
+    "resolved" : false
+  }, {
+    "id" : "11",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "1",
+    "productId" : "3",
+    "lotNumber" : "LOT20240320-006",
+    "alertType" : "LOW_STOCK",
+    "alertMessage" : "在庫が少なくなっています。",
+    "alertDate" : "2024-03-20 20:00:00",
+    "resolved" : false
+  }, {
+    "id" : "10",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "5",
+    "productId" : "2",
+    "lotNumber" : "LOT20240320-005",
+    "alertType" : "EXPIRED",
+    "alertMessage" : "賞味期限が近づいています。",
+    "alertDate" : "2024-03-20 19:00:00",
+    "resolved" : false
+  }, {
+    "id" : "9",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "5",
+    "productId" : "2",
+    "lotNumber" : "LOT20240320-005",
+    "alertType" : "LOW_STOCK",
+    "alertMessage" : "在庫が少なくなっています。",
+    "alertDate" : "2024-03-20 18:00:00",
+    "resolved" : false
+  }, {
+    "id" : "8",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "4",
+    "productId" : "1",
+    "lotNumber" : "LOT20240320-004",
+    "alertType" : "EXPIRED",
+    "alertMessage" : "賞味期限が近づいています。",
+    "alertDate" : "2024-03-20 17:00:00",
+    "resolved" : false
+  }, {
+    "id" : "7",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "4",
+    "productId" : "1",
+    "lotNumber" : "LOT20240320-004",
+    "alertType" : "LOW_STOCK",
+    "alertMessage" : "在庫が少なくなっています。",
+    "alertDate" : "2024-03-20 16:00:00",
+    "resolved" : false
+  }, {
+    "id" : "6",
+    "createTime" : "2025-05-02 13:47:29",
+    "updateTime" : "2025-05-02 13:47:29",
+    "storeId" : "3",
+    "productId" : "3",
+    "lotNumber" : "LOT20240320-003",
+    "alertType" : "EXPIRED",
+    "alertMessage" : "賞味期限が近づいています。",
+    "alertDate" : "2024-03-20 15:00:00",
+    "resolved" : false
+  } ],
+  "msg" : "一切ok"
+}

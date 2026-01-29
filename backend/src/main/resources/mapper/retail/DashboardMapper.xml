@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.modules.retail.mapper.DashboardMapper">
+
+    <!-- 在庫状況取得 -->
+    <select id="getInventoryStatus" resultType="com.youlai.boot.modules.retail.model.vo.InventoryStatusVO">
+        SELECT
+            i.product_id,
+            p.product_name,
+            p.product_code,
+            i.store_id,
+            s.store_name,
+            i.quantity,
+            i.min_stock AS reorder_point,
+            CASE
+                WHEN i.quantity &lt;= 0 THEN 'OUT'
+                WHEN i.quantity &lt;= i.min_stock THEN 'LOW'
+                ELSE 'NORMAL'
+            END AS status
+        FROM retail_inventory i
+        INNER JOIN retail_product p ON i.product_id = p.id
+        LEFT JOIN retail_store s ON i.store_id = s.id
+        WHERE i.quantity &lt;= i.min_stock
+        ORDER BY
+            CASE
+                WHEN i.quantity &lt;= 0 THEN 1
+                WHEN i.quantity &lt;= i.min_stock THEN 2
+                ELSE 3
+            END,
+            i.quantity ASC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+</mapper>

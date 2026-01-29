@@ -37,15 +37,30 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardKpiVO getKpi() {
         DashboardKpiVO kpi = new DashboardKpiVO();
 
-        // 本日売上取得（モックデータ）
-        // TODO: 実際の売上データから取得
-        kpi.setTodaySales(new BigDecimal("2450000"));
-        kpi.setSalesGrowthRate(new BigDecimal("15.5"));
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
 
-        // 店舗数取得（モックデータ）
-        // TODO: 実際の店舗データから取得
-        kpi.setActiveStoreCount(8);
-        kpi.setTotalStoreCount(10);
+        // 本日売上取得
+        BigDecimal todaySales = dashboardMapper.getTodaySales(today);
+        kpi.setTodaySales(todaySales != null ? todaySales : BigDecimal.ZERO);
+
+        // 前日売上取得して前日比計算
+        BigDecimal yesterdaySales = dashboardMapper.getYesterdaySales(yesterday);
+        if (yesterdaySales != null && yesterdaySales.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal growthRate = todaySales.subtract(yesterdaySales)
+                    .divide(yesterdaySales, 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100"))
+                    .setScale(1, RoundingMode.HALF_UP);
+            kpi.setSalesGrowthRate(growthRate);
+        } else {
+            kpi.setSalesGrowthRate(BigDecimal.ZERO);
+        }
+
+        // 店舗数取得
+        Integer activeStoreCount = dashboardMapper.getActiveStoreCount();
+        Integer totalStoreCount = dashboardMapper.getTotalStoreCount();
+        kpi.setActiveStoreCount(activeStoreCount != null ? activeStoreCount : 0);
+        kpi.setTotalStoreCount(totalStoreCount != null ? totalStoreCount : 0);
 
         // 未対応アラート数取得
         long pendingAlertCount = alertMapper.selectCount(new LambdaQueryWrapper<Alert>()
@@ -62,28 +77,27 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<SalesTrendVO> getSalesTrend(LocalDate startDate, LocalDate endDate) {
-        // モックデータ生成
-        // TODO: 実際の売上データから取得
-        List<SalesTrendVO> trendList = new ArrayList<>();
+        // データベースから売上推移取得
+        List<SalesTrendVO> trendList = dashboardMapper.getSalesTrend(startDate, endDate);
 
-        LocalDate currentDate = startDate;
-        BigDecimal baseSales = new BigDecimal("300000");
-
-        while (!currentDate.isAfter(endDate)) {
-            SalesTrendVO trend = new SalesTrendVO();
-            trend.setDate(currentDate);
-
-            // ランダムな売上金額生成（デモ用）
-            BigDecimal randomFactor = new BigDecimal(0.8 + Math.random() * 0.4);
-            BigDecimal salesAmount = baseSales.multiply(randomFactor).setScale(0, RoundingMode.HALF_UP);
-            trend.setSalesAmount(salesAmount);
-
-            // 前日比計算（デモ用）
-            BigDecimal growthRate = new BigDecimal(-10 + Math.random() * 30).setScale(1, RoundingMode.HALF_UP);
-            trend.setGrowthRate(growthRate);
-
-            trendList.add(trend);
-            currentDate = currentDate.plusDays(1);
+        // 前日比計算
+        for (int i = 0; i < trendList.size(); i++) {
+            SalesTrendVO current = trendList.get(i);
+            if (i > 0) {
+                SalesTrendVO previous = trendList.get(i - 1);
+                BigDecimal previousAmount = previous.getSalesAmount();
+                if (previousAmount != null && previousAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal growthRate = current.getSalesAmount().subtract(previousAmount)
+                            .divide(previousAmount, 4, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal("100"))
+                            .setScale(1, RoundingMode.HALF_UP);
+                    current.setGrowthRate(growthRate);
+                } else {
+                    current.setGrowthRate(BigDecimal.ZERO);
+                }
+            } else {
+                current.setGrowthRate(BigDecimal.ZERO);
+            }
         }
 
         return trendList;

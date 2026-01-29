@@ -1,33 +1,5 @@
 {
   "code" : "00000",
-  "data" : [ {
-    "date" : "2026-01-23",
-    "salesAmount" : 302826,
-    "growthRate" : 14.3
-  }, {
-    "date" : "2026-01-24",
-    "salesAmount" : 325112,
-    "growthRate" : -2.2
-  }, {
-    "date" : "2026-01-25",
-    "salesAmount" : 293123,
-    "growthRate" : 8.9
-  }, {
-    "date" : "2026-01-26",
-    "salesAmount" : 284252,
-    "growthRate" : 2.3
-  }, {
-    "date" : "2026-01-27",
-    "salesAmount" : 351839,
-    "growthRate" : 3.2
-  }, {
-    "date" : "2026-01-28",
-    "salesAmount" : 300770,
-    "growthRate" : -5.8
-  }, {
-    "date" : "2026-01-29",
-    "salesAmount" : 279663,
-    "growthRate" : 4.8
-  } ],
+  "data" : [ ],
   "msg" : "一切ok"
 }

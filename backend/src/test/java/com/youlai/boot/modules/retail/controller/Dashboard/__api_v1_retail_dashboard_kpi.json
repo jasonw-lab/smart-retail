@@ -1,10 +1,10 @@
 {
   "code" : "00000",
   "data" : {
-    "todaySales" : 2450000,
-    "salesGrowthRate" : 15.5,
-    "activeStoreCount" : 8,
-    "totalStoreCount" : 10,
+    "todaySales" : 0.0,
+    "salesGrowthRate" : 0,
+    "activeStoreCount" : 5,
+    "totalStoreCount" : 5,
     "pendingAlertCount" : 15,
     "outOfStockSkuCount" : 0
   },

@@ -1,0 +1,12 @@
+{
+  "code" : "00000",
+  "data" : {
+    "todaySales" : 2450000,
+    "salesGrowthRate" : 15.5,
+    "activeStoreCount" : 8,
+    "totalStoreCount" : 10,
+    "pendingAlertCount" : 15,
+    "outOfStockSkuCount" : 0
+  },
+  "msg" : "一切ok"
+}

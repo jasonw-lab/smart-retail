@@ -70,4 +70,12 @@ public interface AlertService {
      * @return 解決結果
      */
     boolean resolveAlert(Long id);
+
+    /**
+     * 最近のアラート取得
+     *
+     * @param limit 取得件数
+     * @return アラートリスト
+     */
+    List<Alert> getRecentAlerts(Integer limit);
 }

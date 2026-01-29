@@ -4,6 +4,23 @@
 use youlai_boot;
 
 -- ----------------------------
+-- カテゴリマスタデータ
+-- ----------------------------
+INSERT INTO `retail_category` (`id`, `category_code`, `category_name`, `parent_id`, `sort_order`, `description`, `status`) VALUES
+(1, 'CAT-001', '飲料', NULL, 1, '飲料全般', 'active'),
+(2, 'CAT-002', '菓子', NULL, 2, '菓子類全般', 'active'),
+(3, 'CAT-003', '食品', NULL, 3, '食品全般', 'active'),
+(4, 'CAT-004', '日用品', NULL, 4, '日用品全般', 'active'),
+(5, 'CAT-101', 'コーヒー・紅茶', 1, 11, 'コーヒー、紅茶、お茶類', 'active'),
+(6, 'CAT-102', 'ソフトドリンク', 1, 12, 'ジュース、炭酸飲料、水', 'active'),
+(7, 'CAT-201', 'チョコレート', 2, 21, 'チョコレート菓子', 'active'),
+(8, 'CAT-202', 'スナック', 2, 22, 'ポテトチップス等', 'active'),
+(9, 'CAT-203', 'キャンディ・グミ', 2, 23, 'キャンディ、グミ類', 'active'),
+(10, 'CAT-301', '弁当・おにぎり', 3, 31, '弁当、おにぎり、サンドイッチ', 'active'),
+(11, 'CAT-302', 'パン', 3, 32, 'パン類', 'active'),
+(12, 'CAT-303', 'サラダ', 3, 33, 'サラダ類', 'active');
+
+-- ----------------------------
 -- 店舗マスタデータ
 -- ----------------------------
 INSERT INTO `retail_store` (`id`, `store_code`, `store_name`, `address`, `phone`, `manager`, `status`, `opening_hours`) VALUES

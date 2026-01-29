@@ -122,6 +122,121 @@ multi_replace_string_in_file([change1, change2])
 - 複数の小さな操作を統合できないか検討
 - 効率的なツール選択を心がける
 
+## プロジェクト固有のルール(Smart Retail)
+
+### アプリケーション基盤の保護
+- **既存ソース構造を理解した上で実装を行う**
+- **特に理由なければ、アプリ基盤関連のCodeは変更しない**
+
+### 変更可能な範囲
+下記のディレクトリは変更可能:
+- `backend/src/main/java/com/youlai/boot/modules/retail`
+- `backend/src/main/resources/mapper/retail`
+
+**上記以外を変更する場合は、変更理由を確認してから実施すること**
+
+### フロントエンド開発
+- **frontendも確認した上で変更を行う**
+- バックエンドAPIとの整合性を保つ
+- データ構造の変更はフロントエンドへの影響を考慮する
+
+### バックエンドAPI開発フロー
+- **API新規作成時**: ビジネスロジックソース + テストソースをセットで作成
+- **controller作成時**: 必ずテストコードも作成
+- **ソースファイル修正時**: 上書きで対応
+- **API変更時**: 関連するビジネスロジック + テストソースも同時更新
+
+### ビジネスロジックの標準構造
+```
+backend/src/main/java/com/youlai/boot/modules/retail/
+├── controller          # REST API エンドポイント
+├── converter          # entity, form, vo の変換
+├── mapper             # MyBatis マッパーインターフェース
+├── model/
+│   ├── entity        # データベースエンティティ
+│   ├── form          # 更新・追加APIのリクエストパラメータ
+│   ├── query         # 検索APIのリクエストパラメータ
+│   └── vo            # 検索時のレスポンスパラメータ
+├── service            # ビジネスロジックインターフェース
+└── service/impl       # ビジネスロジック実装
+
+backend/src/main/resources/mapper/retail/  # MyBatis XML マッパー
+backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
+```
+
+### 参照実装
+以下のファイルを参考にして実装:
+- **UserPageQuery.java** - ページネーション検索クエリ
+- **User.java** (entity) - データベースエンティティ
+- **UserForm.java** - 更新・追加フォーム
+- **UserServiceImpl.java** - サービス実装
+- **UserController.java** - REST コントローラー
+- **UserConverter.java** - オブジェクト変換
+- **ProductControllerRestAssuredTest.java** - テストケース参考
+
+### フロントエンド連携ルール
+- **データ構造の簡潔化**: `res.data.list` → `res.list` に変更
+- **ネストの回避**: `res.data.total` → `res.total` に変更
+- APIレスポンスの `data` 構造は使用しない
+
+### テスト駆動開発
+- テスト配置場所: `backend/src/test/java/com/youlai/boot/modules/retail`
+- 参考テスト: `ProductControllerRestAssuredTest.java`
+- REST Assured を使用した統合テスト
+
+### 変更影響範囲チェックリスト
+- [ ] ビジネスロジック（controller, service, mapper等）
+- [ ] MyBatis XML マッパーファイル
+- [ ] テストソース
+- [ ] フロントエンドAPI呼び出し箇所（影響がある場合）
+
+## Issue対応フロー
+
+### 1. ブランチ作成
+```bash
+git checkout develop
+git checkout -b feature/issue-<番号>-<概要>
+```
+
+### 2. 実装
+- Issue ファイル (`docs/issues/issue-XXX-*.md`) を確認
+- **1 Issue = 1 ブランチ**で対応
+- コミットメッセージに Issue 番号を含める
+- GitHub Issue も作成する
+
+### 3. テスト・ビルド確認
+- ビルドエラーがないことを確認
+- テストケースが全て通ることを確認
+- コードの動作を検証
+
+### 4. 動作確認（ユーザー目視）
+- **テスト・ビルド完了後、一旦停止する**
+- ユーザーが目視で動作確認を行う
+- **直接コミットは行わない** - ユーザーの確認・承認を待つ
+
+### 5. コミット・プッシュ
+```bash
+git add <files>
+git commit -m "feat(scope): description (issue-XXX)"
+git push -u origin feature/issue-XXX-description
+```
+
+**コミットメッセージの形式:**
+- `feat(scope): 機能追加の説明 (issue-XXX)`
+- `fix(scope): バグ修正の説明 (issue-XXX)`
+- `refactor(scope): リファクタリングの説明 (issue-XXX)`
+
+### 6. PR作成（Claude CLI で実行）
+```bash
+gh pr create --title "feat(scope): description (issue-XXX)" \
+  --body "## Summary\n- ...\n\n## Test plan\n- [ ] ..." \
+  --base develop
+```
+
+### 7. PR承認・マージ（GitHub Web UI で実施）
+- **Claude CLI では PR 作成まで**
+- 承認・マージは GitHub Web UI で手動実施
+
 ---
 
-**最終更新**: 2026年1月28日
+**最終更新**: 2026年1月29日

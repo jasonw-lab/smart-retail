@@ -1,5 +1,6 @@
 package com.youlai.boot.modules.retail.controller;
 
+import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.modules.retail.model.entity.Alert;
 import com.youlai.boot.modules.retail.model.vo.DashboardKpiVO;
@@ -53,6 +54,19 @@ public class DashboardController {
             endDate = LocalDate.now();
         }
 
+        // 入力検証
+        if (startDate.isAfter(endDate)) {
+            throw new BusinessException("開始日は終了日より前である必要があります");
+        }
+        
+        if (startDate.isBefore(LocalDate.now().minusYears(1))) {
+            throw new BusinessException("開始日は過去1年以内である必要があります");
+        }
+        
+        if (endDate.isAfter(LocalDate.now())) {
+            throw new BusinessException("終了日は未来の日付を指定できません");
+        }
+
         List<SalesTrendVO> trend = dashboardService.getSalesTrend(startDate, endDate);
         return Result.success(trend);
     }
@@ -62,6 +76,11 @@ public class DashboardController {
     public Result<List<InventoryStatusVO>> getInventoryStatus(
             @Parameter(description = "取得件数") @RequestParam(defaultValue = "10") Integer limit
     ) {
+        // 入力検証
+        if (limit == null || limit < 1 || limit > 1000) {
+            throw new BusinessException("limitは1から1000の範囲で指定してください");
+        }
+        
         List<InventoryStatusVO> inventoryStatus = dashboardService.getInventoryStatus(limit);
         return Result.success(inventoryStatus);
     }
@@ -71,6 +90,11 @@ public class DashboardController {
     public Result<List<Alert>> getAlerts(
             @Parameter(description = "取得件数") @RequestParam(defaultValue = "10") Integer limit
     ) {
+        // 入力検証
+        if (limit == null || limit < 1 || limit > 1000) {
+            throw new BusinessException("limitは1から1000の範囲で指定してください");
+        }
+        
         List<Alert> alerts = alertService.getRecentAlerts(limit);
         return Result.success(alerts);
     }

@@ -1,85 +1,140 @@
 import request from "@/utils/request";
-import { mockDashboardAPI } from "./mock";
 
-const DASHBOARD_BASE_URL = "/api/v1/dashboard";
+const DASHBOARD_BASE_URL = "/api/v1/retail/dashboard";
 
 const DashboardAPI = {
-  /** ダッシュボードの概要データを取得 */
+  /** ダッシュボードのKPIデータを取得 */
   getDashboardData() {
-    // Original implementation
-    // return request<any, DashboardDataVO>({
-    //   url: `${DASHBOARD_BASE_URL}/overview`,
-    //   method: "get",
-    // });
-    return mockDashboardAPI.getDashboardData();
+    return request<any, DashboardDataVO>({
+      url: `${DASHBOARD_BASE_URL}/kpi`,
+      method: "get",
+    });
   },
 
   /** 商品ランキングデータを取得 */
   getProductRanking() {
-    // Original implementation
-    // return request<any, ProductRankingItem[]>({
-    //   url: `${DASHBOARD_BASE_URL}/product-ranking`,
-    //   method: "get",
-    // });
-    return mockDashboardAPI.getProductRanking();
+    // TODO: バックエンドAPIが実装されたら有効化
+    return Promise.resolve([]);
   },
 
   /** 店舗データを取得 */
   getStoreData() {
-    // Original implementation
-    // return request<any, StoreData[]>({
-    //   url: `${DASHBOARD_BASE_URL}/store-data`,
-    //   method: "get",
-    // });
-    return mockDashboardAPI.getStoreData();
+    // TODO: バックエンドAPIが実装されたら有効化
+    return Promise.resolve([]);
   },
 
   /** アラート情報を取得 */
-  getAlerts() {
-    // Original implementation
-    // return request<any, AlertItem[]>({
-    //   url: `${DASHBOARD_BASE_URL}/alerts`,
-    //   method: "get",
-    // });
-    return mockDashboardAPI.getAlerts();
+  getAlerts(params?: { limit?: number }) {
+    return request<any, AlertItem[]>({
+      url: `${DASHBOARD_BASE_URL}/alerts`,
+      method: "get",
+      params,
+    });
   },
 
   /** 売上推移データを取得 */
-  getSalesTrend(params?: { range?: string; rank?: string }) {
-    // Original implementation
-    // return request<any, SalesTrendData>({
-    //   url: `${DASHBOARD_BASE_URL}/sales-trend`,
-    //   method: "get",
-    //   params,
-    // });
-    return mockDashboardAPI.getSalesTrend(params);
+  getSalesTrend(params?: { startDate?: string; endDate?: string }) {
+    return request<any, SalesTrendItem[]>({
+      url: `${DASHBOARD_BASE_URL}/sales-trend`,
+      method: "get",
+      params,
+    }).then((data) => {
+      // バックエンドのレスポンスをフロントエンドの形式に変換
+      return {
+        dates: data.map((item) => item.date),
+        sales: data.map((item) => item.salesAmount),
+        profits: data.map((item) => item.salesAmount * 0.3), // 仮の利益率30%
+      };
+    });
+  },
+
+  /** 在庫状況を取得 */
+  getInventoryStatus(params?: { limit?: number }) {
+    return request<any, InventoryStatusItem[]>({
+      url: `${DASHBOARD_BASE_URL}/inventory-status`,
+      method: "get",
+      params,
+    });
   },
 
   /** 店舗別売上を取得 */
   getStoreSales() {
-    // Original implementation
-    // return request<any, StoreSalesData[]>({
-    //   url: `${DASHBOARD_BASE_URL}/store-sales`,
-    //   method: "get",
-    // });
-    return mockDashboardAPI.getStoreSales();
+    // TODO: バックエンドAPIが実装されたら有効化
+    return Promise.resolve([]);
   },
 };
 
 export default DashboardAPI;
 
-/** ダッシュボード概要データ */
+/** ダッシュボードKPIデータ（バックエンドレスポンス） */
 export interface DashboardDataVO {
-  /** 総売上 */
-  totalSales: number;
+  /** 本日売上 */
+  todaySales: number;
   /** 売上成長率 */
   salesGrowthRate: number;
-  /** 在庫切れ店舗数 */
-  restockStoreCount: number;
+  /** 稼働店舗数 */
+  activeStoreCount: number;
   /** 総店舗数 */
   totalStoreCount: number;
-  /** 総商品数 */
-  totalProductCount: number;
+  /** 保留中アラート数 */
+  pendingAlertCount: number;
+  /** 在庫切れSKU数 */
+  outOfStockSkuCount: number;
+}
+
+/** 売上推移アイテム（バックエンドレスポンス） */
+export interface SalesTrendItem {
+  /** 日付 */
+  date: string;
+  /** 売上金額 */
+  salesAmount: number;
+  /** 成長率 */
+  growthRate: number;
+}
+
+/** 在庫状況アイテム（バックエンドレスポンス） */
+export interface InventoryStatusItem {
+  /** 商品ID */
+  productId: string;
+  /** 商品名 */
+  productName: string;
+  /** 商品コード */
+  productCode: string;
+  /** 店舗ID */
+  storeId: string;
+  /** 店舗名 */
+  storeName: string;
+  /** 在庫数 */
+  quantity: number;
+  /** 発注点 */
+  reorderPoint: number;
+  /** ステータス */
+  status: string;
+}
+
+
+/** アラート情報（バックエンドレスポンス） */
+export interface AlertItem {
+  /** アラートID */
+  id: string;
+  /** 作成日時 */
+  createTime: string;
+  /** 更新日時 */
+  updateTime: string;
+  /** 店舗ID */
+  storeId: string;
+  /** 商品ID */
+  productId: string;
+  /** ロット番号 */
+  lotNumber: string;
+  /** アラートタイプ */
+  alertType: string;
+  /** アラートメッセージ */
+  alertMessage: string;
+  /** アラート日時 */
+  alertDate: string;
+  /** 解決済みフラグ */
+  resolved: boolean;
 }
 
 /** 商品ランキングアイテム */
@@ -108,20 +163,6 @@ export interface StoreData {
   target: number;
   /** 店舗ステータス */
   status: "open" | "closed" | "maintenance";
-}
-
-/** アラート情報 */
-export interface AlertItem {
-  /** アラートID */
-  id: string;
-  /** タイトル */
-  title: string;
-  /** 日付 */
-  date: string;
-  /** 内容 */
-  content: string;
-  /** アラートタイプ */
-  type: "danger" | "warning" | "success" | "info" | "primary";
 }
 
 /** 売上推移データ */

@@ -3,11 +3,12 @@ import dayjs from 'dayjs';
 
 // Mock data for dashboard overview
 export const mockDashboardData: DashboardDataVO = {
-  totalSales: 210000,
+  todaySales: 210000,
   salesGrowthRate: 15.5,
-  restockStoreCount: 3,
+  activeStoreCount: 8,
   totalStoreCount: 10,
-  totalProductCount: 150,
+  pendingAlertCount: 9,
+  outOfStockSkuCount: 3,
 };
 
 // Mock data for product ranking
@@ -50,27 +51,42 @@ export const mockProductRanking: ProductRankingItem[] = [
 ];
 
 // Mock data for alerts
-export const mockAlerts: AlertItem[] = [
+export const mockAlerts: any[] = [
   {
     id: "1",
-    title: "在庫切れ警告",
-    date: "2024-03-20 10:30:00",
-    content: "プレミアムコーヒーの在庫が10個を下回りました。緊急の補充が必要です。",
-    type: "danger",
+    createTime: "2024-03-20 10:30:00",
+    updateTime: "2024-03-20 10:30:00",
+    storeId: "1",
+    productId: "1",
+    lotNumber: "LOT-2024-001",
+    alertType: "LOW_STOCK",
+    alertMessage: "在庫切れ警告: プレミアムコーヒーの在庫が10個を下回りました。",
+    alertDate: "2024-03-20 10:30:00",
+    resolved: false,
   },
   {
     id: "2",
-    title: "在庫警告",
-    date: "2024-03-20 09:15:00",
-    content: "オーガニックティーの在庫が20個を下回りました。補充を検討してください。",
-    type: "warning",
+    createTime: "2024-03-20 09:15:00",
+    updateTime: "2024-03-20 09:15:00",
+    storeId: "1",
+    productId: "2",
+    lotNumber: "LOT-2024-002",
+    alertType: "LOW_STOCK",
+    alertMessage: "在庫警告: オーガニックティーの在庫が20個を下回りました。",
+    alertDate: "2024-03-20 09:15:00",
+    resolved: false,
   },
   {
     id: "3",
-    title: "在庫警告",
-    date: "2024-03-19 16:45:00",
-    content: "スペシャルブレンドの在庫が15個を下回りました。補充を検討してください。",
-    type: "warning",
+    createTime: "2024-03-19 16:45:00",
+    updateTime: "2024-03-19 16:45:00",
+    storeId: "1",
+    productId: "3",
+    lotNumber: "LOT-2024-003",
+    alertType: "EXPIRED",
+    alertMessage: "賞味期限接近: スペシャルブレンドの賞味期限が近づいています。",
+    alertDate: "2024-03-19 16:45:00",
+    resolved: false,
   },
 ];
 

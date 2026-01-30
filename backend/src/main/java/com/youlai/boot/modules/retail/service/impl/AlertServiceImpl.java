@@ -121,6 +121,11 @@ public class AlertServiceImpl extends ServiceImpl<AlertMapper, Alert> implements
 
     @Override
     public List<Alert> getRecentAlerts(Integer limit) {
+        // limitの値を検証・正規化
+        if (limit == null || limit <= 0 || limit > 1000) {
+            limit = 10;  // デフォルト値
+        }
+        
         LambdaQueryWrapper<Alert> queryWrapper = new LambdaQueryWrapper<Alert>()
                 .orderByDesc(Alert::getAlertDate)
                 .last("LIMIT " + limit);

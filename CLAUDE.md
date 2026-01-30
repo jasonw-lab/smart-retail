@@ -145,6 +145,7 @@ multi_replace_string_in_file([change1, change2])
 - **controller作成時**: 必ずテストコードも作成
 - **ソースファイル修正時**: 上書きで対応
 - **API変更時**: 関連するビジネスロジック + テストソースも同時更新
+- **Author設定**: すべてのJavaファイルの `@author` は `jason.w` とする
 
 ### ビジネスロジックの標準構造
 ```
@@ -225,6 +226,7 @@ git push -u origin feature/issue-XXX-description
 - `feat(scope): 機能追加の説明 (issue-XXX)`
 - `fix(scope): バグ修正の説明 (issue-XXX)`
 - `refactor(scope): リファクタリングの説明 (issue-XXX)`
+- **Author**: jason.w
 
 ### 6. PR作成（Claude CLI で実行）
 ```bash

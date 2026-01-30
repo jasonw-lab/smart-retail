@@ -111,7 +111,7 @@
     </el-row>
 
     <!-- 店舗別売上グラフ -->
-    <el-row :gutter="20" class="mt-4">
+    <el-row :gutter="20" class="mt-4" v-if="false">
       <el-col :span="16">
         <el-card shadow="never">
           <template #header>

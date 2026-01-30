@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * 店舗管理APIテスト
  *
- * @author wangjw
+ * @author jason.w
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * 店舗ページングVO
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "店舗ページングVO")
 @Data

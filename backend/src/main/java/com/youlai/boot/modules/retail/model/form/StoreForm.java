@@ -8,7 +8,7 @@ import lombok.Data;
 /**
  * 店舗フォーム
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "店舗フォーム")
 @Data

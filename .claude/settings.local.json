@@ -11,7 +11,11 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(gh issue view:*)",
+      "Bash(pkill:*)",
+      "Bash(tee:*)",
+      "Bash(mvn compile:*)"
     ]
   }
 }

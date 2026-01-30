@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 店舗サービス実装クラス
  *
- * @author wangjw
+ * @author jason.w
  */
 @Service
 @RequiredArgsConstructor

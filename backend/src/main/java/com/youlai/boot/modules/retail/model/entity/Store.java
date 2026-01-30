@@ -8,7 +8,7 @@ import lombok.Setter;
 /**
  * 店舗エンティティ
  *
- * @author wangjw
+ * @author jason.w
  */
 @TableName("retail_store")
 @Getter

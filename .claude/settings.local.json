@@ -1,6 +1,22 @@
 {
   "permissions": {
     "allow": [
+      "Bash(git *:*)",
+      "Bash(gh *:*)",
+      "Bash(npm *:*)",
+      "Bash(pnpm *:*)",
+      "Bash(node *:*)",
+      "Bash(go *:*)",
+      "Bash(java *:*)",
+      "Bash(mvn *:*)",
+      "Bash(docker *:*)",
+      "Bash(docker-compose *:*)",
+      "Bash(bash *:*)",
+      "Bash(ls *:*)",
+      "Bash(cat *:*)",
+      "Bash(grep *:*)",
+      "Bash(find *:*)",
+      "Bash(gh issue view:*)",
       "Bash(git checkout:*)",
       "Bash(./mvnw clean test:*)",
       "Bash(mvn clean test:*)",
@@ -12,10 +28,27 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(gh issue view:*)",
       "Bash(pkill:*)",
       "Bash(tee:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(gh issue list:*)",
+      "Bash(ls:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *:*)",
+      "Bash(rm -r *:*)",
+      "Bash(rm *:*)",
+      "Bash(git push --force *:*)",
+      "Bash(git reset --hard *:*)",
+      "Bash(gh repo delete *:*)",
+      "Bash(gh issue delete *:*)",
+      "Bash(gh pr delete *:*)",
+      "Bash(docker system prune *:*)",
+      "Bash(docker volume rm *:*)",
+      "Bash(docker image rm *:*)"
     ]
   }
 }

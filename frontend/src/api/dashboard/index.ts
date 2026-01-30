@@ -3,6 +3,22 @@ import request from "@/utils/request";
 const DASHBOARD_BASE_URL = "/api/v1/retail/dashboard";
 
 const DashboardAPI = {
+  /** 売上推移データを取得 */
+  getSalesTrend(params?: { startDate?: string; endDate?: string }) {
+    return request<any, SalesTrendItem[]>({
+      url: `${DASHBOARD_BASE_URL}/sales-trend`,
+      method: "get",
+      params,
+    }).then((data) => {
+      // バックエンドのレスポンスをフロントエンドの形式に変換
+      return {
+        dates: data.map((item) => item.date),
+        sales: data.map((item) => item.salesAmount),
+        profits: data.map((item) => item.salesAmount * 0.3), // 仮の利益率30%
+      };
+    });
+  },
+
   /** ダッシュボードのKPIデータを取得 */
   getDashboardData() {
     return request<any, DashboardDataVO>({
@@ -29,22 +45,6 @@ const DashboardAPI = {
       url: `${DASHBOARD_BASE_URL}/alerts`,
       method: "get",
       params,
-    });
-  },
-
-  /** 売上推移データを取得 */
-  getSalesTrend(params?: { startDate?: string; endDate?: string }) {
-    return request<any, SalesTrendItem[]>({
-      url: `${DASHBOARD_BASE_URL}/sales-trend`,
-      method: "get",
-      params,
-    }).then((data) => {
-      // バックエンドのレスポンスをフロントエンドの形式に変換
-      return {
-        dates: data.map((item) => item.date),
-        sales: data.map((item) => item.salesAmount),
-        profits: data.map((item) => item.salesAmount * 0.3), // 仮の利益率30%
-      };
     });
   },
 

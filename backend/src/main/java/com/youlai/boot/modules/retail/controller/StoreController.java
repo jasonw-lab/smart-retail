@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 店舗管理API
  *
- * @author wangjw
+ * @author jason.w
  */
 @Tag(name = "店舗管理API")
 @RestController

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 店舗サービスインターフェース
  *
- * @author wangjw
+ * @author jason.w
  */
 public interface StoreService {
 

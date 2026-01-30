@@ -9,7 +9,7 @@ import org.mapstruct.MappingConstants;
 /**
  * 店舗コンバーター
  *
- * @author wangjw
+ * @author jason.w
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface StoreConverter {

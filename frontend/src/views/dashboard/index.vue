@@ -36,13 +36,13 @@
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">¥{{ formatNumber(dashboardData.totalSales) }}</span>
+              <span class="text-2xl font-bold">¥{{ formatNumber(dashboardData.todaySales) }}</span>
               <span
                 :class="['text-xs', 'ml-2', computeGrowthRateClass(dashboardData.salesGrowthRate)]"
               >
                 <el-icon>
-                  <Top v-if="salesGrowthRate > 0" />
-                  <Bottom v-else-if="salesGrowthRate < 0" />
+                  <Top v-if="dashboardData.salesGrowthRate > 0" />
+                  <Bottom v-else-if="dashboardData.salesGrowthRate < 0" />
                 </el-icon>
                 {{ formatPercentage(dashboardData.salesGrowthRate) }}
               </span>
@@ -57,52 +57,52 @@
         <el-card shadow="never">
           <template #header>
             <div class="flex-x-between">
-              <span class="text-gray">在庫切れ店舗</span>
+              <span class="text-gray">在庫切れSKU</span>
               <el-tag type="warning" size="small">要確認</el-tag>
             </div>
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ dashboardData.restockStoreCount }}</span>
-              <span class="text-xs ml-2">店舗</span>
+              <span class="text-2xl font-bold">{{ dashboardData.outOfStockSkuCount }}</span>
+              <span class="text-xs ml-2">SKU</span>
             </div>
             <div class="i-svg:store w-8 h-8" />
           </div>
         </el-card>
       </el-col>
 
-      <!-- 総店舗数 -->
+      <!-- 稼働店舗数 -->
       <el-col :span="6">
         <el-card shadow="never">
           <template #header>
             <div class="flex-x-between">
-              <span class="text-gray">店舗数</span>
-              <el-tag type="info" size="small">営業中</el-tag>
+              <span class="text-gray">稼働店舗</span>
+              <el-tag type="success" size="small">営業中</el-tag>
             </div>
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ dashboardData.totalStoreCount }}</span>
-              <span class="text-xs ml-2">店舗</span>
+              <span class="text-2xl font-bold">{{ dashboardData.activeStoreCount }}</span>
+              <span class="text-xs ml-2">/ {{ dashboardData.totalStoreCount }}店舗</span>
             </div>
             <div class="i-svg:shop w-8 h-8" />
           </div>
         </el-card>
       </el-col>
 
-      <!-- 総商品数 -->
+      <!-- 保留中アラート数 -->
       <el-col :span="6">
         <el-card shadow="never">
           <template #header>
             <div class="flex-x-between">
-              <span class="text-gray">商品数</span>
-              <el-tag type="primary" size="small">在庫</el-tag>
+              <span class="text-gray">保留中アラート</span>
+              <el-tag type="danger" size="small">要対応</el-tag>
             </div>
           </template>
           <div class="flex-x-between mt-2">
             <div class="flex-y-center">
-              <span class="text-2xl font-bold">{{ dashboardData.totalProductCount }}</span>
-              <span class="text-xs ml-2">商品</span>
+              <span class="text-2xl font-bold">{{ dashboardData.pendingAlertCount }}</span>
+              <span class="text-xs ml-2">件</span>
             </div>
             <div class="i-svg:goods w-8 h-8" />
           </div>
@@ -111,7 +111,7 @@
     </el-row>
 
     <!-- 店舗別売上グラフ -->
-    <el-row :gutter="20" class="mt-4">
+    <el-row :gutter="20" class="mt-4" v-if="false">
       <el-col :span="16">
         <el-card shadow="never">
           <template #header>
@@ -170,7 +170,7 @@
           <template #header>
             <div class="flex-x-between">
               <span class="text-gray">売上推移</span>
-              <el-radio-group v-model="visitTrendDateRange" size="small" @change="handleTabChange">
+              <el-radio-group v-model="visitTrendDateRange" size="small">
                 <el-radio-button label="7日間" :value="7" />
                 <el-radio-button label="30日間" :value="30" />
                 <el-radio-button label="3ヶ月" :value="90" />
@@ -200,24 +200,24 @@
               <el-timeline-item
                 v-for="(item, index) in alertList"
                 :key="index"
-                :timestamp="item.date"
+                :timestamp="item.alertDate"
                 placement="top"
-                :color="item.type === 'danger' ? '#F56C6C' : '#E6A23C'"
+                :color="item.alertType === 'EXPIRED' ? '#F56C6C' : '#E6A23C'"
                 :hollow="index !== 0"
                 size="large"
               >
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div>
-                    <el-text tag="strong">{{ item.title }}</el-text>
-                    <el-tag :type="item.type" size="small">
-                      {{ item.type === "danger" ? "緊急" : "警告" }}
+                    <el-text tag="strong">{{ item.alertMessage }}</el-text>
+                    <el-tag :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'" size="small">
+                      {{ item.alertType === "EXPIRED" ? "賞味期限" : "在庫切れ" }}
                     </el-tag>
                   </div>
 
-                  <el-text class="version-content">{{ item.content }}</el-text>
+                  <el-text class="version-content">ロット番号: {{ item.lotNumber }}</el-text>
 
                   <div>
-                    <el-link :type="item.type" href="/inventory" target="_blank" underline="never">
+                    <el-link :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'" href="/inventory" target="_blank" underline="never">
                       在庫確認
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
@@ -233,7 +233,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onUnmounted } from "vue";
+import { ref, onMounted, computed, watch, reactive } from "vue";
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { LineChart, BarChart } from "echarts/charts";
@@ -246,27 +246,9 @@ import {
 import VChart from "vue-echarts";
 import { graphic } from "echarts/core";
 import { useUserStore } from "@/store/modules/user.store";
-import { formatGrowthRate } from "@/utils";
 import { dayjs } from "element-plus";
-import LogAPI, { VisitStatsVO, VisitTrendVO } from "@/api/system/log.api";
-import DashboardAPI, { DashboardDataVO } from "@/api/dashboard";
-import type {
-  DashboardData,
-  ProductRankingItem,
-  StoreData,
-  AlertItem,
-  SalesTrendData,
-} from "@/api/dashboard";
+import DashboardAPI, { DashboardDataVO, ProductRankingItem } from "@/api/dashboard";
 import { ElMessage } from "element-plus";
-import {
-  getOverview,
-  getProductRanking,
-  getStoreData,
-  getAlerts,
-  getSalesTrend,
-} from "@/api/dashboard";
-import { formatDate } from "@/utils/format";
-import { DictDataForm } from "@/api/system/dict-data";
 
 // EChartsコンポーネントの登録
 echarts.use([
@@ -278,24 +260,6 @@ echarts.use([
   LegendComponent,
   ToolboxComponent,
 ]);
-
-// アラート情報の型定義
-interface AlertItem {
-  id: string;
-  title: string;
-  date: string;
-  content: string;
-  type: "danger" | "warning" | "success" | "info" | "primary";
-}
-
-// 商品ランキングの型定義
-interface ProductRankingItem {
-  name: string;
-  sales: number;
-  count: number;
-  growth: number;
-  image: string;
-}
 
 // チャートオプションの型定義
 interface ChartData {
@@ -491,65 +455,43 @@ const greetings = computed(() => {
 });
 
 const dashboardData = reactive<DashboardDataVO>({
-  totalSales: 0,
+  todaySales: 0,
   salesGrowthRate: 0,
-  restockStoreCount: 0,
+  activeStoreCount: 0,
   totalStoreCount: 0,
-  totalProductCount: 0,
+  pendingAlertCount: 0,
+  outOfStockSkuCount: 0,
 });
 
-// 訪客统计数据加载状态
-const visitStatsLoading = ref(true);
-// 訪客统计数据
-const visitStatsData = ref<VisitStatsVO>({
-  todayUvCount: 0,
-  uvGrowthRate: 0,
-  totalUvCount: 0,
-  todayPvCount: 0,
-  pvGrowthRate: 0,
-  totalPvCount: 0,
-});
-
-// 访问趋势日期范围（单位：天）
+// 访问趋势日期范围（単位：天）
 const visitTrendDateRange = ref(7);
-
-/**
- * 获取访客统计数据
- */
-const fetchVisitStatsData = () => {
-  LogAPI.getVisitStats()
-    .then((data) => {
-      visitStatsData.value = data;
-    })
-    .finally(() => {
-      visitStatsLoading.value = false;
-    });
-};
 
 // 売上推移データの取得
 const fetchVisitTrendData = async () => {
   try {
-    const res = await DashboardAPI.getSalesTrend({ 
-      range: visitTrendDateRange.value.toString(),
-      rank: "10",
+    const endDate = dayjs().format("YYYY-MM-DD");
+    const startDate = dayjs().subtract(visitTrendDateRange.value, "day").format("YYYY-MM-DD");
+
+    const res = await DashboardAPI.getSalesTrend({
+      startDate,
+      endDate,
     });
     const { dates, sales, profits } = res;
-    
+
     // 期間に応じてX軸の表示を調整
     const xAxis = {
       type: "category",
       data: dates,
       boundaryGap: false,
       axisLabel: {
-        interval: visitTrendDateRange.value === 7 ? 0 : "auto", // 7日間は全て表示、それ以外は自動調整
+        interval: visitTrendDateRange.value === 7 ? 0 : "auto",
         formatter: (value: string) => {
-          // 期間に応じて日付フォーマットを調整
           if (visitTrendDateRange.value <= 7) {
-            return value; // MM-DD形式
+            return value;
           } else if (visitTrendDateRange.value <= 30) {
-            return value.split("-")[1]; // 日付のみ表示
+            return value.split("-")[1];
           } else {
-            return value; // YYYY-MM形式
+            return value;
           }
         },
       },
@@ -607,17 +549,11 @@ const fetchVisitTrendData = async () => {
 };
 
 // データ定義
-const totalSales = ref(0);
-const salesGrowthRate = ref(0);
-const restockStoreCount = ref(0);
-const totalStoreCount = ref(0);
-const totalProductCount = ref(0);
 const dateRange = ref([]);
 const productRanking = ref<ProductRankingItem[]>([]);
 const loading = ref(false);
-const alertList = ref<AlertItem[]>([]);
+const alertList = ref<any[]>([]);
 const storeSalesChart = ref<echarts.ECharts | null>(null);
-const salesTrendChart = ref<echarts.ECharts | null>(null);
 
 // 店舗別売上グラフのオプション
 const storeSalesChartOption = ref({
@@ -738,84 +674,28 @@ onMounted(() => {
 const fetchDashboardData = async () => {
   try {
     loading.value = true;
-    const [dashboardRes, productRankingRes, storeDataRes, alertsRes, salesTrendRes] =
-      await Promise.all([
-        DashboardAPI.getDashboardData(),
-        DashboardAPI.getProductRanking(),
-        DashboardAPI.getStoreData(),
-        DashboardAPI.getAlerts(),
-        DashboardAPI.getSalesTrend(),
-      ]);
+    const [dashboardRes, alertsRes] = await Promise.all([
+      DashboardAPI.getDashboardData(),
+      DashboardAPI.getAlerts({ limit: 10 }),
+    ]);
 
     Object.assign(dashboardData, dashboardRes);
 
-    // 店舗別売上グラフ
-    if (storeDataRes) {
-      storeSalesChartOption.value.xAxis.data = storeDataRes.map((store) => store.name);
-      storeSalesChartOption.value.series[0].data = storeDataRes.map((store) => store.sales);
-      storeSalesChartOption.value.series[1].data = storeDataRes.map((store) => store.target);
-      updateStoreSalesChart();
-    }
-
-    // 商品ランキング
-    if (productRankingRes) {
-      productRanking.value = productRankingRes;
-    }
-
-    // アラート情報
+    // アラート情報（未解決のみ表示）
     if (alertsRes) {
-      alertList.value = alertsRes;
+      alertList.value = alertsRes
+        .filter((alert) => !alert.resolved)
+        .map((alert) => ({
+          ...alert,
+          date: alert.alertDate,
+          title: alert.alertMessage,
+          content: `ロット番号: ${alert.lotNumber}`,
+          type: alert.alertType === "EXPIRED" ? "danger" : "warning",
+        }));
     }
 
-    // 売上推移
-    if (salesTrendRes) {
-      const { dates, sales, profits } = salesTrendRes;
-      chartOption.value.xAxis.data = dates;
-      chartOption.value.series = [
-        {
-          name: "総売上",
-          type: "line",
-          data: smoothData(sales),
-          smooth: 0.3,
-          symbol: "none",
-          areaStyle: {
-            opacity: 0.1,
-            color: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "#409EFF" },
-              { offset: 1, color: "#FFFFFF" },
-            ]),
-          },
-          itemStyle: {
-            color: "#409EFF",
-          },
-          lineStyle: {
-            width: 3,
-            color: "#409EFF",
-          },
-        },
-        {
-          name: "純利益",
-          type: "line",
-          data: smoothData(profits),
-          smooth: 0.3,
-          symbol: "none",
-          areaStyle: {
-            opacity: 0.1,
-            color: new graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "#67C23A" },
-              { offset: 1, color: "#FFFFFF" },
-            ]),
-          },
-          itemStyle: {
-            color: "#67C23A",
-          },
-          lineStyle: {
-            width: 3,
-            color: "#67C23A",
-          },
-        },
-      ];
-    }
+    // 売上推移データを取得
+    await fetchVisitTrendData();
   } catch (error) {
     console.error("ダッシュボードデータの取得に失敗しました:", error);
     ElMessage.error("データの取得に失敗しました");
@@ -834,179 +714,7 @@ watch(visitTrendDateRange, () => {
   fetchVisitTrendData();
 });
 
-// 日付フォーマット関数
-const formatDate = (date: Date) => {
-  return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
-};
-
-// // 店舗売上データの取得
-// const fetchStoreData = async () => {
-//   try {
-//     const res = await DashboardAPI.getStoreData() as ApiResponse<StoreData[]>;
-//     if (res.code === "00000" && res.data) {
-//       const storeData = res.data;
-//       storeSalesChartOption.value.series[0].data = storeData.map((store) => store.sales);
-//       storeSalesChartOption.value.series[1].data = storeData.map((store) => store.profit);
-//       storeSalesChartOption.value.xAxis.data = storeData.map((store) => store.name);
-//     }
-//   } catch (error) {
-//     console.error("店舗売上データの取得に失敗しました:", error);
-//   }
-// };
-
-// 売上トレンドデータの更新
-const updateSalesTrendChart = async (range: string) => {
-  try {
-    const res = await DashboardAPI.getSalesTrend({ range });
-    if (res) {
-      const { dates, sales, profits } = res;
-
-      // 期間に応じてX軸の表示を調整
-      const xAxis = {
-        type: "category",
-        data: dates,
-        axisLabel: {
-          interval: range === "7" ? 0 : "auto", // 7日間は全て表示、それ以外は自動調整
-          formatter: (value: string) => {
-            // 期間に応じて日付フォーマットを調整
-            if (range === "7") {
-              return value;
-            } else if (range === "30") {
-              return value.split("-")[1]; // 日付のみ表示
-            } else {
-              return value; // 年月表示
-            }
-          },
-        },
-      };
-
-      salesTrendChart.value?.setOption({
-        xAxis,
-        series: [
-          {
-            name: "売上",
-            type: "line",
-            data: sales,
-            smooth: true,
-            showSymbol: false,
-            lineStyle: {
-              width: 3,
-            },
-            areaStyle: {
-              opacity: 0.1,
-            },
-          },
-          {
-            name: "利益",
-            type: "line",
-            data: profits,
-            smooth: true,
-            showSymbol: false,
-            lineStyle: {
-              width: 3,
-            },
-            areaStyle: {
-              opacity: 0.1,
-            },
-          },
-        ],
-      });
-    }
-  } catch (error) {
-    console.error("売上推移データの取得に失敗しました:", error);
-  }
-};
-
-// タブ切り替え時の処理
-const handleTabChange = (value: number) => {
-  visitTrendDateRange.value = value;
-  fetchVisitTrendData();
-  updateSalesTrendChart(value);
-};
-
-interface StoreData {
-  name: string;
-  sales: number;
-  profit: number;
-}
-
-interface ApiResponse<T> {
-  code: string;
-  data: T;
-  msg: string;
-}
-
-interface OverviewData {
-  totalSales: number;
-  totalOrders: number;
-  totalUsers: number;
-  totalProducts: number;
-}
-
-interface ProductRankingData {
-  id: number;
-  name: string;
-  sales: number;
-  image: string;
-}
-
-interface AlertData {
-  id: number;
-  type: string;
-  title: string;
-  content: string;
-  time: string;
-}
-
-const updateOverviewData = async () => {
-  try {
-    const res = await DashboardAPI.getDashboardData();
-    if (res.code === "00000") {
-      const data = res.data;
-      totalSales.value = data.totalSales;
-      salesGrowthRate.value = data.salesGrowthRate;
-      restockStoreCount.value = data.restockStoreCount;
-      totalStoreCount.value = data.totalStoreCount;
-      totalProductCount.value = data.totalProductCount;
-    } else {
-      ElMessage.error(res.msg || "データの取得に失敗しました");
-    }
-  } catch (error) {
-    console.error("データの取得に失敗しました:", error);
-    ElMessage.error("データの取得に失敗しました");
-  }
-};
-
-const updateProductRanking = async () => {
-  try {
-    const res = await DashboardAPI.getProductRanking();
-    if (res.code === "00000") {
-      productRanking.value = res.data;
-    } else {
-      ElMessage.error(res.msg || "データの取得に失敗しました");
-    }
-  } catch (error) {
-    console.error("データの取得に失敗しました:", error);
-    ElMessage.error("データの取得に失敗しました");
-  }
-};
-
-const updateAlerts = async () => {
-  try {
-    const res = (await DashboardAPI.getAlerts()) as ApiResponse<AlertItem[]>;
-    if (res.code === "00000") {
-      alertList.value = res.data;
-    } else {
-      ElMessage.error(res.msg || "データの取得に失敗しました");
-    }
-  } catch (error) {
-    console.error("データの取得に失敗しました:", error);
-    ElMessage.error("データの取得に失敗しました");
-  }
-};
-
 function smoothData(data: number[]): number[] {
-  // ここに実装されたスムージングロジックを使用
   return data;
 }
 

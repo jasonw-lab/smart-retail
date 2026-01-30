@@ -228,14 +228,20 @@ git push -u origin feature/issue-XXX-description
 
 ### 6. PR作成（Claude CLI で実行）
 ```bash
-gh pr create --title "feat(scope): description (issue-XXX)" \
-  --body "## Summary\n- ...\n\n## Test plan\n- [ ] ..." \
+gh pr create --title "[Phase X Backend/Frontend] 機能名" \
+  --body "## 概要\nIssue #X の実装\n\n## 実装内容\n- ...\n\nCloses #X" \
   --base develop
 ```
+
+**重要事項:**
+- **PRは必ずdevelopブランチへ提出する**
+- PR本文に `Closes #X` を記載してIssueと紐付ける
+- PRがマージされると自動的にIssueがcloseされる
 
 ### 7. PR承認・マージ（GitHub Web UI で実施）
 - **Claude CLI では PR 作成まで**
 - 承認・マージは GitHub Web UI で手動実施
+- developブランチへマージ後、定期的にmainブランチへリリース
 
 ### 8. Issue対応完了の記録
 - **PR マージ後**、`plan_issue.md` を更新

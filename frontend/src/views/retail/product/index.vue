@@ -244,12 +244,12 @@ const getList = async () => {
       categoryId: queryParams.category,
     });
 
-    if (res.list) {
-      productList.value = res.list.map((product) => ({
+    if (res.data && res.data.records) {
+      productList.value = res.data.records.map((product) => ({
         ...product,
         categoryName: categories.value.find((c: Category) => c.id === product.categoryId)?.name || "その他",
       }));
-      total.value = res.total;
+      total.value = res.data.total;
     } else {
       ElMessage.error("商品一覧の取得に失敗しました");
     }

@@ -96,34 +96,16 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: "/inventory",
+    path: "/retail/inventory",
     component: Layout,
     name: "Inventory",
     meta: { title: "在庫管理", icon: "el-icon-Box" },
     children: [
       {
         path: "list",
-        component: () => import("@/views/inventory/index.vue"),
+        component: () => import("@/views/retail/inventory/index.vue"),
         name: "InventoryList",
-        meta: { title: "在庫一覧", icon: "el-icon-Box" },
-      },
-      {
-        path: "restock",
-        component: () => import("@/views/inventory/restock.vue"),
-        name: "InventoryRestock",
-        meta: { title: "入庫管理", icon: "el-icon-CirclePlus" },
-      },
-      {
-        path: "shipping",
-        component: () => import("@/views/inventory/shipping.vue"),
-        name: "InventoryShipping",
-        meta: { title: "出庫管理", icon: "el-icon-Van" },
-      },
-      {
-        path: "alert",
-        component: () => import("@/views/inventory/alert.vue"),
-        name: "InventoryAlert",
-        meta: { title: "アラート管理", icon: "el-icon-Bell" },
+        meta: { title: "在庫一覧", icon: "el-icon-Box", keepAlive: true },
       },
     ],
   },

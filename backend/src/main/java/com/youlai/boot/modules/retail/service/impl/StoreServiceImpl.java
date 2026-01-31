@@ -37,7 +37,9 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store> implements
         LambdaQueryWrapper<Store> queryWrapper = new LambdaQueryWrapper<Store>()
                 .like(StringUtils.hasText(queryParams.getStoreName()), Store::getStoreName, queryParams.getStoreName())
                 .like(StringUtils.hasText(queryParams.getStoreCode()), Store::getStoreCode, queryParams.getStoreCode())
+                .like(StringUtils.hasText(queryParams.getManager()), Store::getManager, queryParams.getManager())
                 .eq(StringUtils.hasText(queryParams.getStatus()), Store::getStatus, queryParams.getStatus())
+                .orderByAsc(Store::getStoreCode)
                 .orderByDesc(Store::getCreateTime);
 
         IPage<Store> result = this.page(page, queryWrapper);
@@ -52,6 +54,7 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store> implements
     @Override
     public List<Store> listStores() {
         LambdaQueryWrapper<Store> queryWrapper = new LambdaQueryWrapper<Store>()
+                .orderByAsc(Store::getStoreCode)
                 .orderByDesc(Store::getCreateTime);
         return this.list(queryWrapper);
     }

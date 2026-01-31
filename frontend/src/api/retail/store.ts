@@ -47,6 +47,7 @@ export interface StoreListParams {
   pageNum: number;
   pageSize: number;
   storeName?: string;
+  manager?: string;
   status?: string;
 }
 

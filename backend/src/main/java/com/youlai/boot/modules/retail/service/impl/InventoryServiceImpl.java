@@ -8,8 +8,10 @@ import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.modules.retail.converter.InventoryConverter;
 import com.youlai.boot.modules.retail.mapper.InventoryMapper;
 import com.youlai.boot.modules.retail.mapper.ProductMapper;
+import com.youlai.boot.modules.retail.mapper.StoreMapper;
 import com.youlai.boot.modules.retail.model.entity.Inventory;
 import com.youlai.boot.modules.retail.model.entity.Product;
+import com.youlai.boot.modules.retail.model.entity.Store;
 import com.youlai.boot.modules.retail.model.form.InventoryForm;
 import com.youlai.boot.modules.retail.model.query.InventoryPageQuery;
 import com.youlai.boot.modules.retail.model.vo.InventoryPageVO;
@@ -33,6 +35,7 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
 
     private final InventoryConverter inventoryConverter;
     private final ProductMapper productMapper;
+    private final StoreMapper storeMapper;
 
     @Override
     public PageResult<InventoryPageVO> getInventoryPage(InventoryPageQuery queryParams) {
@@ -53,6 +56,15 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
         // クエリ実行
         IPage<Inventory> result = this.page(page, queryWrapper);
 
+        // 店舗情報取得
+        List<Long> storeIds = result.getRecords().stream()
+                .map(Inventory::getStoreId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, Store> storeMap = storeMapper.selectBatchIds(storeIds).stream()
+                .collect(Collectors.toMap(Store::getId, store -> store));
+
         // 商品情報取得
         List<Long> productIds = result.getRecords().stream()
                 .map(Inventory::getProductId)
@@ -66,6 +78,10 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
         List<InventoryPageVO> list = result.getRecords().stream()
                 .map(inventory -> {
                     InventoryPageVO vo = inventoryConverter.entity2Vo(inventory);
+                    Store store = storeMap.get(inventory.getStoreId());
+                    if (store != null) {
+                        vo.setStoreName(store.getStoreName());
+                    }
                     Product product = productMap.get(inventory.getProductId());
                     if (product != null) {
                         vo.setProductName(product.getProductName());

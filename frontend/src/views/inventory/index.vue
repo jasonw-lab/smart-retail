@@ -18,19 +18,19 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="商品名" prop="productName">
+        <el-form-item label="ロット番号" prop="lotNumber">
           <el-input
-            v-model="queryParams.productName"
-            placeholder="商品名を入力"
+            v-model="queryParams.lotNumber"
+            placeholder="ロット番号を入力"
             clearable
             style="width: 200px"
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="在庫状態" prop="stockStatus">
+        <el-form-item label="状態" prop="status">
           <el-select
-            v-model="queryParams.stockStatus"
-            placeholder="在庫状態を選択"
+            v-model="queryParams.status"
+            placeholder="状態を選択"
             clearable
             style="width: 200px"
           >
@@ -62,7 +62,9 @@
         <el-table-column type="index" label="No." width="50" />
         <el-table-column prop="storeName" label="店舗名" min-width="120" />
         <el-table-column prop="productName" label="商品名" min-width="150" />
-        <el-table-column prop="stock" label="在庫数" width="100" />
+        <el-table-column prop="productCode" label="商品コード" width="140" />
+        <el-table-column prop="lotNumber" label="ロット番号" width="160" />
+        <el-table-column prop="quantity" label="在庫数" width="100" />
         <el-table-column prop="expiryDate" label="賞味期限" width="120">
           <template #default="{ row }">
             <el-tag :type="getExpiryDateTagType(row.expiryDate)" size="small">
@@ -88,7 +90,7 @@
       <!-- ページネーション -->
       <div class="mt-4 flex-x-end">
         <el-pagination
-          v-model:current-page="queryParams.page"
+          v-model:current-page="queryParams.pageNum"
           v-model:page-size="queryParams.pageSize"
           :total="total"
           :page-sizes="[10, 20, 50, 100]"
@@ -102,6 +104,9 @@
     <!-- 補充ダイアログ -->
     <el-dialog v-model="restockDialogVisible" title="商品補充" width="500px">
       <el-form ref="restockFormRef" :model="restockForm" :rules="restockRules" label-width="100px">
+        <el-form-item label="店舗名">
+          <span>{{ restockForm.storeName }}</span>
+        </el-form-item>
         <el-form-item label="商品名">
           <span>{{ restockForm.productName }}</span>
         </el-form-item>
@@ -116,6 +121,9 @@
             style="width: 200px"
           />
         </el-form-item>
+        <el-form-item label="ロット番号" prop="lotNumber">
+          <el-input v-model="restockForm.lotNumber" placeholder="LOT-YYYYMMDD-SEQ" style="width: 200px" />
+        </el-form-item>
         <el-form-item label="賞味期限" prop="expiryDate">
           <el-date-picker
             v-model="restockForm.expiryDate"
@@ -124,6 +132,9 @@
             style="width: 200px"
             value-format="YYYY-MM-DD"
           />
+        </el-form-item>
+        <el-form-item label="備考" prop="remarks">
+          <el-input v-model="restockForm.remarks" type="textarea" :rows="2" placeholder="備考を入力" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -138,26 +149,27 @@
     <el-dialog v-model="historyDialogVisible" title="補充履歴" width="800px">
       <el-table :data="historyList" border style="width: 100%">
         <el-table-column type="index" label="No." width="50" />
-        <el-table-column prop="date" label="日時" width="160">
+        <el-table-column prop="transactionDate" label="日時" width="160">
           <template #default="{ row }">
-            {{ formatDateTime(row.date) }}
+            {{ formatDateTime(row.transactionDate) }}
           </template>
         </el-table-column>
-        <el-table-column prop="type" label="種類" width="100">
+        <el-table-column prop="transactionType" label="種類" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === '入庫' ? 'success' : 'warning'">
-              {{ row.type }}
+            <el-tag :type="row.transactionType === 'IN' ? 'success' : 'warning'">
+              {{ row.transactionType }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="quantity" label="数量" width="100" />
+        <el-table-column prop="lotNumber" label="ロット" width="160" />
         <el-table-column prop="operator" label="操作者" width="120" />
-        <el-table-column prop="reason" label="備考" min-width="200" />
+        <el-table-column prop="remarks" label="備考" min-width="200" />
       </el-table>
       <!-- 履歴のページネーション -->
       <div class="mt-4 flex-x-end">
         <el-pagination
-          v-model:current-page="historyQueryParams.page"
+          v-model:current-page="historyQueryParams.pageNum"
           v-model:page-size="historyQueryParams.pageSize"
           :total="historyTotal"
           :page-sizes="[10, 20, 50, 100]"
@@ -188,11 +200,11 @@ import dayjs from "dayjs";
 
 // 検索パラメータ
 const queryParams = reactive({
-  page: 1,
+  pageNum: 1,
   pageSize: 10,
   storeId: undefined as number | undefined,
-  productName: "",
-  stockStatus: undefined as "low" | "normal" | "high" | undefined,
+  lotNumber: "",
+  status: undefined as "low" | "normal" | "high" | "expired" | undefined,
 });
 
 // 店舗オプション
@@ -207,6 +219,7 @@ const stockStatusOptions = [
   { label: "在庫不足", value: "low" },
   { label: "在庫あり", value: "normal" },
   { label: "在庫過多", value: "high" },
+  { label: "期限切れ", value: "expired" },
 ];
 
 // 在庫一覧データ
@@ -219,10 +232,15 @@ const restockDialogVisible = ref(false);
 const restockFormRef = ref();
 const restockForm = reactive({
   id: undefined as number | undefined,
+  storeId: undefined as number | undefined,
+  storeName: "",
+  productId: undefined as number | undefined,
   productName: "",
   currentStock: 0,
   restockAmount: 1,
+  lotNumber: "",
   expiryDate: "",
+  remarks: "",
 });
 
 // バリデーションルール
@@ -237,6 +255,7 @@ const restockRules = {
       trigger: "blur",
     },
   ],
+  lotNumber: [{ required: true, message: "ロット番号を入力してください", trigger: "blur" }],
   expiryDate: [{ required: true, message: "賞味期限を選択してください", trigger: "change" }],
 };
 
@@ -245,8 +264,13 @@ const historyDialogVisible = ref(false);
 const historyList = ref<HistoryItem[]>([]);
 const historyTotal = ref(0);
 const historyQueryParams = reactive({
-  page: 1,
+  pageNum: 1,
   pageSize: 10,
+});
+
+const historyTarget = reactive({
+  storeId: undefined as number | undefined,
+  productId: undefined as number | undefined,
 });
 
 // データ取得
@@ -269,7 +293,7 @@ const getList = async () => {
 // 検索処理
 const handleQuery = () => {
   if (loading.value) return;
-  queryParams.page = 1;
+  queryParams.pageNum = 1;
   getList();
 };
 
@@ -277,8 +301,8 @@ const handleQuery = () => {
 const resetQuery = () => {
   if (loading.value) return;
   queryParams.storeId = undefined;
-  queryParams.productName = "";
-  queryParams.stockStatus = undefined;
+  queryParams.lotNumber = "";
+  queryParams.status = undefined;
   handleQuery();
 };
 
@@ -290,20 +314,22 @@ const handleSizeChange = (val: number) => {
 
 // ページ番号変更
 const handleCurrentChange = (val: number) => {
-  queryParams.page = val;
+  queryParams.pageNum = val;
   handleQuery();
 };
 
 // エクスポート処理
 const handleExport = async () => {
   try {
-    const params = { ...queryParams, page: 1, pageSize: 1000 };
+    const params = { ...queryParams, pageNum: 1, pageSize: 1000 };
     const response = await InventoryAPI.getList(params);
     const data = response.list || [];
     exportToCSV(data, [
       { key: "storeName", label: "店舗名" },
       { key: "productName", label: "商品名" },
-      { key: "stock", label: "在庫数" },
+      { key: "productCode", label: "商品コード" },
+      { key: "lotNumber", label: "ロット番号" },
+      { key: "quantity", label: "在庫数" },
       { key: "expiryDate", label: "賞味期限" },
       { key: "status", label: "状態" },
     ], "inventory-list.csv");
@@ -329,6 +355,7 @@ const getStockStatusType = (status: string) => {
     low: "danger",
     normal: "success",
     high: "warning",
+    expired: "danger",
   };
   return types[status as keyof typeof types] || "info";
 };
@@ -347,17 +374,29 @@ const formatDate = (date: string) => {
 // 補充処理
 const handleRestock = (row: Inventory) => {
   restockForm.id = row.id;
+  restockForm.storeId = row.storeId;
+  restockForm.storeName = row.storeName;
+  restockForm.productId = row.productId;
   restockForm.productName = row.productName;
-  restockForm.currentStock = row.stock;
+  restockForm.currentStock = row.quantity;
   restockForm.restockAmount = 1;
+  restockForm.lotNumber = row.lotNumber;
   restockForm.expiryDate = "";
+  restockForm.remarks = "";
   restockDialogVisible.value = true;
 };
 
 // 履歴表示
 const handleHistory = async (row: Inventory) => {
   try {
-    const data = await InventoryAPI.getHistory(row.id, historyQueryParams);
+    historyTarget.storeId = row.storeId;
+    historyTarget.productId = row.productId;
+    const data = await InventoryAPI.getHistory({
+      pageNum: historyQueryParams.pageNum,
+      pageSize: historyQueryParams.pageSize,
+      storeId: row.storeId,
+      productId: row.productId,
+    });
     console.log("History response:", data);
     historyList.value = data.list;
     historyTotal.value = data.total;
@@ -371,25 +410,46 @@ const handleHistory = async (row: Inventory) => {
 // 履歴のページサイズ変更
 const handleHistorySizeChange = (val: number) => {
   historyQueryParams.pageSize = val;
-  handleHistory({ id: historyList.value[0]?.id } as Inventory);
+  if (historyTarget.storeId == null || historyTarget.productId == null) return;
+  InventoryAPI.getHistory({
+    pageNum: historyQueryParams.pageNum,
+    pageSize: historyQueryParams.pageSize,
+    storeId: historyTarget.storeId,
+    productId: historyTarget.productId,
+  }).then((data) => {
+    historyList.value = data.list;
+    historyTotal.value = data.total;
+  });
 };
 
 // 履歴のページ番号変更
 const handleHistoryCurrentChange = (val: number) => {
-  historyQueryParams.page = val;
-  handleHistory({ id: historyList.value[0]?.id } as Inventory);
+  historyQueryParams.pageNum = val;
+  if (historyTarget.storeId == null || historyTarget.productId == null) return;
+  InventoryAPI.getHistory({
+    pageNum: historyQueryParams.pageNum,
+    pageSize: historyQueryParams.pageSize,
+    storeId: historyTarget.storeId,
+    productId: historyTarget.productId,
+  }).then((data) => {
+    historyList.value = data.list;
+    historyTotal.value = data.total;
+  });
 };
 
 // 補充確定
 const submitRestock = async () => {
   if (!restockFormRef.value) return;
   await restockFormRef.value.validate(async (valid: boolean) => {
-    if (valid && restockForm.id) {
+    if (valid && restockForm.storeId && restockForm.productId) {
       try {
         await InventoryAPI.restock({
-          id: restockForm.id,
-          amount: restockForm.restockAmount,
+          storeId: restockForm.storeId,
+          productId: restockForm.productId,
+          lotNumber: restockForm.lotNumber,
+          quantity: restockForm.restockAmount,
           expiryDate: restockForm.expiryDate,
+          remarks: restockForm.remarks,
         });
         ElMessage.success("補充処理が完了しました");
         restockDialogVisible.value = false;

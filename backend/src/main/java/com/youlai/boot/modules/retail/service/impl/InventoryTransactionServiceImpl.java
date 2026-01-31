@@ -6,10 +6,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.modules.retail.converter.InventoryTransactionConverter;
+import com.youlai.boot.modules.retail.mapper.InventoryMapper;
 import com.youlai.boot.modules.retail.mapper.InventoryTransactionMapper;
 import com.youlai.boot.modules.retail.mapper.ProductMapper;
+import com.youlai.boot.modules.retail.mapper.StoreMapper;
+import com.youlai.boot.modules.retail.model.entity.Inventory;
 import com.youlai.boot.modules.retail.model.entity.InventoryTransaction;
 import com.youlai.boot.modules.retail.model.entity.Product;
+import com.youlai.boot.modules.retail.model.entity.Store;
 import com.youlai.boot.modules.retail.model.form.InventoryTransactionForm;
 import com.youlai.boot.modules.retail.model.query.InventoryTransactionPageQuery;
 import com.youlai.boot.modules.retail.model.vo.InventoryTransactionPageVO;
@@ -17,6 +21,7 @@ import com.youlai.boot.modules.retail.service.InventoryTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +38,8 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
 
     private final InventoryTransactionConverter inventoryTransactionConverter;
     private final ProductMapper productMapper;
+    private final StoreMapper storeMapper;
+    private final InventoryMapper inventoryMapper;
 
     @Override
     public PageResult<InventoryTransactionPageVO> getTransactionPage(InventoryTransactionPageQuery queryParams) {
@@ -78,6 +85,15 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
         // クエリ実行
         IPage<InventoryTransaction> result = this.page(page, queryWrapper);
 
+        // 店舗情報取得
+        List<Long> storeIds = result.getRecords().stream()
+                .map(InventoryTransaction::getStoreId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, Store> storeMap = storeMapper.selectBatchIds(storeIds).stream()
+                .collect(Collectors.toMap(Store::getId, store -> store));
+
         // 商品情報取得
         List<Long> productIds = result.getRecords().stream()
                 .map(InventoryTransaction::getProductId)
@@ -91,6 +107,10 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
         List<InventoryTransactionPageVO> list = result.getRecords().stream()
                 .map(transaction -> {
                     InventoryTransactionPageVO vo = inventoryTransactionConverter.entity2Vo(transaction);
+                    Store store = storeMap.get(transaction.getStoreId());
+                    if (store != null) {
+                        vo.setStoreName(store.getStoreName());
+                    }
                     Product product = productMap.get(transaction.getProductId());
                     if (product != null) {
                         vo.setProductName(product.getProductName());
@@ -117,20 +137,25 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createTransaction(InventoryTransactionForm form) {
         InventoryTransaction transaction = inventoryTransactionConverter.form2Entity(form);
         return this.save(transaction);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createInboundTransaction(InventoryTransactionForm form) {
         form.setTransactionType("IN");
+        upsertInventoryForInbound(form);
         return createTransaction(form);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createOutboundTransaction(InventoryTransactionForm form) {
         form.setTransactionType("OUT");
+        applyInventoryForOutbound(form);
         return createTransaction(form);
     }
 
@@ -144,5 +169,53 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
     @Override
     public boolean deleteTransaction(Long id) {
         return this.removeById(id);
+    }
+
+    private void upsertInventoryForInbound(InventoryTransactionForm form) {
+        if (form.getExpiryDate() == null) {
+            throw new IllegalArgumentException("入庫時は賞味期限（expiryDate）が必須です");
+        }
+
+        Inventory existing = inventoryMapper.selectOne(new LambdaQueryWrapper<Inventory>()
+                .eq(Inventory::getStoreId, form.getStoreId())
+                .eq(Inventory::getProductId, form.getProductId())
+                .eq(Inventory::getLotNumber, form.getLotNumber()));
+
+        if (existing == null) {
+            Inventory inventory = new Inventory();
+            inventory.setStoreId(form.getStoreId());
+            inventory.setProductId(form.getProductId());
+            inventory.setLotNumber(form.getLotNumber());
+            inventory.setExpiryDate(form.getExpiryDate());
+            inventory.setQuantity(form.getQuantity());
+            inventory.setMinStock(0);
+            inventory.setMaxStock(0);
+            inventory.setStatus("normal");
+            inventoryMapper.insert(inventory);
+            return;
+        }
+
+        existing.setQuantity((existing.getQuantity() == null ? 0 : existing.getQuantity()) + form.getQuantity());
+        // ロットの賞味期限は原則固定だが、入力があれば最新に合わせる
+        existing.setExpiryDate(form.getExpiryDate());
+        inventoryMapper.updateById(existing);
+    }
+
+    private void applyInventoryForOutbound(InventoryTransactionForm form) {
+        Inventory existing = inventoryMapper.selectOne(new LambdaQueryWrapper<Inventory>()
+                .eq(Inventory::getStoreId, form.getStoreId())
+                .eq(Inventory::getProductId, form.getProductId())
+                .eq(Inventory::getLotNumber, form.getLotNumber()));
+
+        if (existing == null) {
+            throw new IllegalArgumentException("指定ロットの在庫が存在しません");
+        }
+        int currentQty = existing.getQuantity() == null ? 0 : existing.getQuantity();
+        if (currentQty < form.getQuantity()) {
+            throw new IllegalArgumentException("在庫が不足しています（current=" + currentQty + "）");
+        }
+
+        existing.setQuantity(currentQty - form.getQuantity());
+        inventoryMapper.updateById(existing);
     }
 }

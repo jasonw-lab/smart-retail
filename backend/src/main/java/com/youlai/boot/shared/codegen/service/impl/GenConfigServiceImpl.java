@@ -24,13 +24,14 @@ import com.youlai.boot.shared.codegen.service.GenConfigService;
 import com.youlai.boot.shared.codegen.service.GenFieldConfigService;
 import com.youlai.boot.system.service.MenuService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * 数据库服务实现类
@@ -47,8 +48,7 @@ public class GenConfigServiceImpl extends ServiceImpl<GenConfigMapper, GenConfig
     private final GenFieldConfigService genFieldConfigService;
     private final CodegenConverter codegenConverter;
 
-    @Value("${spring.profiles.active}")
-    private String springProfilesActive;
+    private final Environment environment;
 
     private final MenuService menuService;
 
@@ -181,7 +181,10 @@ public class GenConfigServiceImpl extends ServiceImpl<GenConfigMapper, GenConfig
 
         // 如果选择上级菜单且当前环境不是生产环境，则保存菜单
         Long parentMenuId = formData.getParentMenuId();
-        if (parentMenuId != null && !EnvEnum.PROD.getValue().equals(springProfilesActive)) {
+        boolean hasActiveProfiles = environment.getActiveProfiles().length > 0;
+        boolean isProdProfile = Stream.of(environment.getActiveProfiles())
+                .anyMatch(profile -> EnvEnum.PROD.getValue().equalsIgnoreCase(profile));
+        if (parentMenuId != null && hasActiveProfiles && !isProdProfile) {
             menuService.addMenuForCodegen(parentMenuId, genConfig);
         }
 

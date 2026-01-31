@@ -14,6 +14,9 @@ import lombok.Data;
 @Data
 public class StoreForm {
 
+    @Schema(description = "店舗ID（更新時にフロントが送る場合あり。サーバー側ではPathVariableのIDを優先）")
+    private Long id;
+
     @Schema(description = "店舗コード")
     @NotBlank(message = "店舗コードは必須です")
     @Size(max = 20, message = "店舗コードは20文字以内で入力してください")

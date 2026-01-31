@@ -82,6 +82,20 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/retail/store",
+    component: Layout,
+    name: "Store",
+    meta: { title: "店舗管理", icon: "el-icon-Shop" },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/retail/store/index.vue"),
+        name: "StoreList",
+        meta: { title: "店舗一覧", icon: "el-icon-Shop", keepAlive: true },
+      },
+    ],
+  },
+  {
     path: "/inventory",
     component: Layout,
     name: "Inventory",

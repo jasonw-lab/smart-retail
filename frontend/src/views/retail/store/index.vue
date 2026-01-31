@@ -16,7 +16,7 @@
             v-model="queryParams.status"
             placeholder="ステータスを選択"
             clearable
-            fit-input-width
+            style="width: 180px"
           >
             <el-option label="稼働中" value="active" />
             <el-option label="メンテナンス中" value="maintenance" />
@@ -46,7 +46,7 @@
         <el-table-column prop="address" label="住所" min-width="200" show-overflow-tooltip />
         <el-table-column prop="phone" label="電話番号" width="130" />
         <el-table-column prop="manager" label="店長" width="100" />
-        <el-table-column prop="status" label="ステータス" width="120">
+        <el-table-column prop="status" label="ステータス" width="140">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
               {{ getStatusLabel(row.status) }}

@@ -4,6 +4,7 @@ import com.youlai.boot.modules.retail.model.entity.Store;
 import com.youlai.boot.modules.retail.model.form.StoreForm;
 import com.youlai.boot.modules.retail.model.vo.StorePageVO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 /**
@@ -20,6 +21,7 @@ public interface StoreConverter {
      * @param form 店舗フォーム
      * @return 店舗エンティティ
      */
+    @Mapping(target = "id", ignore = true)
     Store form2Entity(StoreForm form);
 
     /**

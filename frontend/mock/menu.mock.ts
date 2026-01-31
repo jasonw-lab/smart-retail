@@ -8,6 +8,88 @@ export default defineMock([
       code: "00000",
       data: [
         {
+          path: "/",
+          component: "Layout",
+          redirect: "/dashboard",
+          name: "/",
+          meta: {
+            title: "Home",
+            icon: "homepage",
+            hidden: false,
+            alwaysShow: false,
+            params: null,
+          },
+          children: [
+            {
+              path: "dashboard",
+              component: "dashboard/index",
+              name: "Dashboard",
+              meta: {
+                title: "Home",
+                icon: "homepage",
+                hidden: false,
+                keepAlive: true,
+                alwaysShow: false,
+                params: null,
+              },
+            },
+          ],
+        },
+        {
+          path: "/retail",
+          component: "Layout",
+          redirect: "/retail/dashboard",
+          name: "/retail",
+          meta: {
+            title: "Smart Retail",
+            icon: "shop",
+            hidden: false,
+            alwaysShow: true,
+            params: null,
+          },
+          children: [
+            {
+              path: "dashboard",
+              component: "retail/dashboard/index",
+              name: "RetailDashboard",
+              meta: {
+                title: "ダッシュボード",
+                icon: "dashboard",
+                hidden: false,
+                keepAlive: true,
+                alwaysShow: false,
+                params: null,
+              },
+            },
+            {
+              path: "store",
+              component: "retail/store/index",
+              name: "Store",
+              meta: {
+                title: "店舗管理",
+                icon: "shop",
+                hidden: false,
+                keepAlive: true,
+                alwaysShow: false,
+                params: null,
+              },
+            },
+            {
+              path: "product",
+              component: "retail/product/index",
+              name: "Product",
+              meta: {
+                title: "商品管理",
+                icon: "goods",
+                hidden: false,
+                keepAlive: true,
+                alwaysShow: false,
+                params: null,
+              },
+            },
+          ],
+        },
+        {
           path: "/system",
           component: "Layout",
           redirect: "/system/user",

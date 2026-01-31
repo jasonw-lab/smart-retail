@@ -18,6 +18,9 @@ public class StorePageQuery extends BasePageQuery {
     @Schema(description = "店舗名")
     private String storeName;
 
+    @Schema(description = "店長")
+    private String manager;
+
     @Schema(description = "店舗コード")
     private String storeCode;
 

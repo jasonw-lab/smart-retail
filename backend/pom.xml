@@ -176,6 +176,13 @@
             <version>${xxl-job.version}</version>
         </dependency>
 
+        <!-- .env ファイル読み込み -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
         <!-- Excel 工具（EasyExcel-PLus ）  -->
         <dependency>
             <groupId>cn.idev.excel</groupId>

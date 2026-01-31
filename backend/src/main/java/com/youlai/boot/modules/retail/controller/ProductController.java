@@ -15,7 +15,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 /**
- * @author wangjw
+ * 商品管理コントローラー
+ *
+ * @author jason.w
  */
 @Tag(name = "商品管理API")
 @RestController

@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * 商品フォーム
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "商品フォーム")
 @Data
@@ -44,9 +44,6 @@ public class ProductForm {
     @Schema(description = "原価")
     private BigDecimal costPrice;
 
-    @Schema(description = "在庫数")
-    private Integer stock;
-
     @Schema(description = "単位（個、kg等）")
     private String unit;
 
@@ -68,4 +65,10 @@ public class ProductForm {
 
     @Schema(description = "状態（active, inactive）")
     private String status;
+
+    @Schema(description = "発注点（この在庫数以下でアラート発生）")
+    private Integer reorderPoint;
+
+    @Schema(description = "適正在庫上限（この在庫数以上でアラート発生）")
+    private Integer maxStockLevel;
 }

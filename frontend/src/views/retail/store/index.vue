@@ -11,6 +11,14 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+        <el-form-item label="店長" prop="manager">
+          <el-input
+            v-model="queryParams.manager"
+            placeholder="店長名を入力"
+            clearable
+            @keyup.enter="handleQuery"
+          />
+        </el-form-item>
         <el-form-item label="ステータス" prop="status">
           <el-select
             v-model="queryParams.status"
@@ -130,6 +138,7 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   storeName: "",
+  manager: "",
   status: undefined as string | undefined,
 });
 
@@ -191,6 +200,7 @@ const getList = async () => {
       pageNum: queryParams.pageNum,
       pageSize: queryParams.pageSize,
       storeName: queryParams.storeName,
+      manager: queryParams.manager,
       status: queryParams.status,
     });
 
@@ -213,6 +223,7 @@ const handleQuery = () => {
 // リセット
 const resetQuery = () => {
   queryParams.storeName = "";
+  queryParams.manager = "";
   queryParams.status = undefined;
   queryParams.pageNum = 1;
   getList();

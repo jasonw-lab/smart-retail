@@ -4,7 +4,9 @@ import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.modules.retail.model.entity.Inventory;
 import com.youlai.boot.modules.retail.model.form.InventoryForm;
+import com.youlai.boot.modules.retail.model.form.InventoryReplenishForm;
 import com.youlai.boot.modules.retail.model.query.InventoryPageQuery;
+import com.youlai.boot.modules.retail.model.vo.InventoryHistoryVO;
 import com.youlai.boot.modules.retail.model.vo.InventoryPageVO;
 import com.youlai.boot.modules.retail.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,13 +17,13 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 /**
- * 在庫管理コントローラー
+ * 在庫管理API
  *
- * @author wangjw
+ * @author jason.w
  */
 @Tag(name = "在庫管理API")
 @RestController
-@RequestMapping("/api/v1/retail/inventories")
+@RequestMapping("/api/v1/retail/inventory")
 @RequiredArgsConstructor
 public class InventoryController {
     private final InventoryService inventoryService;
@@ -36,6 +38,12 @@ public class InventoryController {
     @GetMapping
     public Result<List<Inventory>> listInventories() {
         return Result.success(inventoryService.listInventories());
+    }
+
+    @Operation(summary = "在庫詳細取得")
+    @GetMapping("/{id}")
+    public Result<Inventory> getInventory(@PathVariable Long id) {
+        return Result.success(inventoryService.getInventoryById(id));
     }
 
     @Operation(summary = "在庫新規作成")
@@ -56,9 +64,22 @@ public class InventoryController {
         return Result.judge(inventoryService.deleteInventory(id));
     }
 
-    @Operation(summary = "在庫詳細取得")
-    @GetMapping("/{id}")
-    public Result<Inventory> getInventory(@PathVariable Long id) {
-        return Result.success(inventoryService.getInventoryById(id));
+    @Operation(summary = "在庫補充記録")
+    @PostMapping("/{id}/replenish")
+    public Result<?> replenishInventory(@PathVariable Long id, @RequestBody @Valid InventoryReplenishForm form) {
+        return Result.judge(inventoryService.replenishInventory(id, form));
+    }
+
+    @Operation(summary = "在庫履歴取得")
+    @GetMapping("/{id}/history")
+    public Result<List<InventoryHistoryVO>> getInventoryHistory(@PathVariable Long id) {
+        return Result.success(inventoryService.getInventoryHistory(id));
+    }
+
+    @Operation(summary = "在庫アラート検出")
+    @PostMapping("/detect-alerts")
+    public Result<?> detectInventoryAlerts() {
+        inventoryService.detectInventoryAlerts();
+        return Result.success();
     }
 }

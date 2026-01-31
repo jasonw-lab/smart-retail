@@ -1,46 +1,71 @@
-import request, { ApiResponse } from "@/utils/request";
+import request from "@/utils/request";
 
 const GOODS_BASE_URL = "/api/v1/retail/products";
 
 export interface Product {
   id: number;
   name: string;
+  code: string;
+  barcode?: string;
   categoryId: number;
   categoryName?: string;
   price: number;
-  stock: number;
-  expiryDate: string;
   description: string;
   imageUrl: string;
-  sales: number;
+  status?: string;
+
+  // UI fields (not persisted by current backend ProductForm)
+  stock?: number;
+  expiryDate?: string;
+  sales?: number;
+}
+
+// Backend `/api/v1/retail/products/page` record shape (ProductPageVO)
+export interface ProductPageRecord {
+  id: number;
+  productCode: string;
+  productName: string;
+  barcode?: string;
+  categoryId?: number;
+  categoryName?: string;
+  unitPrice?: number;
+  costPrice?: number;
+  unit?: string;
+  shelfLifeDays?: number;
+  supplierId?: number;
+  supplierName?: string;
+  description?: string;
+  imageUrl?: string;
+  status?: string;
+  createTime?: string;
+  updateTime?: string;
 }
 
 export interface CreateProductDto {
   name: string;
+  code: string;
+  barcode?: string;
   categoryId: number;
   price: number;
-  stock: number;
-  expiryDate: string;
   description?: string;
   imageUrl?: string;
+  status?: string;
 }
 
 export interface UpdateProductDto {
-  id: number;
   name: string;
+  code: string;
+  barcode?: string;
   categoryId: number;
   price: number;
-  stock: number;
-  expiryDate: string;
   description?: string;
   imageUrl?: string;
+  status?: string;
 }
 
 export interface ProductListData {
-  records: Product[];
+  list: ProductPageRecord[];
   total: number;
-  size: number;
-  current: number;
 }
 
 export interface ProductListParams {
@@ -52,24 +77,39 @@ export interface ProductListParams {
 
 const RetailProductAPI = {
   /** 商品一覧を取得 */
-  getList(params: ProductListParams) {
-    return request.get<ApiResponse<ProductListData>>(`${GOODS_BASE_URL}/page`, { params });
+  getPage(params: ProductListParams) {
+    return request<any, ProductListData>({
+      url: `${GOODS_BASE_URL}/page`,
+      method: "get",
+      params,
+    });
   },
 
   /** 商品を新規作成 */
   create(data: CreateProductDto) {
-    return request.post<ApiResponse<boolean>>(`${GOODS_BASE_URL}`, data);
+    return request({
+      url: `${GOODS_BASE_URL}`,
+      method: "post",
+      data,
+    });
   },
 
   /** 商品を更新 */
-  update(data: UpdateProductDto) {
-    return request.put<ApiResponse<boolean>>(`${GOODS_BASE_URL}/${data.id}`, data);
+  update(id: number, data: UpdateProductDto) {
+    return request({
+      url: `${GOODS_BASE_URL}/${id}`,
+      method: "put",
+      data,
+    });
   },
 
   /** 商品を削除 */
   delete(id: number) {
-    return request.delete<ApiResponse<boolean>>(`${GOODS_BASE_URL}/${id}`);
+    return request({
+      url: `${GOODS_BASE_URL}/${id}`,
+      method: "delete",
+    });
   }
 };
 
-export default RetailProductAPI; 
+export default RetailProductAPI;

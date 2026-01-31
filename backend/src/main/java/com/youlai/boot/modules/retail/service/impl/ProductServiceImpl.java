@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 商品サービス実装クラス
  *
- * @author wangjw
+ * @author jason.w
  */
 @Service
 @RequiredArgsConstructor
@@ -75,15 +75,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Product existingProduct = this.getOne(queryWrapper, false);
 
         if (existingProduct != null) {
-            // If product exists, update it
-            Product product = productConverter.form2Entity(form);
-            product.setId(existingProduct.getId());
-            return this.updateById(product);
-        } else {
-            // If product doesn't exist, create a new one
-            Product product = productConverter.form2Entity(form);
-            return this.save(product);
+            throw new IllegalArgumentException("商品コード「" + form.getCode() + "」は既に存在します");
         }
+
+        Product product = productConverter.form2Entity(form);
+        return this.save(product);
     }
 
     @Override

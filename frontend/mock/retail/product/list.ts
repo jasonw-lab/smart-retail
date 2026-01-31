@@ -5,6 +5,7 @@ const products: Product[] = [
   {
     id: 1,
     name: "プレミアムコーヒー",
+    code: "P0001",
     categoryId: 1,
     categoryName: "飲料",
     price: 980,
@@ -17,6 +18,7 @@ const products: Product[] = [
   {
     id: 2,
     name: "石鹸",
+    code: "P0002",
     categoryId: 2,
     categoryName: "日用品",
     price: 280,
@@ -29,6 +31,7 @@ const products: Product[] = [
   {
     id: 3,
     name: "シャンプー",
+    code: "P0003",
     categoryId: 2,
     categoryName: "日用品",
     price: 680,
@@ -41,6 +44,7 @@ const products: Product[] = [
   {
     id: 4,
     name: "緑茶",
+    code: "P0004",
     categoryId: 2,
     categoryName: "飲料",
     price: 380,
@@ -53,6 +57,7 @@ const products: Product[] = [
   {
     id: 5,
     name: "オーガニックティー",
+    code: "P0005",
     categoryId: 1,
     categoryName: "飲料",
     price: 780,
@@ -65,6 +70,7 @@ const products: Product[] = [
   {
     id: 6,
     name: "天然水",
+    code: "P0006",
     categoryId: 2,
     categoryName: "食品",
     price: 120,
@@ -77,6 +83,7 @@ const products: Product[] = [
   {
     id: 7,
     name: "チョコレート",
+    code: "P0007",
     categoryId: 3,
     categoryName: "食品",
     price: 280,
@@ -89,6 +96,7 @@ const products: Product[] = [
   {
     id: 8,
     name: "クッキー",
+    code: "P0008",
     categoryId: 3,
     categoryName: "食品",
     price: 380,
@@ -101,6 +109,7 @@ const products: Product[] = [
   {
     id: 9,
     name: "紅茶",
+    code: "P0009",
     categoryId: 1,
     categoryName: "飲料",
     price: 680,
@@ -113,6 +122,7 @@ const products: Product[] = [
   {
     id: 10,
     name: "ポテトチップス",
+    code: "P0010",
     categoryId: 2,
     categoryName: "食品",
     price: 180,
@@ -125,6 +135,7 @@ const products: Product[] = [
   {
     id: 11,
     name: "キャンディー",
+    code: "P0011",
     categoryId: 2,
     categoryName: "食品",
     price: 150,
@@ -137,6 +148,7 @@ const products: Product[] = [
   {
     id: 12,
     name: "ハンドソープ",
+    code: "P0012",
     categoryId: 3,
     categoryName: "日用品",
     price: 380,
@@ -149,6 +161,7 @@ const products: Product[] = [
   {
     id: 13,
     name: "歯ブラシ",
+    code: "P0013",
     categoryId: 3,
     categoryName: "日用品",
     price: 320,
@@ -161,6 +174,7 @@ const products: Product[] = [
   {
     id: 14,
     name: "ノート",
+    code: "P0014",
     categoryId: 4,
     categoryName: "雑貨",
     price: 280,
@@ -173,6 +187,7 @@ const products: Product[] = [
   {
     id: 15,
     name: "ハーブティー",
+    code: "P0015",
     categoryId: 1,
     categoryName: "飲料",
     price: 580,
@@ -185,6 +200,7 @@ const products: Product[] = [
   {
     id: 16,
     name: "スポンジ",
+    code: "P0016",
     categoryId: 3,
     categoryName: "日用品",
     price: 280,
@@ -197,6 +213,7 @@ const products: Product[] = [
   {
     id: 17,
     name: "収納ボックス",
+    code: "P0017",
     categoryId: 4,
     categoryName: "日用品",
     price: 1280,
@@ -209,6 +226,7 @@ const products: Product[] = [
   {
     id: 18,
     name: "フォトフレーム",
+    code: "P0018",
     categoryId: 4,
     categoryName: "日用品",
     price: 980,

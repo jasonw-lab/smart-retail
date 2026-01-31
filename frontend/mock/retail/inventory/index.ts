@@ -9,7 +9,9 @@ const inventoryList: Inventory[] = [
     storeName: "東京本店",
     productId: 1,
     productName: "チキン",
-    stock: 5,
+    productCode: "P0001",
+    lotNumber: "LOT-20240101-001",
+    quantity: 5,
     expiryDate: "2024-04-20",
     status: "low",
   },
@@ -19,7 +21,9 @@ const inventoryList: Inventory[] = [
     storeName: "横浜駅前店",
     productId: 2,
     productName: "ハンバーガー",
-    stock: 15,
+    productCode: "P0002",
+    lotNumber: "LOT-20240102-001",
+    quantity: 15,
     expiryDate: "2024-04-25",
     status: "normal",
   },
@@ -29,7 +33,9 @@ const inventoryList: Inventory[] = [
     storeName: "金沢店",
     productId: 3,
     productName: "フライドポテト",
-    stock: 30,
+    productCode: "P0003",
+    lotNumber: "LOT-20240103-001",
+    quantity: 30,
     expiryDate: "2024-05-01",
     status: "high",
   },
@@ -246,12 +252,12 @@ export default defineMock([
           msg: "在庫が見つかりません",
         };
       }
-      item.stock += amount;
+      item.quantity += amount;
       item.expiryDate = expiryDate;
       // 在庫状態を更新
-      if (item.stock < 10) {
+      if (item.quantity < 10) {
         item.status = "low";
-      } else if (item.stock > 20) {
+      } else if (item.quantity > 20) {
         item.status = "high";
       } else {
         item.status = "normal";

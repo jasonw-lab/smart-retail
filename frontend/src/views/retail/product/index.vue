@@ -49,8 +49,8 @@
             <div class="flex items-center justify-between">
               <span>{{ row.name }}</span>
               <el-image
-                :src="row.imageUrl"
-                :preview-src-list="[row.imageUrl]"
+                :src="row.imageUrl || productPlaceholder"
+                :preview-src-list="row.imageUrl ? [row.imageUrl] : []"
                 :initial-index="0"
                 preview-teleported
                 fit="cover"
@@ -69,11 +69,6 @@
           <template #default="{ row }">¥{{ formatNumber(row.price) }}</template>
         </el-table-column>
         <el-table-column prop="stock" label="在庫数" width="100" />
-        <el-table-column prop="expiryDate" label="賞味期限" width="120">
-          <template #default="{ row }">
-            {{ formatDate(row.expiryDate) }}
-          </template>
-        </el-table-column>
         <el-table-column prop="sales" label="売上数" width="100" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
@@ -107,13 +102,19 @@
         <el-form-item label="商品名" prop="name">
           <el-input v-model="productForm.name" />
         </el-form-item>
+        <el-form-item label="商品コード" prop="code">
+          <el-input v-model="productForm.code" />
+        </el-form-item>
+        <el-form-item label="バーコード" prop="barcode">
+          <el-input v-model="productForm.barcode" />
+        </el-form-item>
         <el-form-item label="カテゴリー" prop="categoryId">
           <el-select v-model="productForm.categoryId" placeholder="カテゴリーを選択">
             <el-option
               v-for="category in categories"
               :key="category.id"
               :label="category.name"
-              :value="category.name"
+              :value="category.id"
             />
           </el-select>
         </el-form-item>
@@ -123,21 +124,11 @@
         <el-form-item label="在庫" prop="stock">
           <el-input-number v-model="productForm.stock" :min="0" />
         </el-form-item>
-        <el-form-item label="有効期限" prop="expiryDate">
-          <el-date-picker
-            v-model="productForm.expiryDate"
-            type="date"
-            placeholder="有効期限を選択"
-            :disabled-date="disabledDate"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
         <el-form-item label="説明" prop="description">
           <el-input v-model="productForm.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="画像URL" prop="imageUrl">
-          <el-input v-model="productForm.imageUrl" />
+        <el-form-item label="商品写真" prop="imageUrl">
+          <SingleImageUpload v-model="productForm.imageUrl" :style="{ width: '120px', height: '120px' }" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -156,8 +147,9 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import RetailCategoryAPI from "@/api/retail/product/category";
 import RetailProductAPI from "@/api/retail/product/list";
 import type { Product } from "@/api/retail/product/list";
-import dayjs from "dayjs";
 import type { FormInstance } from "element-plus";
+import productPlaceholder from "@/assets/images/product-placeholder.svg";
+import SingleImageUpload from "@/components/Upload/SingleImageUpload.vue";
 
 interface Category {
   id: number;
@@ -192,11 +184,12 @@ const productFormRef = ref<FormInstance>();
 interface ProductForm {
   id?: number;
   name: string;
+  code: string;
+  barcode?: string;
   categoryId: number;
   categoryName: string;
   price: number;
   stock: number;
-  expiryDate: string;
   description: string;
   imageUrl: string;
 }
@@ -204,11 +197,12 @@ interface ProductForm {
 // 商品フォームの初期化
 const productForm = reactive<ProductForm>({
   name: "",
+  code: "",
+  barcode: "",
   categoryId: undefined as unknown as number,
   categoryName: "",
   price: 0,
   stock: 0,
-  expiryDate: dayjs().add(1, "month").format("YYYY-MM-DD"),
   description: "",
   imageUrl: "",
 });
@@ -216,9 +210,9 @@ const productForm = reactive<ProductForm>({
 // バリデーションルール
 const rules = {
   name: [{ required: true, message: "商品名を入力してください", trigger: "blur" }],
+  code: [{ required: true, message: "商品コードを入力してください", trigger: "blur" }],
   categoryId: [{ required: true, message: "カテゴリを選択してください", trigger: "change" }],
   price: [{ required: true, message: "価格を入力してください", trigger: "blur" }],
-  expiryDate: [{ required: true, message: "賞味期限を入力してください", trigger: "blur" }],
 };
 
 // カテゴリ一覧を取得
@@ -237,22 +231,34 @@ const getList = async () => {
 
   loading.value = true;
   try {
-    const res = await RetailProductAPI.getList({
+    const res = await RetailProductAPI.getPage({
       pageNum: queryParams.pageNum,
       pageSize: queryParams.pageSize,
       productName: queryParams.productName,
       categoryId: queryParams.category,
     });
 
-    if (res.data && res.data.records) {
-      productList.value = res.data.records.map((product) => ({
-        ...product,
-        categoryName: categories.value.find((c: Category) => c.id === product.categoryId)?.name || "その他",
-      }));
-      total.value = res.data.total;
-    } else {
+    if (!res || !Array.isArray(res.list)) {
       ElMessage.error("商品一覧の取得に失敗しました");
+      productList.value = [];
+      total.value = 0;
+      return;
     }
+
+    productList.value = res.list.map((record) => ({
+      id: record.id,
+      name: record.productName ?? "",
+      code: record.productCode ?? "",
+      barcode: record.barcode ?? "",
+      categoryId: record.categoryId ?? 0,
+      categoryName: categories.value.find((c: Category) => c.id === record.categoryId)?.name || record.categoryName || "その他",
+      price: Number(record.unitPrice ?? 0),
+      stock: 0,
+      description: record.description ?? "",
+      imageUrl: record.imageUrl ?? "",
+      sales: 0,
+    }));
+    total.value = res.total ?? 0;
   } catch (error) {
     console.error("商品一覧の取得に失敗しました:", error);
     ElMessage.error("商品一覧の取得に失敗しました");
@@ -290,14 +296,9 @@ const handleCurrentChange = (val: number) => {
   getList();
 };
 
-// 日付フォーマット関数
-const formatDate = (date: string) => {
-  return date ? dayjs(date).format("YYYY-MM-DD") : "";
-};
-
 // 数値フォーマット関数
 const formatNumber = (num: number) => {
-  return num.toLocaleString();
+  return Number(num ?? 0).toLocaleString();
 };
 
 // 新規登録
@@ -305,11 +306,12 @@ const handleAdd = () => {
   dialogType.value = "add";
   productForm.id = undefined;
   productForm.name = "";
+  productForm.code = "";
+  productForm.barcode = "";
   productForm.categoryId = undefined as unknown as number;
   productForm.categoryName = "";
   productForm.price = 0;
   productForm.stock = 0;
-  productForm.expiryDate = dayjs().add(1, "month").format("YYYY-MM-DD");
   productForm.description = "";
   productForm.imageUrl = "";
   dialogVisible.value = true;
@@ -322,11 +324,12 @@ const handleEdit = (row: Product) => {
   // フォームデータを設定
   productForm.id = row.id;
   productForm.name = row.name;
+  productForm.code = row.code;
+  productForm.barcode = row.barcode || "";
   productForm.categoryId = row.categoryId;
   productForm.categoryName = row.categoryName || "";
   productForm.price = row.price;
   productForm.stock = row.stock;
-  productForm.expiryDate = row.expiryDate || dayjs().add(1, "month").format("YYYY-MM-DD");
   productForm.description = row.description || "";
   productForm.imageUrl = row.imageUrl || "";
 };
@@ -357,12 +360,28 @@ const submitForm = async () => {
     if (valid) {
       try {
         if (dialogType.value === "add") {
-          const { id, categoryName, ...createData } = productForm;
-          await RetailProductAPI.create(createData);
+          const { name, code, barcode, categoryId, price, description, imageUrl } = productForm;
+          await RetailProductAPI.create({
+            name,
+            code,
+            barcode,
+            categoryId,
+            price,
+            description,
+            imageUrl,
+          });
           ElMessage.success("商品を追加しました");
         } else if (productForm.id) {
-          const { categoryName, ...updateData } = productForm;
-          await RetailProductAPI.update(updateData);
+          const { id, name, code, barcode, categoryId, price, description, imageUrl } = productForm;
+          await RetailProductAPI.update(id as number, {
+            name,
+            code,
+            barcode,
+            categoryId,
+            price,
+            description,
+            imageUrl,
+          });
           ElMessage.success("商品を更新しました");
         }
         dialogVisible.value = false;
@@ -375,11 +394,6 @@ const submitForm = async () => {
       }
     }
   });
-};
-
-// 日付選択の無効化関数
-const disabledDate = (date: Date) => {
-  return date < new Date();
 };
 
 onMounted(() => {

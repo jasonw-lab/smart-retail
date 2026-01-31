@@ -66,9 +66,17 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 - **ProductControllerRestAssuredTest.java** - テストケース参考
 
 ### フロントエンド連携ルール
-- **データ構造の簡潔化**: `res.data.list` → `res.list` に変更
-- **ネストの回避**: `res.data.total` → `res.total` に変更
-- APIレスポンスの `data` 構造は使用しない
+- **API呼び出しの実装方針**: `frontend/src/api/system/user.api.ts` と同じ形式で実装する
+  - `request<any, T>({ url, method, params, data })` を使用する（`request.get/post/...` 直呼びは避ける）
+  - `@/utils/request` は **成功時に `response.data.data` を返す**（code判定してdataをunwrap）ため、画面側で `res.data...` は参照しない
+  - `ApiResponse` のような独自ラッパ型は作らず、**バックエンドの `data` 部分の型**をそのまま `T` にする
+- **戻り値の読み方（重要）**
+  - `Result<T>`（例: 一覧・詳細）→ フロントが受け取るのは `T`
+  - `PageResult<T>`（ページング）→ フロントが受け取るのは `{ list, total }`（= `PageResult.data`）
+    - 例: `res.list`, `res.total`（`res.data.list` ではない）
+- **型・命名**
+  - 画面側は API の返却形に合わせる（`records/current/size` などは使用しない）
+  - backend の `productName/unitPrice` 等の命名差は、画面側で必要に応じてマッピングして整合させる
 
 ### テスト駆動開発
 - テスト配置場所: `backend/src/test/java/com/youlai/boot/modules/retail`

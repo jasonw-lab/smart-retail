@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 商品管理マッパー
  *
- * @author wangjw
+ * @author jason.w
  */
 @Mapper
 public interface ProductMapper extends BaseMapper<Product> {

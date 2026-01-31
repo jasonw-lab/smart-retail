@@ -1,6 +1,7 @@
 import request from "@/utils/request";
 
-const BASE_URL = "/api/v1/retail/inventory";
+const INVENTORY_BASE_URL = "/api/v1/retail/inventories";
+const INV_TXN_BASE_URL = "/api/v1/retail/inventory-transactions";
 
 export interface Inventory {
   id: number;
@@ -8,17 +9,19 @@ export interface Inventory {
   storeName: string;
   productId: number;
   productName: string;
-  stock: number;
+  productCode: string;
+  lotNumber: string;
+  quantity: number;
   expiryDate: string;
-  status: "low" | "normal" | "high";
+  status: "low" | "normal" | "high" | "expired";
 }
 
 export interface InventoryQueryParams {
-  page: number;
+  pageNum: number;
   pageSize: number;
   storeId?: number;
-  productName?: string;
-  stockStatus?: "low" | "normal" | "high";
+  lotNumber?: string;
+  status?: "low" | "normal" | "high" | "expired";
 }
 
 export interface InventoryListResponse {
@@ -27,18 +30,22 @@ export interface InventoryListResponse {
 }
 
 export interface RestockParams {
-  id: number;
-  amount: number;
+  storeId: number;
+  productId: number;
+  lotNumber: string;
+  quantity: number;
   expiryDate: string;
+  remarks?: string;
 }
 
 export interface HistoryItem {
   id: number;
-  type: string;
+  transactionType: string;
   quantity: number;
-  date: string;
-  reason: string;
-  operator: string;
+  lotNumber: string;
+  transactionDate: string;
+  operator?: string;
+  remarks?: string;
 }
 
 export interface HistoryResponse {
@@ -48,14 +55,35 @@ export interface HistoryResponse {
 
 export const InventoryAPI = {
   getList: (params: InventoryQueryParams) => {
-    return request.get<InventoryListResponse>(`${BASE_URL}/list`, { params });
+    return request<any, InventoryListResponse>({
+      url: `${INVENTORY_BASE_URL}/page`,
+      method: "get",
+      params,
+    });
   },
 
   restock: (params: RestockParams) => {
-    return request.post(`${BASE_URL}/restock`, params);
+    return request({
+      url: `${INV_TXN_BASE_URL}/inbound`,
+      method: "post",
+      data: {
+        storeId: params.storeId,
+        productId: params.productId,
+        lotNumber: params.lotNumber,
+        quantity: params.quantity,
+        transactionDate: new Date().toISOString(),
+        expiryDate: params.expiryDate,
+        status: "completed",
+        remarks: params.remarks,
+      },
+    });
   },
 
-  getHistory: (id: number) => {
-    return request.get<HistoryResponse>(`${BASE_URL}/history/${id}`);
+  getHistory: (params: { pageNum: number; pageSize: number; storeId: number; productId: number }) => {
+    return request<any, HistoryResponse>({
+      url: `${INV_TXN_BASE_URL}/page`,
+      method: "get",
+      params,
+    });
   },
 }; 

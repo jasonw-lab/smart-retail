@@ -10,7 +10,7 @@ import org.mapstruct.MappingConstants;
 /**
  * 商品コンバーター
  *
- * @author wangjw
+ * @author jason.w
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ProductConverter {

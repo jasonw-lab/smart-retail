@@ -1,5 +1,6 @@
 package com.youlai.boot.modules.retail.model.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.youlai.boot.common.base.BaseEntity;
 import lombok.Getter;
@@ -15,5 +16,6 @@ public class Category extends BaseEntity {
     /**
      * カテゴリ名
      */
+    @TableField("category_name")
     private String name;
 }

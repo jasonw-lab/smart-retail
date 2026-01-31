@@ -1,4 +1,4 @@
-import request, { ApiResponse } from "@/utils/request";
+import request from "@/utils/request";
 
 const STORE_BASE_URL = "/api/v1/retail/stores";
 
@@ -54,32 +54,53 @@ export interface StoreListParams {
 const StoreAPI = {
   /** 店舗一覧を取得（ページング） */
   getPage(params: StoreListParams) {
-    return request.get<any, StoreListData>(`${STORE_BASE_URL}/page`, { params });
+    return request<any, StoreListData>({
+      url: `${STORE_BASE_URL}/page`,
+      method: "get",
+      params,
+    });
   },
 
   /** 店舗一覧を取得（全件） */
   getList() {
-    return request.get<ApiResponse<Store[]>>(`${STORE_BASE_URL}`);
+    return request<any, Store[]>({
+      url: `${STORE_BASE_URL}`,
+      method: "get",
+    });
   },
 
   /** 店舗詳細を取得 */
   getDetail(id: number) {
-    return request.get<ApiResponse<Store>>(`${STORE_BASE_URL}/${id}`);
+    return request<any, Store>({
+      url: `${STORE_BASE_URL}/${id}`,
+      method: "get",
+    });
   },
 
   /** 店舗を新規作成 */
   create(data: StoreForm) {
-    return request.post<ApiResponse<boolean>>(`${STORE_BASE_URL}`, data);
+    return request({
+      url: `${STORE_BASE_URL}`,
+      method: "post",
+      data,
+    });
   },
 
   /** 店舗を更新 */
   update(id: number, data: StoreForm) {
-    return request.put<ApiResponse<boolean>>(`${STORE_BASE_URL}/${id}`, data);
+    return request({
+      url: `${STORE_BASE_URL}/${id}`,
+      method: "put",
+      data,
+    });
   },
 
   /** 店舗を削除 */
   delete(id: number) {
-    return request.delete<ApiResponse<boolean>>(`${STORE_BASE_URL}/${id}`);
+    return request({
+      url: `${STORE_BASE_URL}/${id}`,
+      method: "delete",
+    });
   }
 };
 

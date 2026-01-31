@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 商品サービスインターフェース
  *
- * @author wangjw
+ * @author jason.w
  */
 public interface ProductService {
 

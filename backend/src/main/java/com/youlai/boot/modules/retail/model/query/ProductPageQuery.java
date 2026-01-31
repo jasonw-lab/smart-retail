@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 /**
  * 商品ページングクエリ
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "商品ページングクエリ")
 @Data

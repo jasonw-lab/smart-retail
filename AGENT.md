@@ -117,11 +117,12 @@ xxxxx
 ## Issue対応フロー
 
 ### 1. ブランチ作成
+- 最新コードは origin/develop を pull 済み
 ```bash
 git fetch origin
-git checkout develop
-git checkout -b feature/issue-<番号>-<概要>
 ```
+作業ブランチ: feature/issue-<番号>-<概要>
+
 
 ### 2. 実装
 - Issue ファイル (`docs/issues/issue-XXX-*.md`) を確認
@@ -176,7 +177,7 @@ gh pr create --title "[Phase X Backend/Frontend] 機能名" \
 
 ```markdown
 ## Issue一覧
-
+docs/issues/plan_issue.md　を参照
 | Issue番号 | タイトル | ステータス | 担当 | 完了日 | PR |
 |----------|---------|----------|------|--------|-----|
 | issue-001 | 機能追加 | ✅ 完了 | - | 2026-01-29 | #123 |

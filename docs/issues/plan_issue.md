@@ -8,7 +8,7 @@
 
 ## 1. 概要
 
-本計画書は、Smart Retail System Phase 1の要件定義（smart-retail-requirements-v1.0.md）および画面設計（smart-retail-screen-design-v1.0.md）に基づき、実装可能な作業単位にIssueを分解したものです。
+本計画書は、Smart Retail System Phase 1の要件定義（smart-retail-requirements.md）および画面設計（smart-retail-ui-design.md）に基づき、実装可能な作業単位にIssueを分解したものです。
 
 ### 1.1 分解方針
 

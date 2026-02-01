@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -85,22 +87,32 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
         // クエリ実行
         IPage<InventoryTransaction> result = this.page(page, queryWrapper);
 
+        if (result.getRecords().isEmpty()) {
+            return PageResult.success(Collections.emptyList(), result.getTotal());
+        }
+
         // 店舗情報取得
         List<Long> storeIds = result.getRecords().stream()
                 .map(InventoryTransaction::getStoreId)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<Long, Store> storeMap = storeMapper.selectBatchIds(storeIds).stream()
+        Map<Long, Store> storeMap = storeIds.isEmpty()
+                ? Collections.emptyMap()
+                : storeMapper.selectBatchIds(storeIds).stream()
                 .collect(Collectors.toMap(Store::getId, store -> store));
 
         // 商品情報取得
         List<Long> productIds = result.getRecords().stream()
                 .map(InventoryTransaction::getProductId)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<Long, Product> productMap = productMapper.selectBatchIds(productIds).stream()
+        Map<Long, Product> productMap = productIds.isEmpty()
+                ? Collections.emptyMap()
+                : productMapper.selectBatchIds(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, product -> product));
 
         // 結果変換

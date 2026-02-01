@@ -2,10 +2,9 @@ package com.youlai.boot.modules.retail.service;
 
 import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.modules.retail.model.entity.Inventory;
+import com.youlai.boot.modules.retail.model.form.DiscardForm;
 import com.youlai.boot.modules.retail.model.form.InventoryForm;
-import com.youlai.boot.modules.retail.model.form.InventoryReplenishForm;
 import com.youlai.boot.modules.retail.model.query.InventoryPageQuery;
-import com.youlai.boot.modules.retail.model.vo.InventoryHistoryVO;
 import com.youlai.boot.modules.retail.model.vo.InventoryPageVO;
 
 import java.util.List;
@@ -66,25 +65,13 @@ public interface InventoryService {
     boolean deleteInventory(Long id);
 
     /**
-     * 在庫補充記録
+     * 在庫廃棄（v1.1対応）
      *
-     * @param id   在庫ID
-     * @param form 補充フォーム
-     * @return 補充結果
-     */
-    boolean replenishInventory(Long id, InventoryReplenishForm form);
-
-    /**
-     * 在庫履歴取得
+     * 指定されたロット（在庫ID）から在庫を減算し、廃棄履歴を記録する。
      *
-     * @param id 在庫ID
-     * @return 在庫履歴リスト
+     * @param id   在庫ID（ロットID）
+     * @param form 廃棄フォーム
+     * @return 廃棄結果
      */
-    List<InventoryHistoryVO> getInventoryHistory(Long id);
-
-    /**
-     * 在庫アラート検出
-     * 在庫状態を更新し、アラートが必要な在庫を検出する
-     */
-    void detectInventoryAlerts();
+    boolean discardInventory(Long id, DiscardForm form);
 }

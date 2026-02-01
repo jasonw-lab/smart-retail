@@ -51,8 +51,20 @@ public class InventoryPageVO {
     @Schema(description = "保管場所")
     private String location;
 
-    @Schema(description = "在庫状態（low, normal, high, expired）")
+    @Schema(description = "在庫状態コード（EXPIRED, LOW_STOCK, EXPIRY_SOON, HIGH_STOCK, NORMAL）")
     private String status;
+
+    @Schema(description = "在庫状態ラベル")
+    private String statusLabel;
+
+    @Schema(description = "在庫状態カラー（HEXカラーコード）")
+    private String statusColor;
+
+    @Schema(description = "期限切れロットの有無")
+    private Boolean hasExpiredLot;
+
+    @Schema(description = "賞味期限までの残日数")
+    private Integer daysUntilExpiry;
 
     @Schema(description = "最終棚卸日")
     private LocalDate lastCountDate;

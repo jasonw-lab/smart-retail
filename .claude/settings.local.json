@@ -59,7 +59,8 @@
       "Bash(npm run format:*)",
       "Bash(npm exec:*)",
       "Bash(npm ls:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(./mvnw compile:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",
@@ -67,8 +68,6 @@
       "Bash(rm *:*)",
       "Bash(git reset --hard *:*)",
       "Bash(gh repo delete *:*)",
-      "Bash(gh issue delete *:*)",
-      "Bash(gh pr delete *:*)",
       "Bash(docker system prune *:*)",
       "Bash(docker volume rm *:*)",
       "Bash(docker image rm *:*)"

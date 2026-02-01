@@ -26,9 +26,12 @@
             clearable
             style="width: 180px"
           >
-            <el-option label="稼働中" value="active" />
-            <el-option label="メンテナンス中" value="maintenance" />
-            <el-option label="停止中" value="inactive" />
+            <el-option
+              v-for="option in STORE_STATUS_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -108,9 +111,12 @@
         </el-form-item>
         <el-form-item label="ステータス" prop="status">
           <el-select v-model="storeForm.status" placeholder="ステータスを選択">
-            <el-option label="稼働中" value="active" />
-            <el-option label="メンテナンス中" value="maintenance" />
-            <el-option label="停止中" value="inactive" />
+            <el-option
+              v-for="option in STORE_STATUS_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="営業時間" prop="openingHours">
@@ -132,6 +138,12 @@ import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import StoreAPI, { type StorePageVO, type StoreForm as StoreFormType } from "@/api/retail/store";
 import type { FormInstance } from "element-plus";
+
+const STORE_STATUS_OPTIONS = [
+  { value: "active", label: "稼働中", type: "success" },
+  { value: "maintenance", label: "メンテナンス中", type: "warning" },
+  { value: "inactive", label: "停止中", type: "danger" },
+];
 
 // 検索パラメータ
 const queryParams = reactive({
@@ -171,23 +183,15 @@ const rules = {
 };
 
 // ステータスのタイプを取得
-const getStatusType = (status: string) => {
-  const typeMap: Record<string, any> = {
-    active: "success",
-    maintenance: "warning",
-    inactive: "danger",
-  };
-  return typeMap[status] || "info";
+const getStatusType = (status?: string) => {
+  const option = STORE_STATUS_OPTIONS.find((item) => item.value === status);
+  return option?.type || "info";
 };
 
 // ステータスのラベルを取得
-const getStatusLabel = (status: string) => {
-  const labelMap: Record<string, string> = {
-    active: "稼働中",
-    maintenance: "メンテナンス中",
-    inactive: "停止中",
-  };
-  return labelMap[status] || status;
+const getStatusLabel = (status?: string) => {
+  const option = STORE_STATUS_OPTIONS.find((item) => item.value === status);
+  return option?.label || "未設定";
 };
 
 // 店舗一覧を取得

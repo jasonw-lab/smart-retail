@@ -318,4 +318,77 @@ class InventoryControllerRestAssuredTest extends BaseControllerTest {
 
         prettyPrintJson("在庫検索（在庫状態でフィルタ）", response.body());
     }
+
+    /**
+     * POST /api/v1/retail/inventories/{id}/discard - 在庫廃棄APIのテスト（v1.1対応）
+     */
+    @Test
+    void testDiscardInventory() {
+        Long inventoryId = 1L; // 実際のAPIでは既存のIDを使用
+
+        // 廃棄フォームの作成
+        Map<String, Object> discardForm = new HashMap<>();
+        discardForm.put("quantity", 5);
+        discardForm.put("reason", "期限切れ");
+        discardForm.put("remarks", "テスト廃棄");
+
+        // 廃棄リクエスト
+        Response response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", inventoryId)
+            .body(discardForm)
+        .when()
+            .post("http://localhost:" + port + "/api/v1/retail/inventories/{id}/discard");
+
+        // レスポンスボディを変数に格納
+        ResponseBody responseBody = response.getBody();
+
+        // レスポンスデータをJSONフォーマットでログ出力
+        prettyPrintJson("在庫廃棄レスポンス", responseBody);
+        System.out.println("ステータスコード: " + response.getStatusCode());
+        System.out.println("レスポンスコード: " + response.path("code"));
+
+        // レスポンスボディをJSONファイルとして保存
+        saveResponseBodyAsJson(baseUrl + "_discard_" + inventoryId, responseBody);
+
+        // レスポンスに対してアサーション
+        response.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"))
+            .body("msg", equalTo("一切ok"));
+    }
+
+    /**
+     * GET /api/v1/retail/inventories/page - 期限切れフィルタ付き在庫ページングのテスト（v1.1対応）
+     */
+    @Test
+    void testGetInventoryPageWithExpiredFilter() {
+        // 期限切れフィルタ付きリクエスト
+        Response response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .queryParam("pageNum", 1)
+            .queryParam("pageSize", 10)
+            .queryParam("status", "EXPIRED")
+        .when()
+            .get("http://localhost:" + port + "/api/v1/retail/inventories/page");
+
+        // レスポンスボディを変数に格納
+        ResponseBody responseBody = response.getBody();
+
+        // レスポンスデータをJSONフォーマットでログ出力
+        prettyPrintJson("期限切れフィルタ付き在庫ページング", responseBody);
+        System.out.println("ステータスコード: " + response.getStatusCode());
+        System.out.println("レスポンスコード: " + response.path("code"));
+
+        // レスポンスボディをJSONファイルとして保存
+        saveResponseBodyAsJson(baseUrl + "_page_expired", responseBody);
+
+        // レスポンスに対してアサーション
+        response.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"))
+            .body("msg", equalTo("一切ok"));
+    }
 }

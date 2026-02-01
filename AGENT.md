@@ -3,10 +3,10 @@
 ## 参照ドキュメント
 
 ### 要件定義
-- `docs/architecture/requirements/smart-retail-requirements-v1.0.md`
+- `docs/architecture/design/smart-retail-requirements.md`
 
 ### 設計書
-- `docs/architecture/design/smart-retail-screen-design-v1.0.md`
+- `docs/architecture/design/smart-retail-ui-design.md`
 
 ### ADR (Architecture Decision Records)
 - `docs/adr/`
@@ -90,6 +90,28 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 - [ ] フロントエンドAPI呼び出し箇所（影響がある場合）
 
 
+## 設計変更
+
+設計変更時、設計書の修正履歴も更新する
+
+### レビュー指摘
+レビュー時は `{file}_qa.md` に以下の形式で追記
+```
+## 時間 指摘者： gpt5.2
+- Q1
+xxxxx
+- Q2
+```
+
+### レビュー回答
+レビュー指摘の対応及び回答時
+対象設計書を更新する。
+`{file}_qa.md` に以下の形式で追記
+```
+## 時間 作成担当 claude 4.5
+- Q1の回答
+xxxxx
+```
 
 
 ## Issue対応フロー

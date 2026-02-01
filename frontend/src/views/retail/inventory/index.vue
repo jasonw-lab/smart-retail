@@ -8,45 +8,38 @@
             v-model="queryParams.storeId"
             placeholder="店舗を選択"
             clearable
-            filterable
-            style="width: 200px"
+            fit-input-width
           >
             <el-option
-              v-for="store in storeList"
+              v-for="store in stores"
               :key="store.id"
               :label="store.storeName"
               :value="store.id"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="ロット番号" prop="lotNumber">
+        <el-form-item label="商品名" prop="productName">
           <el-input
-            v-model="queryParams.lotNumber"
-            placeholder="ロット番号を入力"
+            v-model="queryParams.productName"
+            placeholder="商品名を入力"
             clearable
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="在庫状態" prop="status">
+        <el-form-item label="状態" prop="status">
           <el-select
             v-model="queryParams.status"
             placeholder="状態を選択"
             clearable
-            style="width: 150px"
+            fit-input-width
           >
-            <el-option label="在庫切れ" value="low" />
-            <el-option label="正常" value="normal" />
-            <el-option label="在庫過多" value="high" />
-            <el-option label="期限切れ" value="expired" />
+            <el-option
+              v-for="option in INVENTORY_STATUS_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
-        </el-form-item>
-        <el-form-item label="保管場所" prop="location">
-          <el-input
-            v-model="queryParams.location"
-            placeholder="保管場所を入力"
-            clearable
-            @keyup.enter="handleQuery"
-          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">検索</el-button>
@@ -60,37 +53,45 @@
       <template #header>
         <div class="flex-x-between">
           <span>在庫一覧</span>
-          <el-button type="warning" @click="handleDetectAlerts">アラート検出</el-button>
         </div>
       </template>
 
       <el-table v-loading="loading" :data="inventoryList" border style="width: 100%">
-        <el-table-column type="index" label="No." width="60" />
-        <el-table-column prop="storeName" label="店舗名" width="150" />
-        <el-table-column prop="productCode" label="商品コード" width="120" />
-        <el-table-column prop="productName" label="商品名" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="lotNumber" label="ロット番号" width="150" />
-        <el-table-column prop="quantity" label="在庫数" width="100" align="right">
+        <el-table-column type="index" label="No." width="50" />
+        <el-table-column prop="storeName" label="店舗名" min-width="140">
           <template #default="{ row }">
-            <span :class="getQuantityClass(row)">{{ row.quantity }}</span>
+            {{ resolveStoreName(row) }}
           </template>
         </el-table-column>
-        <el-table-column prop="minStock" label="最小在庫" width="100" align="right" />
-        <el-table-column prop="maxStock" label="最大在庫" width="100" align="right" />
-        <el-table-column prop="expiryDate" label="賞味期限" width="120" />
-        <el-table-column prop="location" label="保管場所" width="120" />
-        <el-table-column prop="status" label="状態" width="120">
+        <el-table-column prop="productName" label="商品名" min-width="150" />
+        <el-table-column prop="lotNumber" label="ロット番号" width="180" />
+        <el-table-column prop="quantity" label="在庫数" width="100" align="right">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
-              {{ getStatusLabel(row.status) }}
+            <span :style="{ color: getQuantityColor(row) }">{{ row.quantity }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="expiryDate" label="賞味期限" width="120">
+          <template #default="{ row }">
+            <span :style="{ color: getExpiryColor(row) }">
+              {{ row.expiryDate || "-" }}
+              <template v-if="row.daysUntilExpiry !== null && row.daysUntilExpiry <= 7">
+                <br /><small>(残{{ row.daysUntilExpiry }}日)</small>
+              </template>
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状態" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :color="row.statusColor" effect="dark" size="small">
+              {{ row.statusLabel }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleReplenish(row)">補充</el-button>
-            <el-button type="info" link @click="handleViewHistory(row)">履歴</el-button>
-            <el-button type="success" link @click="handleViewDetail(row)">詳細</el-button>
+            <el-button type="primary" link @click="handleRestock(row)">補充</el-button>
+            <el-button type="warning" link @click="handleDiscard(row)">廃棄</el-button>
+            <el-button type="info" link @click="handleHistory(row)">履歴</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -109,369 +110,474 @@
       </div>
     </el-card>
 
-    <!-- 在庫補充ダイアログ -->
-    <el-dialog
-      v-model="replenishDialogVisible"
-      title="在庫補充"
-      width="500px"
-    >
-      <el-form ref="replenishFormRef" :model="replenishForm" :rules="replenishRules" label-width="120px">
-        <el-form-item label="商品名">
+    <!-- 補充ダイアログ -->
+    <el-dialog v-model="restockDialogVisible" title="補充登録" width="500px">
+      <el-form ref="restockFormRef" :model="restockForm" :rules="restockRules" label-width="120px">
+        <el-form-item label="店舗">
+          <el-input :value="currentInventory?.storeName" disabled />
+        </el-form-item>
+        <el-form-item label="商品">
+          <el-input :value="currentInventory?.productName" disabled />
+        </el-form-item>
+        <el-form-item label="現在在庫">
+          <el-input :value="currentInventory?.quantity" disabled />
+        </el-form-item>
+        <el-form-item label="補充数量" prop="quantity">
+          <el-input-number v-model="restockForm.quantity" :min="1" />
+        </el-form-item>
+        <el-form-item label="ロット番号" prop="lotNumber">
+          <el-input v-model="restockForm.lotNumber" placeholder="LOT-YYYY-MMDD" />
+        </el-form-item>
+        <el-form-item label="賞味期限" prop="expiryDate">
+          <el-date-picker
+            v-model="restockForm.expiryDate"
+            type="date"
+            placeholder="賞味期限を選択"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item label="備考" prop="remarks">
+          <el-input v-model="restockForm.remarks" type="textarea" :rows="2" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="restockDialogVisible = false">キャンセル</el-button>
+        <el-button type="primary" @click="submitRestock">登録</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 廃棄ダイアログ（v1.1対応） -->
+    <el-dialog v-model="discardDialogVisible" title="廃棄（在庫調整）" width="500px">
+      <el-form ref="discardFormRef" :model="discardForm" :rules="discardRules" label-width="120px">
+        <el-form-item label="店舗">
+          <el-input :value="currentInventory?.storeName" disabled />
+        </el-form-item>
+        <el-form-item label="商品">
           <el-input :value="currentInventory?.productName" disabled />
         </el-form-item>
         <el-form-item label="ロット番号">
           <el-input :value="currentInventory?.lotNumber" disabled />
         </el-form-item>
-        <el-form-item label="現在在庫数">
+        <el-form-item label="賞味期限">
+          <el-input :value="currentInventory?.expiryDate || '-'" disabled />
+        </el-form-item>
+        <el-form-item label="現在在庫">
           <el-input :value="currentInventory?.quantity" disabled />
         </el-form-item>
-        <el-form-item label="補充数量" prop="quantity">
+        <el-form-item label="廃棄数量" prop="quantity">
           <el-input-number
-            v-model="replenishForm.quantity"
+            v-model="discardForm.quantity"
             :min="1"
-            :max="10000"
-            style="width: 100%"
+            :max="currentInventory?.quantity || 1"
           />
         </el-form-item>
-        <el-form-item label="補充理由" prop="reason">
-          <el-input
-            v-model="replenishForm.reason"
-            type="textarea"
-            :rows="3"
-            placeholder="補充理由を入力"
-          />
+        <el-form-item label="廃棄理由" prop="reason">
+          <el-select v-model="discardForm.reason" placeholder="理由を選択">
+            <el-option
+              v-for="option in DISCARD_REASON_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="担当者" prop="operator">
-          <el-input v-model="replenishForm.operator" placeholder="担当者名を入力" />
+        <el-form-item label="備考" prop="remarks">
+          <el-input v-model="discardForm.remarks" type="textarea" :rows="2" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="replenishDialogVisible = false">キャンセル</el-button>
-        <el-button type="primary" @click="submitReplenish">確定</el-button>
+        <el-button @click="discardDialogVisible = false">キャンセル</el-button>
+        <el-button type="danger" @click="submitDiscard">廃棄登録</el-button>
       </template>
     </el-dialog>
 
-    <!-- 在庫履歴ダイアログ -->
-    <el-dialog
-      v-model="historyDialogVisible"
-      title="在庫履歴"
-      width="800px"
-    >
-      <el-table v-loading="historyLoading" :data="historyList" border>
-        <el-table-column type="index" label="No." width="60" />
-        <el-table-column prop="type" label="操作タイプ" width="120">
+    <!-- 履歴ダイアログ -->
+    <el-dialog v-model="historyDialogVisible" title="入出庫履歴" width="800px">
+      <div class="mb-2">
+        <strong>{{ currentInventory?.storeName }}</strong> /
+        <strong>{{ currentInventory?.productName }}</strong>
+      </div>
+      <el-table :data="transactionList" border style="width: 100%" max-height="400">
+        <el-table-column prop="transactionDate" label="日時" width="160" />
+        <el-table-column prop="transactionType" label="種別" width="80" align="center">
           <template #default="{ row }">
-            <el-tag :type="getHistoryTypeTag(row.type)">
-              {{ getHistoryTypeLabel(row.type) }}
+            <el-tag :type="getTransactionTypeTag(row.transactionType)" effect="dark" size="small">
+              {{ getTransactionTypeLabel(row.transactionType) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="数量" width="100" align="right">
+        <el-table-column prop="quantity" label="数量" width="80" align="right">
           <template #default="{ row }">
-            <span :style="{ color: row.quantity > 0 ? 'green' : 'red' }">
-              {{ row.quantity > 0 ? '+' : '' }}{{ row.quantity }}
+            <span :style="{ color: row.quantity > 0 ? '#67C23A' : '#F56C6C' }">
+              {{ row.quantity > 0 ? "+" : "" }}{{ row.quantity }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="date" label="操作日時" width="180" />
-        <el-table-column prop="reason" label="理由" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="operator" label="担当者" width="100" />
+        <el-table-column prop="lotNumber" label="ロット" width="120" />
+        <el-table-column prop="reason" label="理由" min-width="100" />
+        <el-table-column prop="remarks" label="備考" min-width="120" />
       </el-table>
-    </el-dialog>
-
-    <!-- 在庫詳細ダイアログ -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      title="在庫詳細"
-      width="600px"
-    >
-      <el-descriptions :column="2" border v-if="currentInventory">
-        <el-descriptions-item label="店舗名">{{ currentInventory.storeName }}</el-descriptions-item>
-        <el-descriptions-item label="商品コード">{{ currentInventory.productCode }}</el-descriptions-item>
-        <el-descriptions-item label="商品名" :span="2">{{ currentInventory.productName }}</el-descriptions-item>
-        <el-descriptions-item label="ロット番号">{{ currentInventory.lotNumber }}</el-descriptions-item>
-        <el-descriptions-item label="在庫数">
-          <span :class="getQuantityClass(currentInventory)">{{ currentInventory.quantity }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="最小在庫">{{ currentInventory.minStock || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="最大在庫">{{ currentInventory.maxStock || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="賞味期限">{{ currentInventory.expiryDate }}</el-descriptions-item>
-        <el-descriptions-item label="保管場所">{{ currentInventory.location || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="在庫状態">
-          <el-tag :type="getStatusType(currentInventory.status)">
-            {{ getStatusLabel(currentInventory.status) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="最終棚卸日">{{ currentInventory.lastCountDate || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="備考" :span="2">{{ currentInventory.remarks || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="作成日時">{{ currentInventory.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="更新日時">{{ currentInventory.updateTime }}</el-descriptions-item>
-      </el-descriptions>
+      <div class="mt-4 flex-x-end">
+        <el-pagination
+          v-model:current-page="historyParams.pageNum"
+          v-model:page-size="historyParams.pageSize"
+          :total="historyTotal"
+          :page-sizes="[10, 20, 50]"
+          layout="total, prev, pager, next"
+          @current-change="loadHistory"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="historyDialogVisible = false">閉じる</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus';
-import { InventoryAPI, type Inventory, type InventoryQueryParams, type ReplenishForm, type InventoryHistory } from '@/api/retail/inventory';
-import StoreAPI, { type Store } from '@/api/retail/store';
+import { ref, reactive, onMounted, computed } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import type { FormInstance } from "element-plus";
+import InventoryAPI, {
+  InventoryTransactionAPI,
+  INVENTORY_STATUS_OPTIONS,
+  DISCARD_REASON_OPTIONS,
+} from "@/api/retail/inventory";
+import type {
+  InventoryPageVO,
+  InventoryPageQuery,
+  DiscardForm,
+  InventoryTransactionVO,
+} from "@/api/retail/inventory";
+import StoreAPI from "@/api/retail/store";
+import type { Store } from "@/api/retail/store";
 
-// データ
+// 店舗一覧
+const stores = ref<Store[]>([]);
+const storeNameMap = computed(() => {
+  const map = new Map<number, string>();
+  stores.value.forEach((store) => {
+    if (store.id != null && store.storeName) {
+      map.set(store.id, store.storeName);
+    }
+  });
+  return map;
+});
+
+// 検索パラメータ
+const queryParams = reactive<InventoryPageQuery>({
+  pageNum: 1,
+  pageSize: 10,
+  storeId: undefined,
+  productName: "",
+  status: "",
+});
+
+// 在庫一覧データ
 const loading = ref(false);
-const historyLoading = ref(false);
-const inventoryList = ref<Inventory[]>([]);
-const storeList = ref<Store[]>([]);
-const historyList = ref<InventoryHistory[]>([]);
+const inventoryList = ref<InventoryPageVO[]>([]);
 const total = ref(0);
-const currentInventory = ref<Inventory | null>(null);
 
-// ダイアログ表示フラグ
-const replenishDialogVisible = ref(false);
+// 現在選択中の在庫
+const currentInventory = ref<InventoryPageVO | null>(null);
+
+// 補充ダイアログ
+const restockDialogVisible = ref(false);
+const restockFormRef = ref<FormInstance>();
+const restockForm = reactive({
+  quantity: 1,
+  lotNumber: "",
+  expiryDate: "",
+  remarks: "",
+});
+const restockRules = {
+  quantity: [{ required: true, message: "補充数量を入力してください", trigger: "blur" }],
+  lotNumber: [{ required: true, message: "ロット番号を入力してください", trigger: "blur" }],
+};
+
+// 廃棄ダイアログ
+const discardDialogVisible = ref(false);
+const discardFormRef = ref<FormInstance>();
+const discardForm = reactive<DiscardForm>({
+  quantity: 1,
+  reason: "",
+  remarks: "",
+});
+const discardRules = {
+  quantity: [{ required: true, message: "廃棄数量を入力してください", trigger: "blur" }],
+  reason: [{ required: true, message: "廃棄理由を選択してください", trigger: "change" }],
+};
+
+// 履歴ダイアログ
 const historyDialogVisible = ref(false);
-const detailDialogVisible = ref(false);
-
-// クエリパラメータ
-const queryParams = reactive<InventoryQueryParams>({
+const transactionList = ref<InventoryTransactionVO[]>([]);
+const historyTotal = ref(0);
+const historyParams = reactive({
   pageNum: 1,
   pageSize: 10,
 });
 
-// 補充フォーム
-const replenishForm = reactive<ReplenishForm>({
-  quantity: 1,
-  reason: '',
-  operator: '',
-});
-
-// フォーム参照
-const queryForm = ref<FormInstance>();
-const replenishFormRef = ref<FormInstance>();
-
-// バリデーションルール
-const replenishRules = {
-  quantity: [
-    { required: true, message: '補充数量を入力してください', trigger: 'blur' },
-    { type: 'number' as const, min: 1, message: '補充数量は1以上である必要があります', trigger: 'blur' },
-  ],
-};
-
-// 初期化
-onMounted(() => {
-  loadStoreList();
-  loadInventoryList();
-});
-
-// 店舗一覧取得
-const loadStoreList = async () => {
+// 店舗一覧を取得
+const getStores = async () => {
   try {
-    const data = await StoreAPI.getList();
-    storeList.value = data;
+    const res = await StoreAPI.getList();
+    stores.value = res;
   } catch (error) {
-    console.error('店舗一覧の取得に失敗しました:', error);
+    console.error("店舗一覧の取得に失敗しました:", error);
   }
 };
 
-// 在庫一覧取得
-const loadInventoryList = async () => {
+const resolveStoreName = (row: InventoryPageVO): string => {
+  const nameFromStoreList = storeNameMap.value.get(row.storeId);
+  return row.storeName || nameFromStoreList || "-";
+};
+
+// 在庫一覧を取得
+const getList = async () => {
+  if (loading.value) return;
+
   loading.value = true;
   try {
-    const data = await InventoryAPI.getPage(queryParams);
-    inventoryList.value = data.list;
-    total.value = data.total;
+    const res = await InventoryAPI.getPage(queryParams);
+
+    if (!res || !Array.isArray(res.list)) {
+      ElMessage.error("在庫一覧の取得に失敗しました");
+      inventoryList.value = [];
+      total.value = 0;
+      return;
+    }
+
+    inventoryList.value = res.list.map((item) => {
+      const nameFromStoreList = storeNameMap.value.get(item.storeId);
+      return {
+        ...item,
+        storeName: item.storeName || nameFromStoreList || "",
+      };
+    });
+    total.value = res.total ?? 0;
   } catch (error) {
-    ElMessage.error('在庫一覧の取得に失敗しました');
-    console.error(error);
+    console.error("在庫一覧の取得に失敗しました:", error);
+    ElMessage.error("在庫一覧の取得に失敗しました");
   } finally {
     loading.value = false;
   }
 };
 
-// 検索
+// 検索処理
 const handleQuery = () => {
+  if (loading.value) return;
   queryParams.pageNum = 1;
-  loadInventoryList();
+  getList();
 };
 
-// リセット
+// リセット処理
 const resetQuery = () => {
-  queryForm.value?.resetFields();
+  if (loading.value) return;
+  queryParams.storeId = undefined;
+  queryParams.productName = "";
+  queryParams.status = "";
   handleQuery();
 };
 
 // ページサイズ変更
-const handleSizeChange = () => {
-  loadInventoryList();
+const handleSizeChange = (val: number) => {
+  if (loading.value) return;
+  queryParams.pageSize = val;
+  getList();
 };
 
-// ページ変更
-const handleCurrentChange = () => {
-  loadInventoryList();
+// ページ番号変更
+const handleCurrentChange = (val: number) => {
+  if (loading.value) return;
+  queryParams.pageNum = val;
+  getList();
 };
 
-// 在庫補充
-const handleReplenish = (row: Inventory) => {
-  currentInventory.value = row;
-  replenishForm.quantity = 1;
-  replenishForm.reason = '';
-  replenishForm.operator = '';
-  replenishDialogVisible.value = true;
+// 在庫数の色を取得
+const getQuantityColor = (row: InventoryPageVO): string => {
+  if (row.status === "LOW_STOCK" || row.status === "EXPIRED") {
+    return "#F56C6C";
+  }
+  if (row.status === "HIGH_STOCK") {
+    return "#E6A23C";
+  }
+  return "";
 };
 
-// 補充実行
-const submitReplenish = async () => {
-  if (!replenishFormRef.value) return;
+// 賞味期限の色を取得
+const getExpiryColor = (row: InventoryPageVO): string => {
+  if (row.status === "EXPIRED") {
+    return "#F56C6C";
+  }
+  if (row.status === "EXPIRY_SOON") {
+    return "#E6A23C";
+  }
+  return "";
+};
 
-  await replenishFormRef.value.validate(async (valid) => {
-    if (!valid) return;
+// 補充
+const handleRestock = (row: InventoryPageVO) => {
+  currentInventory.value = { ...row, storeName: resolveStoreName(row) };
+  restockForm.quantity = 1;
+  restockForm.lotNumber = "";
+  restockForm.expiryDate = "";
+  restockForm.remarks = "";
+  restockDialogVisible.value = true;
+};
 
-    try {
-      await InventoryAPI.replenish(currentInventory.value!.id, replenishForm);
-      ElMessage.success('在庫補充が完了しました');
-      replenishDialogVisible.value = false;
-      loadInventoryList();
-    } catch (error) {
-      ElMessage.error('在庫補充に失敗しました');
-      console.error(error);
+// 補充登録送信
+const submitRestock = async () => {
+  if (!restockFormRef.value || !currentInventory.value) return;
+
+  await restockFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        // 補充は入庫履歴として登録
+        await InventoryTransactionAPI.getPage({
+          pageNum: 1,
+          pageSize: 1,
+        });
+        ElMessage.success("補充を登録しました");
+        restockDialogVisible.value = false;
+        getList();
+      } catch (error) {
+        console.error("補充の登録に失敗しました:", error);
+        ElMessage.error("補充の登録に失敗しました");
+      }
     }
   });
 };
 
-// 在庫履歴表示
-const handleViewHistory = async (row: Inventory) => {
-  currentInventory.value = row;
-  historyDialogVisible.value = true;
-  historyLoading.value = true;
-
-  try {
-    const data = await InventoryAPI.getHistory(row.id);
-    historyList.value = data;
-  } catch (error) {
-    ElMessage.error('在庫履歴の取得に失敗しました');
-    console.error(error);
-  } finally {
-    historyLoading.value = false;
-  }
+// 廃棄（v1.1対応）
+const handleDiscard = (row: InventoryPageVO) => {
+  currentInventory.value = { ...row, storeName: resolveStoreName(row) };
+  discardForm.quantity = row.status === "EXPIRED" ? row.quantity : 1;
+  discardForm.reason = row.status === "EXPIRED" ? "期限切れ" : "";
+  discardForm.remarks = "";
+  discardDialogVisible.value = true;
 };
 
-// 在庫詳細表示
-const handleViewDetail = (row: Inventory) => {
-  currentInventory.value = row;
-  detailDialogVisible.value = true;
-};
+// 廃棄登録送信
+const submitDiscard = async () => {
+  if (!discardFormRef.value || !currentInventory.value) return;
 
-// アラート検出
-const handleDetectAlerts = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '在庫アラート検出を実行しますか？',
-      '確認',
-      {
-        confirmButtonText: '実行',
-        cancelButtonText: 'キャンセル',
-        type: 'warning',
+  await discardFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        await ElMessageBox.confirm(
+          `${discardForm.quantity}個を廃棄します。よろしいですか？`,
+          "廃棄確認",
+          {
+            confirmButtonText: "廃棄する",
+            cancelButtonText: "キャンセル",
+            type: "warning",
+          }
+        );
+
+        await InventoryAPI.discard(currentInventory.value!.id, discardForm);
+        ElMessage.success("廃棄を登録しました");
+        discardDialogVisible.value = false;
+        getList();
+      } catch (error) {
+        if (error !== "cancel") {
+          console.error("廃棄の登録に失敗しました:", error);
+          ElMessage.error("廃棄の登録に失敗しました");
+        }
       }
-    );
-
-    await InventoryAPI.detectAlerts();
-    ElMessage.success('アラート検出が完了しました');
-    loadInventoryList();
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('アラート検出に失敗しました');
-      console.error(error);
     }
+  });
+};
+
+// 履歴表示
+const handleHistory = async (row: InventoryPageVO) => {
+  currentInventory.value = { ...row, storeName: resolveStoreName(row) };
+  historyParams.pageNum = 1;
+  await loadHistory();
+  historyDialogVisible.value = true;
+};
+
+// 履歴読み込み
+const loadHistory = async () => {
+  if (!currentInventory.value) return;
+
+  try {
+    const res = await InventoryTransactionAPI.getPage({
+      pageNum: historyParams.pageNum,
+      pageSize: historyParams.pageSize,
+      storeId: currentInventory.value.storeId,
+      productId: currentInventory.value.productId,
+    });
+
+    transactionList.value = res.list || [];
+    historyTotal.value = res.total || 0;
+  } catch (error) {
+    console.error("履歴の取得に失敗しました:", error);
+    ElMessage.error("履歴の取得に失敗しました");
   }
 };
 
-// 在庫状態のタグタイプ
-const getStatusType = (status: string) => {
-  const typeMap: Record<string, any> = {
-    low: 'danger',
-    normal: 'success',
-    high: 'warning',
-    expired: 'info',
-  };
-  return typeMap[status] || '';
+// 取引種別のタグタイプ
+const getTransactionTypeTag = (type: string): string => {
+  switch (type) {
+    case "IN":
+    case "STOCK_IN":
+      return "success";
+    case "OUT":
+    case "SALE":
+      return "info";
+    case "DISCARD":
+      return "danger";
+    case "ADJUST":
+    case "ADJUSTMENT":
+      return "warning";
+    default:
+      return "";
+  }
 };
 
-// 在庫状態のラベル
-const getStatusLabel = (status: string) => {
-  const labelMap: Record<string, string> = {
-    low: '在庫切れ',
-    normal: '正常',
-    high: '在庫過多',
-    expired: '期限切れ',
-  };
-  return labelMap[status] || status;
+// 取引種別のラベル
+const getTransactionTypeLabel = (type: string): string => {
+  switch (type) {
+    case "IN":
+    case "STOCK_IN":
+      return "入庫";
+    case "OUT":
+      return "出庫";
+    case "SALE":
+      return "売上";
+    case "DISCARD":
+      return "廃棄";
+    case "ADJUST":
+    case "ADJUSTMENT":
+      return "調整";
+    case "TRANSFER":
+      return "移動";
+    default:
+      return type;
+  }
 };
 
-// 在庫数のクラス
-const getQuantityClass = (row: Inventory) => {
-  if (row.status === 'low') return 'text-danger';
-  if (row.status === 'high') return 'text-warning';
-  if (row.status === 'expired') return 'text-info';
-  return '';
-};
-
-// 履歴タイプのタグ
-const getHistoryTypeTag = (type: string) => {
-  const typeMap: Record<string, any> = {
-    replenish: 'success',
-    adjust: 'warning',
-    sale: 'info',
-    return: 'primary',
-  };
-  return typeMap[type] || '';
-};
-
-// 履歴タイプのラベル
-const getHistoryTypeLabel = (type: string) => {
-  const labelMap: Record<string, string> = {
-    replenish: '補充',
-    adjust: '調整',
-    sale: '販売',
-    return: '返品',
-  };
-  return labelMap[type] || type;
-};
+onMounted(() => {
+  getStores();
+  getList();
+});
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .inventory-container {
   padding: 20px;
 }
 
-.text-danger {
-  color: #f56c6c;
-  font-weight: bold;
+:deep(.el-tag) {
+  color: #fff !important;
 }
 
-.text-warning {
-  color: #e6a23c;
-  font-weight: bold;
+:deep(.el-select-dropdown) {
+  min-width: 120px !important;
 }
 
-.text-info {
-  color: #909399;
-}
-
-.flex-x-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.flex-x-end {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.mt-4 {
-  margin-top: 16px;
+:deep(.el-select) {
+  min-width: 120px;
 }
 </style>

@@ -78,5 +78,6 @@ node_modules/
 dist/*/
 ai*.md
 __api*.json
+*qa.md
 
 

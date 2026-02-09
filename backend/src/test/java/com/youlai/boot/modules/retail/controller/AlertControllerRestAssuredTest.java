@@ -2,6 +2,7 @@ package com.youlai.boot.modules.retail.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youlai.boot.modules.retail.model.form.AlertForm;
+import com.youlai.boot.modules.retail.model.form.AlertStatusForm;
 import com.youlai.boot.modules.retail.model.query.AlertPageQuery;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -129,6 +130,26 @@ public class AlertControllerRestAssuredTest {
     }
 
     @Test
+    void testGetAlertPageWithFilters() {
+        // ステータスフィルタ付きテスト
+        Response response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .queryParam("pageNum", 1)
+            .queryParam("pageSize", 10)
+            .queryParam("status", "NEW")
+            .queryParam("priority", "P1")
+        .when()
+            .get(baseUrl + "/page");
+
+        prettyPrintJson("フィルタ付きアラート一覧取得レスポンス", response.getBody());
+
+        response.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+    }
+
+    @Test
     void testListAlerts() {
         // レスポンスデータを変数に格納
         Response response = given()
@@ -156,18 +177,19 @@ public class AlertControllerRestAssuredTest {
     }
 
     @Test
-    void testCreateAndUpdateAndDeleteAlert() {
-        // Create a new alert
+    void testCreateAndStatusTransitionAndDeleteAlert() {
+        // アラート作成
         AlertForm form = new AlertForm();
         form.setStoreId(1L);
         form.setProductId(1L);
         form.setLotNumber("TEST-LOT-001");
         form.setAlertType("LOW_STOCK");
-        form.setAlertMessage("テスト用アラート");
-        form.setAlertDate(LocalDateTime.now());
-        form.setResolved(false);
+        form.setPriority("P2");
+        form.setMessage("テスト用アラート - 在庫切れ警告");
+        form.setThresholdValue("10");
+        form.setCurrentValue("5");
+        form.setDetectedAt(LocalDateTime.now());
 
-        // Create alert - レスポンスデータを変数に格納
         Response createResponse = given()
             .contentType(ContentType.JSON)
             .header("Authorization", bearerToken)
@@ -175,98 +197,110 @@ public class AlertControllerRestAssuredTest {
         .when()
             .post(baseUrl);
 
-        // レスポンスボディを変数に格納
-        ResponseBody createResponseBody = createResponse.getBody();
+        prettyPrintJson("アラート作成レスポンス", createResponse.getBody());
 
-        // レスポンスデータをJSONフォーマットでログ出力
-        prettyPrintJson("アラート作成レスポンス", createResponseBody);
-        System.out.println("ステータスコード: " + createResponse.getStatusCode());
-        System.out.println("レスポンスコード: " + createResponse.path("code"));
-
-        // レスポンスボディをJSONファイルとして保存
-        saveResponseBodyAsJson(baseUrl + "_create", createResponseBody);
-
-        // レスポンスに対してアサーション
         createResponse.then()
             .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"));
+            .body("code", equalTo("00000"));
 
-        // Get all alerts to find the newly created one
+        // 作成されたアラートのIDを取得
         Response listResponse = given()
             .contentType(ContentType.JSON)
             .header("Authorization", bearerToken)
         .when()
             .get(baseUrl);
 
-        // レスポンスボディを変数に格納
-        ResponseBody listResponseBody = listResponse.getBody();
-
-        // レスポンスデータをJSONフォーマットでログ出力
-        prettyPrintJson("アラートリスト取得レスポンス", listResponseBody);
-
-        // レスポンスボディをJSONファイルとして保存
-        saveResponseBodyAsJson(baseUrl + "_list_after_create", listResponseBody);
-
-        // 作成されたアラートのIDを取得
-        String alertId = listResponse.path("data.find { it.lotNumber == 'TEST-LOT-001' }.id");
+        String alertId = listResponse.path("data.find { it.lotNumber == 'TEST-LOT-001' }.id").toString();
         System.out.println("作成されたアラートID: " + alertId);
 
-        // Update the alert
-        form.setAlertMessage("更新されたテスト用アラート");
-
-        // アラート更新 - レスポンスデータを変数に格納
-        Response updateResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", alertId)
-            .body(form)
-        .when()
-            .put(baseUrl + "/{id}");
-
-        // レスポンスボディを変数に格納
-        ResponseBody updateResponseBody = updateResponse.getBody();
-
-        // レスポンスデータをJSONフォーマットでログ出力
-        prettyPrintJson("アラート更新レスポンス", updateResponseBody);
-        System.out.println("ステータスコード: " + updateResponse.getStatusCode());
-        System.out.println("レスポンスコード: " + updateResponse.path("code"));
-
-        // レスポンスボディをJSONファイルとして保存
-        saveResponseBodyAsJson(baseUrl + "_update_" + alertId, updateResponseBody);
-
-        // レスポンスに対してアサーション
-        updateResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"));
-
-        // Resolve the alert
-        Response resolveResponse = given()
+        // アラート詳細取得
+        Response detailResponse = given()
             .contentType(ContentType.JSON)
             .header("Authorization", bearerToken)
             .pathParam("id", alertId)
         .when()
-            .put(baseUrl + "/{id}/resolve");
+            .get(baseUrl + "/{id}");
 
-        // レスポンスボディを変数に格納
-        ResponseBody resolveResponseBody = resolveResponse.getBody();
+        prettyPrintJson("アラート詳細取得レスポンス", detailResponse.getBody());
 
-        // レスポンスデータをJSONフォーマットでログ出力
-        prettyPrintJson("アラート解決レスポンス", resolveResponseBody);
-        System.out.println("ステータスコード: " + resolveResponse.getStatusCode());
-        System.out.println("レスポンスコード: " + resolveResponse.path("code"));
-
-        // レスポンスボディをJSONファイルとして保存
-        saveResponseBodyAsJson(baseUrl + "_resolve_" + alertId, resolveResponseBody);
-
-        // レスポンスに対してアサーション
-        resolveResponse.then()
+        detailResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"));
+            .body("data.alertType", equalTo("LOW_STOCK"))
+            .body("data.priority", equalTo("P2"))
+            .body("data.status", equalTo("NEW"));
 
-        // Delete the alert
+        // 状態遷移テスト: NEW -> ACK
+        AlertStatusForm ackForm = new AlertStatusForm();
+        ackForm.setStatus("ACK");
+
+        Response ackResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", alertId)
+            .body(ackForm)
+        .when()
+            .put(baseUrl + "/{id}/status");
+
+        prettyPrintJson("アラート確認(ACK)レスポンス", ackResponse.getBody());
+
+        ackResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+
+        // 状態遷移テスト: ACK -> IN_PROGRESS
+        AlertStatusForm inProgressForm = new AlertStatusForm();
+        inProgressForm.setStatus("IN_PROGRESS");
+
+        Response inProgressResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", alertId)
+            .body(inProgressForm)
+        .when()
+            .put(baseUrl + "/{id}/status");
+
+        prettyPrintJson("アラート対応開始(IN_PROGRESS)レスポンス", inProgressResponse.getBody());
+
+        inProgressResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+
+        // 状態遷移テスト: IN_PROGRESS -> RESOLVED
+        AlertStatusForm resolvedForm = new AlertStatusForm();
+        resolvedForm.setStatus("RESOLVED");
+        resolvedForm.setResolutionNote("在庫を補充しました。現在在庫: 50個");
+
+        Response resolvedResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", alertId)
+            .body(resolvedForm)
+        .when()
+            .put(baseUrl + "/{id}/status");
+
+        prettyPrintJson("アラート解決(RESOLVED)レスポンス", resolvedResponse.getBody());
+
+        resolvedResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+
+        // 最終状態確認
+        Response finalDetailResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", alertId)
+        .when()
+            .get(baseUrl + "/{id}");
+
+        prettyPrintJson("最終状態確認レスポンス", finalDetailResponse.getBody());
+
+        finalDetailResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("data.status", equalTo("RESOLVED"))
+            .body("data.resolutionNote", equalTo("在庫を補充しました。現在在庫: 50個"));
+
+        // クリーンアップ: アラート削除
         Response deleteResponse = given()
             .contentType(ContentType.JSON)
             .header("Authorization", bearerToken)
@@ -274,20 +308,97 @@ public class AlertControllerRestAssuredTest {
         .when()
             .delete(baseUrl + "/{id}");
 
-        // レスポンスボディを変数に格納
-        ResponseBody deleteResponseBody = deleteResponse.getBody();
-
-        // レスポンスデータをJSONフォーマットでログ出力
-        prettyPrintJson("アラート削除レスポンス", deleteResponseBody);
-        System.out.println("ステータスコード: " + deleteResponse.getStatusCode());
-
-        // レスポンスボディをJSONファイルとして保存
-        saveResponseBodyAsJson(baseUrl + "_delete_" + alertId, deleteResponseBody);
-
-        // レスポンスに対してアサーション
         deleteResponse.then()
             .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"));
+            .body("code", equalTo("00000"));
+    }
+
+    @Test
+    void testCreateExpirySoonAlert() {
+        // 賞味期限接近アラート作成テスト
+        AlertForm form = new AlertForm();
+        form.setStoreId(1L);
+        form.setProductId(2L);
+        form.setLotNumber("LOT-2026-0209");
+        form.setAlertType("EXPIRY_SOON");
+        form.setPriority("P1");
+        form.setMessage("[賞味期限接近] 店舗: 東京本店, 商品: オーガニックティー, 賞味期限まで1日");
+        form.setThresholdValue("7");
+        form.setCurrentValue("1");
+        form.setDetectedAt(LocalDateTime.now());
+
+        Response createResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .body(form)
+        .when()
+            .post(baseUrl);
+
+        prettyPrintJson("賞味期限接近アラート作成レスポンス", createResponse.getBody());
+
+        createResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+
+        // クリーンアップ
+        Response listResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+        .when()
+            .get(baseUrl);
+
+        String alertId = listResponse.path("data.find { it.lotNumber == 'LOT-2026-0209' }.id").toString();
+
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .pathParam("id", alertId)
+        .when()
+            .delete(baseUrl + "/{id}");
+    }
+
+    @Test
+    void testCreateHighStockAlert() {
+        // 在庫過多アラート作成テスト
+        AlertForm form = new AlertForm();
+        form.setStoreId(1L);
+        form.setProductId(3L);
+        form.setAlertType("HIGH_STOCK");
+        form.setPriority("P3");
+        form.setMessage("[在庫過多] 店舗: 名古屋栄店, 商品: ミネラルウォーター, 現在在庫: 150個, 適正上限: 100個");
+        form.setThresholdValue("150");
+        form.setCurrentValue("150");
+        form.setDetectedAt(LocalDateTime.now());
+
+        Response createResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+            .body(form)
+        .when()
+            .post(baseUrl);
+
+        prettyPrintJson("在庫過多アラート作成レスポンス", createResponse.getBody());
+
+        createResponse.then()
+            .statusCode(HttpStatus.OK.value())
+            .body("code", equalTo("00000"));
+
+        // クリーンアップ
+        Response listResponse = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", bearerToken)
+        .when()
+            .get(baseUrl);
+
+        String alertId = listResponse.path("data.find { it.alertType == 'HIGH_STOCK' && it.productId == 3 }.id").toString();
+
+        if (alertId != null && !alertId.equals("null")) {
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", alertId)
+            .when()
+                .delete(baseUrl + "/{id}");
+        }
     }
 }

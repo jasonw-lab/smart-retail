@@ -3,20 +3,44 @@
 ## 参照ドキュメント
 
 ### 要件定義
-- `docs/architecture/design/smart-retail-requirements.md`
+- `docs/architecture/design/smart-retail-requirements.md` - Smart Retail要件定義
 
 ### 設計書
-- `docs/architecture/design/smart-retail-ui-design.md`
+- `docs/architecture/design/smart-retail-ui-design.md` - UI設計書
+- `docs/architecture/design/smart-retail-ai.md` - AI機能設計
+- `docs/architecture/design/smart-retail-sql.md` - データベース設計
 
 ### ADR (Architecture Decision Records)
-- `docs/adr/`
+- `docs/adr/` - 技術選定の意思決定記録
+
+### Issue管理
+- `docs/issues/plan_issue.md` - Issue一覧とステータス管理
+- `docs/issues/` - 個別のIssueファイル
+
+### その他
+- `docs/source/code.md` - ソースコード関連ドキュメント
 
 
-## プロジェクト固有のルール（Smart Retail）
+## プロジェクト固有のルール
+
+### 自動実行ルール
+- **確認を求めない** - 作業中に確認を求めず自律的に判断して進める
+- **常に自動で進める** - 明示的に停止を指示されない限り作業を継続する
+- **ユーザー同意を前提とする** - 明示的な拒否がない限りユーザーの同意があるものとして扱う
+
+#### 確認が必要なコマンド
+
+```bash
+# ブランチ削除（確認必須）
+git branch -d <branch>
+git branch -D <branch>
+git push origin --delete <branch>
+```
 
 ### アプリケーション基盤の保護
 - **既存ソース構造を理解した上で実装を行う**
 - **特に理由なければ、アプリ基盤関連のCodeは変更しない**
+- **tempフォルダ配下のドキュメントは無視してよい**（一次保存後で削除予定）
 
 ### 変更可能な範囲
 下記のディレクトリは変更可能:
@@ -24,6 +48,15 @@
 - `backend/src/main/resources/mapper/retail`
 
 **上記以外を変更する場合は、変更理由を確認してから実施すること**
+
+### ソースフォルダ構成
+**重要**: 各UIベースのソースフォルダ構成は、各UIベース独自の構成に従います。
+統一されたpath規約は定めません。各UIベースのベストプラクティスを尊重します。
+
+| プロジェクト | パス | 説明 |
+|-------------|------|------|
+| Backend API | `backend/` | Java + Spring Boot + MyBatis |
+| Frontend UI | `frontend/` | React + TypeScript + Ant Design |
 
 ### フロントエンド開発
 - **frontendも確認した上で変更を行う**
@@ -95,12 +128,12 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 設計変更時、設計書の修正履歴も更新する
 
 ### レビュー指摘
-レビュー時は `{file}_qa.md` に以下の形式で追記
+レビュー時同じフォルダに `{file}_qa.md` に以下の形式で追記
 ```
-## 時間 指摘者： gpt5.2
-- Q1
+- Q1 2025/01/01 14:00  {ai model}(指摘者)
 xxxxx
-- Q2
+- Q2 2025/01/01 14:01  {ai model}(指摘者)
+xxxxx
 ```
 
 ### レビュー回答
@@ -108,20 +141,25 @@ xxxxx
 対象設計書を更新する。
 `{file}_qa.md` に以下の形式で追記
 ```
-## 時間 作成担当 claude 4.5
-- Q1の回答
+- Q1の回答 2025/01/01 14:02  {ai model}(回答者)
 xxxxx
 ```
+
+## plan作成時
+### github issue 作成依頼時
+(front,backendのわけ labelつけ、また　phase 1-A, phase1-B など優先度もつけ）
 
 
 ## Issue対応フロー
 
 ### 1. ブランチ作成
-- 最新コードは origin/develop を pull 済み
+- 未コミットCodeあれば、一旦待避する　（ユーザーに確認）
+- 最新コードは origin/develop を checkout 
 ```bash
 git fetch origin
 ```
 作業ブランチ: feature/issue-<番号>-<概要>
+- 未コミットCodeを復帰する
 
 
 ### 2. 実装
@@ -156,8 +194,41 @@ git push -u origin feature/issue-XXX-description
 ### 6. PR作成（Claude CLI で実行）
 ```bash
 gh pr create --title "[Phase X Backend/Frontend] 機能名" \
-  --body "## 概要\nIssue #X の実装\n\n## 実装内容\n- ...\n\nCloses #X" \
+  --body "# Summary
+- Issue #X の実装
+- 主要な変更点の概要
+
+# Changes
+- 変更内容1
+- 変更内容2
+- 変更内容3
+
+# Test plan
+- テスト項目1
+- テスト項目2
+- テスト項目3
+
+Closes #X" \
   --base develop
+```
+
+**PR本文の形式:**
+```markdown
+# Summary
+- Issue #X の実装
+- 主要な変更点の概要
+
+# Changes
+- 変更内容1（ファイル名や機能名を具体的に）
+- 変更内容2
+- 変更内容3
+
+# Test plan
+- テスト項目1（実施したテストを具体的に）
+- テスト項目2
+- テスト項目3
+
+Closes #X
 ```
 
 **重要事項:**

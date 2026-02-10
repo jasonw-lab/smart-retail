@@ -28,27 +28,67 @@ public class Alert extends BaseEntity {
     private Long productId;
 
     /**
+     * デバイスID
+     */
+    private Long deviceId;
+
+    /**
      * ロット番号
      */
     private String lotNumber;
 
     /**
-     * アラートタイプ（LOW_STOCK, EXPIRED）
+     * アラートタイプ（LOW_STOCK, EXPIRY_SOON, HIGH_STOCK, COMMUNICATION_DOWN, PAYMENT_TERMINAL_DOWN）
      */
     private String alertType;
 
     /**
+     * 優先度（P1, P2, P3, P4）
+     */
+    private String priority;
+
+    /**
+     * ステータス（NEW, ACK, IN_PROGRESS, RESOLVED, CLOSED）
+     */
+    private String status;
+
+    /**
      * アラートメッセージ
      */
-    private String alertMessage;
+    private String message;
 
     /**
-     * アラート日時
+     * しきい値
      */
-    private LocalDateTime alertDate;
+    private String thresholdValue;
 
     /**
-     * 解決フラグ
+     * 現在値
      */
-    private Boolean resolved;
+    private String currentValue;
+
+    /**
+     * 検知日時
+     */
+    private LocalDateTime detectedAt;
+
+    /**
+     * 確認日時
+     */
+    private LocalDateTime acknowledgedAt;
+
+    /**
+     * 解決日時
+     */
+    private LocalDateTime resolvedAt;
+
+    /**
+     * クローズ日時
+     */
+    private LocalDateTime closedAt;
+
+    /**
+     * 解決メモ
+     */
+    private String resolutionNote;
 }

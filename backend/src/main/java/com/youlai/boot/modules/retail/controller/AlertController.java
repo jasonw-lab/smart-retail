@@ -4,10 +4,13 @@ import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.modules.retail.model.entity.Alert;
 import com.youlai.boot.modules.retail.model.form.AlertForm;
+import com.youlai.boot.modules.retail.model.form.AlertStatusForm;
 import com.youlai.boot.modules.retail.model.query.AlertPageQuery;
 import com.youlai.boot.modules.retail.model.vo.AlertPageVO;
+import com.youlai.boot.modules.retail.model.vo.AlertVO;
 import com.youlai.boot.modules.retail.service.AlertService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -46,25 +49,29 @@ public class AlertController {
 
     @Operation(summary = "アラート更新")
     @PutMapping("/{id}")
-    public Result<?> updateAlert(@PathVariable Long id, @RequestBody @Valid AlertForm form) {
+    public Result<?> updateAlert(
+            @Parameter(description = "アラートID") @PathVariable Long id,
+            @RequestBody @Valid AlertForm form) {
         return Result.judge(alertService.updateAlert(id, form));
     }
 
     @Operation(summary = "アラート削除")
     @DeleteMapping("/{id}")
-    public Result<?> deleteAlert(@PathVariable Long id) {
+    public Result<?> deleteAlert(@Parameter(description = "アラートID") @PathVariable Long id) {
         return Result.judge(alertService.deleteAlert(id));
     }
 
     @Operation(summary = "アラート詳細取得")
     @GetMapping("/{id}")
-    public Result<Alert> getAlert(@PathVariable Long id) {
+    public Result<AlertVO> getAlert(@Parameter(description = "アラートID") @PathVariable Long id) {
         return Result.success(alertService.getAlertById(id));
     }
 
-    @Operation(summary = "アラート解決")
-    @PutMapping("/{id}/resolve")
-    public Result<?> resolveAlert(@PathVariable Long id) {
-        return Result.judge(alertService.resolveAlert(id));
+    @Operation(summary = "アラート状態更新")
+    @PutMapping("/{id}/status")
+    public Result<?> updateAlertStatus(
+            @Parameter(description = "アラートID") @PathVariable Long id,
+            @RequestBody @Valid AlertStatusForm form) {
+        return Result.judge(alertService.updateAlertStatus(id, form));
     }
 }

@@ -62,9 +62,9 @@ public class DashboardServiceImpl implements DashboardService {
         kpi.setActiveStoreCount(activeStoreCount != null ? activeStoreCount : 0);
         kpi.setTotalStoreCount(totalStoreCount != null ? totalStoreCount : 0);
 
-        // 未対応アラート数取得
+        // 未対応アラート数取得（NEW, ACK, IN_PROGRESS状態のアラート）
         long pendingAlertCount = alertMapper.selectCount(new LambdaQueryWrapper<Alert>()
-                .eq(Alert::getResolved, false));
+                .notIn(Alert::getStatus, "RESOLVED", "CLOSED"));
         kpi.setPendingAlertCount((int) pendingAlertCount);
 
         // 在庫切れSKU数取得

@@ -149,87 +149,6 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="140" fixed="right">
-            <template #default="{ row }">
-              <div class="action-cell" @click.stop>
-                <!-- NEW: 確認ボタン -->
-                <template v-if="row.status === 'NEW'">
-                  <el-button type="primary" size="small" @click="handleAcknowledge(row)">
-                    確認
-                  </el-button>
-                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
-                    <el-button size="small" link>
-                      <el-icon><MoreFilled /></el-icon>
-                    </el-button>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="start">対応開始</el-dropdown-item>
-                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </template>
-
-                <!-- ACK: 対応開始ボタン -->
-                <template v-else-if="row.status === 'ACK'">
-                  <el-button type="primary" size="small" @click="handleStartProgress(row)">
-                    対応開始
-                  </el-button>
-                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
-                    <el-button size="small" link>
-                      <el-icon><MoreFilled /></el-icon>
-                    </el-button>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </template>
-
-                <!-- IN_PROGRESS: 完了ボタン -->
-                <template v-else-if="row.status === 'IN_PROGRESS'">
-                  <el-button type="success" size="small" @click="handleResolve(row)">
-                    完了
-                  </el-button>
-                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
-                    <el-button size="small" link>
-                      <el-icon><MoreFilled /></el-icon>
-                    </el-button>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </template>
-
-                <!-- RESOLVED: クローズボタン -->
-                <template v-else-if="row.status === 'RESOLVED'">
-                  <el-button size="small" plain @click="handleClose(row)">
-                    クローズ
-                  </el-button>
-                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
-                    <el-button size="small" link>
-                      <el-icon><MoreFilled /></el-icon>
-                    </el-button>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </template>
-
-                <!-- CLOSED: 詳細のみ -->
-                <template v-else>
-                  <el-button size="small" link type="primary" @click="handleShowDetail(row)">
-                    詳細を見る
-                  </el-button>
-                </template>
-              </div>
-            </template>
-          </el-table-column>
         </el-table>
 
         <!-- ページネーション -->
@@ -268,7 +187,7 @@
       v-model="drawerVisible"
       title="アラート詳細"
       direction="rtl"
-      size="400px"
+      size="600px"
       :destroy-on-close="false"
     >
       <div v-if="alertDetail" class="drawer-content">
@@ -363,8 +282,33 @@
 
         <!-- 対応メモ -->
         <div class="panel-section">
-          <div class="section-title">対応メモ</div>
-          <div class="resolution-note">
+          <div class="section-title">
+            対応メモ
+            <el-button
+              v-if="!isEditingNote && alertDetail.status !== 'CLOSED'"
+              type="primary"
+              size="small"
+              link
+              @click="startEditNote"
+            >
+              編集
+            </el-button>
+          </div>
+          <template v-if="isEditingNote">
+            <el-input
+              v-model="editNoteForm.resolutionNote"
+              type="textarea"
+              :rows="4"
+              placeholder="対応メモを入力してください"
+            />
+            <div class="note-actions">
+              <el-button size="small" @click="cancelEditNote">キャンセル</el-button>
+              <el-button type="primary" size="small" :loading="savingNote" @click="saveNote">
+                保存
+              </el-button>
+            </div>
+          </template>
+          <div v-else class="resolution-note">
             {{ alertDetail.resolutionNote || '（まだ記録なし）' }}
           </div>
         </div>
@@ -434,7 +378,6 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { MoreFilled } from "@element-plus/icons-vue";
 import type { FormInstance, TableInstance } from "element-plus";
 import AlertAPI, {
   type AlertPageVO,
@@ -512,6 +455,13 @@ const resolveForm = reactive({
 const resolveRules = {
   resolutionNote: [{ required: true, message: "対応内容を入力してください", trigger: "blur" }],
 };
+
+// メモ編集
+const isEditingNote = ref(false);
+const savingNote = ref(false);
+const editNoteForm = reactive({
+  resolutionNote: "",
+});
 
 // ヘルパー関数
 const getPriorityType = (priority?: AlertPriority) => {
@@ -725,17 +675,6 @@ const closeDrawer = () => {
   alertDetail.value = null;
 };
 
-const handleDropdownCommand = (command: string, row: AlertPageVO) => {
-  switch (command) {
-    case "start":
-      handleStartProgress(row);
-      break;
-    case "detail":
-      handleRowClick(row);
-      break;
-  }
-};
-
 // 状態遷移
 const handleAcknowledge = async (alert: AlertPageVO | AlertVO) => {
   try {
@@ -821,10 +760,6 @@ const handleClose = async (alert: AlertPageVO | AlertVO) => {
     .catch(() => {});
 };
 
-const handleShowDetail = (row: AlertPageVO) => {
-  handleRowClick(row);
-};
-
 // 一括操作
 const handleBulkAcknowledge = async () => {
   const newAlerts = selectedRows.value.filter((a) => a.status === "NEW");
@@ -834,13 +769,25 @@ const handleBulkAcknowledge = async () => {
   }
 
   try {
+    await ElMessageBox.confirm(
+      `選択した${newAlerts.length}件のアラートを確認済みにしますか？`,
+      "一括確認",
+      {
+        confirmButtonText: "確認する",
+        cancelButtonText: "キャンセル",
+        type: "warning",
+      }
+    );
+
     await Promise.all(newAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "ACK" })));
     ElMessage.success(`${newAlerts.length}件を確認しました`);
     clearSelection();
     getList();
   } catch (error) {
-    console.error("一括確認に失敗しました:", error);
-    ElMessage.error("一括確認に失敗しました");
+    if (error !== "cancel") {
+      console.error("一括確認に失敗しました:", error);
+      ElMessage.error("一括確認に失敗しました");
+    }
   }
 };
 
@@ -852,13 +799,25 @@ const handleBulkStartProgress = async () => {
   }
 
   try {
+    await ElMessageBox.confirm(
+      `選択した${targetAlerts.length}件のアラートの対応を開始しますか？`,
+      "一括対応開始",
+      {
+        confirmButtonText: "対応開始",
+        cancelButtonText: "キャンセル",
+        type: "warning",
+      }
+    );
+
     await Promise.all(targetAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "IN_PROGRESS" })));
     ElMessage.success(`${targetAlerts.length}件の対応を開始しました`);
     clearSelection();
     getList();
   } catch (error) {
-    console.error("一括対応開始に失敗しました:", error);
-    ElMessage.error("一括対応開始に失敗しました");
+    if (error !== "cancel") {
+      console.error("一括対応開始に失敗しました:", error);
+      ElMessage.error("一括対応開始に失敗しました");
+    }
   }
 };
 
@@ -872,6 +831,38 @@ const goToInventory = () => {
         productId: alertDetail.value.productId.toString(),
       },
     });
+  }
+};
+
+// メモ編集機能
+const startEditNote = () => {
+  editNoteForm.resolutionNote = alertDetail.value?.resolutionNote || "";
+  isEditingNote.value = true;
+};
+
+const cancelEditNote = () => {
+  isEditingNote.value = false;
+  editNoteForm.resolutionNote = "";
+};
+
+const saveNote = async () => {
+  if (!alertDetail.value) return;
+
+  savingNote.value = true;
+  try {
+    await AlertAPI.updateStatus(alertDetail.value.id, {
+      status: alertDetail.value.status,
+      resolutionNote: editNoteForm.resolutionNote,
+    });
+    ElMessage.success("メモを保存しました");
+    const res = await AlertAPI.getDetail(alertDetail.value.id);
+    alertDetail.value = res;
+    isEditingNote.value = false;
+  } catch (error) {
+    console.error("メモの保存に失敗しました:", error);
+    ElMessage.error("メモの保存に失敗しました");
+  } finally {
+    savingNote.value = false;
   }
 };
 
@@ -1013,12 +1004,6 @@ onUnmounted(() => {
   }
 }
 
-.action-cell {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .pagination-wrapper {
   padding: 16px;
   display: flex;
@@ -1068,6 +1053,9 @@ onUnmounted(() => {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ebeef5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .info-grid {
@@ -1162,6 +1150,14 @@ onUnmounted(() => {
   background-color: #fafafa;
   padding: 12px;
   border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .recommendation {

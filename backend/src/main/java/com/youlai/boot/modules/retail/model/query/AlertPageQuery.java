@@ -26,15 +26,18 @@ public class AlertPageQuery extends BasePageQuery {
     @Schema(description = "ロット番号")
     private String lotNumber;
 
-    @Schema(description = "アラートタイプ（LOW_STOCK, EXPIRED）")
+    @Schema(description = "アラートタイプ（LOW_STOCK, EXPIRY_SOON, HIGH_STOCK）")
     private String alertType;
 
-    @Schema(description = "アラート日時（開始）")
-    private LocalDateTime alertDateStart;
+    @Schema(description = "優先度（P1, P2, P3, P4）")
+    private String priority;
 
-    @Schema(description = "アラート日時（終了）")
-    private LocalDateTime alertDateEnd;
+    @Schema(description = "ステータス（NEW, ACK, IN_PROGRESS, RESOLVED, CLOSED）")
+    private String status;
 
-    @Schema(description = "解決フラグ")
-    private Boolean resolved;
+    @Schema(description = "検知日時（開始）")
+    private LocalDateTime detectedAtStart;
+
+    @Schema(description = "検知日時（終了）")
+    private LocalDateTime detectedAtEnd;
 }

@@ -3,6 +3,7 @@ package com.youlai.boot.modules.retail.converter;
 import com.youlai.boot.modules.retail.model.entity.Alert;
 import com.youlai.boot.modules.retail.model.form.AlertForm;
 import com.youlai.boot.modules.retail.model.vo.AlertPageVO;
+import com.youlai.boot.modules.retail.model.vo.AlertVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
@@ -29,5 +30,14 @@ public interface AlertConverter {
      * @param entity アラートエンティティ
      * @return アラートページングVO
      */
-    AlertPageVO entity2Vo(Alert entity);
+    AlertPageVO entity2PageVo(Alert entity);
+
+    /**
+     * Alert エンティティから AlertVO への変換
+     * 注意: storeName, productName, productCode, deviceName は別途設定が必要
+     *
+     * @param entity アラートエンティティ
+     * @return アラート詳細VO
+     */
+    AlertVO entity2Vo(Alert entity);
 }

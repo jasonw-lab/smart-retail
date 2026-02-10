@@ -109,6 +109,20 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: "/retail/alert",
+    component: Layout,
+    name: "Alert",
+    meta: { title: "アラート管理", icon: "el-icon-Bell" },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/retail/alert/index.vue"),
+        name: "AlertList",
+        meta: { title: "アラート一覧", icon: "el-icon-Bell", keepAlive: true },
+      },
+    ],
+  },
 ];
 
 /**

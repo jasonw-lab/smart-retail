@@ -4,10 +4,14 @@ import com.youlai.boot.modules.retail.model.form.InventoryForm;
 import com.youlai.boot.modules.retail.model.form.InventoryReplenishForm;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;

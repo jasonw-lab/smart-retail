@@ -1,14 +1,14 @@
 <template>
   <div class="alert-container">
     <!-- 検索フォーム -->
-    <el-card shadow="never" class="mb-4">
+    <el-card shadow="never" class="filter-card">
       <el-form :model="queryParams" ref="queryForm" :inline="true">
         <el-form-item label="優先度" prop="priority">
           <el-select
             v-model="queryParams.priority"
             placeholder="すべて"
             clearable
-            style="width: 120px"
+            style="width: 100px"
           >
             <el-option
               v-for="option in PRIORITY_OPTIONS"
@@ -18,19 +18,15 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="状態" prop="status">
+        <el-form-item label="状態" prop="statusFilter">
           <el-select
-            v-model="queryParams.status"
+            v-model="queryParams.statusFilter"
             placeholder="すべて"
-            clearable
-            style="width: 140px"
+            style="width: 120px"
           >
-            <el-option
-              v-for="option in STATUS_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
+            <el-option label="未対応" value="pending" />
+            <el-option label="完了" value="completed" />
+            <el-option label="すべて" value="all" />
           </el-select>
         </el-form-item>
         <el-form-item label="種別" prop="alertType">
@@ -38,7 +34,7 @@
             v-model="queryParams.alertType"
             placeholder="すべて"
             clearable
-            style="width: 140px"
+            style="width: 120px"
           >
             <el-option
               v-for="option in ALERT_TYPE_OPTIONS"
@@ -54,7 +50,7 @@
             placeholder="すべて"
             clearable
             filterable
-            style="width: 180px"
+            style="width: 160px"
           >
             <el-option
               v-for="store in storeList"
@@ -71,120 +67,354 @@
       </el-form>
     </el-card>
 
-    <!-- アラート一覧 -->
-    <el-card shadow="never">
-      <template #header>
-        <div class="flex-x-between">
-          <span>アラート一覧</span>
-          <span class="total-text">全{{ total }}件</span>
-        </div>
-      </template>
-
-      <div v-loading="loading" class="alert-list">
-        <div v-if="alertList.length === 0 && !loading" class="empty-state">
-          <el-empty description="アラートはありません" />
-        </div>
-
+    <!-- サマリバー -->
+    <div class="summary-bar">
+      <div class="summary-items">
         <div
-          v-for="alert in alertList"
-          :key="alert.id"
-          class="alert-card"
-          :class="getPriorityClass(alert.priority)"
+          v-for="item in summaryCounts"
+          :key="item.priority"
+          class="summary-item"
+          :class="{ active: queryParams.priority === item.priority }"
+          @click="togglePriorityFilter(item.priority)"
         >
-          <div class="alert-header">
-            <div class="alert-badges">
-              <el-tag :type="getPriorityType(alert.priority)" size="small">
-                {{ alert.priority }}
+          <span class="summary-badge" :style="{ backgroundColor: item.color }">
+            {{ item.priority }}: {{ item.count }}件
+          </span>
+        </div>
+        <div class="summary-total">
+          合計: {{ total }}件
+        </div>
+      </div>
+    </div>
+
+    <!-- アラートテーブル -->
+    <el-card shadow="never" class="table-card">
+      <div class="table-wrapper" :class="{ 'with-panel': detailPanelVisible }">
+        <el-table
+          ref="tableRef"
+          v-loading="loading"
+          :data="alertList"
+          border
+          row-key="id"
+          :row-class-name="getRowClassName"
+          @selection-change="handleSelectionChange"
+          @row-click="handleRowClick"
+          style="width: 100%"
+        >
+          <el-table-column type="selection" width="40" />
+          <el-table-column label="優先度" width="80" sortable prop="priority">
+            <template #default="{ row }">
+              <div class="priority-cell" :class="getPriorityClass(row.priority)">
+                <el-tag :type="getPriorityType(row.priority)" size="small">
+                  {{ row.priority }}
+                </el-tag>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="種別" width="100" sortable prop="alertType">
+            <template #default="{ row }">
+              {{ getAlertTypeLabel(row.alertType) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="状態" width="100" sortable prop="status">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)" size="small">
+                {{ getStatusLabel(row.status) }}
               </el-tag>
-              <el-tag type="info" size="small" class="ml-2">
-                {{ getAlertTypeLabel(alert.alertType) }}
-              </el-tag>
-              <el-tag :type="getStatusType(alert.status)" size="small" class="ml-2">
-                {{ getStatusLabel(alert.status) }}
-              </el-tag>
-            </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="概要" min-width="200">
+            <template #default="{ row }">
+              <div class="summary-cell">
+                <div class="summary-main">{{ row.productName || row.message }}</div>
+                <div class="summary-sub">
+                  <template v-if="row.alertType === 'LOW_STOCK'">
+                    現在: {{ row.currentValue }} / 発注点: {{ row.thresholdValue }}
+                  </template>
+                  <template v-else-if="row.alertType === 'HIGH_STOCK'">
+                    現在: {{ row.currentValue }} / 上限: {{ row.thresholdValue }}
+                  </template>
+                  <template v-else-if="row.alertType === 'EXPIRY_SOON'">
+                    {{ row.lotNumber ? `${row.lotNumber} ` : '' }}残{{ row.currentValue }}日
+                  </template>
+                  <template v-else>
+                    {{ row.message }}
+                  </template>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="店舗" width="120" sortable prop="storeName" />
+          <el-table-column label="検知日時" width="120" sortable prop="detectedAt">
+            <template #default="{ row }">
+              <el-tooltip :content="formatAbsoluteDateTime(row.detectedAt)" placement="top">
+                <span>{{ formatRelativeTime(row.detectedAt) }}</span>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="140" fixed="right">
+            <template #default="{ row }">
+              <div class="action-cell" @click.stop>
+                <!-- NEW: 確認ボタン -->
+                <template v-if="row.status === 'NEW'">
+                  <el-button type="primary" size="small" @click="handleAcknowledge(row)">
+                    確認
+                  </el-button>
+                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
+                    <el-button size="small" link>
+                      <el-icon><MoreFilled /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="start">対応開始</el-dropdown-item>
+                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </template>
+
+                <!-- ACK: 対応開始ボタン -->
+                <template v-else-if="row.status === 'ACK'">
+                  <el-button type="primary" size="small" @click="handleStartProgress(row)">
+                    対応開始
+                  </el-button>
+                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
+                    <el-button size="small" link>
+                      <el-icon><MoreFilled /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </template>
+
+                <!-- IN_PROGRESS: 完了ボタン -->
+                <template v-else-if="row.status === 'IN_PROGRESS'">
+                  <el-button type="success" size="small" @click="handleResolve(row)">
+                    完了
+                  </el-button>
+                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
+                    <el-button size="small" link>
+                      <el-icon><MoreFilled /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </template>
+
+                <!-- RESOLVED: クローズボタン -->
+                <template v-else-if="row.status === 'RESOLVED'">
+                  <el-button size="small" plain @click="handleClose(row)">
+                    クローズ
+                  </el-button>
+                  <el-dropdown trigger="click" @command="(cmd: string) => handleDropdownCommand(cmd, row)">
+                    <el-button size="small" link>
+                      <el-icon><MoreFilled /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="detail">詳細を見る</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </template>
+
+                <!-- CLOSED: 詳細のみ -->
+                <template v-else>
+                  <el-button size="small" link type="primary" @click="handleShowDetail(row)">
+                    詳細を見る
+                  </el-button>
+                </template>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- ページネーション -->
+        <div class="pagination-wrapper">
+          <el-pagination
+            v-model:current-page="queryParams.pageNum"
+            v-model:page-size="queryParams.pageSize"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+
+        <!-- 一括操作バー -->
+        <transition name="slide-up">
+          <div v-if="selectedRows.length > 0" class="bulk-action-bar">
+            <span class="selection-count">{{ selectedRows.length }}件選択中</span>
+            <el-button type="primary" size="small" @click="handleBulkAcknowledge">
+              一括確認
+            </el-button>
+            <el-button type="primary" size="small" @click="handleBulkStartProgress">
+              一括対応開始
+            </el-button>
+            <el-button size="small" @click="clearSelection">
+              選択解除
+            </el-button>
+          </div>
+        </transition>
+      </div>
+
+      <!-- 詳細サイドパネル -->
+      <transition name="slide-right">
+        <div v-if="detailPanelVisible" class="detail-panel">
+          <div class="panel-header">
+            <div class="panel-title">アラート詳細</div>
+            <el-button link @click="closeDetailPanel">
+              <el-icon size="20"><Close /></el-icon>
+            </el-button>
           </div>
 
-          <div class="alert-body">
-            <div class="alert-info">
-              <div class="info-row">
-                <span class="label">店舗:</span>
-                <span class="value">{{ alert.storeName }}</span>
-                <span v-if="alert.productName" class="label ml-4">商品:</span>
-                <span v-if="alert.productName" class="value">{{ alert.productName }}</span>
-              </div>
-              <div v-if="alert.lotNumber" class="info-row">
-                <span class="label">ロット:</span>
-                <span class="value">{{ alert.lotNumber }}</span>
-              </div>
-              <div v-if="alert.currentValue || alert.thresholdValue" class="info-row">
-                <span v-if="alert.currentValue" class="label">現在値:</span>
-                <span v-if="alert.currentValue" class="value">{{ alert.currentValue }}</span>
-                <span v-if="alert.thresholdValue" class="label ml-4">しきい値:</span>
-                <span v-if="alert.thresholdValue" class="value">{{ alert.thresholdValue }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">検知日時:</span>
-                <span class="value">{{ formatDateTime(alert.detectedAt) }}</span>
+          <div v-if="alertDetail" class="panel-content">
+            <!-- ヘッダーバッジ -->
+            <div class="panel-badges">
+              <el-tag :type="getPriorityType(alertDetail.priority)" size="small">
+                {{ alertDetail.priority }}
+              </el-tag>
+              <el-tag type="info" size="small">
+                {{ getAlertTypeLabel(alertDetail.alertType) }}
+              </el-tag>
+              <el-tag :type="getStatusType(alertDetail.status)" size="small">
+                {{ getStatusLabel(alertDetail.status) }}
+              </el-tag>
+            </div>
+
+            <!-- 基本情報 -->
+            <div class="panel-section">
+              <div class="section-title">基本情報</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">店舗</span>
+                  <span class="info-value">{{ alertDetail.storeName }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">商品</span>
+                  <span class="info-value">{{ alertDetail.productName || '-' }}</span>
+                </div>
+                <div v-if="alertDetail.lotNumber" class="info-item">
+                  <span class="info-label">ロット</span>
+                  <span class="info-value">{{ alertDetail.lotNumber }}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="alert-footer">
-            <div class="action-buttons">
-              <!-- NEW状態: 確認する、対応開始 -->
-              <template v-if="alert.status === 'NEW'">
-                <el-button size="small" @click="handleAcknowledge(alert)">確認する</el-button>
-                <el-button size="small" type="primary" @click="handleStartProgress(alert)">
-                  対応開始
-                </el-button>
+            <!-- 数値情報 -->
+            <div v-if="alertDetail.currentValue || alertDetail.thresholdValue" class="panel-section">
+              <div class="section-title">数値</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">現在値</span>
+                  <span class="info-value">{{ alertDetail.currentValue }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">しきい値</span>
+                  <span class="info-value">{{ alertDetail.thresholdValue }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 状態遷移タイムライン -->
+            <div class="panel-section">
+              <div class="section-title">状態遷移タイムライン</div>
+              <div class="timeline">
+                <div class="timeline-item" :class="{ completed: true }">
+                  <div class="timeline-dot completed"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">検知</span>
+                    <span class="timeline-time">{{ formatAbsoluteDateTime(alertDetail.detectedAt) }}</span>
+                  </div>
+                </div>
+                <div class="timeline-item" :class="{ completed: !!alertDetail.acknowledgedAt }">
+                  <div class="timeline-dot" :class="{ completed: !!alertDetail.acknowledgedAt }"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">確認</span>
+                    <span class="timeline-time">{{ alertDetail.acknowledgedAt ? formatAbsoluteDateTime(alertDetail.acknowledgedAt) : '（未）' }}</span>
+                  </div>
+                </div>
+                <div class="timeline-item" :class="{ completed: alertDetail.status === 'IN_PROGRESS' || alertDetail.status === 'RESOLVED' || alertDetail.status === 'CLOSED' }">
+                  <div class="timeline-dot" :class="{ completed: alertDetail.status === 'IN_PROGRESS' || alertDetail.status === 'RESOLVED' || alertDetail.status === 'CLOSED' }"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">対応開始</span>
+                    <span class="timeline-time">{{ getProgressStartTime() }}</span>
+                  </div>
+                </div>
+                <div class="timeline-item" :class="{ completed: !!alertDetail.resolvedAt }">
+                  <div class="timeline-dot" :class="{ completed: !!alertDetail.resolvedAt }"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">完了</span>
+                    <span class="timeline-time">{{ alertDetail.resolvedAt ? formatAbsoluteDateTime(alertDetail.resolvedAt) : '（未）' }}</span>
+                  </div>
+                </div>
+                <div class="timeline-item" :class="{ completed: !!alertDetail.closedAt }">
+                  <div class="timeline-dot" :class="{ completed: !!alertDetail.closedAt }"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">クローズ</span>
+                    <span class="timeline-time">{{ alertDetail.closedAt ? formatAbsoluteDateTime(alertDetail.closedAt) : '（未）' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 対応メモ -->
+            <div class="panel-section">
+              <div class="section-title">対応メモ</div>
+              <div class="resolution-note">
+                {{ alertDetail.resolutionNote || '（まだ記録なし）' }}
+              </div>
+            </div>
+
+            <!-- 推奨対応 -->
+            <div class="panel-section">
+              <div class="section-title">推奨対応</div>
+              <div class="recommendation">
+                {{ getRecommendation(alertDetail.alertType) }}
+              </div>
+            </div>
+
+            <!-- アクションボタン -->
+            <div class="panel-actions">
+              <template v-if="alertDetail.status === 'NEW'">
+                <el-button type="primary" @click="handleAcknowledge(alertDetail)">確認する</el-button>
+              </template>
+              <template v-else-if="alertDetail.status === 'ACK'">
+                <el-button type="primary" @click="handleStartProgress(alertDetail)">対応開始</el-button>
+              </template>
+              <template v-else-if="alertDetail.status === 'IN_PROGRESS'">
+                <el-button type="success" @click="handleResolve(alertDetail)">完了する</el-button>
+              </template>
+              <template v-else-if="alertDetail.status === 'RESOLVED'">
+                <el-button plain @click="handleClose(alertDetail)">クローズ</el-button>
               </template>
 
-              <!-- ACK状態: 対応開始 -->
-              <template v-else-if="alert.status === 'ACK'">
-                <el-button size="small" type="primary" @click="handleStartProgress(alert)">
-                  対応開始
-                </el-button>
-              </template>
-
-              <!-- IN_PROGRESS状態: 完了 -->
-              <template v-else-if="alert.status === 'IN_PROGRESS'">
-                <el-button size="small" type="success" @click="handleResolve(alert)">完了</el-button>
-              </template>
-
-              <!-- RESOLVED状態: クローズ -->
-              <template v-else-if="alert.status === 'RESOLVED'">
-                <el-button size="small" type="info" @click="handleClose(alert)">クローズ</el-button>
-              </template>
-
-              <!-- 詳細ボタン（全状態共通） -->
-              <el-button size="small" link type="primary" @click="handleShowDetail(alert)">
-                詳細
+              <el-button
+                v-if="alertDetail.productId && alertDetail.storeId"
+                link
+                type="primary"
+                @click="goToInventory"
+              >
+                在庫一覧で確認
               </el-button>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- ページネーション -->
-      <div class="mt-4 flex-x-end">
-        <el-pagination
-          v-model:current-page="queryParams.pageNum"
-          v-model:page-size="queryParams.pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+      </transition>
     </el-card>
 
     <!-- 対応完了ダイアログ -->
     <el-dialog v-model="resolveDialogVisible" title="対応完了" width="500px">
       <el-form ref="resolveFormRef" :model="resolveForm" :rules="resolveRules" label-width="100px">
         <el-form-item label="アラート">
-          <span>{{ selectedAlert?.storeName }} - {{ getAlertTypeLabel(selectedAlert?.alertType) }}</span>
+          <span>{{ getAlertTypeLabel(selectedAlert?.alertType) }} - {{ selectedAlert?.storeName }}</span>
         </el-form-item>
         <el-form-item v-if="selectedAlert?.productName" label="商品">
           <span>{{ selectedAlert?.productName }}</span>
@@ -203,43 +433,15 @@
         <el-button type="primary" @click="submitResolve">完了</el-button>
       </template>
     </el-dialog>
-
-    <!-- 詳細ダイアログ -->
-    <el-dialog v-model="detailDialogVisible" title="アラート詳細" width="600px">
-      <el-descriptions v-if="alertDetail" :column="2" border>
-        <el-descriptions-item label="アラートID">{{ alertDetail.id }}</el-descriptions-item>
-        <el-descriptions-item label="優先度">
-          <el-tag :type="getPriorityType(alertDetail.priority)">{{ alertDetail.priority }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="種別">{{ getAlertTypeLabel(alertDetail.alertType) }}</el-descriptions-item>
-        <el-descriptions-item label="状態">
-          <el-tag :type="getStatusType(alertDetail.status)">{{ getStatusLabel(alertDetail.status) }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="店舗">{{ alertDetail.storeName }}</el-descriptions-item>
-        <el-descriptions-item label="商品">{{ alertDetail.productName || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="商品コード">{{ alertDetail.productCode || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="ロット番号">{{ alertDetail.lotNumber || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="現在値">{{ alertDetail.currentValue || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="しきい値">{{ alertDetail.thresholdValue || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="検知日時" :span="2">{{ formatDateTime(alertDetail.detectedAt) }}</el-descriptions-item>
-        <el-descriptions-item label="確認日時" :span="2">{{ formatDateTime(alertDetail.acknowledgedAt) || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="解決日時" :span="2">{{ formatDateTime(alertDetail.resolvedAt) || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="クローズ日時" :span="2">{{ formatDateTime(alertDetail.closedAt) || '-' }}</el-descriptions-item>
-        <el-descriptions-item v-if="alertDetail.resolutionNote" label="解決メモ" :span="2">
-          {{ alertDetail.resolutionNote }}
-        </el-descriptions-item>
-      </el-descriptions>
-      <template #footer>
-        <el-button @click="detailDialogVisible = false">閉じる</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import type { FormInstance } from "element-plus";
+import { MoreFilled, Close } from "@element-plus/icons-vue";
+import type { FormInstance, TableInstance } from "element-plus";
 import AlertAPI, {
   type AlertPageVO,
   type AlertVO,
@@ -249,24 +451,24 @@ import AlertAPI, {
 } from "@/api/retail/alert";
 import StoreAPI from "@/api/retail/store";
 
-// 優先度オプション
+const router = useRouter();
+
+// 定数
 const PRIORITY_OPTIONS = [
-  { value: "P1", label: "P1", type: "danger" },
-  { value: "P2", label: "P2", type: "warning" },
-  { value: "P3", label: "P3", type: "info" },
-  { value: "P4", label: "P4", type: "info" },
+  { value: "P1", label: "P1", color: "#F56C6C" },
+  { value: "P2", label: "P2", color: "#E6A23C" },
+  { value: "P3", label: "P3", color: "#909399" },
+  { value: "P4", label: "P4", color: "#C0C4CC" },
 ];
 
-// ステータスオプション
 const STATUS_OPTIONS = [
   { value: "NEW", label: "未確認", type: "danger" },
   { value: "ACK", label: "確認済", type: "warning" },
   { value: "IN_PROGRESS", label: "対応中", type: "primary" },
-  { value: "RESOLVED", label: "解決済", type: "success" },
+  { value: "RESOLVED", label: "完了", type: "success" },
   { value: "CLOSED", label: "クローズ", type: "info" },
 ];
 
-// アラートタイプオプション
 const ALERT_TYPE_OPTIONS = [
   { value: "LOW_STOCK", label: "在庫切れ" },
   { value: "EXPIRY_SOON", label: "期限接近" },
@@ -278,9 +480,9 @@ const ALERT_TYPE_OPTIONS = [
 // 検索パラメータ
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   priority: undefined as AlertPriority | undefined,
-  status: undefined as AlertStatus | undefined,
+  statusFilter: "pending" as "pending" | "completed" | "all",
   alertType: undefined as AlertType | undefined,
   storeId: undefined as number | undefined,
 });
@@ -290,9 +492,20 @@ const loading = ref(false);
 const alertList = ref<AlertPageVO[]>([]);
 const total = ref(0);
 const storeList = ref<{ id: number; storeName: string }[]>([]);
+const selectedRows = ref<AlertPageVO[]>([]);
+const tableRef = ref<TableInstance>();
 
-// 詳細ダイアログ
-const detailDialogVisible = ref(false);
+// サマリカウント
+const summaryCounts = computed(() => {
+  return PRIORITY_OPTIONS.map((opt) => ({
+    priority: opt.value as AlertPriority,
+    color: opt.color,
+    count: alertList.value.filter((a) => a.priority === opt.value).length,
+  }));
+});
+
+// 詳細パネル
+const detailPanelVisible = ref(false);
 const alertDetail = ref<AlertVO | null>(null);
 
 // 対応完了ダイアログ
@@ -306,48 +519,72 @@ const resolveRules = {
   resolutionNote: [{ required: true, message: "対応内容を入力してください", trigger: "blur" }],
 };
 
-// 優先度のタイプを取得
+// ヘルパー関数
 const getPriorityType = (priority?: AlertPriority) => {
-  const option = PRIORITY_OPTIONS.find((item) => item.value === priority);
-  return option?.type || "info";
-};
-
-// 優先度のCSSクラスを取得
-const getPriorityClass = (priority?: AlertPriority) => {
   switch (priority) {
-    case "P1":
-      return "priority-p1";
-    case "P2":
-      return "priority-p2";
-    case "P3":
-      return "priority-p3";
-    case "P4":
-      return "priority-p4";
-    default:
-      return "";
+    case "P1": return "danger";
+    case "P2": return "warning";
+    case "P3": return "info";
+    case "P4": return "info";
+    default: return "info";
   }
 };
 
-// ステータスのタイプを取得
+const getPriorityClass = (priority?: AlertPriority) => {
+  return `priority-${priority?.toLowerCase()}`;
+};
+
 const getStatusType = (status?: AlertStatus) => {
   const option = STATUS_OPTIONS.find((item) => item.value === status);
   return option?.type || "info";
 };
 
-// ステータスのラベルを取得
 const getStatusLabel = (status?: AlertStatus) => {
   const option = STATUS_OPTIONS.find((item) => item.value === status);
   return option?.label || "未設定";
 };
 
-// アラートタイプのラベルを取得
 const getAlertTypeLabel = (alertType?: AlertType) => {
   const option = ALERT_TYPE_OPTIONS.find((item) => item.value === alertType);
   return option?.label || "不明";
 };
 
-// 日時フォーマット
-const formatDateTime = (dateTime?: string) => {
+const getRowClassName = ({ row }: { row: AlertPageVO }) => {
+  const classes = [];
+  if (row.status === "NEW") {
+    classes.push("row-new");
+  }
+  if (alertDetail.value?.id === row.id) {
+    classes.push("row-selected");
+  }
+  return classes.join(" ");
+};
+
+const formatRelativeTime = (dateTime?: string) => {
+  if (!dateTime) return "";
+  const date = new Date(dateTime);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}分前`;
+  }
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+
+  if (date >= today) {
+    return `${diffHours}時間前`;
+  } else if (date >= yesterday) {
+    return `昨日 ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  } else {
+    return `${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getDate().toString().padStart(2, "0")} ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  }
+};
+
+const formatAbsoluteDateTime = (dateTime?: string) => {
   if (!dateTime) return "";
   const date = new Date(dateTime);
   return date.toLocaleString("ja-JP", {
@@ -356,25 +593,70 @@ const formatDateTime = (dateTime?: string) => {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
   });
 };
 
-// アラート一覧を取得
+const getProgressStartTime = () => {
+  if (!alertDetail.value) return "（未）";
+  if (alertDetail.value.status === "IN_PROGRESS" || alertDetail.value.status === "RESOLVED" || alertDetail.value.status === "CLOSED") {
+    return alertDetail.value.acknowledgedAt ? formatAbsoluteDateTime(alertDetail.value.acknowledgedAt) : "（対応中）";
+  }
+  return "（未）";
+};
+
+const getRecommendation = (alertType?: AlertType) => {
+  switch (alertType) {
+    case "LOW_STOCK":
+      return "補充発注を検討してください。在庫が発注点を下回っています。";
+    case "EXPIRY_SOON":
+      return "賞味期限が近い在庫があります。販促や廃棄処理を検討してください。";
+    case "HIGH_STOCK":
+      return "在庫が適正上限を超えています。販促や他店舗への移動を検討してください。";
+    case "COMMUNICATION_DOWN":
+      return "デバイスの通信状態を確認してください。";
+    case "PAYMENT_TERMINAL_DOWN":
+      return "決済端末の状態を確認してください。";
+    default:
+      return "状況を確認してください。";
+  }
+};
+
+// API呼び出し
 const getList = async () => {
   if (loading.value) return;
 
   loading.value = true;
   try {
+    // statusFilterをAPIパラメータに変換
+    let status: AlertStatus | undefined;
+    if (queryParams.statusFilter === "pending") {
+      // 未対応: NEW, ACK, IN_PROGRESS
+      status = undefined; // バックエンドで複数指定不可の場合は別途対応
+    } else if (queryParams.statusFilter === "completed") {
+      // 完了: RESOLVED, CLOSED
+      status = undefined;
+    }
+
     const res = await AlertAPI.getPage({
       pageNum: queryParams.pageNum,
       pageSize: queryParams.pageSize,
       priority: queryParams.priority,
-      status: queryParams.status,
+      status: status,
       alertType: queryParams.alertType,
       storeId: queryParams.storeId,
     });
 
-    alertList.value = res.list || [];
+    let list = res.list || [];
+
+    // フロントエンドでstatusFilterを適用
+    if (queryParams.statusFilter === "pending") {
+      list = list.filter((a) => ["NEW", "ACK", "IN_PROGRESS"].includes(a.status));
+    } else if (queryParams.statusFilter === "completed") {
+      list = list.filter((a) => ["RESOLVED", "CLOSED"].includes(a.status));
+    }
+
+    alertList.value = list;
     total.value = res.total || 0;
   } catch (error) {
     console.error("アラート一覧の取得に失敗しました:", error);
@@ -384,7 +666,6 @@ const getList = async () => {
   }
 };
 
-// 店舗一覧を取得
 const getStoreList = async () => {
   try {
     const res = await StoreAPI.getList();
@@ -394,64 +675,110 @@ const getStoreList = async () => {
   }
 };
 
-// 検索
+// イベントハンドラ
 const handleQuery = () => {
   queryParams.pageNum = 1;
   getList();
 };
 
-// リセット
 const resetQuery = () => {
   queryParams.priority = undefined;
-  queryParams.status = undefined;
+  queryParams.statusFilter = "pending";
   queryParams.alertType = undefined;
   queryParams.storeId = undefined;
   queryParams.pageNum = 1;
   getList();
 };
 
-// ページサイズ変更
 const handleSizeChange = () => {
   getList();
 };
 
-// ページ変更
 const handleCurrentChange = () => {
   getList();
 };
 
-// 確認する（NEW -> ACK）
-const handleAcknowledge = async (alert: AlertPageVO) => {
+const togglePriorityFilter = (priority: AlertPriority) => {
+  if (queryParams.priority === priority) {
+    queryParams.priority = undefined;
+  } else {
+    queryParams.priority = priority;
+  }
+  handleQuery();
+};
+
+const handleSelectionChange = (rows: AlertPageVO[]) => {
+  selectedRows.value = rows;
+};
+
+const clearSelection = () => {
+  tableRef.value?.clearSelection();
+};
+
+const handleRowClick = async (row: AlertPageVO) => {
+  try {
+    const res = await AlertAPI.getDetail(row.id);
+    alertDetail.value = res;
+    detailPanelVisible.value = true;
+  } catch (error) {
+    console.error("詳細の取得に失敗しました:", error);
+    ElMessage.error("詳細の取得に失敗しました");
+  }
+};
+
+const closeDetailPanel = () => {
+  detailPanelVisible.value = false;
+  alertDetail.value = null;
+};
+
+const handleDropdownCommand = (command: string, row: AlertPageVO) => {
+  switch (command) {
+    case "start":
+      handleStartProgress(row);
+      break;
+    case "detail":
+      handleRowClick(row);
+      break;
+  }
+};
+
+// 状態遷移
+const handleAcknowledge = async (alert: AlertPageVO | AlertVO) => {
   try {
     await AlertAPI.updateStatus(alert.id, { status: "ACK" });
     ElMessage.success("確認しました");
     getList();
+    if (alertDetail.value?.id === alert.id) {
+      const res = await AlertAPI.getDetail(alert.id);
+      alertDetail.value = res;
+    }
   } catch (error) {
     console.error("確認に失敗しました:", error);
     ElMessage.error("確認に失敗しました");
   }
 };
 
-// 対応開始（NEW/ACK -> IN_PROGRESS）
-const handleStartProgress = async (alert: AlertPageVO) => {
+const handleStartProgress = async (alert: AlertPageVO | AlertVO) => {
   try {
     await AlertAPI.updateStatus(alert.id, { status: "IN_PROGRESS" });
     ElMessage.success("対応を開始しました");
     getList();
+    if (alertDetail.value?.id === alert.id) {
+      const res = await AlertAPI.getDetail(alert.id);
+      alertDetail.value = res;
+    }
   } catch (error) {
     console.error("対応開始に失敗しました:", error);
     ElMessage.error("対応開始に失敗しました");
   }
 };
 
-// 完了（IN_PROGRESS -> RESOLVED）
-const handleResolve = (alert: AlertPageVO) => {
-  selectedAlert.value = alert;
+const handleResolve = (alert: AlertPageVO | AlertVO) => {
+  selectedAlert.value = alert as AlertPageVO;
   resolveForm.resolutionNote = "";
   resolveDialogVisible.value = true;
 };
 
-// 完了送信
 const submitResolve = async () => {
   if (!resolveFormRef.value || !selectedAlert.value) return;
 
@@ -465,6 +792,10 @@ const submitResolve = async () => {
         ElMessage.success("対応完了しました");
         resolveDialogVisible.value = false;
         getList();
+        if (alertDetail.value?.id === selectedAlert.value!.id) {
+          const res = await AlertAPI.getDetail(selectedAlert.value!.id);
+          alertDetail.value = res;
+        }
       } catch (error) {
         console.error("完了処理に失敗しました:", error);
         ElMessage.error("完了処理に失敗しました");
@@ -473,8 +804,7 @@ const submitResolve = async () => {
   });
 };
 
-// クローズ（RESOLVED -> CLOSED）
-const handleClose = async (alert: AlertPageVO) => {
+const handleClose = async (alert: AlertPageVO | AlertVO) => {
   ElMessageBox.confirm("このアラートをクローズしてもよろしいですか？", "確認", {
     confirmButtonText: "クローズ",
     cancelButtonText: "キャンセル",
@@ -485,25 +815,76 @@ const handleClose = async (alert: AlertPageVO) => {
         await AlertAPI.updateStatus(alert.id, { status: "CLOSED" });
         ElMessage.success("クローズしました");
         getList();
+        if (alertDetail.value?.id === alert.id) {
+          const res = await AlertAPI.getDetail(alert.id);
+          alertDetail.value = res;
+        }
       } catch (error) {
         console.error("クローズに失敗しました:", error);
         ElMessage.error("クローズに失敗しました");
       }
     })
-    .catch(() => {
-      // キャンセル時は何もしない
-    });
+    .catch(() => {});
 };
 
-// 詳細表示
-const handleShowDetail = async (alert: AlertPageVO) => {
+const handleShowDetail = (row: AlertPageVO) => {
+  handleRowClick(row);
+};
+
+// 一括操作
+const handleBulkAcknowledge = async () => {
+  const newAlerts = selectedRows.value.filter((a) => a.status === "NEW");
+  if (newAlerts.length === 0) {
+    ElMessage.warning("確認対象のアラートがありません（NEW状態のアラートのみ対象）");
+    return;
+  }
+
   try {
-    const res = await AlertAPI.getDetail(alert.id);
-    alertDetail.value = res;
-    detailDialogVisible.value = true;
+    await Promise.all(newAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "ACK" })));
+    ElMessage.success(`${newAlerts.length}件を確認しました`);
+    clearSelection();
+    getList();
   } catch (error) {
-    console.error("詳細の取得に失敗しました:", error);
-    ElMessage.error("詳細の取得に失敗しました");
+    console.error("一括確認に失敗しました:", error);
+    ElMessage.error("一括確認に失敗しました");
+  }
+};
+
+const handleBulkStartProgress = async () => {
+  const targetAlerts = selectedRows.value.filter((a) => ["NEW", "ACK"].includes(a.status));
+  if (targetAlerts.length === 0) {
+    ElMessage.warning("対応開始対象のアラートがありません（NEW/ACK状態のアラートのみ対象）");
+    return;
+  }
+
+  try {
+    await Promise.all(targetAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "IN_PROGRESS" })));
+    ElMessage.success(`${targetAlerts.length}件の対応を開始しました`);
+    clearSelection();
+    getList();
+  } catch (error) {
+    console.error("一括対応開始に失敗しました:", error);
+    ElMessage.error("一括対応開始に失敗しました");
+  }
+};
+
+// 在庫一覧へ遷移
+const goToInventory = () => {
+  if (alertDetail.value?.storeId && alertDetail.value?.productId) {
+    router.push({
+      path: "/retail/inventory/list",
+      query: {
+        storeId: alertDetail.value.storeId.toString(),
+        productId: alertDetail.value.productId.toString(),
+      },
+    });
+  }
+};
+
+// キーボードショートカット
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && detailPanelVisible.value) {
+    closeDetailPanel();
   }
 };
 
@@ -511,6 +892,11 @@ const handleShowDetail = async (alert: AlertPageVO) => {
 onMounted(() => {
   getList();
   getStoreList();
+  document.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
 });
 </script>
 
@@ -519,122 +905,355 @@ onMounted(() => {
   padding: 20px;
 }
 
-.flex-x-between {
+.filter-card {
+  margin-bottom: 16px;
+}
+
+.summary-bar {
+  background-color: #fafafa;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.summary-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.summary-item {
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &.active .summary-badge {
+    box-shadow: 0 0 0 2px #409eff;
+  }
+}
+
+.summary-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.summary-total {
+  margin-left: auto;
+  color: #606266;
+  font-size: 14px;
+}
+
+.table-card {
+  :deep(.el-card__body) {
+    padding: 0;
+  }
+}
+
+.table-wrapper {
+  display: flex;
+  transition: all 0.3s;
+
+  &.with-panel {
+    .el-table {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}
+
+.el-table {
+  :deep(.row-new) {
+    background-color: #fef0f0;
+  }
+
+  :deep(.row-selected) {
+    background-color: #ecf5ff;
+  }
+
+  :deep(tr:hover > td) {
+    background-color: #f5f7fa !important;
+  }
+
+  :deep(.el-table__row) {
+    cursor: pointer;
+  }
+}
+
+.priority-cell {
+  position: relative;
+  padding-left: 8px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    border-radius: 2px;
+  }
+
+  &.priority-p1::before {
+    background-color: #f56c6c;
+  }
+
+  &.priority-p2::before {
+    background-color: #e6a23c;
+  }
+
+  &.priority-p3::before {
+    background-color: #909399;
+  }
+
+  &.priority-p4::before {
+    background-color: #c0c4cc;
+  }
+}
+
+.summary-cell {
+  .summary-main {
+    font-size: 14px;
+    font-weight: 500;
+    color: #303133;
+    margin-bottom: 4px;
+  }
+
+  .summary-sub {
+    font-size: 12px;
+    color: #909399;
+  }
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-wrapper {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bulk-action-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+}
+
+.selection-count {
+  color: #606266;
+  font-size: 14px;
+}
+
+// サイドパネル
+.detail-panel {
+  width: 400px;
+  min-width: 400px;
+  border-left: 1px solid #ebeef5;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #ebeef5;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 1;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.panel-content {
+  padding: 16px;
+  flex: 1;
+}
+
+.panel-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.panel-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #909399;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #909399;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #303133;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 16px;
+  padding-left: 16px;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: -8px;
+    width: 2px;
+    background-color: #dcdfe6;
+  }
+
+  &:last-child::before {
+    display: none;
+  }
+
+  &.completed::before {
+    background-color: #67c23a;
+  }
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #dcdfe6;
+  border: 2px solid #fff;
+
+  &.completed {
+    background-color: #67c23a;
+  }
+}
+
+.timeline-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.flex-x-end {
-  display: flex;
-  justify-content: flex-end;
+.timeline-label {
+  font-size: 13px;
+  color: #303133;
 }
 
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.mt-4 {
-  margin-top: 16px;
-}
-
-.ml-2 {
-  margin-left: 8px;
-}
-
-.ml-4 {
-  margin-left: 16px;
-}
-
-.total-text {
+.timeline-time {
+  font-size: 12px;
   color: #909399;
+}
+
+.resolution-note {
   font-size: 14px;
-}
-
-.alert-list {
-  min-height: 200px;
-}
-
-.empty-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-}
-
-.alert-card {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  transition: box-shadow 0.3s;
-
-  &:hover {
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  // 優先度に応じた左ボーダー
-  &.priority-p1 {
-    border-left: 4px solid #f56c6c;
-  }
-
-  &.priority-p2 {
-    border-left: 4px solid #e6a23c;
-  }
-
-  &.priority-p3 {
-    border-left: 4px solid #909399;
-  }
-
-  &.priority-p4 {
-    border-left: 4px solid #c0c4cc;
-  }
-}
-
-.alert-header {
-  padding: 12px 16px;
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.alert-badges {
-  display: flex;
-  align-items: center;
-}
-
-.alert-body {
-  padding: 16px;
-}
-
-.alert-info {
-  .info-row {
-    margin-bottom: 8px;
-    font-size: 14px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    .label {
-      color: #909399;
-      margin-right: 4px;
-    }
-
-    .value {
-      color: #303133;
-    }
-  }
-}
-
-.alert-footer {
-  padding: 12px 16px;
+  color: #606266;
   background-color: #fafafa;
-  border-top: 1px solid #ebeef5;
+  padding: 12px;
+  border-radius: 4px;
 }
 
-.action-buttons {
+.recommendation {
+  font-size: 14px;
+  color: #606266;
+  background-color: #f0f9eb;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 3px solid #67c23a;
+}
+
+.panel-actions {
+  padding: 16px;
+  border-top: 1px solid #ebeef5;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+}
+
+// アニメーション
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>

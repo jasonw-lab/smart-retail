@@ -95,16 +95,15 @@ public class AlertServiceImpl extends ServiceImpl<AlertMapper, Alert> implements
                 break;
             case "RESOLVED":
                 alert.setResolvedAt(now);
-                if (form.getResolutionNote() != null) {
-                    alert.setResolutionNote(form.getResolutionNote());
-                }
                 break;
             case "CLOSED":
                 alert.setClosedAt(now);
-                if (form.getResolutionNote() != null) {
-                    alert.setResolutionNote(form.getResolutionNote());
-                }
                 break;
+        }
+
+        // 対応メモは常に更新可能
+        if (form.getResolutionNote() != null) {
+            alert.setResolutionNote(form.getResolutionNote());
         }
 
         alert.setStatus(newStatus);

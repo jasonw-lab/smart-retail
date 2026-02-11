@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: smart-retail-simulator
+
+# PowerJob Worker Configuration
+powerjob:
+  worker:
+    enabled: true
+    app-name: smart-retail-simulator
+    server-address: ${POWERJOB_SERVER_ADDRESS:127.0.0.1:7700}
+    protocol: http
+    store-strategy: disk
+    max-result-length: 4096
+    max-appended-wf-context-length: 4096
+
+# Smart Retail Backend API Configuration
+retail:
+  backend:
+    base-url: ${RETAIL_BACKEND_URL:http://localhost:8989}
+    heartbeat-endpoint: /api/v1/retail/heartbeat
+    payment-endpoint: /api/v1/retail/payments
+    # API認証用トークン（デモ環境用）
+    auth-token: ${RETAIL_API_TOKEN:}
+
+# Simulator Configuration
+simulator:
+  # 対象店舗ID一覧
+  store-ids:
+    - 1
+    - 2
+  # Heartbeat送信間隔（秒）
+  heartbeat-interval-seconds: 60
+  # 決済シミュレーション間隔（秒）
+  payment-interval-seconds: 300
+
+logging:
+  level:
+    root: INFO
+    com.smartretail.simulator: DEBUG
+    tech.powerjob: INFO

@@ -1,5 +1,0 @@
-{
-  "code" : "B0001",
-  "data" : null,
-  "msg" : "\n### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'TP001' for key 'retail_product.uk_product_code'\n### The error may exist in com/youlai/boot/modules/retail/mapper/ProductMapper.java (best guess)\n### The error may involve com.youlai.boot.modules.retail.mapper.ProductMapper.insert-Inline\n### The error occurred while setting parameters\n### SQL: INSERT INTO retail_product  ( product_code, product_name,  category_id, category_name, unit_price,      description,   create_time, update_time )  VALUES (  ?, ?,  ?, ?, ?,      ?,   ?, ?  )\n### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry 'TP001' for key 'retail_product.uk_product_code'\n; Duplicate entry 'TP001' for key 'retail_product.uk_product_code'"
-}

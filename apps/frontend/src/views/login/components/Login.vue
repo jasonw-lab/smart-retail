@@ -1,8 +1,13 @@
 <template>
   <div>
-    <h3 text-center m-0 mb-20px>{{ t("login.login") }}</h3>
-    <el-form ref="loginFormRef" :model="loginFormData" :rules="loginRules" size="large">
-      <!-- 用户名 -->
+    <!-- Header -->
+    <div class="login-header">
+      <h3 class="login-header__title">{{ t("login.welcomeBack") }}</h3>
+      <p class="login-header__subtitle">{{ t("login.welcomeMessage") }}</p>
+    </div>
+
+    <el-form ref="loginFormRef" :model="loginFormData" :rules="loginRules" size="large" class="login-form">
+      <!-- Username -->
       <el-form-item prop="username">
         <el-input v-model.trim="loginFormData.username" :placeholder="t('login.username')">
           <template #prefix>
@@ -11,7 +16,7 @@
         </el-input>
       </el-form-item>
 
-      <!-- 密码 -->
+      <!-- Password -->
       <el-tooltip :visible="isCapsLock" :content="t('login.capsLock')" placement="right">
         <el-form-item prop="password">
           <el-input
@@ -29,9 +34,9 @@
         </el-form-item>
       </el-tooltip>
 
-      <!-- 验证码 -->
+      <!-- Captcha -->
       <el-form-item prop="captchaCode">
-        <div flex>
+        <div class="captcha-row">
           <el-input
             v-model.trim="loginFormData.captchaCode"
             :placeholder="t('login.captchaCode')"
@@ -41,64 +46,44 @@
               <div class="i-svg:captcha" />
             </template>
           </el-input>
-          <div cursor-pointer h="[40px]" w="[120px]" flex-center ml-10px @click="getCaptcha">
+          <div class="captcha-img" @click="getCaptcha">
             <el-icon v-if="codeLoading" class="is-loading"><Loading /></el-icon>
-
-            <img
-              v-else
-              object-cover
-              border-rd-4px
-              p-1px
-              shadow="[0_0_0_1px_var(--el-border-color)_inset]"
-              :src="captchaBase64"
-              alt="code"
-            />
+            <img v-else :src="captchaBase64" alt="captcha" />
           </div>
         </div>
       </el-form-item>
 
-      <div class="flex-x-between w-full">
+      <!-- Remember me & Forget password -->
+      <div class="login-options">
         <el-checkbox v-model="loginFormData.rememberMe">{{ t("login.rememberMe") }}</el-checkbox>
-        <el-link type="primary" underline="never" @click="toOtherForm('resetPwd')">
+        <el-link type="primary" :underline="false" @click="toOtherForm('resetPwd')">
           {{ t("login.forgetPassword") }}
         </el-link>
       </div>
 
-      <!-- 登录按钮 -->
+      <!-- Login button -->
       <el-form-item>
-        <el-button :loading="loading" type="primary" class="w-full" @click="handleLoginSubmit">
+        <el-button
+          :loading="loading"
+          type="primary"
+          class="login-btn"
+          @click="handleLoginSubmit"
+        >
           {{ t("login.login") }}
         </el-button>
       </el-form-item>
     </el-form>
 
-    <div flex-center gap-10px>
+    <!-- Register link -->
+    <div class="login-register">
       <el-text size="default">{{ t("login.noAccount") }}</el-text>
-      <el-link type="primary" underline="never" @click="toOtherForm('register')">
+      <el-link type="primary" :underline="false" @click="toOtherForm('register')">
         {{ t("login.reg") }}
       </el-link>
     </div>
-
-    <!-- 第三方登录 -->
-    <el-divider>
-      <el-text size="small">{{ t("login.otherLoginMethods") }}</el-text>
-    </el-divider>
-    <div class="flex-center gap-x-5 w-full text-[var(--el-text-color-secondary)]">
-      <CommonWrapper>
-        <div text-20px class="i-svg:wechat" />
-      </CommonWrapper>
-      <CommonWrapper>
-        <div text-20px cursor-pointer class="i-svg:qq" />
-      </CommonWrapper>
-      <CommonWrapper>
-        <div text-20px cursor-pointer class="i-svg:github" />
-      </CommonWrapper>
-      <CommonWrapper>
-        <div text-20px cursor-pointer class="i-svg:gitee" />
-      </CommonWrapper>
-    </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import type { FormInstance } from "element-plus";
 import { LocationQuery, RouteLocationRaw, useRoute } from "vue-router";
@@ -106,7 +91,6 @@ import { useI18n } from "vue-i18n";
 import AuthAPI, { type LoginFormData } from "@/api/auth.api";
 import router from "@/router";
 import { useUserStore } from "@/store";
-import CommonWrapper from "@/components/CommonWrapper/index.vue";
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -115,9 +99,9 @@ const route = useRoute();
 onMounted(() => getCaptcha());
 
 const loginFormRef = ref<FormInstance>();
-const loading = ref(false); // 按钮 loading 状态
-const isCapsLock = ref(false); // 是否大写锁定
-const captchaBase64 = ref(); // 验证码图片Base64字符串
+const loading = ref(false);
+const isCapsLock = ref(false);
+const captchaBase64 = ref();
 
 const loginFormData = ref<LoginFormData>({
   username: "admin",
@@ -158,7 +142,7 @@ const loginRules = computed(() => {
   };
 });
 
-// 获取验证码
+// Get captcha
 const codeLoading = ref(false);
 function getCaptcha() {
   codeLoading.value = true;
@@ -170,63 +154,43 @@ function getCaptcha() {
     .finally(() => (codeLoading.value = false));
 }
 
-// 登录提交处理
+// Login submit handler
 async function handleLoginSubmit() {
   try {
-    // 1. 表单验证
     const valid = await loginFormRef.value?.validate();
     if (!valid) return;
 
     loading.value = true;
-
-    // 2. 执行登录
     await userStore.login(loginFormData.value);
-
-    // 3. 获取用户信息
     await userStore.getUserInfo();
 
-    // 4. 解析并跳转目标地址
     const redirect = resolveRedirectTarget(route.query);
     await router.push(redirect);
-
-    // TODO 5. 判断用户是否点击了记住我？采用明文保存或使用jsencrypt库？
   } catch (error) {
-    // 5. 统一错误处理
-    getCaptcha(); // 刷新验证码
-    console.error("登录失败:", error);
+    getCaptcha();
+    console.error("Login failed:", error);
   } finally {
     loading.value = false;
   }
 }
 
-/**
- * 解析重定向目标
- * @param query 路由查询参数
- * @returns 标准化后的路由地址对象
- */
 function resolveRedirectTarget(query: LocationQuery): RouteLocationRaw {
-  // 默认跳转路径
   const defaultPath = "/";
-
-  // 获取原始重定向路径
   const rawRedirect = (query.redirect as string) || defaultPath;
 
   try {
-    // 6. 使用Vue Router解析路径
     const resolved = router.resolve(rawRedirect);
     return {
       path: resolved.path,
       query: resolved.query,
     };
   } catch {
-    // 7. 异常处理：返回安全路径
     return { path: defaultPath };
   }
 }
 
-// 检查输入大小写
+// Check caps lock
 function checkCapsLock(event: KeyboardEvent) {
-  // 防止浏览器密码自动填充时报错
   if (event instanceof KeyboardEvent) {
     isCapsLock.value = event.getModifierState("CapsLock");
   }
@@ -237,3 +201,137 @@ function toOtherForm(type: "register" | "resetPwd") {
   emit("update:modelValue", type);
 }
 </script>
+
+<style lang="scss" scoped>
+/* ===== Header ===== */
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+
+  &__title {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--el-text-color-primary);
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--el-text-color-secondary);
+  }
+}
+
+/* ===== Form overrides ===== */
+.login-form {
+  :deep(.el-input__wrapper) {
+    border-radius: 10px;
+    padding: 4px 12px;
+    transition: all 0.25s ease;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+
+    &:hover {
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25) inset;
+    }
+
+    &.is-focus {
+      box-shadow: 0 0 0 1px var(--el-color-primary) inset, 0 0 12px rgba(59, 130, 246, 0.08);
+    }
+  }
+
+  :deep(.el-input__inner) {
+    height: 38px;
+  }
+}
+
+/* ===== Captcha ===== */
+.captcha-row {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+.captcha-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 40px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.08);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ===== Options row ===== */
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* ===== Login button ===== */
+.login-btn {
+  width: 100%;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+
+  &:hover,
+  &:focus {
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* ===== Register link ===== */
+.login-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ===== Light theme overrides ===== */
+html:not(.dark) {
+  .login-form {
+    :deep(.el-input__wrapper) {
+      background: rgba(0, 0, 0, 0.02);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+    }
+  }
+
+  .captcha-img {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+}
+</style>

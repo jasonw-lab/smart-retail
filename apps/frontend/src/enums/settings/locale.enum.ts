@@ -1,5 +1,5 @@
 /**
- * 语言枚举
+ * 語言枚举 / Language Enum
  */
 export const enum LanguageEnum {
   /**
@@ -8,7 +8,12 @@ export const enum LanguageEnum {
   ZH_CN = "zh-cn",
 
   /**
-   * 英文
+   * English
    */
   EN = "en",
+
+  /**
+   * 日本語
+   */
+  JA = "ja",
 }

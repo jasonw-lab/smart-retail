@@ -41,6 +41,8 @@ export default {
     noAccount: "您没有账号？",
     quickFill: "快速填写",
     reg: "注 册",
+    welcomeBack: "欢迎回来",
+    welcomeMessage: "请登录您的账户",
   },
   // 导航栏国际化
   navbar: {

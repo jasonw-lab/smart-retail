@@ -28,8 +28,9 @@ defineProps({
 });
 
 const langOptions = [
-  { label: "中文", value: LanguageEnum.ZH_CN },
   { label: "English", value: LanguageEnum.EN },
+  { label: "日本語", value: LanguageEnum.JA },
+  { label: "中文", value: LanguageEnum.ZH_CN },
 ];
 
 const appStore = useAppStore();

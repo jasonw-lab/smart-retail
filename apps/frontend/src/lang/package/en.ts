@@ -41,6 +41,8 @@ export default {
     noAccount: "Don't have an account?",
     quickFill: "Quick fill",
     reg: "Register",
+    welcomeBack: "Welcome Back",
+    welcomeMessage: "Sign in to your account",
   },
   // 导航栏国际化
   navbar: {

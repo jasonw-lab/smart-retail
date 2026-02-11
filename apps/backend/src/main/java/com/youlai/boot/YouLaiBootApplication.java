@@ -12,10 +12,7 @@ import org.springframework.core.env.Environment;
 import javax.sql.DataSource;
 
 /**
- * 应用启动类
- *
- * @author Ray.Hao
- * @since 0.0.1
+ * SpringBootApplication
  */
 @Slf4j
 @SpringBootApplication

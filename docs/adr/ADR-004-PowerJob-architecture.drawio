@@ -1,0 +1,321 @@
+<mxfile host="draw.io" modified="2026-02-11T12:55:00.000Z" agent="draw.io" version="22.1.2" type="device">
+  <diagram id="powerjob-architecture" name="PowerJob Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="ADR-004: PowerJob External World Simulator — システム構成図" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="360" y="20" width="580" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- External World (PowerJob) Zone -->
+        <!-- ============================== -->
+        <mxCell id="ext-zone" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#4a90d9;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="520" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-zone-label" value="🌐 External World（デモ環境: PowerJob）" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#2c5282;" vertex="1" parent="1">
+          <mxGeometry x="55" y="88" width="320" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-note" value="※ 本番環境では実機（店舗GW / 決済端末 / Edge Agent）に置換" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontStyle=2;fontColor=#718096;" vertex="1" parent="1">
+          <mxGeometry x="55" y="112" width="370" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- PowerJob Server -->
+        <mxCell id="pj-server" value="&lt;b&gt;PowerJob Server&lt;/b&gt;&lt;br&gt;管理UI / ジョブスケジュール&lt;br&gt;&lt;font color=&quot;#718096&quot; style=&quot;font-size:10px&quot;&gt;:7700 (UI) / :10086 (Worker通信)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4a90d9;fontColor=#ffffff;strokeColor=#2c5282;strokeWidth=2;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="145" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- PowerJob Worker -->
+        <mxCell id="pj-worker" value="&lt;b&gt;PowerJob Worker&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#e2e8f0&quot; style=&quot;font-size:10px&quot;&gt;apps/simulator/&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2d3748;fontColor=#ffffff;strokeColor=#1a202c;strokeWidth=2;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="155" y="260" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Server -> Worker -->
+        <mxCell id="arrow-server-worker" value="ジョブ配信" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#4a90d9;strokeWidth=2;fontColor=#4a90d9;fontSize=10;" edge="1" parent="1" source="pj-server" target="pj-worker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Simulator Jobs -->
+        <mxCell id="job-heartbeat" value="💓 HeartbeatSimulatorJob&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;CRON: 0 */1 * * * ?（1分毎）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#48bb78;fontColor=#ffffff;strokeColor=#2f855a;strokeWidth=1;shadow=1;arcSize=15;" vertex="1" parent="1">
+          <mxGeometry x="60" y="350" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="job-payment" value="💳 PaymentSimulatorJob&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;CRON: 0 */5 * * * ?（5分毎）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#48bb78;fontColor=#ffffff;strokeColor=#2f855a;strokeWidth=1;shadow=1;arcSize=15;" vertex="1" parent="1">
+          <mxGeometry x="300" y="350" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="job-failure" value="⚡ DeviceFailureSimulatorJob&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;手動実行（障害注入）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e53e3e;fontColor=#ffffff;strokeColor=#c53030;strokeWidth=1;shadow=1;arcSize=15;" vertex="1" parent="1">
+          <mxGeometry x="60" y="420" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="job-recovery" value="🔧 DeviceRecoveryJob&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;手動実行（障害回復）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ed8936;fontColor=#ffffff;strokeColor=#c05621;strokeWidth=1;shadow=1;arcSize=15;" vertex="1" parent="1">
+          <mxGeometry x="300" y="420" width="220" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Worker -> Jobs -->
+        <mxCell id="arrow-w-hb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;strokeColor=#2d3748;strokeWidth=1;" edge="1" parent="1" source="pj-worker" target="job-heartbeat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-w-pay" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#2d3748;strokeWidth=1;" edge="1" parent="1" source="pj-worker" target="job-payment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-w-fail" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;strokeColor=#2d3748;strokeWidth=1;" edge="1" parent="1" source="pj-worker" target="job-failure">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="218" y="330" />
+              <mxPoint x="170" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-w-rec" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#2d3748;strokeWidth=1;" edge="1" parent="1" source="pj-worker" target="job-recovery">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="342" y="330" />
+              <mxPoint x="410" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Simulated Stores -->
+        <mxCell id="sim-stores-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#edf2f7;strokeColor=#a0aec0;strokeWidth=1;dashed=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="500" width="460" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="sim-stores-label" value="疑似店舗データ" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="70" y="505" width="110" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="store1" value="🏪 東京本店&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;POS / Printer / Router&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#a0aec0;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="75" y="535" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="store2" value="🏪 横浜駅前店&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;POS / Camera&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#a0aec0;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="225" y="535" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="store3" value="🏪 名古屋栄店&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;POS / Gate / Sensor&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#a0aec0;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="375" y="535" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="store-dots" value="..." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;fontStyle=1;fontColor=#a0aec0;" vertex="1" parent="1">
+          <mxGeometry x="250" y="595" width="30" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Smart Retail Backend Zone      -->
+        <!-- ============================== -->
+        <mxCell id="be-zone" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9e7;strokeColor=#d69e2e;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="80" width="520" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="be-zone-label" value="🖥️ Smart Retail Backend" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#975a16;" vertex="1" parent="1">
+          <mxGeometry x="655" y="88" width="200" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="be-note" value="※ PowerJobの存在を意識しない。受信した事実のみを記録・判定" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontStyle=2;fontColor=#718096;" vertex="1" parent="1">
+          <mxGeometry x="655" y="112" width="370" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Receive APIs -->
+        <mxCell id="api-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5e6;strokeColor=#d69e2e;strokeWidth=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="140" width="480" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="api-label" value="受信API層（REST Controller）" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#975a16;" vertex="1" parent="1">
+          <mxGeometry x="670" y="145" width="190" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="api-heartbeat" value="&lt;b&gt;POST /api/v1/retail/heartbeat&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;Heartbeat受信 → lastSeen更新&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecc94b;fontColor=#1a202c;strokeColor=#d69e2e;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="175" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="api-payment" value="&lt;b&gt;POST /api/v1/retail/payments&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;決済結果受信 → 売上・在庫更新&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecc94b;fontColor=#1a202c;strokeColor=#d69e2e;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="910" y="175" width="210" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Monitoring Layer -->
+        <mxCell id="monitor-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5e6;strokeColor=#d69e2e;strokeWidth=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="280" width="480" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="monitor-label" value="沈黙監視層（@Scheduled）" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#975a16;" vertex="1" parent="1">
+          <mxGeometry x="670" y="285" width="170" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="monitor-comm" value="📡 通信断検知&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;lastSeen &gt; 5分 → P1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fc8181;fontColor=#ffffff;strokeColor=#c53030;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="315" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="monitor-pos" value="💳 決済端末停止&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#f0f0f0&quot;&gt;status=OFFLINE → P1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fc8181;fontColor=#ffffff;strokeColor=#c53030;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="315" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="monitor-printer" value="🖨️ 用紙切れ&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#f0f0f0&quot;&gt;paperLevel=EMPTY → P3&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ed8936;fontColor=#ffffff;strokeColor=#c05621;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="315" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Alert Generation -->
+        <mxCell id="alert-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5e6;strokeColor=#d69e2e;strokeWidth=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="410" width="480" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="alert-label" value="アラート管理層" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#975a16;" vertex="1" parent="1">
+          <mxGeometry x="670" y="415" width="110" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="alert-gen" value="🔔 アラート生成&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;重複抑制 / 優先度昇格&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#805ad5;fontColor=#ffffff;strokeColor=#6b46c1;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="445" width="160" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="alert-auto" value="⏰ 自動クローズ&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;IN_PROGRESS→RESOLVED→CLOSED&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#805ad5;fontColor=#ffffff;strokeColor=#6b46c1;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="445" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Database -->
+        <mxCell id="db-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff5e6;strokeColor=#d69e2e;strokeWidth=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="530" width="480" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="db-label" value="データベース（MySQL）" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;fontStyle=1;fontColor=#975a16;" vertex="1" parent="1">
+          <mxGeometry x="670" y="535" width="160" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="db-device" value="🗄️ retail_device&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;last_heartbeat, status&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#e2e8f0;strokeColor=#a0aec0;strokeWidth=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="680" y="563" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db-alert" value="🗄️ retail_alert&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;device_id, alert_type&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#e2e8f0;strokeColor=#a0aec0;strokeWidth=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="563" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db-sales" value="🗄️ retail_sales&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;order, amount&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#e2e8f0;strokeColor=#a0aec0;strokeWidth=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="940" y="563" width="110" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Arrows: External -> Backend    -->
+        <!-- ============================== -->
+        <mxCell id="arrow-hb-api" value="POST /heartbeat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#48bb78;strokeWidth=2;fontColor=#2f855a;fontSize=10;fontStyle=1;" edge="1" parent="1" source="job-heartbeat" target="api-heartbeat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="375" />
+              <mxPoint x="600" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-pay-api" value="POST /payments" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#48bb78;strokeWidth=2;fontColor=#2f855a;fontSize=10;fontStyle=1;" edge="1" parent="1" source="job-payment" target="api-payment">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="375" />
+              <mxPoint x="620" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow-fail-api" value="障害注入" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#e53e3e;strokeWidth=2;fontColor=#c53030;fontSize=10;fontStyle=1;dashed=1;" edge="1" parent="1" source="job-failure" target="api-heartbeat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="445" />
+              <mxPoint x="580" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Internal arrows -->
+        <mxCell id="arrow-api-monitor" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#975a16;strokeWidth=1;" edge="1" parent="1" source="api-box" target="monitor-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-monitor-alert" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#975a16;strokeWidth=1;" edge="1" parent="1" source="monitor-box" target="alert-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-alert-db" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#975a16;strokeWidth=1;" edge="1" parent="1" source="alert-box" target="db-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Frontend Zone                  -->
+        <!-- ============================== -->
+        <mxCell id="fe-zone" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ebf8ff;strokeColor=#3182ce;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="80" width="320" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-zone-label" value="🖥️ Frontend (Vue 3)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#2b6cb0;" vertex="1" parent="1">
+          <mxGeometry x="1255" y="88" width="170" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-dashboard" value="📊 ダッシュボード (D-01)&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;KPI / 店舗状態 / 売上推移&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3182ce;fontColor=#ffffff;strokeColor=#2b6cb0;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="140" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-store" value="🏪 店舗一覧 (S-01)&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;稼働状態・売上・デバイス状態&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3182ce;fontColor=#ffffff;strokeColor=#2b6cb0;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="210" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-alert" value="🔔 アラート一覧 (A-01)&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;COMMUNICATION_DOWN / TERMINAL_DOWN&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e53e3e;fontColor=#ffffff;strokeColor=#c53030;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="280" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-inventory" value="📦 在庫一覧 (I-01)&lt;br&gt;&lt;font style=&quot;font-size:9px&quot; color=&quot;#718096&quot;&gt;在庫変動（売上連動）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3182ce;fontColor=#ffffff;strokeColor=#2b6cb0;strokeWidth=1;shadow=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="350" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Backend -> Frontend -->
+        <mxCell id="arrow-be-fe" value="REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#3182ce;strokeWidth=2;fontColor=#3182ce;fontSize=10;fontStyle=1;" edge="1" parent="1" source="be-zone" target="fe-zone">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Production Replace Note        -->
+        <!-- ============================== -->
+        <mxCell id="prod-note-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fff4;strokeColor=#48bb78;strokeWidth=2;dashed=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="700" width="520" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="prod-note-label" value="🔄 本番環境への移行（将来展望）" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=13;fontStyle=1;fontColor=#276749;" vertex="1" parent="1">
+          <mxGeometry x="55" y="708" width="240" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="prod-gw" value="🏢 店舗ゲートウェイ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c6f6d5;fontColor=#276749;strokeColor=#48bb78;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="prod-pos" value="💳 決済端末" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c6f6d5;fontColor=#276749;strokeColor=#48bb78;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="740" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="prod-edge" value="🔌 Edge Agent / MDM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c6f6d5;fontColor=#276749;strokeColor=#48bb78;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="740" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="prod-arrow" value="PowerJob Worker をこれらに置換" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontStyle=2;fontColor=#276749;" vertex="1" parent="1">
+          <mxGeometry x="150" y="790" width="220" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7fafc;strokeColor=#cbd5e0;strokeWidth=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="700" width="520" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="凡例" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="650" y="705" width="50" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-green" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#48bb78;strokeColor=#2f855a;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="735" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-green-t" value="正常系シミュレーションジョブ" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="690" y="730" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-red" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e53e3e;strokeColor=#c53030;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="760" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-red-t" value="障害注入ジョブ" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="690" y="755" width="100" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-orange" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ed8936;strokeColor=#c05621;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="785" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-orange-t" value="回復ジョブ" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="690" y="780" width="80" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-purple" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#805ad5;strokeColor=#6b46c1;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="735" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-purple-t" value="アラート管理（Backend内部）" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="930" y="730" width="170" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-yellow" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecc94b;strokeColor=#d69e2e;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="760" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-yellow-t" value="受信API（Backend外部I/F）" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="930" y="755" width="160" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line-solid" value="" style="endArrow=classic;html=1;strokeColor=#48bb78;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="795" as="sourcePoint" />
+            <mxPoint x="940" y="795" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-line-solid-t" value="正常通信" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="950" y="783" width="70" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-line-dashed" value="" style="endArrow=classic;html=1;strokeColor=#e53e3e;strokeWidth=2;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="815" as="sourcePoint" />
+            <mxPoint x="940" y="815" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-line-dashed-t" value="障害注入通信" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#4a5568;" vertex="1" parent="1">
+          <mxGeometry x="950" y="803" width="90" height="22" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

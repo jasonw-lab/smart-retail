@@ -31,14 +31,17 @@ public final class DotenvUtils {
     public static Map<String, String> loadIfPresent() {
         List<Path> candidates = List.of(
                 Paths.get(".env"),
-                Paths.get("backend/.env")
+                Paths.get("backend/.env"),
+                Paths.get("apps/backend/.env")
         );
 
         for (Path candidate : candidates) {
             if (Files.isRegularFile(candidate)) {
+                System.out.println("Loading .env from: " + candidate.toAbsolutePath());
                 return loadFromFile(candidate);
             }
         }
+        System.out.println("No .env file found in standard locations");
         return Map.of();
     }
 
@@ -47,10 +50,12 @@ public final class DotenvUtils {
         List<String> lines;
         try {
             lines = Files.readAllLines(dotenvPath, StandardCharsets.UTF_8);
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            System.err.println("Failed to read .env file: " + e.getMessage());
             return Map.of();
         }
 
+        int loadedCount = 0;
         for (String rawLine : lines) {
             String line = rawLine == null ? "" : rawLine.trim();
             if (line.isEmpty() || line.startsWith("#")) {
@@ -79,8 +84,10 @@ public final class DotenvUtils {
                 continue;
             }
             System.setProperty(key, value);
+            loadedCount++;
         }
 
+        System.out.println("Loaded " + loadedCount + " environment variables from .env");
         return loaded;
     }
 

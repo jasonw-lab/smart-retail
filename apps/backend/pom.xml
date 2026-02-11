@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.youlai</groupId>
-    <artifactId>youlai-boot</artifactId>
+    <artifactId>smart-retail</artifactId>
     <version>2.22.0</version>
-    <description>基于 Java 17 + SpringBoot 3 + Spring Security 构建的权限管理系统 。</description>
+    <description>Smart Retail backend application built with Java 17, Spring Boot 3, and Spring Security.</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

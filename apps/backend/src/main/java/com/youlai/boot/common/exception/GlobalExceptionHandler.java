@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.common.result.ResultCode;
+import com.youlai.boot.common.util.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -31,9 +32,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * 全局系统异常处理器
+ * Global Exception Handler
  * <p>
- * 调整异常处理的HTTP状态码，丰富异常处理类型
+ * Handles exceptions with appropriate HTTP status codes
  */
 @RestControllerAdvice
 @Slf4j
@@ -105,15 +106,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理方法参数类型不匹配的异常
+     * Handle method argument type mismatch exception
      * <p>
-     * 当请求参数类型不匹配时，会抛出 MethodArgumentTypeMismatchException 异常。
+     * Thrown when request parameter type does not match expected type.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public <T> Result<T> processException(MethodArgumentTypeMismatchException e) {
         log.error(e.getMessage(), e);
-        return Result.failed(ResultCode.PARAMETER_FORMAT_MISMATCH, "类型错误");
+        return Result.failed(ResultCode.PARAMETER_FORMAT_MISMATCH, MessageUtils.getMessage("error.type.mismatch"));
     }
 
     /**
@@ -129,39 +130,39 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理非法参数异常
+     * Handle illegal argument exception
      * <p>
-     * 当方法接收到非法参数时，会抛出 IllegalArgumentException 异常。
+     * Thrown when method receives illegal arguments.
      */
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public <T> Result<T> handleIllegalArgumentException(IllegalArgumentException e) {
-        log.error("非法参数异常，异常原因：{}", e.getMessage(), e);
+        log.error("Illegal argument exception: {}", e.getMessage(), e);
         return Result.failed(e.getMessage());
     }
 
     /**
-     * 处理 JSON 处理异常
+     * Handle JSON processing exception
      * <p>
-     * 当处理 JSON 数据时发生错误，会抛出 JsonProcessingException 异常。
+     * Thrown when JSON data processing fails.
      */
     @ExceptionHandler(JsonProcessingException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public <T> Result<T> handleJsonProcessingException(JsonProcessingException e) {
-        log.error("Json转换异常，异常原因：{}", e.getMessage(), e);
+        log.error("JSON conversion exception: {}", e.getMessage(), e);
         return Result.failed(e.getMessage());
     }
 
     /**
-     * 处理请求体不可读的异常
+     * Handle HTTP message not readable exception
      * <p>
-     * 当请求体不可读时，会抛出 HttpMessageNotReadableException 异常。
+     * Thrown when request body is not readable.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public <T> Result<T> processException(HttpMessageNotReadableException e) {
         log.error(e.getMessage(), e);
-        String errorMessage = "请求体不可为空";
+        String errorMessage = MessageUtils.getMessage("error.request.body.empty");
         Throwable cause = e.getCause();
         if (cause != null) {
             errorMessage = convertMessage(cause);
@@ -243,10 +244,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 传参类型错误时，用于消息转换
+     * Convert error message for parameter type mismatch
      *
-     * @param throwable 异常
-     * @return 错误信息
+     * @param throwable exception
+     * @return error message
      */
     private String convertMessage(Throwable throwable) {
         String error = throwable.toString();
@@ -257,8 +258,8 @@ public class GlobalExceptionHandler {
         if (matcher.find()) {
             String matchString = matcher.group();
             matchString = matchString.replace("[", "").replace("]", "");
-            matchString = "%s字段类型错误".formatted(matchString.replaceAll("\"", ""));
-            group += matchString;
+            String fieldName = matchString.replaceAll("\"", "");
+            group += MessageUtils.getMessage("error.field.type.mismatch", new Object[]{fieldName});
         }
         return group;
     }

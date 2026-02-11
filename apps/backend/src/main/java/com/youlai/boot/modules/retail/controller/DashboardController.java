@@ -2,6 +2,7 @@ package com.youlai.boot.modules.retail.controller;
 
 import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.Result;
+import com.youlai.boot.common.util.MessageUtils;
 import com.youlai.boot.modules.retail.model.entity.Alert;
 import com.youlai.boot.modules.retail.model.vo.DashboardKpiVO;
 import com.youlai.boot.modules.retail.model.vo.InventoryStatusVO;
@@ -56,15 +57,15 @@ public class DashboardController {
 
         // 入力検証
         if (startDate.isAfter(endDate)) {
-            throw new BusinessException("開始日は終了日より前である必要があります");
+            throw new BusinessException(MessageUtils.getMessage("validation.date.start.before.end"));
         }
-        
+
         if (startDate.isBefore(LocalDate.now().minusYears(1))) {
-            throw new BusinessException("開始日は過去1年以内である必要があります");
+            throw new BusinessException(MessageUtils.getMessage("validation.date.start.within.year"));
         }
-        
+
         if (endDate.isAfter(LocalDate.now())) {
-            throw new BusinessException("終了日は未来の日付を指定できません");
+            throw new BusinessException(MessageUtils.getMessage("validation.date.end.not.future"));
         }
 
         List<SalesTrendVO> trend = dashboardService.getSalesTrend(startDate, endDate);
@@ -78,7 +79,7 @@ public class DashboardController {
     ) {
         // 入力検証
         if (limit == null || limit < 1 || limit > 1000) {
-            throw new BusinessException("limitは1から1000の範囲で指定してください");
+            throw new BusinessException(MessageUtils.getMessage("validation.limit.range"));
         }
         
         List<InventoryStatusVO> inventoryStatus = dashboardService.getInventoryStatus(limit);
@@ -92,7 +93,7 @@ public class DashboardController {
     ) {
         // 入力検証
         if (limit == null || limit < 1 || limit > 1000) {
-            throw new BusinessException("limitは1から1000の範囲で指定してください");
+            throw new BusinessException(MessageUtils.getMessage("validation.limit.range"));
         }
         
         List<Alert> alerts = alertService.getRecentAlerts(limit);

@@ -15,7 +15,7 @@ echo "Starting build process for frontend..."
 
 # Navigate to the frontend directory
 git pull
-cd frontend
+cd apps/frontend
 
 # Install dependencies
 echo "Installing dependencies..."

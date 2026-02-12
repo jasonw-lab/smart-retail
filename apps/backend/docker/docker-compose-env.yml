@@ -127,18 +127,18 @@ services:
     networks:
       - youlai-boot # 加入 "mall" 网络
 
-  xxl-job-admin:
-    image: xuxueli/xxl-job-admin:2.4.0
-    container_name: youlai-xxl-job-admin
-    restart: unless-stopped
-    environment:
-      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo --spring.datasource.username=root --spring.datasource.password=${XXL_JOB_MYSQL_PASSWORD} --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
-    volumes:
-      - /mydata/xxljob/logs:/data/applogs
-    ports:
-      - 8080:8080
-    networks:
-      - youlai-boot
+#  xxl-job-admin:
+#    image: xuxueli/xxl-job-admin:2.4.0
+#    container_name: youlai-xxl-job-admin
+#    restart: unless-stopped
+#    environment:
+#      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Tokyo --spring.datasource.username=root --spring.datasource.password=${XXL_JOB_MYSQL_PASSWORD} --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver'
+#    volumes:
+#      - /mydata/xxljob/logs:/data/applogs
+#    ports:
+#      - 8080:8080
+#    networks:
+#      - youlai-boot
 #
 #  retail-app:
 #    build:

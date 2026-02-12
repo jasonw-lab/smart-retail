@@ -183,7 +183,7 @@ services:
     environment:
       - TZ=Asia/Tokyo
       - JVMOPTIONS=-Xmx512m
-      - PARAMS=--spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo --spring.datasource.core.username=root --spring.datasource.core.password=${MYSQL_PASSWORD}
+      - PARAMS=--spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo --spring.datasource.core.username=root --spring.datasource.core.password=${MYSQL_ROOT_PASSWORD}
     ports:
       - 7700:7700
       - 10086:10086

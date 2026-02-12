@@ -79,7 +79,8 @@
       "Bash(gh pr view:*)",
       "Bash(git branch:*)",
       "Bash(ls:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(mvn spring-boot:run:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

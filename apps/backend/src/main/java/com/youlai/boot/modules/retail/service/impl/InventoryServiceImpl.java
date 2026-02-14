@@ -211,18 +211,17 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
 
         boolean inventoryUpdated = this.updateById(inventory);
 
-        // 廃棄履歴を登録
+        // 廃棄履歴を登録（v0.5: 新スキーマ対応）
         InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setInventoryId(inventory.getId());
         transaction.setStoreId(inventory.getStoreId());
         transaction.setProductId(inventory.getProductId());
         transaction.setLotNumber(inventory.getLotNumber());
-        transaction.setTransactionType("DISCARD");
-        transaction.setQuantity(-form.getQuantity()); // マイナス値で記録
-        transaction.setTransactionDate(LocalDateTime.now());
-        transaction.setExpiryDate(inventory.getExpiryDate());
-        transaction.setStatus("完了");
-        transaction.setReason(form.getReason());
-        transaction.setRemarks(form.getRemarks());
+        transaction.setTxnType("DISPOSAL");
+        transaction.setQuantityDelta(-form.getQuantity()); // マイナス値で記録
+        transaction.setSourceType("MANUAL");
+        transaction.setOccurredAt(LocalDateTime.now());
+        transaction.setNote(form.getReason() + (form.getRemarks() != null ? " - " + form.getRemarks() : ""));
 
         int insertResult = inventoryTransactionMapper.insert(transaction);
 
@@ -247,8 +246,9 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
         LocalDate today = LocalDate.now();
         LocalDate expiryDate = inventory.getExpiryDate();
         Integer quantity = inventory.getQuantity();
-        Integer minStock = inventory.getMinStock();
-        Integer maxStock = inventory.getMaxStock();
+        // v0.5: min_stock/max_stockはProductに移動
+        Integer reorderPoint = product != null ? product.getReorderPoint() : null;
+        Integer maxStock = product != null ? product.getMaxStock() : null;
 
         // デフォルト値
         InventoryStatus status = InventoryStatus.NORMAL;
@@ -265,16 +265,16 @@ public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, Inventory
             status = InventoryStatus.EXPIRED;
             hasExpiredLot = true;
         }
-        // 2. 在庫切れチェック
-        else if (quantity != null && minStock != null && quantity <= minStock) {
+        // 2. 在庫切れチェック（SKU集約在庫がreorderPoint以下でLOW_STOCK）
+        else if (quantity != null && reorderPoint != null && quantity <= reorderPoint) {
             status = InventoryStatus.LOW_STOCK;
         }
         // 3. 期限接近チェック
         else if (daysUntilExpiry != null && daysUntilExpiry <= EXPIRY_SOON_THRESHOLD_DAYS && daysUntilExpiry >= 0) {
             status = InventoryStatus.EXPIRY_SOON;
         }
-        // 4. 在庫過多チェック
-        else if (quantity != null && maxStock != null && quantity >= (int) (maxStock * 1.5)) {
+        // 4. 在庫過多チェック（SKU集約在庫がmaxStock×1.5以上でHIGH_STOCK）
+        else if (quantity != null && maxStock != null && maxStock > 0 && quantity >= (int) (maxStock * 1.5)) {
             status = InventoryStatus.HIGH_STOCK;
         }
 

@@ -21,9 +21,7 @@ services:
     ports:
       - 3306:3306
     networks:
-      youlai-boot:
-        aliases:
-          - powerjob-mysql
+      - youlai-boot # 加入 "youlai-boot" 网络
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -183,20 +181,12 @@ services:
     container_name: youlai-powerjob-server
     restart: unless-stopped
     environment:
-      TZ: Asia/Tokyo
-      JVMOPTIONS: -Xmx512m
-      POWERJOB_SERVER_PUBLIC_ADDRESS: ${POWERJOB_PUBLIC_ADDRESS}
-      PARAMS: >
-        --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo
-        --spring.datasource.core.username=root
-        --spring.datasource.core.password=${MYSQL_ROOT_PASSWORD}
-        --oms.storage.dfs.mysql_series.url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo
-        --oms.storage.dfs.mysql_series.username=root
-        --oms.storage.dfs.mysql_series.password=${MYSQL_ROOT_PASSWORD}
+      - TZ=Asia/Tokyo
+      - JVMOPTIONS=-Xmx512m
+      - PARAMS=--spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo --spring.datasource.core.username=root --spring.datasource.core.password=${MYSQL_ROOT_PASSWORD}
     ports:
       - 7700:7700
       - 10086:10086
-      - 10010:10010
     networks:
       - youlai-boot
     depends_on:

@@ -6,17 +6,20 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * 入出庫履歴フォーム
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "入出庫履歴フォーム")
 @Data
 public class InventoryTransactionForm {
+
+    @Schema(description = "在庫ID")
+    @NotNull(message = "在庫IDは必須です")
+    private Long inventoryId;
 
     @Schema(description = "店舗ID")
     @NotNull(message = "店舗IDは必須です")
@@ -31,41 +34,25 @@ public class InventoryTransactionForm {
     @Size(max = 50, message = "ロット番号は50文字以内で入力してください")
     private String lotNumber;
 
-    @Schema(description = "操作タイプ（IN, OUT, SALE, ADJUST）")
+    @Schema(description = "操作タイプ（INBOUND, SALE, ADJUSTMENT, DISPOSAL, TRANSFER_IN, TRANSFER_OUT）")
     @NotBlank(message = "操作タイプは必須です")
-    private String transactionType;
+    private String txnType;
 
-    @Schema(description = "数量")
-    @NotNull(message = "数量は必須です")
-    private Integer quantity;
+    @Schema(description = "数量変動（正=増加, 負=減少）")
+    @NotNull(message = "数量変動は必須です")
+    private Integer quantityDelta;
 
-    @Schema(description = "操作日時")
-    @NotNull(message = "操作日時は必須です")
-    private LocalDateTime transactionDate;
+    @Schema(description = "操作元（MANUAL, POS, BATCH）")
+    private String sourceType;
 
-    @Schema(description = "賞味期限")
-    private LocalDate expiryDate;
-
-    @Schema(description = "状態（処理中, 完了）")
-    @NotBlank(message = "状態は必須です")
-    private String status;
-
-    @Schema(description = "理由（仕入れ, 返品, 廃棄, 販売, 移動等）")
-    private String reason;
-
-    @Schema(description = "参照番号（発注番号, 販売番号等）")
-    @Size(max = 50, message = "参照番号は50文字以内で入力してください")
+    @Schema(description = "参照番号（売上ID、発注番号等）")
+    @Size(max = 100, message = "参照番号は100文字以内で入力してください")
     private String referenceNo;
 
-    @Schema(description = "移動元/移動先")
-    @Size(max = 100, message = "移動元/移動先は100文字以内で入力してください")
-    private String sourceDest;
+    @Schema(description = "操作日時")
+    private LocalDateTime occurredAt;
 
-    @Schema(description = "担当者")
-    @Size(max = 50, message = "担当者は50文字以内で入力してください")
-    private String operator;
-
-    @Schema(description = "備考")
+    @Schema(description = "備考（理由、移動先等）")
     @Size(max = 500, message = "備考は500文字以内で入力してください")
-    private String remarks;
+    private String note;
 }

@@ -2,6 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youlai.boot.modules.retail.mapper.AlertMapper">
 
+    <select id="hasColumn" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'retail_alert'
+              AND COLUMN_NAME = #{columnName}
+        )
+    </select>
+
+    <select id="countPendingAlertsByStatus" resultType="long">
+        SELECT COUNT(*) AS total
+        FROM retail_alert
+        WHERE status NOT IN ('RESOLVED', 'CLOSED')
+          AND is_deleted = 0
+    </select>
+
+    <select id="countPendingAlertsByResolved" resultType="long">
+        SELECT COUNT(*) AS total
+        FROM retail_alert
+        WHERE IFNULL(resolved, 0) = 0
+          AND is_deleted = 0
+    </select>
+
     <!-- アラートページング取得 -->
     <select id="getAlertPage" resultType="com.youlai.boot.modules.retail.model.vo.AlertPageVO">
         SELECT
@@ -11,6 +35,7 @@
             a.product_id,
             p.product_name,
             p.product_code,
+            a.device_id,
             a.lot_number,
             a.alert_type,
             a.priority,
@@ -19,6 +44,9 @@
             a.threshold_value,
             a.current_value,
             a.detected_at,
+            a.acknowledged_at,
+            a.resolved_at,
+            a.closed_at,
             a.create_time,
             a.update_time
         FROM
@@ -28,6 +56,7 @@
         LEFT JOIN
             retail_product p ON a.product_id = p.id
         <where>
+            a.is_deleted = 0
             <if test="query.storeId != null">
                 AND a.store_id = #{query.storeId}
             </if>
@@ -96,15 +125,16 @@
             retail_product p ON a.product_id = p.id
         WHERE
             a.id = #{id}
+            AND a.is_deleted = 0
     </select>
 
-    <!-- 在庫切れアラート対象取得 -->
+    <!-- 在庫切れアラート対象取得（v0.5: reorder_pointはProductから取得） -->
     <select id="findLowStockTargets" resultType="java.util.Map">
         SELECT
             i.store_id AS storeId,
             i.product_id AS productId,
             SUM(i.quantity) AS totalQuantity,
-            i.min_stock AS reorderPoint,
+            p.reorder_point AS reorderPoint,
             p.product_name AS productName,
             s.store_name AS storeName
         FROM
@@ -114,14 +144,17 @@
         INNER JOIN
             retail_store s ON i.store_id = s.id
         WHERE
-            i.quantity > 0
+            i.is_deleted = 0
+            AND p.is_deleted = 0
+            AND s.is_deleted = 0
+            AND i.quantity > 0
             AND (i.expiry_date IS NULL OR i.expiry_date >= CURRENT_DATE)
         GROUP BY
-            i.store_id, i.product_id, i.min_stock, p.product_name, s.store_name
+            i.store_id, i.product_id, p.reorder_point, p.product_name, s.store_name
         HAVING
-            i.min_stock IS NOT NULL
-            AND i.min_stock > 0
-            AND SUM(i.quantity) &lt;= i.min_stock
+            p.reorder_point IS NOT NULL
+            AND p.reorder_point > 0
+            AND SUM(i.quantity) &lt;= p.reorder_point
     </select>
 
     <!-- 賞味期限接近アラート対象取得 -->
@@ -142,7 +175,10 @@
         INNER JOIN
             retail_store s ON i.store_id = s.id
         WHERE
-            i.quantity > 0
+            i.is_deleted = 0
+            AND p.is_deleted = 0
+            AND s.is_deleted = 0
+            AND i.quantity > 0
             AND i.expiry_date IS NOT NULL
             AND i.expiry_date >= CURRENT_DATE
             AND DATEDIFF(i.expiry_date, CURRENT_DATE) &lt;= 7
@@ -150,13 +186,13 @@
             i.expiry_date ASC
     </select>
 
-    <!-- 在庫過多アラート対象取得 -->
+    <!-- 在庫過多アラート対象取得（v0.5: max_stockはProductから取得） -->
     <select id="findHighStockTargets" resultType="java.util.Map">
         SELECT
             i.store_id AS storeId,
             i.product_id AS productId,
             SUM(i.quantity) AS totalQuantity,
-            i.max_stock AS maxStock,
+            p.max_stock AS maxStock,
             p.product_name AS productName,
             s.store_name AS storeName
         FROM
@@ -166,14 +202,17 @@
         INNER JOIN
             retail_store s ON i.store_id = s.id
         WHERE
-            i.quantity > 0
+            i.is_deleted = 0
+            AND p.is_deleted = 0
+            AND s.is_deleted = 0
+            AND i.quantity > 0
             AND (i.expiry_date IS NULL OR i.expiry_date >= CURRENT_DATE)
         GROUP BY
-            i.store_id, i.product_id, i.max_stock, p.product_name, s.store_name
+            i.store_id, i.product_id, p.max_stock, p.product_name, s.store_name
         HAVING
-            i.max_stock IS NOT NULL
-            AND i.max_stock > 0
-            AND SUM(i.quantity) >= i.max_stock * 1.5
+            p.max_stock IS NOT NULL
+            AND p.max_stock > 0
+            AND SUM(i.quantity) >= p.max_stock * 1.5
     </select>
 
     <!-- 未解決アラートの存在チェック -->
@@ -190,6 +229,7 @@
             </if>
             AND alert_type = #{alertType}
             AND status NOT IN ('RESOLVED', 'CLOSED')
+            AND is_deleted = 0
         )
     </select>
 

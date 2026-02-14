@@ -128,18 +128,18 @@ public class PaymentServiceImpl implements PaymentService {
             detail.setSubtotal(item.getUnitPrice().multiply(BigDecimal.valueOf(deductQuantity)));
             salesDetailMapper.insert(detail);
 
-            // 入出庫履歴作成
+            // 入出庫履歴作成（v0.5: 新スキーマ対応）
             InventoryTransaction transaction = new InventoryTransaction();
+            transaction.setInventoryId(inventory.getId());
             transaction.setStoreId(storeId);
             transaction.setProductId(item.getProductId());
             transaction.setLotNumber(inventory.getLotNumber());
-            transaction.setTransactionType("SALE");
-            transaction.setQuantity(deductQuantity);
-            transaction.setTransactionDate(saleTimestamp != null ? saleTimestamp : LocalDateTime.now());
-            transaction.setExpiryDate(inventory.getExpiryDate());
-            transaction.setStatus("完了");
-            transaction.setReason("販売");
+            transaction.setTxnType("SALE");
+            transaction.setQuantityDelta(-deductQuantity);
+            transaction.setSourceType("POS");
+            transaction.setOccurredAt(saleTimestamp != null ? saleTimestamp : LocalDateTime.now());
             transaction.setReferenceNo(String.valueOf(salesId));
+            transaction.setNote("販売");
             inventoryTransactionMapper.insert(transaction);
 
             log.debug("Inventory deducted: productId={}, lotNumber={}, quantity={}",
@@ -177,11 +177,10 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
 
+        // v0.5: min_stock/max_stockはProductに移動。在庫0判定のみ実施
         String newStatus;
         if (inventory.getQuantity() <= 0) {
             newStatus = "out_of_stock";
-        } else if (inventory.getMinStock() != null && inventory.getQuantity() <= inventory.getMinStock()) {
-            newStatus = "low";
         } else {
             newStatus = "normal";
         }

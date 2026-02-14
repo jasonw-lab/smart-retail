@@ -66,9 +66,9 @@ public class ProductForm {
     @Schema(description = "状態（active, inactive）")
     private String status;
 
-    @Schema(description = "発注点（この在庫数以下でアラート発生）")
+    @Schema(description = "発注点（SKU集約在庫がこの値以下でLOW_STOCKアラート）")
     private Integer reorderPoint;
 
-    @Schema(description = "適正在庫上限（この在庫数以上でアラート発生）")
-    private Integer maxStockLevel;
+    @Schema(description = "適正在庫上限（SKU集約在庫がこの値×1.5以上でHIGH_STOCKアラート）")
+    private Integer maxStock;
 }

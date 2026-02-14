@@ -6,11 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 在庫エンティティ
  *
- * @author wangjw
+ * @author jason.w
  */
 @TableName("retail_inventory")
 @Getter
@@ -38,19 +39,14 @@ public class Inventory extends BaseEntity {
     private Integer quantity;
 
     /**
-     * 最小在庫数
-     */
-    private Integer minStock;
-
-    /**
-     * 最大在庫数
-     */
-    private Integer maxStock;
-
-    /**
      * 賞味期限
      */
     private LocalDate expiryDate;
+
+    /**
+     * 入庫日時（FEFO同率時のFIFOフォールバック用）
+     */
+    private LocalDateTime receivedAt;
 
     /**
      * 保管場所
@@ -58,14 +54,14 @@ public class Inventory extends BaseEntity {
     private String location;
 
     /**
-     * 在庫状態（low, normal, high, expired）
+     * 在庫状態（normal, low, high, expired, out_of_stock）
      */
     private String status;
 
     /**
-     * 最終棚卸日
+     * 最終棚卸日時
      */
-    private LocalDate lastCountDate;
+    private LocalDateTime lastCountDate;
 
     /**
      * 備考

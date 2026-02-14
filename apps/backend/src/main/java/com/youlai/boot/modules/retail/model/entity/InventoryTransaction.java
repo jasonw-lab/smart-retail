@@ -5,13 +5,12 @@ import com.youlai.boot.common.base.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * 入出庫履歴エンティティ
  *
- * @author wangjw
+ * @author jason.w
  */
 @TableName("retail_inventory_transaction")
 @Getter
@@ -19,67 +18,52 @@ import java.time.LocalDateTime;
 public class InventoryTransaction extends BaseEntity {
 
     /**
-     * 店舗ID
+     * 在庫ID（retail_inventoryへの外部キー）
+     */
+    private Long inventoryId;
+
+    /**
+     * 店舗ID（非正規化）
      */
     private Long storeId;
 
     /**
-     * 商品ID
+     * 商品ID（非正規化）
      */
     private Long productId;
 
     /**
-     * ロット番号
+     * ロット番号（非正規化）
      */
     private String lotNumber;
 
     /**
-     * 操作タイプ（IN, OUT, SALE, ADJUST）
+     * 操作タイプ（INBOUND, SALE, ADJUSTMENT, DISPOSAL, TRANSFER_IN, TRANSFER_OUT）
      */
-    private String transactionType;
+    private String txnType;
 
     /**
-     * 数量
+     * 数量変動（正=増加, 負=減少）
      */
-    private Integer quantity;
+    private Integer quantityDelta;
 
     /**
-     * 操作日時
+     * 操作元（MANUAL, POS, BATCH）
      */
-    private LocalDateTime transactionDate;
+    private String sourceType;
 
     /**
-     * 賞味期限
-     */
-    private LocalDate expiryDate;
-
-    /**
-     * 状態（処理中, 完了）
-     */
-    private String status;
-
-    /**
-     * 理由（仕入れ, 返品, 廃棄, 販売, 移動等）
-     */
-    private String reason;
-
-    /**
-     * 参照番号（発注番号, 販売番号等）
+     * 参照番号（売上ID、発注番号等）
      */
     private String referenceNo;
 
     /**
-     * 移動元/移動先
+     * 操作日時
      */
-    private String sourceDest;
+    private LocalDateTime occurredAt;
 
     /**
-     * 担当者
+     * 備考（理由、移動先等）
      */
-    private String operator;
-
-    /**
-     * 備考
-     */
-    private String remarks;
+    private String note;
 }

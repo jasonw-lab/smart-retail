@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.youlai.boot.modules.retail.mapper.AlertMapper;
 import com.youlai.boot.modules.retail.mapper.DashboardMapper;
 import com.youlai.boot.modules.retail.mapper.InventoryMapper;
-import com.youlai.boot.modules.retail.model.entity.Alert;
 import com.youlai.boot.modules.retail.model.entity.Inventory;
 import com.youlai.boot.modules.retail.model.vo.DashboardKpiVO;
 import com.youlai.boot.modules.retail.model.vo.InventoryStatusVO;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,9 +60,13 @@ public class DashboardServiceImpl implements DashboardService {
         kpi.setActiveStoreCount(activeStoreCount != null ? activeStoreCount : 0);
         kpi.setTotalStoreCount(totalStoreCount != null ? totalStoreCount : 0);
 
-        // 未対応アラート数取得（NEW, ACK, IN_PROGRESS状態のアラート）
-        long pendingAlertCount = alertMapper.selectCount(new LambdaQueryWrapper<Alert>()
-                .notIn(Alert::getStatus, "RESOLVED", "CLOSED"));
+        // 未対応アラート数取得（スキーマ差異: status / resolved の両方に対応）
+        long pendingAlertCount = 0L;
+        if (Boolean.TRUE.equals(alertMapper.hasColumn("status"))) {
+            pendingAlertCount = alertMapper.countPendingAlertsByStatus();
+        } else if (Boolean.TRUE.equals(alertMapper.hasColumn("resolved"))) {
+            pendingAlertCount = alertMapper.countPendingAlertsByResolved();
+        }
         kpi.setPendingAlertCount((int) pendingAlertCount);
 
         // 在庫切れSKU数取得

@@ -29,8 +29,8 @@ import static io.restassured.RestAssured.given;
 @ActiveProfiles("test")
 public abstract class BaseControllerTest {
 
-    // グローバル変数としてBearerTokenを保存
-    private static String globalBearerToken;
+    // ポートごとにBearerTokenを保存（テスト並列実行対応）
+    private static final java.util.concurrent.ConcurrentHashMap<Integer, String> tokenByPort = new java.util.concurrent.ConcurrentHashMap<>();
 
     @LocalServerPort
     protected int port;
@@ -43,13 +43,14 @@ public abstract class BaseControllerTest {
 
     /**
      * 認証トークンを取得する
-     * グローバル変数に保存されたトークンがある場合はそれを返す
+     * ポートごとに保存されたトークンがある場合はそれを返す
      * @return Bearer トークン
      */
     protected String getBearerToken() {
-        // グローバル変数にトークンが存在する場合はそれを返す
-        if (globalBearerToken != null && !globalBearerToken.isEmpty()) {
-            return globalBearerToken;
+        // ポートごとにトークンをキャッシュ
+        String cachedToken = tokenByPort.get(port);
+        if (cachedToken != null && !cachedToken.isEmpty()) {
+            return cachedToken;
         }
 
         // ログイン情報
@@ -68,13 +69,14 @@ public abstract class BaseControllerTest {
         String token = response.path("data.accessToken");
         if (token == null || token.isEmpty()) {
             // If token is null or empty, log an error and the response body to help diagnose the issue
-            System.out.println("Error: Failed to retrieve access token from response");
+            System.out.println("Error: Failed to retrieve access token from response for port " + port);
             System.out.println("Response status code: " + response.getStatusCode());
             System.out.println("Response body: " + response.getBody().asString());
             return "";
         }
-        globalBearerToken = "Bearer " + token;
-        return globalBearerToken;
+        String bearerTokenValue = "Bearer " + token;
+        tokenByPort.put(port, bearerTokenValue);
+        return bearerTokenValue;
     }
 
     /**
@@ -83,15 +85,14 @@ public abstract class BaseControllerTest {
      */
     @BeforeEach
     protected void setUp() {
+        RestAssured.reset();
         RestAssured.port = port;
-        // BearerTokenが存在しない場合、取得して設定する
-        if (globalBearerToken == null || globalBearerToken.isEmpty()) {
-            String token = getBearerToken();
-            if (token.isEmpty()) {
-                System.out.println("Warning: Authentication failed. Tests requiring authentication may fail.");
-            }
+        RestAssured.basePath = "";
+        // ポートに対応するBearerTokenを取得して設定する
+        bearerToken = getBearerToken();
+        if (bearerToken == null || bearerToken.isEmpty()) {
+            System.out.println("Warning: Authentication failed for port " + port + ". Tests requiring authentication may fail.");
         }
-        bearerToken = globalBearerToken;
         // baseUrlは各サブクラスで設定する
     }
 

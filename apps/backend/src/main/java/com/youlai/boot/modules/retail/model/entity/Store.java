@@ -40,7 +40,7 @@ public class Store extends BaseEntity {
     private String manager;
 
     /**
-     * 状態（active, inactive）
+     * 状態（ONLINE, MAINTENANCE, OFFLINE）
      */
     private String status;
 

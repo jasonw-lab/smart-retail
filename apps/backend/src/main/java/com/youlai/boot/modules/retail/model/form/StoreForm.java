@@ -39,7 +39,7 @@ public class StoreForm {
     @Size(max = 50, message = "店長名は50文字以内で入力してください")
     private String manager;
 
-    @Schema(description = "状態（active, inactive）")
+    @Schema(description = "状態（ONLINE, MAINTENANCE, OFFLINE）")
     private String status;
 
     @Schema(description = "営業時間")

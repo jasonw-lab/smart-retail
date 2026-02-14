@@ -43,6 +43,8 @@ use youlai_boot;
 -- ============================================================
 DROP TABLE IF EXISTS `retail_sales_detail`;
 DROP TABLE IF EXISTS `retail_sales`;
+DROP TABLE IF EXISTS `retail_sales_summary`;
+DROP TABLE IF EXISTS `retail_sales_trend`;
 DROP TABLE IF EXISTS `retail_alert`;
 DROP TABLE IF EXISTS `retail_inventory_transaction`;
 DROP TABLE IF EXISTS `retail_inventory`;

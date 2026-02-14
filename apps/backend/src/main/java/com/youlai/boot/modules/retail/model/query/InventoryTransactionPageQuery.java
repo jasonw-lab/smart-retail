@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 入出庫履歴ページングクエリ
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "入出庫履歴ページングクエリ")
 @Data
@@ -26,24 +26,18 @@ public class InventoryTransactionPageQuery extends BasePageQuery {
     @Schema(description = "ロット番号")
     private String lotNumber;
 
-    @Schema(description = "操作タイプ（IN, OUT, SALE, ADJUST）")
-    private String transactionType;
+    @Schema(description = "操作タイプ（INBOUND, SALE, ADJUSTMENT, DISPOSAL, TRANSFER_IN, TRANSFER_OUT）")
+    private String txnType;
 
-    @Schema(description = "状態（処理中, 完了）")
-    private String status;
+    @Schema(description = "操作元（MANUAL, POS, BATCH）")
+    private String sourceType;
 
     @Schema(description = "操作日時（開始）")
-    private LocalDateTime transactionDateStart;
+    private LocalDateTime occurredAtStart;
 
     @Schema(description = "操作日時（終了）")
-    private LocalDateTime transactionDateEnd;
+    private LocalDateTime occurredAtEnd;
 
-    @Schema(description = "理由（仕入れ, 返品, 廃棄, 販売, 移動等）")
-    private String reason;
-
-    @Schema(description = "参照番号（発注番号, 販売番号等）")
+    @Schema(description = "参照番号（売上ID、発注番号等）")
     private String referenceNo;
-
-    @Schema(description = "担当者")
-    private String operator;
 }

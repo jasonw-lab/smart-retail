@@ -32,6 +32,9 @@ public class AlertPageVO {
     @Schema(description = "商品コード")
     private String productCode;
 
+    @Schema(description = "デバイスID")
+    private Long deviceId;
+
     @Schema(description = "ロット番号")
     private String lotNumber;
 
@@ -55,6 +58,15 @@ public class AlertPageVO {
 
     @Schema(description = "検知日時")
     private LocalDateTime detectedAt;
+
+    @Schema(description = "確認日時")
+    private LocalDateTime acknowledgedAt;
+
+    @Schema(description = "解決日時")
+    private LocalDateTime resolvedAt;
+
+    @Schema(description = "クローズ日時")
+    private LocalDateTime closedAt;
 
     @Schema(description = "作成時間")
     private LocalDateTime createTime;

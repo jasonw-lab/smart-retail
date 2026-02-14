@@ -10,10 +10,14 @@
             s.store_name,
             i.product_id,
             p.product_name,
-            i.stock,
+            p.product_code,
+            i.quantity,
             i.expiry_date,
+            i.received_at,
             i.status,
             i.lot_number,
+            i.location,
+            i.last_count_date,
             i.remarks,
             i.create_time,
             i.update_time
@@ -24,6 +28,7 @@
         LEFT JOIN
             retail_product p ON i.product_id = p.id
         <where>
+            i.is_deleted = 0
             <if test="query.storeId != null">
                 AND i.store_id = #{query.storeId}
             </if>
@@ -54,10 +59,14 @@
             s.store_name,
             i.product_id,
             p.product_name,
-            i.stock,
+            p.product_code,
+            i.quantity,
             i.expiry_date,
+            i.received_at,
             i.status,
             i.lot_number,
+            i.location,
+            i.last_count_date,
             i.remarks,
             i.create_time,
             i.update_time
@@ -69,6 +78,7 @@
             retail_product p ON i.product_id = p.id
         WHERE
             i.id = #{id}
+            AND i.is_deleted = 0
     </select>
 
     <!-- 商品IDによる在庫情報の取得 -->
@@ -79,10 +89,14 @@
             s.store_name,
             i.product_id,
             p.product_name,
-            i.stock,
+            p.product_code,
+            i.quantity,
             i.expiry_date,
+            i.received_at,
             i.status,
             i.lot_number,
+            i.location,
+            i.last_count_date,
             i.remarks,
             i.create_time,
             i.update_time
@@ -94,6 +108,7 @@
             retail_product p ON i.product_id = p.id
         WHERE
             i.product_id = #{productId}
+            AND i.is_deleted = 0
     </select>
 
     <!-- 店舗IDと商品IDによる在庫情報の取得 -->
@@ -104,10 +119,14 @@
             s.store_name,
             i.product_id,
             p.product_name,
-            i.stock,
+            p.product_code,
+            i.quantity,
             i.expiry_date,
+            i.received_at,
             i.status,
             i.lot_number,
+            i.location,
+            i.last_count_date,
             i.remarks,
             i.create_time,
             i.update_time
@@ -120,6 +139,7 @@
         WHERE
             i.store_id = #{storeId}
             AND i.product_id = #{productId}
+            AND i.is_deleted = 0
     </select>
 
 </mapper>

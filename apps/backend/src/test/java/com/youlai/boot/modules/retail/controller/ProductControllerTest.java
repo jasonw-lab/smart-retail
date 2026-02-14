@@ -141,7 +141,7 @@ public class ProductControllerTest {
         form.setCode("TP001");
         form.setPrice(new BigDecimal("99.99"));
         form.setReorderPoint(10);
-        form.setMaxStockLevel(100);
+        form.setMaxStock(100);
         form.setCategoryId(1L);
         form.setCategoryName("Test Category");
         form.setDescription("Test Description");

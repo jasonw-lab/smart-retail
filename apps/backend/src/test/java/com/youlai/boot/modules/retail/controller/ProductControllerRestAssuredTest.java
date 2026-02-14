@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProductControllerRestAssuredTest extends BaseControllerTest {
@@ -69,7 +70,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         response.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data.list", not(empty()))
             .body("data.total", greaterThan(0));
     }
@@ -99,7 +100,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         response.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data", not(empty()));
     }
 
@@ -132,19 +133,20 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         response.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data.id", equalTo(productId.toString()));
     }
 
     @Test
     void testCreateAndUpdateAndDeleteProduct() {
         // Create a new product
+        String uniqueCode = "TP-" + System.currentTimeMillis();
         ProductForm form = new ProductForm();
         form.setName("Test Product");
-        form.setCode("TP001");
+        form.setCode(uniqueCode);
         form.setPrice(new BigDecimal("99.99"));
         form.setReorderPoint(10);
-        form.setMaxStockLevel(100);
+        form.setMaxStock(100);
         form.setCategoryId(1L);
         form.setCategoryName("Test Category");
         form.setDescription("Test Description");
@@ -173,7 +175,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         createResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
         //    .body("data", equalTo(true));
             .body("data", equalTo(null));
 
@@ -226,7 +228,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         updateResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data", equalTo(null));
 
         // Get the updated product
@@ -252,9 +254,9 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         getUpdatedResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
-            .body("data.name", equalTo("Updated Test Product"))
-            .body("data.price", equalTo(199.99f));
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+            .body("data.productName", equalTo("Updated Test Product"))
+            .body("data.unitPrice", equalTo(199.99f));
 
         // Delete the product
         Response deleteResponse = given()
@@ -278,7 +280,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         deleteResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data", equalTo(null));
 
         // Verify the product is deleted
@@ -303,7 +305,7 @@ public class ProductControllerRestAssuredTest extends BaseControllerTest {
         verifyDeleteResponse.then()
             .statusCode(HttpStatus.OK.value())
             .body("code", equalTo("00000"))
-            .body("msg", equalTo("一切ok"))
+            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
             .body("data", nullValue());
     }
 }

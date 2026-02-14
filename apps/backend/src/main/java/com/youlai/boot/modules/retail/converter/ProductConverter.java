@@ -24,6 +24,7 @@ public interface ProductConverter {
     @Mapping(source = "code", target = "productCode")
     @Mapping(source = "name", target = "productName")
     @Mapping(source = "price", target = "unitPrice")
+    @Mapping(source = "maxStock", target = "maxStock")
     Product form2Entity(ProductForm form);
 
     /**

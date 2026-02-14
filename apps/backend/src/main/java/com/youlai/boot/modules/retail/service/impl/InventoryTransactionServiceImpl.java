@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * 入出庫履歴サービス実装クラス
  *
- * @author wangjw
+ * @author jason.w
  */
 @Service
 @RequiredArgsConstructor
@@ -50,22 +51,22 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
 
     @Override
     public PageResult<InventoryTransactionPageVO> getInboundTransactionPage(InventoryTransactionPageQuery queryParams) {
-        return getTransactionPageInternal(queryParams, "IN");
+        return getTransactionPageInternal(queryParams, "INBOUND");
     }
 
     @Override
     public PageResult<InventoryTransactionPageVO> getOutboundTransactionPage(InventoryTransactionPageQuery queryParams) {
-        return getTransactionPageInternal(queryParams, "OUT");
+        return getTransactionPageInternal(queryParams, "SALE");
     }
 
     /**
      * 入出庫履歴一覧（ページング）取得の内部実装
      *
      * @param queryParams クエリパラメータ
-     * @param transactionType 操作タイプ（指定しない場合は全て）
+     * @param txnType 操作タイプ（指定しない場合は全て）
      * @return ページング結果
      */
-    private PageResult<InventoryTransactionPageVO> getTransactionPageInternal(InventoryTransactionPageQuery queryParams, String transactionType) {
+    private PageResult<InventoryTransactionPageVO> getTransactionPageInternal(InventoryTransactionPageQuery queryParams, String txnType) {
         // ページングパラメータ
         Page<InventoryTransaction> page = new Page<>(queryParams.getPageNum(), queryParams.getPageSize());
 
@@ -74,15 +75,13 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
                 .eq(queryParams.getStoreId() != null, InventoryTransaction::getStoreId, queryParams.getStoreId())
                 .eq(queryParams.getProductId() != null, InventoryTransaction::getProductId, queryParams.getProductId())
                 .like(StringUtils.hasText(queryParams.getLotNumber()), InventoryTransaction::getLotNumber, queryParams.getLotNumber())
-                .eq(StringUtils.hasText(transactionType), InventoryTransaction::getTransactionType, transactionType)
-                .eq(StringUtils.hasText(queryParams.getTransactionType()) && transactionType == null, InventoryTransaction::getTransactionType, queryParams.getTransactionType())
-                .eq(StringUtils.hasText(queryParams.getStatus()), InventoryTransaction::getStatus, queryParams.getStatus())
-                .ge(queryParams.getTransactionDateStart() != null, InventoryTransaction::getTransactionDate, queryParams.getTransactionDateStart())
-                .le(queryParams.getTransactionDateEnd() != null, InventoryTransaction::getTransactionDate, queryParams.getTransactionDateEnd())
-                .like(StringUtils.hasText(queryParams.getReason()), InventoryTransaction::getReason, queryParams.getReason())
+                .eq(StringUtils.hasText(txnType), InventoryTransaction::getTxnType, txnType)
+                .eq(StringUtils.hasText(queryParams.getTxnType()) && txnType == null, InventoryTransaction::getTxnType, queryParams.getTxnType())
+                .eq(StringUtils.hasText(queryParams.getSourceType()), InventoryTransaction::getSourceType, queryParams.getSourceType())
+                .ge(queryParams.getOccurredAtStart() != null, InventoryTransaction::getOccurredAt, queryParams.getOccurredAtStart())
+                .le(queryParams.getOccurredAtEnd() != null, InventoryTransaction::getOccurredAt, queryParams.getOccurredAtEnd())
                 .like(StringUtils.hasText(queryParams.getReferenceNo()), InventoryTransaction::getReferenceNo, queryParams.getReferenceNo())
-                .like(StringUtils.hasText(queryParams.getOperator()), InventoryTransaction::getOperator, queryParams.getOperator())
-                .orderByDesc(InventoryTransaction::getTransactionDate);
+                .orderByDesc(InventoryTransaction::getOccurredAt);
 
         // クエリ実行
         IPage<InventoryTransaction> result = this.page(page, queryWrapper);
@@ -139,7 +138,7 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
     public List<InventoryTransaction> listTransactions() {
         // 全入出庫履歴取得
         LambdaQueryWrapper<InventoryTransaction> queryWrapper = new LambdaQueryWrapper<InventoryTransaction>()
-                .orderByDesc(InventoryTransaction::getTransactionDate);
+                .orderByDesc(InventoryTransaction::getOccurredAt);
         return this.list(queryWrapper);
     }
 
@@ -152,21 +151,28 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
     @Transactional(rollbackFor = Exception.class)
     public boolean createTransaction(InventoryTransactionForm form) {
         InventoryTransaction transaction = inventoryTransactionConverter.form2Entity(form);
+        if (transaction.getOccurredAt() == null) {
+            transaction.setOccurredAt(LocalDateTime.now());
+        }
+        if (transaction.getSourceType() == null) {
+            transaction.setSourceType("MANUAL");
+        }
         return this.save(transaction);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createInboundTransaction(InventoryTransactionForm form) {
-        form.setTransactionType("IN");
-        upsertInventoryForInbound(form);
+        form.setTxnType("INBOUND");
+        Long inventoryId = upsertInventoryForInbound(form);
+        form.setInventoryId(inventoryId);
         return createTransaction(form);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createOutboundTransaction(InventoryTransactionForm form) {
-        form.setTransactionType("OUT");
+        form.setTxnType("SALE");
         applyInventoryForOutbound(form);
         return createTransaction(form);
     }
@@ -183,11 +189,7 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
         return this.removeById(id);
     }
 
-    private void upsertInventoryForInbound(InventoryTransactionForm form) {
-        if (form.getExpiryDate() == null) {
-            throw new IllegalArgumentException("入庫時は賞味期限（expiryDate）が必須です");
-        }
-
+    private Long upsertInventoryForInbound(InventoryTransactionForm form) {
         Inventory existing = inventoryMapper.selectOne(new LambdaQueryWrapper<Inventory>()
                 .eq(Inventory::getStoreId, form.getStoreId())
                 .eq(Inventory::getProductId, form.getProductId())
@@ -198,19 +200,16 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
             inventory.setStoreId(form.getStoreId());
             inventory.setProductId(form.getProductId());
             inventory.setLotNumber(form.getLotNumber());
-            inventory.setExpiryDate(form.getExpiryDate());
-            inventory.setQuantity(form.getQuantity());
-            inventory.setMinStock(0);
-            inventory.setMaxStock(0);
+            inventory.setQuantity(form.getQuantityDelta());
+            inventory.setReceivedAt(LocalDateTime.now());
             inventory.setStatus("normal");
             inventoryMapper.insert(inventory);
-            return;
+            return inventory.getId();
         }
 
-        existing.setQuantity((existing.getQuantity() == null ? 0 : existing.getQuantity()) + form.getQuantity());
-        // ロットの賞味期限は原則固定だが、入力があれば最新に合わせる
-        existing.setExpiryDate(form.getExpiryDate());
+        existing.setQuantity((existing.getQuantity() == null ? 0 : existing.getQuantity()) + form.getQuantityDelta());
         inventoryMapper.updateById(existing);
+        return existing.getId();
     }
 
     private void applyInventoryForOutbound(InventoryTransactionForm form) {
@@ -222,12 +221,16 @@ public class InventoryTransactionServiceImpl extends ServiceImpl<InventoryTransa
         if (existing == null) {
             throw new IllegalArgumentException("指定ロットの在庫が存在しません");
         }
+
+        form.setInventoryId(existing.getId());
+
         int currentQty = existing.getQuantity() == null ? 0 : existing.getQuantity();
-        if (currentQty < form.getQuantity()) {
+        int outboundQty = Math.abs(form.getQuantityDelta());
+        if (currentQty < outboundQty) {
             throw new IllegalArgumentException("在庫が不足しています（current=" + currentQty + "）");
         }
 
-        existing.setQuantity(currentQty - form.getQuantity());
+        existing.setQuantity(currentQty - outboundQty);
         inventoryMapper.updateById(existing);
     }
 }

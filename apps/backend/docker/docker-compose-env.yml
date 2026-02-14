@@ -195,6 +195,7 @@ services:
     ports:
       - 7700:7700
       - 10086:10086
+      - 10010:10010
     networks:
       - youlai-boot
     depends_on:

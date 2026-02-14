@@ -83,7 +83,8 @@
       "Bash(mvn spring-boot:run:*)",
       "Bash(mvn test-compile:*)",
       "Bash(grep:*)",
-      "Bash(./mvnw test:*)"
+      "Bash(./mvnw test:*)",
+      "Bash(git log:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

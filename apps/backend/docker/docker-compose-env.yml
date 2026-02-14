@@ -185,6 +185,7 @@ services:
     environment:
       TZ: Asia/Tokyo
       JVMOPTIONS: -Xmx512m
+      POWERJOB_SERVER_PUBLIC_ADDRESS: ${POWERJOB_PUBLIC_ADDRESS}
       PARAMS: >
         --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo
         --spring.datasource.core.username=root

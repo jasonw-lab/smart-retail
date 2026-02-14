@@ -81,7 +81,9 @@
       "Bash(ls:*)",
       "Bash(wc:*)",
       "Bash(mvn spring-boot:run:*)",
-      "Bash(mvn test-compile:*)"
+      "Bash(mvn test-compile:*)",
+      "Bash(grep:*)",
+      "Bash(./mvnw test:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

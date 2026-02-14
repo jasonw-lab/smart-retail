@@ -2,6 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.youlai.boot.modules.retail.mapper.AlertMapper">
 
+    <select id="hasColumn" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'retail_alert'
+              AND COLUMN_NAME = #{columnName}
+        )
+    </select>
+
+    <select id="countPendingAlertsByStatus" resultType="long">
+        SELECT COUNT(*) AS total
+        FROM retail_alert
+        WHERE status NOT IN ('RESOLVED', 'CLOSED')
+    </select>
+
+    <select id="countPendingAlertsByResolved" resultType="long">
+        SELECT COUNT(*) AS total
+        FROM retail_alert
+        WHERE IFNULL(resolved, 0) = 0
+    </select>
+
     <!-- アラートページング取得 -->
     <select id="getAlertPage" resultType="com.youlai.boot.modules.retail.model.vo.AlertPageVO">
         SELECT

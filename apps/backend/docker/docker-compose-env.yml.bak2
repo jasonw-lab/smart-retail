@@ -184,8 +184,8 @@ services:
     restart: unless-stopped
     environment:
       TZ: Asia/Tokyo
-      JVMOPTIONS: -Xmx512m -Dpowerjob.network.external.address=192.168.1.199 -Dpowerjob.network.external.port=10010
-      OMS_SERVER_EXTERNAL_ADDRESS: ${POWERJOB_PUBLIC_ADDRESS}
+      JVMOPTIONS: -Xmx512m
+      POWERJOB_SERVER_PUBLIC_ADDRESS: ${POWERJOB_PUBLIC_ADDRESS}
       PARAMS: >
         --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo
         --spring.datasource.core.username=root
@@ -193,9 +193,6 @@ services:
         --oms.storage.dfs.mysql_series.url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo
         --oms.storage.dfs.mysql_series.username=root
         --oms.storage.dfs.mysql_series.password=${MYSQL_ROOT_PASSWORD}
-        --oms.server.address=192.168.1.199
-    volumes:
-      - /mydata/powerjob/config:/app/config
     ports:
       - 7700:7700
       - 10086:10086

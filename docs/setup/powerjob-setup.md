@@ -150,6 +150,52 @@ java -jar target/simulator-1.0.0-SNAPSHOT.jar
    - CRON表达式: `0 */5 * * * ?` (5分毎)
 4. 保存して有効化
 
+### Heartbeatシミュレーションジョブ
+
+店舗デバイスのHeartbeatを定期的にBackend APIに送信するジョブです。
+
+1. 管理UIで「任务管理」（タスク管理）をクリック
+2. 「新建任务」（新規タスク）をクリック
+3. 以下を入力:
+   - 任务名称: `HeartbeatSimulatorJob`
+   - 任务描述: `店舗デバイス状態をHeartbeatとして送信`
+   - 执行类型: `单机执行` (STANDALONE)
+   - 处理器类型: `内置处理器` (BUILT_IN)
+   - 处理器信息: `com.smartretail.simulator.job.HeartbeatSimulatorJob`
+   - 定时类型: `CRON`
+   - CRON表达式: `0 */1 * * * ?` (1分毎)
+   - 任务参数（オプション）: `1,2` （対象店舗ID、カンマ区切り）
+4. 保存して有効化
+
+**生成されるデバイス状態:**
+- 決済端末: ONLINE/OFFLINE/ERROR（95%でONLINE）
+- プリンター: ONLINE/OFFLINE/ERROR（90%でONLINE）
+- 用紙レベル: OK/LOW/EMPTY
+- ネットワーク: レイテンシ、信号強度
+
+### 決済シミュレーションジョブ
+
+ランダムな商品・数量・決済手段での売上データを生成しBackend APIに送信するジョブです。
+
+1. 管理UIで「任务管理」（タスク管理）をクリック
+2. 「新建任务」（新規タスク）をクリック
+3. 以下を入力:
+   - 任务名称: `PaymentSimulatorJob`
+   - 任务描述: `ランダムな決済データを生成して送信`
+   - 执行类型: `单机执行` (STANDALONE)
+   - 处理器类型: `内置处理器` (BUILT_IN)
+   - 处理器信息: `com.smartretail.simulator.job.PaymentSimulatorJob`
+   - 定时类型: `CRON`
+   - CRON表达式: `0 */5 * * * ?` (5分毎)
+   - 任务参数（オプション）: `1,2` （対象店舗ID、カンマ区切り）
+4. 保存して有効化
+
+**生成される決済データ:**
+- 決済手段: CASH(30%), CARD(40%), QR(30%)
+- 決済プロバイダ: VISA, Mastercard, PayPay, LINE Pay, 楽天ペイ
+- 商品数: 1-4商品、各1-3個
+- 営業時間考慮: 昼ピーク/ディナーピークは多め、夜間は少なめ
+
 ## 環境変数
 
 ### Simulator Worker

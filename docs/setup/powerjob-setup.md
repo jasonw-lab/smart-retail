@@ -76,7 +76,7 @@ docker logs -f youlai-powerjob-server
 3. 「新建应用」（新規アプリ）をクリック
 4. 以下を入力:
    - 应用名称: `smart-retail-simulator`
-   - 应用密码: (空白でも可)
+   - 应用密码: (123456)
 5. 保存
 
 ### 5. Simulator Worker 起動

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 在庫ページングVO
  *
- * @author wangjw
+ * @author jason.w
  */
 @Schema(description = "在庫ページングVO")
 @Data
@@ -39,14 +39,11 @@ public class InventoryPageVO {
     @Schema(description = "在庫数量")
     private Integer quantity;
 
-    @Schema(description = "最小在庫数")
-    private Integer minStock;
-
-    @Schema(description = "最大在庫数")
-    private Integer maxStock;
-
     @Schema(description = "賞味期限")
     private LocalDate expiryDate;
+
+    @Schema(description = "入庫日時")
+    private LocalDateTime receivedAt;
 
     @Schema(description = "保管場所")
     private String location;
@@ -66,8 +63,8 @@ public class InventoryPageVO {
     @Schema(description = "賞味期限までの残日数")
     private Integer daysUntilExpiry;
 
-    @Schema(description = "最終棚卸日")
-    private LocalDate lastCountDate;
+    @Schema(description = "最終棚卸日時")
+    private LocalDateTime lastCountDate;
 
     @Schema(description = "備考")
     private String remarks;

@@ -65,4 +65,10 @@ public class ProductPageVO {
 
     @Schema(description = "更新時間")
     private LocalDateTime updateTime;
+
+    @Schema(description = "発注点（SKU集約在庫がこの値以下でLOW_STOCKアラート）")
+    private Integer reorderPoint;
+
+    @Schema(description = "適正在庫上限（SKU集約在庫がこの値×1.5以上でHIGH_STOCKアラート）")
+    private Integer maxStock;
 }

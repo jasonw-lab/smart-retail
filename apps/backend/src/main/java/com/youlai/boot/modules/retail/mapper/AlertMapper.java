@@ -22,6 +22,28 @@ import java.util.Map;
 public interface AlertMapper extends BaseMapper<Alert> {
 
     /**
+     * カラム存在チェック
+     *
+     * @param columnName カラム名
+     * @return 存在する場合はtrue
+     */
+    boolean hasColumn(@Param("columnName") String columnName);
+
+    /**
+     * status カラムを利用した未対応アラート件数取得
+     *
+     * @return 未対応アラート件数
+     */
+    long countPendingAlertsByStatus();
+
+    /**
+     * resolved カラムを利用した未対応アラート件数取得
+     *
+     * @return 未対応アラート件数
+     */
+    long countPendingAlertsByResolved();
+
+    /**
      * アラートページング取得（店舗名・商品名付き）
      *
      * @param page  ページングオブジェクト

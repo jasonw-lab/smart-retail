@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.sql.DataSource;
 
@@ -17,6 +18,7 @@ import javax.sql.DataSource;
 @Slf4j
 @SpringBootApplication
 @ConfigurationPropertiesScan // 开启配置属性绑定
+@EnableScheduling // スケジューラー有効化（DeviceMonitorScheduler等）
 public class YouLaiBootApplication {
 
     public static void main(String[] args) {

@@ -3,7 +3,39 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from "vue-rou
 
 export const Layout = () => import("@/layout/index.vue");
 
-// 静态路由
+/**
+ * サイドメニュー構成（ロール別 2階層）
+ *
+ * 現在の実装: Admin（本部運営管理者）ロールのメニュー構成
+ *
+ * [Admin メニュー構成]
+ * - ダッシュボード（単一画面）
+ * - 店舗管理
+ *   - 店舗一覧 (S-01)
+ *   - デバイス一覧 (DV-01)
+ * - 商品・在庫
+ *   - 商品一覧 (P-01)
+ *   - 在庫一覧 (I-01)
+ * - アラート
+ *   - アラート一覧 (A-01)
+ *
+ * [Phase 2 TODO: Operator（店舗オペレーター）ロールのメニュー構成]
+ * - ダッシュボード（担当店舗の KPI 確認）
+ * - 店舗
+ *   - デバイス一覧 (DV-01) - 担当店舗のデバイス確認
+ * - 在庫管理
+ *   - 在庫一覧 (I-01) - 担当店舗の在庫・補充記録
+ *   - 商品一覧 (P-01) - 商品情報の参照（読み取り専用）
+ * - アラート
+ *   - アラート一覧 (A-01) - 担当店舗アラートへの対応
+ *
+ * [Phase 2 実装時の注意事項]
+ * - Operator は店舗一覧（S-01）へのアクセス不可
+ * - Operator の商品一覧は参照のみ（編集不可）
+ * - Operator のデータスコープは担当店舗のみ
+ */
+
+// 静的ルート定義
 export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/redirect",
@@ -23,6 +55,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     meta: { hidden: true },
   },
 
+  // ダッシュボード（D-01）- 単一画面
   {
     path: "/",
     name: "/",
@@ -32,11 +65,9 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "dashboard",
         component: () => import("@/views/dashboard/index.vue"),
-        // 用于 keep-alive 功能，需要与 SFC 中自动推导或显式声明的组件名称一致
-        // 参考文档: https://cn.vuejs.org/guide/built-ins/keep-alive.html#include-exclude
         name: "Dashboard",
         meta: {
-          title: "Home",
+          title: "ダッシュボード",
           icon: "homepage",
           affix: true,
           keepAlive: true,
@@ -67,67 +98,64 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
+  // 店舗管理グループ（Admin: S-01 + DV-01）
+  // Phase 2 TODO: Operator ロールでは「店舗」グループとし、デバイス一覧のみ表示
   {
-    path: "/retail/product",
+    path: "/retail/store-management",
     component: Layout,
-    name: "Product",
-    meta: { title: "商品管理", icon: "el-icon-Goods" },
-    children: [
-      {
-        path: "list",
-        component: () => import("@/views/retail/product/index.vue"),
-        name: "ProductList",
-        meta: { title: "商品一覧", icon: "el-icon-Goods" },
-      },
-    ],
-  },
-  {
-    path: "/retail/store",
-    component: Layout,
-    name: "Store",
+    name: "StoreManagement",
+    redirect: "/retail/store-management/store",
     meta: { title: "店舗管理", icon: "el-icon-Shop" },
     children: [
       {
-        path: "list",
+        path: "store",
         component: () => import("@/views/retail/store/index.vue"),
         name: "StoreList",
+        // Phase 2 TODO: Operator ロールでは hidden: true にする（担当店舗固定のため不要）
         meta: { title: "店舗一覧", icon: "el-icon-Shop", keepAlive: true },
       },
-    ],
-  },
-  {
-    path: "/retail/device",
-    component: Layout,
-    name: "Device",
-    meta: { title: "デバイス管理", icon: "el-icon-Monitor" },
-    children: [
       {
-        path: "list",
+        path: "device",
         component: () => import("@/views/retail/device/index.vue"),
         name: "DeviceList",
         meta: { title: "デバイス一覧", icon: "el-icon-Monitor", keepAlive: true },
       },
     ],
   },
+
+  // 商品・在庫グループ（Admin: P-01 + I-01）
+  // Phase 2 TODO: Operator ロールでは「在庫管理」グループとし、在庫一覧を先に表示
   {
-    path: "/retail/inventory",
+    path: "/retail/product-inventory",
     component: Layout,
-    name: "Inventory",
-    meta: { title: "在庫管理", icon: "el-icon-Box" },
+    name: "ProductInventory",
+    redirect: "/retail/product-inventory/product",
+    meta: { title: "商品・在庫", icon: "el-icon-Goods" },
     children: [
       {
-        path: "list",
+        path: "product",
+        component: () => import("@/views/retail/product/index.vue"),
+        name: "ProductList",
+        // Phase 2 TODO: Operator ロールでは参照のみ（編集不可）
+        meta: { title: "商品一覧", icon: "el-icon-Goods", keepAlive: true },
+      },
+      {
+        path: "inventory",
         component: () => import("@/views/retail/inventory/index.vue"),
         name: "InventoryList",
         meta: { title: "在庫一覧", icon: "el-icon-Box", keepAlive: true },
       },
     ],
   },
+
+  // アラートグループ（A-01）
+  // Phase 2 TODO: Operator ロールでは担当店舗のアラートのみ表示
   {
     path: "/retail/alert",
     component: Layout,
     name: "Alert",
-    meta: { title: "アラート管理", icon: "el-icon-Bell" },
+    redirect: "/retail/alert/list",
+    meta: { title: "アラート", icon: "el-icon-Bell" },
     children: [
       {
         path: "list",

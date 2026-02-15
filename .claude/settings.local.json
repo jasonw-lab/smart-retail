@@ -86,7 +86,8 @@
       "Bash(./mvnw test:*)",
       "Bash(git log:*)",
       "Bash(pnpm lint:eslint:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

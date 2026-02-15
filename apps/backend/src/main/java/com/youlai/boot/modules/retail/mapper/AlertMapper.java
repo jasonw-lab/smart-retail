@@ -97,4 +97,16 @@ public interface AlertMapper extends BaseMapper<Alert> {
                                    @Param("productId") Long productId,
                                    @Param("lotNumber") String lotNumber,
                                    @Param("alertType") String alertType);
+
+    /**
+     * デバイス系未解決アラートの存在チェック
+     *
+     * @param storeId   店舗ID
+     * @param deviceId  デバイスID
+     * @param alertType アラートタイプ（COMMUNICATION_DOWN, PAYMENT_TERMINAL_DOWN, CARD_READER_ERROR, PRINTER_PAPER_EMPTY）
+     * @return 未解決アラートが存在する場合はtrue
+     */
+    boolean existsUnresolvedDeviceAlert(@Param("storeId") Long storeId,
+                                         @Param("deviceId") Long deviceId,
+                                         @Param("alertType") String alertType);
 }

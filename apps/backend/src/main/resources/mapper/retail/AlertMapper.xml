@@ -215,7 +215,7 @@
             AND SUM(i.quantity) >= p.max_stock * 1.5
     </select>
 
-    <!-- 未解決アラートの存在チェック -->
+    <!-- 未解決アラートの存在チェック（在庫系） -->
     <select id="existsUnresolvedAlert" resultType="boolean">
         SELECT EXISTS(
             SELECT 1 FROM retail_alert
@@ -227,6 +227,18 @@
             <if test="lotNumber == null or lotNumber == ''">
                 AND (lot_number IS NULL OR lot_number = '')
             </if>
+            AND alert_type = #{alertType}
+            AND status NOT IN ('RESOLVED', 'CLOSED')
+            AND is_deleted = 0
+        )
+    </select>
+
+    <!-- 未解決アラートの存在チェック（デバイス系） -->
+    <select id="existsUnresolvedDeviceAlert" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM retail_alert
+            WHERE store_id = #{storeId}
+            AND device_id = #{deviceId}
             AND alert_type = #{alertType}
             AND status NOT IN ('RESOLVED', 'CLOSED')
             AND is_deleted = 0

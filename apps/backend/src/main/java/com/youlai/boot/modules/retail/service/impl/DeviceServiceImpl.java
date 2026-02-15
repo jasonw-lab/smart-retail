@@ -112,6 +112,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
             device.setStatus("OFFLINE");
         }
 
+        // 空文字のmetadataはnullに変換（JSON型カラムのため）
+        if (!StringUtils.hasText(device.getMetadata())) {
+            device.setMetadata(null);
+        }
+
         return this.save(device);
     }
 
@@ -119,6 +124,12 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     public boolean updateDevice(Long id, DeviceForm form) {
         Device device = deviceConverter.form2Entity(form);
         device.setId(id);
+
+        // 空文字のmetadataはnullに変換（JSON型カラムのため）
+        if (!StringUtils.hasText(device.getMetadata())) {
+            device.setMetadata(null);
+        }
+
         return this.updateById(device);
     }
 

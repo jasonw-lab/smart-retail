@@ -96,6 +96,20 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/retail/device",
+    component: Layout,
+    name: "Device",
+    meta: { title: "デバイス管理", icon: "el-icon-Monitor" },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/retail/device/index.vue"),
+        name: "DeviceList",
+        meta: { title: "デバイス一覧", icon: "el-icon-Monitor", keepAlive: true },
+      },
+    ],
+  },
+  {
     path: "/retail/inventory",
     component: Layout,
     name: "Inventory",

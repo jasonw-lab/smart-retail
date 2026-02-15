@@ -96,4 +96,4 @@ const InboundInventoryAPI = {
   },
 };
 
-export default InboundInventoryAPI; 
+export default InboundInventoryAPI;

@@ -84,7 +84,8 @@
       "Bash(mvn test-compile:*)",
       "Bash(grep:*)",
       "Bash(./mvnw test:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(pnpm lint:eslint:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

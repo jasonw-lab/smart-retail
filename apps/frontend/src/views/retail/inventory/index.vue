@@ -2,7 +2,7 @@
   <div class="inventory-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="店舗" prop="storeId">
           <el-select
             v-model="queryParams.storeId"
@@ -75,7 +75,8 @@
             <span :style="{ color: getExpiryColor(row) }">
               {{ row.expiryDate || "-" }}
               <template v-if="row.daysUntilExpiry !== null && row.daysUntilExpiry <= 7">
-                <br /><small>(残{{ row.daysUntilExpiry }}日)</small>
+                <br />
+                <small>(残{{ row.daysUntilExpiry }}日)</small>
               </template>
             </span>
           </template>
@@ -195,7 +196,8 @@
     <!-- 履歴ダイアログ -->
     <el-dialog v-model="historyDialogVisible" title="入出庫履歴" width="800px">
       <div class="mb-2">
-        <strong>{{ currentInventory?.storeName }}</strong> /
+        <strong>{{ currentInventory?.storeName }}</strong>
+        /
         <strong>{{ currentInventory?.productName }}</strong>
       </div>
       <el-table :data="transactionList" border style="width: 100%" max-height="400">

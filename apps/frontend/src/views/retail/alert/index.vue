@@ -2,7 +2,7 @@
   <div class="alert-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="優先度" prop="priority">
           <el-select
             v-model="queryParams.priority"
@@ -19,11 +19,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状態" prop="statusFilter">
-          <el-select
-            v-model="queryParams.statusFilter"
-            placeholder="すべて"
-            style="width: 120px"
-          >
+          <el-select v-model="queryParams.statusFilter" placeholder="すべて" style="width: 120px">
             <el-option label="未対応" value="pending" />
             <el-option label="完了" value="completed" />
             <el-option label="すべて" value="all" />
@@ -94,9 +90,9 @@
           border
           row-key="id"
           :row-class-name="getRowClassName"
+          style="width: 100%"
           @selection-change="handleSelectionChange"
           @row-click="handleRowClick"
-          style="width: 100%"
         >
           <el-table-column type="selection" width="40" />
           <el-table-column label="優先度" width="80" sortable prop="priority">
@@ -132,7 +128,7 @@
                     現在: {{ row.currentValue }} / 上限: {{ row.thresholdValue }}
                   </template>
                   <template v-else-if="row.alertType === 'EXPIRY_SOON'">
-                    {{ row.lotNumber ? `${row.lotNumber} ` : '' }}残{{ row.currentValue }}日
+                    {{ row.lotNumber ? `${row.lotNumber} ` : "" }}残{{ row.currentValue }}日
                   </template>
                   <template v-else>
                     {{ row.message }}
@@ -174,9 +170,7 @@
             <el-button type="primary" size="small" @click="handleBulkStartProgress">
               一括対応開始
             </el-button>
-            <el-button size="small" @click="clearSelection">
-              選択解除
-            </el-button>
+            <el-button size="small" @click="clearSelection">選択解除</el-button>
           </div>
         </transition>
       </div>
@@ -214,7 +208,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">商品</span>
-              <span class="info-value">{{ alertDetail.productName || '-' }}</span>
+              <span class="info-value">{{ alertDetail.productName || "-" }}</span>
             </div>
             <div v-if="alertDetail.lotNumber" class="info-item">
               <span class="info-label">ロット</span>
@@ -246,18 +240,42 @@
               <div class="timeline-dot completed"></div>
               <div class="timeline-content">
                 <span class="timeline-label">検知</span>
-                <span class="timeline-time">{{ formatAbsoluteDateTime(alertDetail.detectedAt) }}</span>
+                <span class="timeline-time">
+                  {{ formatAbsoluteDateTime(alertDetail.detectedAt) }}
+                </span>
               </div>
             </div>
             <div class="timeline-item" :class="{ completed: !!alertDetail.acknowledgedAt }">
               <div class="timeline-dot" :class="{ completed: !!alertDetail.acknowledgedAt }"></div>
               <div class="timeline-content">
                 <span class="timeline-label">確認</span>
-                <span class="timeline-time">{{ alertDetail.acknowledgedAt ? formatAbsoluteDateTime(alertDetail.acknowledgedAt) : '（未）' }}</span>
+                <span class="timeline-time">
+                  {{
+                    alertDetail.acknowledgedAt
+                      ? formatAbsoluteDateTime(alertDetail.acknowledgedAt)
+                      : "（未）"
+                  }}
+                </span>
               </div>
             </div>
-            <div class="timeline-item" :class="{ completed: alertDetail.status === 'IN_PROGRESS' || alertDetail.status === 'RESOLVED' || alertDetail.status === 'CLOSED' }">
-              <div class="timeline-dot" :class="{ completed: alertDetail.status === 'IN_PROGRESS' || alertDetail.status === 'RESOLVED' || alertDetail.status === 'CLOSED' }"></div>
+            <div
+              class="timeline-item"
+              :class="{
+                completed:
+                  alertDetail.status === 'IN_PROGRESS' ||
+                  alertDetail.status === 'RESOLVED' ||
+                  alertDetail.status === 'CLOSED',
+              }"
+            >
+              <div
+                class="timeline-dot"
+                :class="{
+                  completed:
+                    alertDetail.status === 'IN_PROGRESS' ||
+                    alertDetail.status === 'RESOLVED' ||
+                    alertDetail.status === 'CLOSED',
+                }"
+              ></div>
               <div class="timeline-content">
                 <span class="timeline-label">対応開始</span>
                 <span class="timeline-time">{{ getProgressStartTime() }}</span>
@@ -267,14 +285,24 @@
               <div class="timeline-dot" :class="{ completed: !!alertDetail.resolvedAt }"></div>
               <div class="timeline-content">
                 <span class="timeline-label">完了</span>
-                <span class="timeline-time">{{ alertDetail.resolvedAt ? formatAbsoluteDateTime(alertDetail.resolvedAt) : '（未）' }}</span>
+                <span class="timeline-time">
+                  {{
+                    alertDetail.resolvedAt
+                      ? formatAbsoluteDateTime(alertDetail.resolvedAt)
+                      : "（未）"
+                  }}
+                </span>
               </div>
             </div>
             <div class="timeline-item" :class="{ completed: !!alertDetail.closedAt }">
               <div class="timeline-dot" :class="{ completed: !!alertDetail.closedAt }"></div>
               <div class="timeline-content">
                 <span class="timeline-label">クローズ</span>
-                <span class="timeline-time">{{ alertDetail.closedAt ? formatAbsoluteDateTime(alertDetail.closedAt) : '（未）' }}</span>
+                <span class="timeline-time">
+                  {{
+                    alertDetail.closedAt ? formatAbsoluteDateTime(alertDetail.closedAt) : "（未）"
+                  }}
+                </span>
               </div>
             </div>
           </div>
@@ -309,7 +337,7 @@
             </div>
           </template>
           <div v-else class="resolution-note">
-            {{ alertDetail.resolutionNote || '（まだ記録なし）' }}
+            {{ alertDetail.resolutionNote || "（まだ記録なし）" }}
           </div>
         </div>
 
@@ -352,7 +380,9 @@
     <el-dialog v-model="resolveDialogVisible" title="対応完了" width="500px">
       <el-form ref="resolveFormRef" :model="resolveForm" :rules="resolveRules" label-width="100px">
         <el-form-item label="アラート">
-          <span>{{ getAlertTypeLabel(selectedAlert?.alertType) }} - {{ selectedAlert?.storeName }}</span>
+          <span>
+            {{ getAlertTypeLabel(selectedAlert?.alertType) }} - {{ selectedAlert?.storeName }}
+          </span>
         </el-form-item>
         <el-form-item v-if="selectedAlert?.productName" label="商品">
           <span>{{ selectedAlert?.productName }}</span>
@@ -466,11 +496,16 @@ const editNoteForm = reactive({
 // ヘルパー関数
 const getPriorityType = (priority?: AlertPriority) => {
   switch (priority) {
-    case "P1": return "danger";
-    case "P2": return "warning";
-    case "P3": return "info";
-    case "P4": return "info";
-    default: return "info";
+    case "P1":
+      return "danger";
+    case "P2":
+      return "warning";
+    case "P3":
+      return "info";
+    case "P4":
+      return "info";
+    default:
+      return "info";
   }
 };
 
@@ -543,8 +578,14 @@ const formatAbsoluteDateTime = (dateTime?: string) => {
 
 const getProgressStartTime = () => {
   if (!alertDetail.value) return "（未）";
-  if (alertDetail.value.status === "IN_PROGRESS" || alertDetail.value.status === "RESOLVED" || alertDetail.value.status === "CLOSED") {
-    return alertDetail.value.acknowledgedAt ? formatAbsoluteDateTime(alertDetail.value.acknowledgedAt) : "（対応中）";
+  if (
+    alertDetail.value.status === "IN_PROGRESS" ||
+    alertDetail.value.status === "RESOLVED" ||
+    alertDetail.value.status === "CLOSED"
+  ) {
+    return alertDetail.value.acknowledgedAt
+      ? formatAbsoluteDateTime(alertDetail.value.acknowledgedAt)
+      : "（対応中）";
   }
   return "（未）";
 };
@@ -809,7 +850,9 @@ const handleBulkStartProgress = async () => {
       }
     );
 
-    await Promise.all(targetAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "IN_PROGRESS" })));
+    await Promise.all(
+      targetAlerts.map((a) => AlertAPI.updateStatus(a.id, { status: "IN_PROGRESS" }))
+    );
     ElMessage.success(`${targetAlerts.length}件の対応を開始しました`);
     clearSelection();
     getList();

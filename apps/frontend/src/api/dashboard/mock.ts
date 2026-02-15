@@ -1,5 +1,12 @@
-import { DashboardDataVO, ProductRankingItem, StoreData, AlertItem, SalesTrendData, StoreSalesData } from './index';
-import dayjs from 'dayjs';
+import {
+  DashboardDataVO,
+  ProductRankingItem,
+  StoreData,
+  AlertItem,
+  SalesTrendData,
+  StoreSalesData,
+} from "./index";
+import dayjs from "dayjs";
 
 // Mock data for dashboard overview
 export const mockDashboardData: DashboardDataVO = {
@@ -96,25 +103,25 @@ const generateSalesTrendData = (days: number): SalesTrendData => {
   const sales: number[] = [];
   const profits: number[] = [];
   const now = new Date();
-  
+
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(now.getDate() - i);
-    
+
     let dateFormat = "MM-DD";
     if (days > 30) {
       dateFormat = "YYYY-MM";
     }
     dates.push(dayjs(date).format(dateFormat));
-    
+
     const baseSales = 1000000 + Math.random() * 2000000;
     const salesValue = Math.floor(baseSales * (0.85 + Math.sin(i / 10) * 0.15));
     sales.push(salesValue);
-    
+
     const profitRate = 0.2 + Math.random() * 0.1;
     profits.push(Math.floor(salesValue * profitRate));
   }
-  
+
   return { dates, sales, profits };
 };
 
@@ -133,12 +140,12 @@ export const mockStoreData: StoreData[] = [
 ];
 
 // Mock data for store sales
-export const mockStoreSales: StoreSalesData[] = mockStoreData.map(store => ({
+export const mockStoreSales: StoreSalesData[] = mockStoreData.map((store) => ({
   name: store.name,
   sales: store.sales,
   profit: store.profit,
   target: store.target,
-  achievementRate: Math.floor((store.sales / store.target) * 100)
+  achievementRate: Math.floor((store.sales / store.target) * 100),
 }));
 
 // Export mock API functions
@@ -152,4 +159,4 @@ export const mockDashboardAPI = {
     return Promise.resolve(generateSalesTrendData(days));
   },
   getStoreSales: () => Promise.resolve(mockStoreSales),
-}; 
+};

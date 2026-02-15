@@ -3,7 +3,7 @@
     <!-- github 角标 -->
     <github-corner class="github-corner" />
 
-    <el-card shadow="never" class="mt-2" v-if="showFirstCard">
+    <el-card v-if="showFirstCard" shadow="never" class="mt-2">
       <el-row class="h-80px">
         <el-col :span="18" :xs="24">
           <div class="flex-x-start">
@@ -21,7 +21,7 @@
           <!-- Empty column for layout purposes -->
         </el-col>
       </el-row>
-      <span @click="showFirstCard = false" class="close-icon">☓</span>
+      <span class="close-icon" @click="showFirstCard = false">☓</span>
     </el-card>
 
     <el-row :gutter="20" class="mt-4">
@@ -111,7 +111,7 @@
     </el-row>
 
     <!-- 店舗別売上グラフ -->
-    <el-row :gutter="20" class="mt-4" v-if="false">
+    <el-row v-if="false" :gutter="20" class="mt-4">
       <el-col :span="16">
         <el-card shadow="never">
           <template #header>
@@ -209,7 +209,10 @@
                 <div class="version-item" :class="{ 'latest-item': index === 0 }">
                   <div>
                     <el-text tag="strong">{{ item.alertMessage }}</el-text>
-                    <el-tag :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'" size="small">
+                    <el-tag
+                      :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'"
+                      size="small"
+                    >
                       {{ item.alertType === "EXPIRED" ? "賞味期限" : "在庫切れ" }}
                     </el-tag>
                   </div>
@@ -217,7 +220,12 @@
                   <el-text class="version-content">ロット番号: {{ item.lotNumber }}</el-text>
 
                   <div>
-                    <el-link :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'" href="/inventory" target="_blank" underline="never">
+                    <el-link
+                      :type="item.alertType === 'EXPIRED' ? 'danger' : 'warning'"
+                      href="/inventory"
+                      target="_blank"
+                      underline="never"
+                    >
                       在庫確認
                       <el-icon class="link-icon"><TopRight /></el-icon>
                     </el-link>
@@ -946,7 +954,9 @@ const showFirstCard = ref(true);
     font-size: 20px;
     color: #909399;
     opacity: 0;
-    transition: opacity 0.3s ease, color 0.3s ease;
+    transition:
+      opacity 0.3s ease,
+      color 0.3s ease;
 
     &:hover {
       color: #f56c6c;

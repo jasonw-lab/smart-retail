@@ -17,4 +17,4 @@ const RetailCategoryAPI = {
   },
 };
 
-export default RetailCategoryAPI; 
+export default RetailCategoryAPI;

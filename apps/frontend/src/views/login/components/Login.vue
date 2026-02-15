@@ -6,7 +6,13 @@
       <p class="login-header__subtitle">{{ t("login.welcomeMessage") }}</p>
     </div>
 
-    <el-form ref="loginFormRef" :model="loginFormData" :rules="loginRules" size="large" class="login-form">
+    <el-form
+      ref="loginFormRef"
+      :model="loginFormData"
+      :rules="loginRules"
+      size="large"
+      class="login-form"
+    >
       <!-- Username -->
       <el-form-item prop="username">
         <el-input v-model.trim="loginFormData.username" :placeholder="t('login.username')">
@@ -63,12 +69,7 @@
 
       <!-- Login button -->
       <el-form-item>
-        <el-button
-          :loading="loading"
-          type="primary"
-          class="login-btn"
-          @click="handleLoginSubmit"
-        >
+        <el-button :loading="loading" type="primary" class="login-btn" @click="handleLoginSubmit">
           {{ t("login.login") }}
         </el-button>
       </el-form-item>
@@ -237,7 +238,9 @@ function toOtherForm(type: "register" | "resetPwd") {
     }
 
     &.is-focus {
-      box-shadow: 0 0 0 1px var(--el-color-primary) inset, 0 0 12px rgba(59, 130, 246, 0.08);
+      box-shadow:
+        0 0 0 1px var(--el-color-primary) inset,
+        0 0 12px rgba(59, 130, 246, 0.08);
     }
   }
 

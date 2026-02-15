@@ -3,7 +3,12 @@ import request from "@/utils/request";
 const ALERT_BASE_URL = "/api/v1/retail/alerts";
 
 /** アラートタイプ */
-export type AlertType = "LOW_STOCK" | "EXPIRY_SOON" | "HIGH_STOCK" | "COMMUNICATION_DOWN" | "PAYMENT_TERMINAL_DOWN";
+export type AlertType =
+  | "LOW_STOCK"
+  | "EXPIRY_SOON"
+  | "HIGH_STOCK"
+  | "COMMUNICATION_DOWN"
+  | "PAYMENT_TERMINAL_DOWN";
 
 /** 優先度 */
 export type AlertPriority = "P1" | "P2" | "P3" | "P4";

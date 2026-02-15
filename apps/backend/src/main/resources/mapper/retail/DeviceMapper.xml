@@ -31,4 +31,29 @@
         ORDER BY device_type, device_code
     </select>
 
+    <!-- Heartbeat未受信デバイスを取得（沈黙監視用） -->
+    <select id="findStaleDevices" resultMap="BaseResultMap">
+        SELECT * FROM retail_device
+        WHERE is_deleted = 0
+          AND status != 'MAINTENANCE'
+          AND (last_heartbeat IS NULL OR last_heartbeat &lt; #{threshold})
+        ORDER BY store_id, device_type
+    </select>
+
+    <!-- ステータスでデバイス一覧を取得 -->
+    <select id="findByStatus" resultMap="BaseResultMap">
+        SELECT * FROM retail_device
+        WHERE status = #{status}
+          AND is_deleted = 0
+        ORDER BY store_id, device_type
+    </select>
+
+    <!-- デバイスタイプでデバイス一覧を取得 -->
+    <select id="findByDeviceType" resultMap="BaseResultMap">
+        SELECT * FROM retail_device
+        WHERE device_type = #{deviceType}
+          AND is_deleted = 0
+        ORDER BY store_id, device_code
+    </select>
+
 </mapper>

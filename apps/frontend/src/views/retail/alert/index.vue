@@ -78,6 +78,10 @@
           </span>
         </div>
       </div>
+      <div class="summary-note" role="status" aria-live="polite">
+        <span class="summary-note-icon">!</span>
+        <span>この画面の監視データは約10分ごとに更新されます</span>
+      </div>
     </div>
 
     <!-- アラートテーブル -->
@@ -943,12 +947,17 @@ onUnmounted(() => {
   border-radius: 4px;
   padding: 12px 16px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .summary-items {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .summary-item {
@@ -971,6 +980,46 @@ onUnmounted(() => {
   color: #fff;
   font-size: 13px;
   font-weight: 500;
+}
+
+.summary-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #f56c6c;
+  background-color: #fef0f0;
+  color: #c45656;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: summary-note-blink 1.2s ease-in-out infinite;
+}
+
+.summary-note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #f56c6c;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+@keyframes summary-note-blink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(245, 108, 108, 0.35);
+  }
+  50% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 6px rgba(245, 108, 108, 0.08);
+  }
 }
 
 .table-card {

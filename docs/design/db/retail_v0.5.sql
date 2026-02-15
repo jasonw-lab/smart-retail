@@ -36,6 +36,8 @@
 --       - retail_inventory_transaction: inventory_id FK追加, txn_type拡張
 --         (DISPOSAL/TRANSFER_IN/TRANSFER_OUT), source_type追加, quantity_delta化
 --       - retail_store: status を ENUM('ONLINE','MAINTENANCE','OFFLINE') に変更
+--   v0.5.2 (2026-02-15): TX-01決済履歴画面対応
+--       - retail_sales: idx_store_sale_time, idx_payment_method インデックス追加
 -- ============================================================
 
 use youlai_boot;

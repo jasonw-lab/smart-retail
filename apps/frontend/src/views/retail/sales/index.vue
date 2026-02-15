@@ -117,7 +117,7 @@
 
       <el-table v-loading="loading" :data="salesList" border style="width: 100%">
         <el-table-column type="index" label="No." width="60" />
-        <el-table-column prop="orderNumber" label="注文番号" width="180" />
+        <el-table-column prop="orderNumber" label="注文番号" width="220" show-overflow-tooltip />
         <el-table-column prop="storeName" label="店舗名" min-width="150" />
         <el-table-column prop="totalAmount" label="金額" width="120" align="right">
           <template #default="{ row }">

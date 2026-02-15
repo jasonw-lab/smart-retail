@@ -83,7 +83,7 @@ defineProps({
       transform: scale(1.1);
       transition: transform 0.3s ease;
     }
-    
+
     .icon-bg {
       transform: scale(1.3);
       transition: transform 0.3s ease;

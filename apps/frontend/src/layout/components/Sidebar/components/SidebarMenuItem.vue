@@ -142,11 +142,12 @@ function resolvePath(routePath: string) {
   border-radius: 8px;
   transition: all 0.3s ease;
 
-  &:hover, &.is-active {
+  &:hover,
+  &.is-active {
     background: linear-gradient(90deg, var(--el-color-primary-light-8), transparent) !important;
-    
+
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       left: 0;
       top: 50%;
@@ -187,10 +188,10 @@ function resolvePath(routePath: string) {
 
   .el-menu {
     background: transparent;
-    
+
     .el-menu-item {
       background: transparent;
-      
+
       &:hover {
         background: linear-gradient(90deg, var(--el-color-primary-light-9), transparent) !important;
       }

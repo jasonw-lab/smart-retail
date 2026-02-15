@@ -112,7 +112,6 @@ export interface InventoryStatusItem {
   status: string;
 }
 
-
 /** アラート情報（バックエンドレスポンス） */
 export interface AlertItem {
   /** アラートID */
@@ -187,4 +186,4 @@ export interface StoreSalesData {
   target: number;
   /** 達成率 */
   achievementRate: number;
-} 
+}

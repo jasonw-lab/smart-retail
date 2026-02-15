@@ -101,7 +101,7 @@ const StoreAPI = {
       url: `${STORE_BASE_URL}/${id}`,
       method: "delete",
     });
-  }
+  },
 };
 
 export default StoreAPI;

@@ -88,4 +88,4 @@ const OutboundInventoryAPI = {
   },
 };
 
-export default OutboundInventoryAPI; 
+export default OutboundInventoryAPI;

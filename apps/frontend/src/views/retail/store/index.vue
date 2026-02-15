@@ -2,7 +2,7 @@
   <div class="store-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="店舗名" prop="storeName">
           <el-input
             v-model="queryParams.storeName"

@@ -2,7 +2,7 @@
   <div class="inventory-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="店舗" prop="storeId">
           <el-select
             v-model="queryParams.storeId"
@@ -122,7 +122,11 @@
           />
         </el-form-item>
         <el-form-item label="ロット番号" prop="lotNumber">
-          <el-input v-model="restockForm.lotNumber" placeholder="LOT-YYYYMMDD-SEQ" style="width: 200px" />
+          <el-input
+            v-model="restockForm.lotNumber"
+            placeholder="LOT-YYYYMMDD-SEQ"
+            style="width: 200px"
+          />
         </el-form-item>
         <el-form-item label="賞味期限" prop="expiryDate">
           <el-date-picker
@@ -134,7 +138,12 @@
           />
         </el-form-item>
         <el-form-item label="備考" prop="remarks">
-          <el-input v-model="restockForm.remarks" type="textarea" :rows="2" placeholder="備考を入力" />
+          <el-input
+            v-model="restockForm.remarks"
+            type="textarea"
+            :rows="2"
+            placeholder="備考を入力"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -324,15 +333,19 @@ const handleExport = async () => {
     const params = { ...queryParams, pageNum: 1, pageSize: 1000 };
     const response = await InventoryAPI.getList(params);
     const data = response.list || [];
-    exportToCSV(data, [
-      { key: "storeName", label: "店舗名" },
-      { key: "productName", label: "商品名" },
-      { key: "productCode", label: "商品コード" },
-      { key: "lotNumber", label: "ロット番号" },
-      { key: "quantity", label: "在庫数" },
-      { key: "expiryDate", label: "賞味期限" },
-      { key: "status", label: "状態" },
-    ], "inventory-list.csv");
+    exportToCSV(
+      data,
+      [
+        { key: "storeName", label: "店舗名" },
+        { key: "productName", label: "商品名" },
+        { key: "productCode", label: "商品コード" },
+        { key: "lotNumber", label: "ロット番号" },
+        { key: "quantity", label: "在庫数" },
+        { key: "expiryDate", label: "賞味期限" },
+        { key: "status", label: "状態" },
+      ],
+      "inventory-list.csv"
+    );
   } catch (e) {
     ElMessage.error("エクスポートに失敗しました");
   }

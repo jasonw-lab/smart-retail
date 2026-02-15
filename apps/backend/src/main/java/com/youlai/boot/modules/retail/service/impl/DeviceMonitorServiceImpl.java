@@ -11,13 +11,17 @@ import com.youlai.boot.modules.retail.model.entity.Store;
 import com.youlai.boot.modules.retail.service.DeviceMonitorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +39,8 @@ public class DeviceMonitorServiceImpl implements DeviceMonitorService {
     private final AlertMapper alertMapper;
     private final StoreMapper storeMapper;
     private final ObjectMapper objectMapper;
+    @Value("${DEMO_MODE:false}")
+    private String demoMode;
 
     /**
      * Heartbeat 未受信の閾値（分）
@@ -211,6 +217,10 @@ public class DeviceMonitorServiceImpl implements DeviceMonitorService {
 
     @Override
     public int runAllDeviceMonitoring() {
+        if (isDemoModeEnabled()) {
+            return createDemoModeAlerts();
+        }
+
         log.info("Starting device monitoring...");
         int totalAlerts = 0;
 
@@ -221,6 +231,136 @@ public class DeviceMonitorServiceImpl implements DeviceMonitorService {
 
         log.info("Device monitoring completed. Total alerts generated: {}", totalAlerts);
         return totalAlerts;
+    }
+
+    private boolean isDemoModeEnabled() {
+        String value = demoMode == null ? "" : demoMode.trim();
+        return "true".equalsIgnoreCase(value)
+                || "on".equalsIgnoreCase(value)
+                || "yes".equalsIgnoreCase(value)
+                || "1".equals(value);
+    }
+
+    @Transactional
+    protected int createDemoModeAlerts() {
+        log.info("DEMO_MODE is enabled. Creating 2 demo alerts for device monitoring...");
+
+        List<Device> allDevices = deviceMapper.selectList(null);
+        if (allDevices.isEmpty()) {
+            log.warn("DEMO_MODE: No devices found. Skipping demo alert generation.");
+            return 0;
+        }
+
+        Map<Long, List<Device>> devicesByStore = allDevices.stream()
+                .filter(d -> d.getStoreId() != null)
+                .collect(Collectors.groupingBy(Device::getStoreId));
+        if (devicesByStore.isEmpty()) {
+            log.warn("DEMO_MODE: No store-linked devices found. Skipping demo alert generation.");
+            return 0;
+        }
+
+        List<Long> storeIds = new ArrayList<>(devicesByStore.keySet());
+        Collections.shuffle(storeIds);
+
+        List<Device> selectedDevices = new ArrayList<>();
+        int storesToUse = Math.min(2, storeIds.size());
+        for (int i = 0; i < storesToUse; i++) {
+            List<Device> storeDevices = devicesByStore.get(storeIds.get(i));
+            if (storeDevices == null || storeDevices.isEmpty()) {
+                continue;
+            }
+            selectedDevices.add(storeDevices.get(ThreadLocalRandom.current().nextInt(storeDevices.size())));
+        }
+
+        if (selectedDevices.size() < 2) {
+            List<Device> shuffled = new ArrayList<>(allDevices);
+            Collections.shuffle(shuffled);
+            for (Device device : shuffled) {
+                boolean alreadySelected = selectedDevices.stream()
+                        .anyMatch(d -> d.getId() != null && d.getId().equals(device.getId()));
+                if (!alreadySelected) {
+                    selectedDevices.add(device);
+                }
+                if (selectedDevices.size() >= 2) {
+                    break;
+                }
+            }
+        }
+
+        if (selectedDevices.isEmpty()) {
+            log.warn("DEMO_MODE: Failed to select devices for demo alerts.");
+            return 0;
+        }
+        if (selectedDevices.size() < 2) {
+            selectedDevices.add(selectedDevices.get(0));
+        }
+
+        Map<Long, String> storeNameMap = getStoreNameMap(selectedDevices);
+
+        int count = 0;
+        for (int i = 0; i < 2; i++) {
+            Device device = selectedDevices.get(i);
+            String storeName = storeNameMap.getOrDefault(device.getStoreId(), "デモ店舗" + (i + 1));
+            Alert alert = createRandomDemoAlert(device, storeName);
+            alertMapper.insert(alert);
+            count++;
+            log.info("DEMO_MODE: alert created. storeId={}, deviceId={}, type={}",
+                    device.getStoreId(), device.getId(), alert.getAlertType());
+        }
+
+        log.info("DEMO_MODE: Device monitoring completed. Total demo alerts generated: {}", count);
+        return count;
+    }
+
+    private Alert createRandomDemoAlert(Device device, String storeName) {
+        List<String> alertTypes = List.of(
+                "COMMUNICATION_DOWN",
+                "PAYMENT_TERMINAL_DOWN",
+                "CARD_READER_ERROR",
+                "PRINTER_PAPER_EMPTY"
+        );
+        String alertType = alertTypes.get(ThreadLocalRandom.current().nextInt(alertTypes.size()));
+
+        String message;
+        String priority;
+        String thresholdValue;
+        String currentValue;
+
+        switch (alertType) {
+            case "COMMUNICATION_DOWN" -> {
+                long minutes = ThreadLocalRandom.current().nextLong(6, 31);
+                message = String.format("[通信断][デモ] 店舗: %s, デバイス: %s (%s), 最終通信: %d分前",
+                        storeName, device.getDeviceName(), device.getDeviceCode(), minutes);
+                priority = "P1";
+                thresholdValue = HEARTBEAT_THRESHOLD_MINUTES + "分";
+                currentValue = minutes + "分経過";
+            }
+            case "PAYMENT_TERMINAL_DOWN" -> {
+                String status = ThreadLocalRandom.current().nextBoolean() ? "OFFLINE" : "ERROR";
+                message = String.format("[決済端末停止][デモ] 店舗: %s, デバイス: %s (%s), ステータス: %s",
+                        storeName, device.getDeviceName(), device.getDeviceCode(), status);
+                priority = "P1";
+                thresholdValue = "ONLINE";
+                currentValue = status;
+            }
+            case "CARD_READER_ERROR" -> {
+                message = String.format("[カードリーダー異常][デモ] 店舗: %s, デバイス: %s (%s), カードリーダー接続: 切断",
+                        storeName, device.getDeviceName(), device.getDeviceCode());
+                priority = "P1";
+                thresholdValue = "接続";
+                currentValue = "切断";
+            }
+            case "PRINTER_PAPER_EMPTY" -> {
+                message = String.format("[プリンター用紙切れ][デモ] 店舗: %s, デバイス: %s (%s), 用紙残量: なし",
+                        storeName, device.getDeviceName(), device.getDeviceCode());
+                priority = "P3";
+                thresholdValue = "OK/LOW";
+                currentValue = "EMPTY";
+            }
+            default -> throw new IllegalStateException("Unexpected demo alert type: " + alertType);
+        }
+
+        return createDeviceAlert(device, alertType, priority, message, thresholdValue, currentValue);
     }
 
     /**

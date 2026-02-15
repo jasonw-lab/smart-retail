@@ -1,6 +1,7 @@
 package com.youlai.boot.modules.retail.scheduler;
 
 import com.youlai.boot.modules.retail.service.DeviceMonitorService;
+import com.youlai.boot.modules.retail.service.PaymentDemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,18 +25,20 @@ import org.springframework.stereotype.Component;
 public class DeviceMonitorScheduler {
 
     private final DeviceMonitorService deviceMonitorService;
+    private final PaymentDemoService paymentDemoService;
 
     /**
      * デバイス監視処理を5分毎に実行
      * cron: 毎時 0, 5, 10, 15, ... 分に実行
      */
-    @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     public void runDeviceMonitoring() {
         log.info("DeviceMonitorScheduler: Starting scheduled device monitoring...");
 
         try {
             int totalAlerts = deviceMonitorService.runAllDeviceMonitoring();
-            log.info("DeviceMonitorScheduler: Completed. Generated {} alerts.", totalAlerts);
+            int totalPayments = paymentDemoService.runDemoPayments();
+            log.info("DeviceMonitorScheduler: Completed. Generated {} alerts, {} demo payments.", totalAlerts, totalPayments);
         } catch (Exception e) {
             log.error("DeviceMonitorScheduler: Error during device monitoring", e);
         }
@@ -49,7 +52,8 @@ public class DeviceMonitorScheduler {
     public int runManually() {
         log.info("DeviceMonitorScheduler: Manual execution started...");
         int totalAlerts = deviceMonitorService.runAllDeviceMonitoring();
-        log.info("DeviceMonitorScheduler: Manual execution completed. Generated {} alerts.", totalAlerts);
+        int totalPayments = paymentDemoService.runDemoPayments();
+        log.info("DeviceMonitorScheduler: Manual execution completed. Generated {} alerts, {} demo payments.", totalAlerts, totalPayments);
         return totalAlerts;
     }
 }

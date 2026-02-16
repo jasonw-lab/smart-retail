@@ -2,7 +2,7 @@
   <div class="shipping-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true" class="search-form">
+      <el-form ref="queryForm" :model="queryParams" :inline="true" class="search-form">
         <el-form-item label="店舗" prop="storeId">
           <el-select
             v-model="queryParams.storeId"
@@ -76,7 +76,7 @@
         <el-table-column prop="status" label="ステータス" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'completed' ? 'success' : 'warning'">
-              {{ row.status === 'completed' ? '出庫済み' : '未出庫' }}
+              {{ row.status === "completed" ? "出庫済み" : "未出庫" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -113,12 +113,7 @@
     </el-card>
 
     <!-- 更新ダイアログ -->
-    <el-dialog
-      :title="dialog.title"
-      v-model="dialog.visible"
-      width="700px"
-      append-to-body
-    >
+    <el-dialog v-model="dialog.visible" :title="dialog.title" width="700px" append-to-body>
       <el-form
         ref="updateForm"
         :model="updateFormData"
@@ -203,7 +198,12 @@ import { ref, reactive, watch, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import type { FormInstance } from "element-plus";
 import OutboundInventoryAPI from "@/api/retail/inventory/out";
-import type { OutboundItem, OutboundListParams, CreateOutboundDto, UpdateOutboundDto } from "@/api/retail/inventory/out";
+import type {
+  OutboundItem,
+  OutboundListParams,
+  CreateOutboundDto,
+  UpdateOutboundDto,
+} from "@/api/retail/inventory/out";
 import { exportToCSV } from "@/utils/exportCsv";
 
 // 検索フォーム
@@ -393,17 +393,21 @@ const handleExport = async () => {
     const params = { ...queryParams, page: 1, pageSize: 1000 };
     const response = await OutboundInventoryAPI.getList(params);
     const data = response.list || [];
-    exportToCSV(data, [
-      { key: "createTime", label: "登録日時" },
-      { key: "storeName", label: "店舗" },
-      { key: "productName", label: "商品名" },
-      { key: "quantity", label: "出庫数" },
-      { key: "outboundType", label: "出庫タイプ" },
-      { key: "status", label: "ステータス" },
-      { key: "shippingTime", label: "出庫日時" },
-      { key: "operator", label: "担当者" },
-      { key: "remarks", label: "備考" },
-    ], "shipping-list.csv");
+    exportToCSV(
+      data,
+      [
+        { key: "createTime", label: "登録日時" },
+        { key: "storeName", label: "店舗" },
+        { key: "productName", label: "商品名" },
+        { key: "quantity", label: "出庫数" },
+        { key: "outboundType", label: "出庫タイプ" },
+        { key: "status", label: "ステータス" },
+        { key: "shippingTime", label: "出庫日時" },
+        { key: "operator", label: "担当者" },
+        { key: "remarks", label: "備考" },
+      ],
+      "shipping-list.csv"
+    );
   } catch (e) {
     ElMessage.error("エクスポートに失敗しました");
   }
@@ -458,4 +462,4 @@ onMounted(() => {
   border-top: 1px solid #dcdfe6;
   margin-top: 10px;
 }
-</style> 
+</style>

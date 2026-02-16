@@ -2,7 +2,7 @@
   <div class="store-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="店舗名" prop="storeName">
           <el-input
             v-model="queryParams.storeName"
@@ -34,12 +34,7 @@
         </div>
       </template>
 
-      <el-table
-        v-loading="loading"
-        :data="storeList"
-        border
-        style="width: 100%"
-      >
+      <el-table v-loading="loading" :data="storeList" border style="width: 100%">
         <el-table-column type="index" label="No." width="50" />
         <el-table-column prop="name" label="店舗名" min-width="150" />
         <el-table-column prop="address" label="住所" min-width="200" />
@@ -58,27 +53,9 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              link
-              @click="handleEdit(row)"
-            >
-              編集
-            </el-button>
-            <el-button
-              type="primary"
-              link
-              @click="handleInventory(row)"
-            >
-              在庫
-            </el-button>
-            <el-button
-              type="danger"
-              link
-              @click="handleDelete(row)"
-            >
-              削除
-            </el-button>
+            <el-button type="primary" link @click="handleEdit(row)">編集</el-button>
+            <el-button type="primary" link @click="handleInventory(row)">在庫</el-button>
+            <el-button type="danger" link @click="handleDelete(row)">削除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -103,12 +80,7 @@
       :title="dialogType === 'add' ? '店舗新規登録' : '店舗編集'"
       width="500px"
     >
-      <el-form
-        ref="storeForm"
-        :model="storeForm"
-        :rules="storeRules"
-        label-width="100px"
-      >
+      <el-form ref="storeForm" :model="storeForm" :rules="storeRules" label-width="100px">
         <el-form-item label="店舗名" prop="name">
           <el-input v-model="storeForm.name" placeholder="店舗名を入力" />
         </el-form-item>
@@ -166,18 +138,10 @@ const storeForm = reactive({
 
 // バリデーションルール
 const storeRules = {
-  name: [
-    { required: true, message: "店舗名を入力してください", trigger: "blur" },
-  ],
-  address: [
-    { required: true, message: "住所を入力してください", trigger: "blur" },
-  ],
-  phone: [
-    { required: true, message: "電話番号を入力してください", trigger: "blur" },
-  ],
-  status: [
-    { required: true, message: "ステータスを選択してください", trigger: "change" },
-  ],
+  name: [{ required: true, message: "店舗名を入力してください", trigger: "blur" }],
+  address: [{ required: true, message: "住所を入力してください", trigger: "blur" }],
+  phone: [{ required: true, message: "電話番号を入力してください", trigger: "blur" }],
+  status: [{ required: true, message: "ステータスを選択してください", trigger: "change" }],
 };
 
 // データ取得
@@ -292,15 +256,11 @@ const handleInventory = (row: any) => {
 
 // 削除
 const handleDelete = (row: any) => {
-  ElMessageBox.confirm(
-    `店舗「${row.name}」を削除してもよろしいですか？`,
-    "警告",
-    {
-      confirmButtonText: "確定",
-      cancelButtonText: "キャンセル",
-      type: "warning",
-    }
-  ).then(() => {
+  ElMessageBox.confirm(`店舗「${row.name}」を削除してもよろしいですか？`, "警告", {
+    confirmButtonText: "確定",
+    cancelButtonText: "キャンセル",
+    type: "warning",
+  }).then(() => {
     // TODO: 削除処理を実装
     ElMessage.success("削除処理を実装してください");
   });
@@ -324,4 +284,4 @@ onMounted(() => {
 .store-container {
   padding: 20px;
 }
-</style> 
+</style>

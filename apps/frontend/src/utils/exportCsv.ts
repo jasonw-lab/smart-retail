@@ -6,7 +6,7 @@ export function exportToCSV<T extends Record<string, any>>(
   if (!data.length) return;
   const csvRows = [];
   // ヘッダー
-  csvRows.push(headers.map(h => `"${h.label}"`).join(","));
+  csvRows.push(headers.map((h) => `"${h.label}"`).join(","));
   // データ
   for (const row of data) {
     csvRows.push(
@@ -30,4 +30,4 @@ export function exportToCSV<T extends Record<string, any>>(
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-} 
+}

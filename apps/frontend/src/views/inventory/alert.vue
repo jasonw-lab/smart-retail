@@ -9,7 +9,7 @@
         </div>
       </template>
 
-      <el-form :model="alertSettings" ref="formRef" label-width="180px">
+      <el-form ref="formRef" :model="alertSettings" label-width="180px">
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="在庫不足警告レベル" prop="lowStockThreshold">
@@ -107,13 +107,7 @@
             >
               対応
             </el-button>
-            <el-button
-              type="primary"
-              link
-              @click="handleDetail(row)"
-            >
-              詳細
-            </el-button>
+            <el-button type="primary" link @click="handleDetail(row)">詳細</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -288,7 +282,7 @@ const allAlerts = ref([
     currentValue: 130,
     threshold: 100,
     status: "resolved",
-  }
+  },
 ]);
 
 // ページネーション
@@ -387,15 +381,19 @@ const handleRefresh = () => {
 
 // データのエクスポート
 const handleExport = () => {
-  exportToCSV(alertList.value, [
-    { key: "date", label: "発生日時" },
-    { key: "storeName", label: "店舗" },
-    { key: "productName", label: "商品名" },
-    { key: "alertType", label: "アラート種別" },
-    { key: "currentValue", label: "現在値" },
-    { key: "threshold", label: "閾値" },
-    { key: "status", label: "状態" },
-  ], "alert-list.csv");
+  exportToCSV(
+    alertList.value,
+    [
+      { key: "date", label: "発生日時" },
+      { key: "storeName", label: "店舗" },
+      { key: "productName", label: "商品名" },
+      { key: "alertType", label: "アラート種別" },
+      { key: "currentValue", label: "現在値" },
+      { key: "threshold", label: "閾値" },
+      { key: "status", label: "状態" },
+    ],
+    "alert-list.csv"
+  );
 };
 
 // ページサイズの変更
@@ -414,4 +412,4 @@ const handleCurrentChange = (val: number) => {
 .alert-container {
   padding: 20px;
 }
-</style> 
+</style>

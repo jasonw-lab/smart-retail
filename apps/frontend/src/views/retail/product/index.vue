@@ -2,7 +2,7 @@
   <div class="product-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryForm" :inline="true">
+      <el-form ref="queryForm" :model="queryParams" :inline="true">
         <el-form-item label="商品名" prop="productName">
           <el-input
             v-model="queryParams.productName"
@@ -62,7 +62,11 @@
         </el-table-column>
         <el-table-column prop="categoryName" label="カテゴリ" width="120">
           <template #default="{ row }">
-            {{ row.categoryName || categories.find((c: Category) => c.id === row.categoryId)?.name || "その他" }}
+            {{
+              row.categoryName ||
+              categories.find((c: Category) => c.id === row.categoryId)?.name ||
+              "その他"
+            }}
           </template>
         </el-table-column>
         <el-table-column prop="price" label="価格" width="100">
@@ -128,7 +132,10 @@
           <el-input v-model="productForm.description" type="textarea" :rows="3" />
         </el-form-item>
         <el-form-item label="商品写真" prop="imageUrl">
-          <SingleImageUpload v-model="productForm.imageUrl" :style="{ width: '120px', height: '120px' }" />
+          <SingleImageUpload
+            v-model="productForm.imageUrl"
+            :style="{ width: '120px', height: '120px' }"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -251,7 +258,10 @@ const getList = async () => {
       code: record.productCode ?? "",
       barcode: record.barcode ?? "",
       categoryId: record.categoryId ?? 0,
-      categoryName: categories.value.find((c: Category) => c.id === record.categoryId)?.name || record.categoryName || "その他",
+      categoryName:
+        categories.value.find((c: Category) => c.id === record.categoryId)?.name ||
+        record.categoryName ||
+        "その他",
       price: Number(record.unitPrice ?? 0),
       stock: 0,
       description: record.description ?? "",

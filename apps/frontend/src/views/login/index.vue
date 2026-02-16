@@ -32,7 +32,7 @@
             <el-image :src="smartRetailLogo" class="login-branding__logo-img" />
             <h1 class="login-branding__title">Smart Retail Pro</h1>
           </div>
-          <p class="login-branding__tagline">{{ t('login.welcomeMessage') }}</p>
+          <p class="login-branding__tagline">{{ t("login.welcomeMessage") }}</p>
           <div class="login-branding__features">
             <div class="login-branding__feature">
               <div class="login-branding__feature-icon">
@@ -61,13 +61,17 @@
         <div class="login-card__inner">
           <!-- Mobile logo -->
           <div class="login-card__mobile-logo">
-            <el-image :src="smartRetailLogo" style="width: 56px;" />
+            <el-image :src="smartRetailLogo" style="width: 56px" />
             <span class="login-card__mobile-title">Smart Retail Pro</span>
           </div>
 
           <!-- Form area with transition -->
           <transition name="fade-slide" mode="out-in">
-            <component :is="formComponents[component]" v-model="component" class="login-card__form" />
+            <component
+              :is="formComponents[component]"
+              v-model="component"
+              class="login-card__form"
+            />
           </transition>
         </div>
       </div>
@@ -103,7 +107,13 @@ const formComponents = {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-family: 'Inter', 'Noto Sans JP', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Inter",
+    "Noto Sans JP",
+    "Noto Sans SC",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 /* ===== Animated background ===== */
@@ -165,9 +175,16 @@ const formComponents = {
 }
 
 @keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.05); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
 }
 
 /* ===== Top-right controls ===== */
@@ -226,7 +243,7 @@ const formComponents = {
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: -60px;
     right: -60px;

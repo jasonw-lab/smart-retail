@@ -109,7 +109,7 @@ const RetailProductAPI = {
       url: `${GOODS_BASE_URL}/${id}`,
       method: "delete",
     });
-  }
+  },
 };
 
 export default RetailProductAPI;

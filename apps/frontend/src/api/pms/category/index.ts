@@ -93,7 +93,6 @@ const CategoryAPI = {
       data: data,
     });
   },
-
 };
 
 export default CategoryAPI;

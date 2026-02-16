@@ -28,12 +28,16 @@
 --       - retail_alert: 要件定義§8.2準拠に再設計
 --         (priority, 5段階status, device_id, alert_type拡張,
 --          acknowledged_at/resolved_at/closed_at/resolution_note 追加)
+--   v0.5.1 (2026-02-15): PJ-6沈黙監視対応
+--       - retail_alert.alert_type: CARD_READER_ERROR, PRINTER_PAPER_EMPTY 追加
 --       - retail_product: reorder_point / max_stock 追加（アラート検出ロジック対応）
 --       - retail_inventory: received_at追加, CHECK(quantity>=0)追加,
 --         min_stock/max_stock削除（商品レベルに移動）
 --       - retail_inventory_transaction: inventory_id FK追加, txn_type拡張
 --         (DISPOSAL/TRANSFER_IN/TRANSFER_OUT), source_type追加, quantity_delta化
 --       - retail_store: status を ENUM('ONLINE','MAINTENANCE','OFFLINE') に変更
+--   v0.5.2 (2026-02-15): TX-01決済履歴画面対応
+--       - retail_sales: idx_store_sale_time, idx_payment_method インデックス追加
 -- ============================================================
 
 use youlai_boot;
@@ -291,7 +295,7 @@ CREATE TABLE `retail_device` (
 -- 用途: 在庫切れ警告、賞味期限接近警告、在庫過多警告、デバイス障害通知
 -- 準拠: 要件定義§5.1〜§5.5, §8.2 / SQL設計書§2.6 / UI設計書§7（A-01）
 -- 特記:
---   - alert_type: 5種類（在庫系3 + デバイス系2）
+--   - alert_type: 7種類（在庫系3 + デバイス系4）
 --   - priority: P1〜P4（要件定義§5.1）
 --   - status: 5段階状態遷移 NEW→ACK→IN_PROGRESS→RESOLVED→CLOSED（要件定義§5.3）
 --   - device_id: デバイス起因アラートの発生源特定用（要件定義§8.3）
@@ -306,7 +310,7 @@ CREATE TABLE `retail_alert` (
   `product_id` bigint DEFAULT NULL COMMENT '商品ID（在庫系アラート時に設定）',
   `device_id` bigint DEFAULT NULL COMMENT 'デバイスID（デバイス系アラート時に設定）',
   `lot_number` varchar(50) DEFAULT NULL COMMENT 'ロット番号（EXPIRY_SOONアラート時に設定）',
-  `alert_type` enum('LOW_STOCK','EXPIRY_SOON','HIGH_STOCK','COMMUNICATION_DOWN','PAYMENT_TERMINAL_DOWN') NOT NULL COMMENT 'アラートタイプ（要件定義§5.2）',
+  `alert_type` enum('LOW_STOCK','EXPIRY_SOON','HIGH_STOCK','COMMUNICATION_DOWN','PAYMENT_TERMINAL_DOWN','CARD_READER_ERROR','PRINTER_PAPER_EMPTY') NOT NULL COMMENT 'アラートタイプ（要件定義§5.2 + PJ-6沈黙監視拡張）',
   `priority` enum('P1','P2','P3','P4') NOT NULL COMMENT '優先度（要件定義§5.1: P1緊急/P2高/P3中/P4低）',
   `status` enum('NEW','ACK','IN_PROGRESS','RESOLVED','CLOSED') DEFAULT 'NEW' COMMENT '状態（要件定義§5.3: NEW→ACK→IN_PROGRESS→RESOLVED→CLOSED）',
   `message` varchar(500) DEFAULT NULL COMMENT 'アラートメッセージ（表示用テキスト）',

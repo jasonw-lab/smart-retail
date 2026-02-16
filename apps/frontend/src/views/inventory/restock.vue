@@ -2,9 +2,14 @@
   <div class="restock-container">
     <!-- 検索フォーム -->
     <el-card shadow="never" class="mb-4">
-      <el-form :model="queryParams" ref="queryFormRef" :inline="true">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="店舗" prop="storeId">
-          <el-select v-model="queryParams.storeId" placeholder="店舗を選択" clearable style="width: 200px">
+          <el-select
+            v-model="queryParams.storeId"
+            placeholder="店舗を選択"
+            clearable
+            style="width: 200px"
+          >
             <el-option
               v-for="store in storeOptions"
               :key="store.id"
@@ -18,8 +23,8 @@
             v-model="queryParams.productName"
             placeholder="商品名を入力"
             clearable
-            @keyup.enter="handleQuery"
             style="width: 200px"
+            @keyup.enter="handleQuery"
           />
         </el-form-item>
         <el-form-item label="ロット番号" prop="lotNumber">
@@ -27,12 +32,17 @@
             v-model="queryParams.lotNumber"
             placeholder="ロット番号を入力"
             clearable
-            @keyup.enter="handleQuery"
             style="width: 200px"
+            @keyup.enter="handleQuery"
           />
         </el-form-item>
         <el-form-item label="入庫タイプ" prop="restockType">
-          <el-select v-model="queryParams.restockType" placeholder="入庫タイプを選択" clearable style="width: 200px">
+          <el-select
+            v-model="queryParams.restockType"
+            placeholder="入庫タイプを選択"
+            clearable
+            style="width: 200px"
+          >
             <el-option label="通常入庫" value="normal" />
             <el-option label="返品入庫" value="return" />
             <el-option label="在庫調整" value="adjustment" />
@@ -102,12 +112,7 @@
     </el-card>
 
     <!-- 更新ダイアログ -->
-    <el-dialog
-      :title="dialog.title"
-      v-model="dialog.visible"
-      width="700px"
-      append-to-body
-    >
+    <el-dialog v-model="dialog.visible" :title="dialog.title" width="700px" append-to-body>
       <el-form
         ref="updateForm"
         :model="updateFormData"
@@ -248,8 +253,8 @@ const handleQuery = async () => {
     console.log("API Response:", response);
     // if (response?.data) {
     //   console.log("Response data:", response.data);
-      historyList.value = response.list || [];
-      total.value = response.total || 0;
+    historyList.value = response.list || [];
+    total.value = response.total || 0;
     // } else {
     //   console.warn("Invalid response format:", response);
     //   historyList.value = [];
@@ -290,18 +295,22 @@ const handleExport = async () => {
     const params = { ...queryParams, page: 1, pageSize: 1000 };
     const response = await InboundInventoryAPI.getList(params);
     const data = response.list || [];
-    exportToCSV(data, [
-      { key: "createTime", label: "登録日時" },
-      { key: "storeName", label: "店舗" },
-      { key: "productName", label: "商品名" },
-      { key: "quantity", label: "入庫数" },
-      { key: "lotNumber", label: "ロット番号" },
-      { key: "expiryDate", label: "賞味期限" },
-      { key: "restockType", label: "入庫タイプ" },
-      { key: "shippingTime", label: "入庫日時" },
-      { key: "operator", label: "担当者" },
-      { key: "remarks", label: "備考" },
-    ], "restock-history.csv");
+    exportToCSV(
+      data,
+      [
+        { key: "createTime", label: "登録日時" },
+        { key: "storeName", label: "店舗" },
+        { key: "productName", label: "商品名" },
+        { key: "quantity", label: "入庫数" },
+        { key: "lotNumber", label: "ロット番号" },
+        { key: "expiryDate", label: "賞味期限" },
+        { key: "restockType", label: "入庫タイプ" },
+        { key: "shippingTime", label: "入庫日時" },
+        { key: "operator", label: "担当者" },
+        { key: "remarks", label: "備考" },
+      ],
+      "restock-history.csv"
+    );
   } catch (e) {
     ElMessage.error("エクスポートに失敗しました");
   }

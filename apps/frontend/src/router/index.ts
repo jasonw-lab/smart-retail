@@ -98,7 +98,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 店舗管理グループ（Admin: S-01 + DV-01）
+  // 店舗管理グループ（Admin: S-01 + DV-01 + TX-01）
   // Phase 2 TODO: Operator ロールでは「店舗」グループとし、デバイス一覧のみ表示
   {
     path: "/retail/store-management",
@@ -113,6 +113,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "StoreList",
         // Phase 2 TODO: Operator ロールでは hidden: true にする（担当店舗固定のため不要）
         meta: { title: "店舗一覧", icon: "el-icon-Shop", keepAlive: true },
+      },
+      {
+        path: "sales",
+        component: () => import("@/views/retail/sales/index.vue"),
+        name: "SalesList",
+        meta: { title: "決済履歴", icon: "el-icon-Ticket", keepAlive: true },
       },
       {
         path: "device",

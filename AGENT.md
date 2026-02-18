@@ -153,13 +153,12 @@ xxxxx
 ## Issue対応フロー
 
 ### 1. ブランチ作成
-- 未コミットCodeあれば、一旦待避する　（ユーザーに確認）
-- 最新コードは origin/develop を checkout 
+
+- 新しいissueに対応するとき、ブランチを現在のbranchから対応用branch新規作成する
 ```bash
 git fetch origin
 ```
 作業ブランチ: feature/issue-<番号>-<概要>
-- 未コミットCodeを復帰する
 
 
 ### 2. 実装

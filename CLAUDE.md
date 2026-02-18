@@ -121,7 +121,7 @@ The request wrapper returns `response.data.data` directly. Frontend receives:
 - Project rules: `AGENT.md`
 
 ## Git Workflow
-
+- 新しいissueに対応するとき、ブランチを現在のbranchから対応用branch新規作成する
 - Branch: `feature/issue-<number>-<description>`
 - PR target: `develop` branch
 - Commit format: `feat(scope): description (issue-XXX)`

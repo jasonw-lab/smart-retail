@@ -140,9 +140,9 @@ import StoreAPI, { type StorePageVO, type StoreForm as StoreFormType } from "@/a
 import type { FormInstance } from "element-plus";
 
 const STORE_STATUS_OPTIONS = [
-  { value: "active", label: "稼働中", type: "success" },
-  { value: "maintenance", label: "メンテナンス中", type: "warning" },
-  { value: "inactive", label: "停止中", type: "danger" },
+  { value: "ONLINE", label: "営業中", type: "success" },
+  { value: "MAINTENANCE", label: "メンテナンス中", type: "warning" },
+  { value: "OFFLINE", label: "休業中", type: "danger" },
 ];
 
 // 検索パラメータ
@@ -171,7 +171,7 @@ const storeForm = reactive<StoreFormType & { id?: number }>({
   address: "",
   phone: "",
   manager: "",
-  status: "active",
+  status: "ONLINE",
   openingHours: "",
 });
 
@@ -321,7 +321,7 @@ const resetForm = () => {
     address: "",
     phone: "",
     manager: "",
-    status: "active",
+    status: "ONLINE",
     openingHours: "",
   });
   storeFormRef.value?.clearValidate();

@@ -1,7 +1,20 @@
-# app deployment script
+#!/bin/bash
 
-# shellcheck disable=SC2164
+set -e
+
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+echo "Starting backend deployment..."
+
+# Pull latest changes
 git pull
-cd  ./apps/backend/docker
 
-docker compose -f docker-compose-app.yml up -d --build
+# Navigate to the docker directory
+cd "$SCRIPT_DIR/platform/docker"
+
+# Build and start backend
+docker compose -f docker-compose-app.yml up -d --build smart-retail-backend
+
+echo ""
+echo "=== Backend deployment completed! ==="

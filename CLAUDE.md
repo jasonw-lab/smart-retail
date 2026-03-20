@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Backend API | `apps/backend/` | Java 17, Spring Boot 3.3, MyBatis Plus, Spring Security |
 | Frontend UI | `apps/frontend/` | Vue 3, TypeScript, Vite, Element Plus, Pinia |
 | Frontend EC | `apps/frontend-ec/` | E-commerce frontend (separate) |
+| Docker | `platform/docker/` | Docker Compose environment |
 
 ## Build & Run Commands
 
@@ -44,6 +45,19 @@ cd apps/frontend && pnpm build
 cd apps/frontend && pnpm lint:eslint
 cd apps/frontend && pnpm lint:prettier
 cd apps/frontend && pnpm lint:stylelint
+```
+
+### Docker
+```bash
+# Start infrastructure (MySQL, Redis, MinIO)
+cd platform/docker && docker compose -f docker-compose-env.yml --env-file .env up -d
+
+# Start application (backend, frontend)
+cd platform/docker && docker compose -f docker-compose-app.yml --env-file .env up -d
+
+# Stop all
+cd platform/docker && docker compose -f docker-compose-app.yml down
+cd platform/docker && docker compose -f docker-compose-env.yml down
 ```
 
 ## Architecture
@@ -87,6 +101,7 @@ Freely modifiable:
 - `apps/backend/src/main/java/com/youlai/boot/modules/retail/`
 - `apps/backend/src/main/resources/mapper/retail/`
 - `apps/frontend/src/` (retail-related)
+- `platform/docker/` (Docker configuration)
 
 Changes outside these directories require justification.
 

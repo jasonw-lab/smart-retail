@@ -92,7 +92,10 @@
       "Bash(docker ps:*)",
       "Bash(docker logs:*)",
       "Bash(docker inspect:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(docker exec:*)",
+      "Bash(TOKEN:*)",
+      "Bash(./front.sh)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

@@ -1,0 +1,102 @@
+networks:
+  jason-lab-net:
+    name: jason-lab-net
+    driver: bridge
+
+services:
+
+  # nginx - use ec-demo's nginx instead
+#  nginx:
+#    image: nginx:stable-alpine
+#    container_name: smart-retail-nginx
+#    restart: unless-stopped
+#    volumes:
+#      - ${BASEPATH}/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+#      - ${BASEPATH}/nginx/conf/conf.d:/etc/nginx/conf.d
+#      - ${BASEPATH}/nginx/html:/usr/share/nginx/html
+#      - ${BASEPATH}/nginx/logs:/var/log/nginx
+#    ports:
+#      - 80:80
+#      - 443:443
+#    networks:
+#      - jason-lab-net
+
+  # MySQL for smart-retail
+  smart-retail-mysql:
+    image: mysql:8.0.29
+    container_name: smart-retail-mysql-8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_ROOT_HOST: "%"
+      TZ: Asia/Tokyo
+      LANG: en_US.UTF-8
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_general_ci"]
+    volumes:
+      - ./sql/mysql-init:/docker-entrypoint-initdb.d
+      - ${BASEPATH}/mysql_3306/conf/my.cnf:/etc/my.cnf
+      - ${BASEPATH}/mysql_3306/data:/var/lib/mysql
+      - ${BASEPATH}/mysql_3306/log:/var/log/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      jason-lab-net:
+        aliases:
+          - powerjob-mysql
+
+  # PowerJob Server
+  smart-retail-powerjob-server:
+    image: powerjob/powerjob-server:latest
+    container_name: smart-retail-powerjob-server
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Tokyo
+      JVMOPTIONS: "-Xmx512m"
+      PARAMS: "--spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo --spring.datasource.core.username=root --spring.datasource.core.password=123456 --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Tokyo --oms.storage.dfs.mysql_series.username=root --oms.storage.dfs.mysql_series.password=123456"
+    ports:
+      - "7700:7700"
+      - "10086:10086"
+    networks:
+      - jason-lab-net
+    depends_on:
+      smart-retail-mysql:
+        condition: service_healthy
+
+  # redis - use ec-demo's redis instead
+#  smart-retail-redis:
+#    image: redis:7.2-alpine
+#    container_name: smart-retail-redis
+#    ports:
+#      - "6379:6379"
+#    command: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-123456}"]
+#    volumes:
+#      - ${BASEPATH}/redis/conf/redis.conf:/etc/redis/redis.conf:ro
+#      - ${BASEPATH}/redis/data:/data
+#    restart: unless-stopped
+#    networks:
+#      - jason-lab-net
+
+  # MinIO - use ec-demo's minio instead
+#  smart-retail-minio:
+#    image: minio/minio:RELEASE.2024-12-13T22-19-12Z
+#    platform: ${PLATFORM:-linux/amd64}
+#    container_name: smart-retail-minio
+#    profiles: ["minio"]
+#    restart: unless-stopped
+#    command: server /data --console-address ":9001"
+#    environment:
+#      - TZ=Asia/Tokyo
+#      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+#      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin123}
+#    ports:
+#      - "${MINIO_API_PORT:-9000}:9000"
+#      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+#    volumes:
+#      - ${BASEPATH}/minio/data:/data
+#    networks:
+#      - jason-lab-net

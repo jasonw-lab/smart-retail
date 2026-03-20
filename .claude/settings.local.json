@@ -87,7 +87,12 @@
       "Bash(git log:*)",
       "Bash(pnpm lint:eslint:*)",
       "Bash(git status:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker inspect:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

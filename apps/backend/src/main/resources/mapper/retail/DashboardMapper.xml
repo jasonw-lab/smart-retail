@@ -51,7 +51,7 @@
     <select id="getActiveStoreCount" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM retail_store
-        WHERE status = 'active'
+        WHERE status = 'ONLINE'
     </select>
 
     <!-- 総店舗数取得 -->

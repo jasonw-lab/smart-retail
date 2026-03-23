@@ -16,7 +16,7 @@ services:
     environment:
       - TZ=Asia/Tokyo
       - SPRING_PROFILES_ACTIVE=prod
-      - MYSQL_HOST=smart-retail-mysql
+      - MYSQL_HOST=smart-retail-mysql-8
       - MYSQL_PORT=3306
       - MYSQL_DATABASE=youlai_boot
       - MYSQL_USER=root

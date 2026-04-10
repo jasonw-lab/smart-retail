@@ -28,10 +28,10 @@ public class DeviceMonitorScheduler {
     private final PaymentDemoService paymentDemoService;
 
     /**
-     * デバイス監視処理を5分毎に実行
-     * cron: 毎時 0, 5, 10, 15, ... 分に実行
+     * デバイス監視処理を12時間毎に実行
+     * cron: 0時・12時の0分に実行
      */
-    @Scheduled(cron = "0 */10 * * * ?")
+    @Scheduled(cron = "0 0 0/12 * * ?")
     public void runDeviceMonitoring() {
         log.info("DeviceMonitorScheduler: Starting scheduled device monitoring...");
 

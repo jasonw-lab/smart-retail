@@ -39,8 +39,6 @@
 ### 开发工具
 - **包管理器**: [pnpm](https://pnpm.io/)
 - **代码质量**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/)
-- **Git Hook / 提交规范**: Husky 9.1.7, Commitlint 19.8.0, Commitizen 4.3.1, cz-git 1.11.1
-- **自动导入 / 组件解析**: unplugin-auto-import 19.1.2, unplugin-vue-components 28.5.0
 - **Mock 开发支持**: vite-plugin-mock-dev-server 1.8.5
 
 ### 后端

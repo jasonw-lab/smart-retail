@@ -69,8 +69,6 @@ TODO
 ### Development Tools
 - **Package Manager**: [pnpm](https://pnpm.io/)
 - **Code Quality**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/)
-- **Git Hooks / Commit Helpers**: Husky 9.1.7, Commitlint 19.8.0, Commitizen 4.3.1, cz-git 1.11.1
-- **Auto Import / Component Resolution**: unplugin-auto-import 19.1.2, unplugin-vue-components 28.5.0
 - **Mock Development Support**: vite-plugin-mock-dev-server 1.8.5
 
 ### Backend

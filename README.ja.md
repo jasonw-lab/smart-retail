@@ -71,8 +71,6 @@ TODO
 ### 開発ツール
 - **パッケージ管理**: [pnpm](https://pnpm.io/)
 - **コード品質**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/)
-- **Gitフック / コミット補助**: Husky 9.1.7, Commitlint 19.8.0, Commitizen 4.3.1, cz-git 1.11.1
-- **自動インポート / コンポーネント解決**: unplugin-auto-import 19.1.2, unplugin-vue-components 28.5.0
 - **Mock 開発支援**: vite-plugin-mock-dev-server 1.8.5
 
 ### バックエンド

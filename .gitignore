@@ -81,6 +81,4 @@ __api*.json
 *qa.md
 plan*.md
 
-# environment variables
-.env
-*.env
+.backup

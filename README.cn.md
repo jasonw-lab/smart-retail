@@ -17,60 +17,79 @@
 
 ## 项目简介
 
-SmartRetail Pro 是一款专为零售业打造的管理系统，基于 Vue3、Vite、TypeScript 和 Element-Plus 构建。系统提供完整的商品管理、订单处理、库存控制和客户管理功能，帮助零售商轻松实现业务数字化和高效管理。
+本项目基于 `docs/design/smart-retail-requirements.md` 和 `docs/design/ui/smart-retail-ui-design.md`，实现面向无人超市的 Phase 1 PoC。  
+从源码上看，主要实现位于 `apps/frontend/src/views/retail` 与 `apps/backend/src/main/java/com/youlai/boot/modules/retail/controller`，核心覆盖门店监控、商品库存管理、告警处理以及外部世界模拟。
 
 ## 技术栈
 
 ### 前端
-- **核心框架**: [Vue.js 3.5.13](https://vuejs.org/) - 用于构建用户界面的渐进式JavaScript框架
-- **构建工具**: [Vite 6.2.2](https://vitejs.dev/) - 下一代前端开发与构建工具
-- **UI组件库**: [Element Plus 2.9.9](https://element-plus.org/) - 基于Vue 3的组件库
-- **状态管理**: [Pinia 3.0.2](https://pinia.vuejs.org/) - 直观、类型安全的Vue状态管理库
-- **路由管理**: [Vue Router 4.5.0](https://router.vuejs.org/) - Vue.js官方路由管理器
-- **开发语言**: [TypeScript 5.8.3](https://www.typescriptlang.org/) - JavaScript的超集，提供类型检查
-- **HTTP客户端**: [Axios 1.8.4](https://axios-http.com/) - 基于Promise的HTTP客户端
-- **国际化**: [Vue I18n 11.1.3](https://vue-i18n.intlify.dev/) - Vue.js国际化插件
-- **数据可视化**: [ECharts 5.6.0](https://echarts.apache.org/) - 强大的交互式图表库
-- **富文本编辑器**: [WangEditor 5.6.34](http://www.wangeditor.com/) - 轻量级web富文本编辑器
-- **CSS预处理器**: [Sass 1.86.3](https://sass-lang.com/) - 成熟、稳定、强大的CSS扩展语言
+- **核心框架**: [Vue.js 3.5.13](https://vuejs.org/)
+- **构建工具**: [Vite 6.3.2](https://vitejs.dev/)
+- **开发语言**: [TypeScript 5.8.3](https://www.typescriptlang.org/)
+- **UI组件库**: [Element Plus 2.9.9](https://element-plus.org/)
+- **状态管理**: [Pinia 3.0.2](https://pinia.vuejs.org/)
+- **路由管理**: [Vue Router 4.5.0](https://router.vuejs.org/)
+- **HTTP客户端**: [Axios 1.8.4](https://axios-http.com/)
+- **国际化**: [Vue I18n 11.1.3](https://vue-i18n.intlify.dev/)
+- **数据可视化**: [ECharts 5.6.0](https://echarts.apache.org/), [vue-echarts 7.0.3](https://github.com/ecomfe/vue-echarts)
+- **实时通信**: [STOMP.js 7.1.1](https://stomp-js.github.io/)
+- **富文本 / 辅助 UI**: WangEditor, SortableJS, ExcelJS, Codemirror
+- **样式基础**: Sass 1.86.3, UnoCSS 65.4.3, Animate.css 4.1.1
 
 ### 开发工具
-- **代码质量**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/) - 代码质量和风格工具
-- **提交规范**: [Husky 9.1.7](https://typicode.github.io/husky/), [Commitlint 19.8.0](https://commitlint.js.org/) - Git hooks和提交消息规范化
-- **包管理器**: [pnpm](https://pnpm.io/) - 快速、节省磁盘空间的包管理器
-- **自动导入**: [unplugin-auto-import 19.1.2](https://github.com/antfu/unplugin-auto-import) - 自动导入组件和API
-- **原子化CSS**: [UnoCSS 65.4.3](https://github.com/unocss/unocss) - 即时按需的原子CSS引擎
+- **包管理器**: [pnpm](https://pnpm.io/)
+- **代码质量**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/)
+- **Git Hook / 提交规范**: Husky 9.1.7, Commitlint 19.8.0, Commitizen 4.3.1, cz-git 1.11.1
+- **自动导入 / 组件解析**: unplugin-auto-import 19.1.2, unplugin-vue-components 28.5.0
+- **Mock 开发支持**: vite-plugin-mock-dev-server 1.8.5
 
-### 后端选项
-- **Java后端**: [Spring Boot](https://spring.io/projects/spring-boot) - 简化企业级开发的Java框架
-- **Node后端**: [Nest.js](https://nestjs.com/) - 用于构建高效可扩展的服务器端应用程序的框架
+### 后端
+- **语言 / 运行时**: Java 17
+- **框架**: Spring Boot 3.3.6
+- **安全**: Spring Security
+- **ORM / SQL 映射**: MyBatis Plus 3.5.5
+- **连接池**: Druid 1.2.24
+- **API 文档**: Knife4j 4.5.0 / OpenAPI 3
+- **对象映射**: MapStruct 1.6.3
+- **缓存 / 分布式锁**: Redis, Redisson 3.40.2, Caffeine
+- **对象存储**: MinIO 8.5.10
+- **工具 / 辅助**: Hutool 5.8.34, Spring Dotenv 4.0.0, FastExcel 1.1.0
+- **测试**: Spring Boot Test, Testcontainers 1.19.7, 基于 REST Assured 的 API 测试
+
+### 模拟器
+- **语言 / 运行时**: Java 17
+- **框架**: Spring Boot 3.3.5
+- **任务基础设施**: PowerJob Worker 5.1.1
+- **通信**: Spring Web, Jackson Databind
 
 ## 功能模块
 
-### 商品管理
-- **商品列表**: 浏览和搜索所有商品，支持按状态、类别、价格等条件筛选
-- **商品编辑**: 创建和编辑商品信息，包括名称、描述、图片、价格、库存等
-- **库存管理**: 实时查看和更新库存，支持库存预警和入库计划
-- **分类管理**: 管理商品分类体系，支持拖拽排序
+### 仪表盘
+- **仪表盘**: 展示 KPI、销售趋势、库存状态和最新告警。
 
-### 订单管理
-- **订单列表**: 查看所有订单和详细信息，支持按订单状态、支付状态等筛选
-- **订单详情**: 查看单个订单的详细信息，包括商品、配送、支付信息等
-- **配送管理**: 处理订单发货和跟踪配送状态，支持与物流系统集成
-- **退款处理**: 管理退款和取消订单请求
+### 门店管理
+- **门店列表**: 管理门店状态、地址和运行情况。
+- **支付历史**: 提供销售 / 支付数据的列表与汇总 API。
+- **设备列表**: 监控门店设备状态、最后一次 Heartbeat 和设备类型。
+
+### 商品与库存
+- **商品列表**: 支持商品编码、名称、分类、价格、补货点、最大库存等信息的列表、检索、新增和编辑。
+- **分类管理**: 提供商品分类 API，并在商品列表页按分类管理。
+- **库存列表**: 查看按门店 / 商品维度的库存数量、批次、保质期和状态。
+- **入出库管理**: 以库存事务方式管理入库、出库和废弃，并支持历史查询。
+
+### 告警管理
+- **告警列表**: 列表展示缺货、临期、库存过高、通信中断、支付终端异常等告警，并支持状态管理。
+- **外部世界模拟**: 通过 PowerJob Worker 发送 Heartbeat 和 Payment，复现后端监控与检测流程。
 
 ### 客户管理
-- **客户列表**: 查看所有注册客户及其信息，支持搜索和筛选
-- **客户详情**: 查看单个客户的详细信息，包括购买历史和沟通记录
-- **会员等级**: 管理客户会员等级和积分系统
-- **营销活动**: 创建和管理邮件营销和特别优惠
+- TODO
 
 ### 系统功能
-- **用户管理**: 管理系统用户和权限
-- **角色管理**: 设置不同角色的访问权限
-- **菜单管理**: 自定义系统菜单结构
-- **部门管理**: 管理组织部门架构
-- **数据字典**: 维护系统通用数据
+- **管理基础**: 提供用户、角色、菜单、部门、字典、通知等基础管理能力。
+- **认证与授权**: 基于 Spring Security 和 JWT 提供认证、路由权限和角色权限控制。
+- **API / 文档**: 可通过 Knife4j / OpenAPI 使用接口文档。
+- **实时通信**: 包含基于 WebSocket / STOMP 的通信基础设施。
 
 ## 环境要求
 

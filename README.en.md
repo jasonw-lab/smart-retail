@@ -16,33 +16,35 @@
 
 ## Project Overview
 
-[√](https://github.com/jasonw-lab/smart-retail.git)
+This repository implements a Phase 1 PoC for unmanned retail stores based on `docs/design/smart-retail-requirements.md` and `docs/design/ui/smart-retail-ui-design.md`.  
+In the source tree, the main implementation lives under `apps/frontend/src/views/retail` and `apps/backend/src/main/java/com/youlai/boot/modules/retail/controller`, covering store monitoring, product and inventory operations, alert handling, and external-world simulation.
 
-### Product Management
-- **Product List**: A screen to browse and search all registered products. Filtering is possible by product status, category, price, etc.
-- **Product Registration/Edit**: A screen for registering new products or updating existing product information. Set product name, description, images, price, stock quantity, etc.
-- **Inventory Management**: A screen to check and update inventory status in real-time. Features include low stock alerts and incoming stock management.
-- **Category Management**: A screen to manage the hierarchical structure of product categories. Supports drag-and-drop reordering.
+### Dashboard
+- **Dashboard**: Visualizes KPIs, sales trends, inventory status, and recent alerts.
 
-### Order Management
-- **Order List**: Displays a list of all orders with detailed information. Filtering is possible by order status, payment status, etc.
-- **Order Details**: Shows detailed information for individual orders. Manages order items, shipping information, billing information, etc.
-- **Shipping Management**: A screen for processing order shipments and tracking delivery status. Can integrate with logistics information.
-- **Returns/Cancellation Processing**: A screen for managing and processing return and cancellation requests.
+### Store Management
+- **Store List**: Manages store status, location, and operating conditions.
+- **Payment History**: Provides list and summary APIs for sales and payment data.
+- **Device List**: Monitors store devices, last heartbeat time, and device types.
+
+### Product & Inventory
+- **Product List**: Supports listing, searching, creating, and updating product code, name, category, price, reorder point, and max stock.
+- **Category Management**: Includes product category APIs and category-based management in the product screen.
+- **Inventory List**: Shows quantity, lot, expiry date, and inventory status by store and product.
+- **Inbound / Outbound Management**: Manages inbound, outbound, and discard operations as inventory transactions with history lookup.
+
+### Alert Management
+- **Alert List**: Displays alerts such as low stock, expiry soon, overstock, communication down, and payment terminal failures, with status management.
+- **External World Simulation**: Uses PowerJob Worker to send heartbeat and payment events and reproduce backend monitoring flows.
 
 ### Customer Management
-- **Customer List**: Displays a list of registered customers with detailed information. Features search and filtering capabilities.
-- **Customer Details**: Centralized management of individual customer information, purchase history, inquiry history, etc.
-- **Membership Rank Management**: A screen for managing customer membership ranks and point systems.
-- **Marketing**: A screen for managing email newsletters and special offers.
+- TODO
 
 ### System Features
-
-- **System Functions**: Provides functional modules such as user management, role management, menu management, department management, and dictionary management.
-- **Permission Management**: Supports various permission management methods including dynamic routing, button permissions, role permissions, and data permissions.
-
-- **Core Features**: Provides features such as internationalization, multiple layouts, dark mode, full screen, watermark, API documentation, and code generator.
-- **Continuous Updates**: The project is continuously updated as open source, with tools and dependencies updated in real-time.
+- **Admin Foundation**: Includes user, role, menu, department, dictionary, and notification management as the platform base.
+- **Authentication / Authorization**: Provides Spring Security and JWT-based authentication plus route and role permissions.
+- **API / Documentation**: Exposes API documentation through Knife4j / OpenAPI.
+- **Realtime Communication**: Includes WebSocket / STOMP-based communication infrastructure.
 
 ## Screenshots
 
@@ -51,28 +53,44 @@ TODO
 ## Technology Stack
 
 ### Frontend
-- **Core Framework**: [Vue.js 3.5.13](https://vuejs.org/) - A progressive JavaScript framework for building reactive UI components
-- **Development Build Tool**: [Vite 6.2.2](https://vitejs.dev/) - A modern frontend tool that provides a fast development environment and optimized builds
-- **UI Library**: [Element Plus 2.9.9](https://element-plus.org/) - A design component library for Vue 3
-- **State Management**: [Pinia 3.0.2](https://pinia.vuejs.org/) - An intuitive and TypeScript-friendly state management library for Vue
-- **Routing**: [Vue Router 4.5.0](https://router.vuejs.org/) - A routing library for Vue applications
-- **Language**: [TypeScript 5.8.3](https://www.typescriptlang.org/) - Improves code quality and development efficiency through static typing
-- **HTTP Communication**: [Axios 1.8.4](https://axios-http.com/) - A Promise-based HTTP client for browsers and Node.js
-- **Internationalization**: [Vue I18n 11.1.3](https://vue-i18n.intlify.dev/) - An internationalization library for Vue applications
-- **Data Visualization**: [ECharts 5.6.0](https://echarts.apache.org/) - A powerful chart and data visualization library
-- **Editor**: [WangEditor 5.6.34](http://www.wangeditor.com/) - A modern web rich text editor
-- **CSS**: [Sass 1.86.3](https://sass-lang.com/) - An extension language that supports efficient CSS writing
+- **Core Framework**: [Vue.js 3.5.13](https://vuejs.org/)
+- **Build Tool**: [Vite 6.3.2](https://vitejs.dev/)
+- **Language**: [TypeScript 5.8.3](https://www.typescriptlang.org/)
+- **UI Library**: [Element Plus 2.9.9](https://element-plus.org/)
+- **State Management**: [Pinia 3.0.2](https://pinia.vuejs.org/)
+- **Routing**: [Vue Router 4.5.0](https://router.vuejs.org/)
+- **HTTP Communication**: [Axios 1.8.4](https://axios-http.com/)
+- **Internationalization**: [Vue I18n 11.1.3](https://vue-i18n.intlify.dev/)
+- **Data Visualization**: [ECharts 5.6.0](https://echarts.apache.org/), [vue-echarts 7.0.3](https://github.com/ecomfe/vue-echarts)
+- **Realtime Communication**: [STOMP.js 7.1.1](https://stomp-js.github.io/)
+- **Rich Text / UI Helpers**: WangEditor, SortableJS, ExcelJS, Codemirror
+- **Styling Foundation**: Sass 1.86.3, UnoCSS 65.4.3, Animate.css 4.1.1
 
 ### Development Tools
-- **Code Quality**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/) - Maintains code quality and style consistency
-- **Commit Management**: [Husky 9.1.7](https://typicode.github.io/husky/), [Commitlint 19.8.0](https://commitlint.js.org/) - Git hooks and commit message standardization
-- **Package Management**: [pnpm](https://pnpm.io/) - A fast and efficient Node.js package manager
-- **Auto Import**: [unplugin-auto-import 19.1.2](https://github.com/antfu/unplugin-auto-import) - Automatic import of components and functions
-- **Utility**: [UnoCSS 65.4.3](https://github.com/unocss/unocss) - An instant on-demand utility CSS engine
+- **Package Manager**: [pnpm](https://pnpm.io/)
+- **Code Quality**: [ESLint 9.25.0](https://eslint.org/), [Prettier 3.5.3](https://prettier.io/), [Stylelint 16.18.0](https://stylelint.io/)
+- **Git Hooks / Commit Helpers**: Husky 9.1.7, Commitlint 19.8.0, Commitizen 4.3.1, cz-git 1.11.1
+- **Auto Import / Component Resolution**: unplugin-auto-import 19.1.2, unplugin-vue-components 28.5.0
+- **Mock Development Support**: vite-plugin-mock-dev-server 1.8.5
 
-### Backend (Optional)
-- **Java**: [Spring Boot](https://spring.io/projects/spring-boot) - A Java framework for enterprise application development
-- **Node.js**: [Nest.js](https://nestjs.com/) - A framework for building efficient and scalable server-side applications
+### Backend
+- **Language / Runtime**: Java 17
+- **Framework**: Spring Boot 3.3.6
+- **Security**: Spring Security
+- **ORM / SQL Mapper**: MyBatis Plus 3.5.5
+- **Connection Pool**: Druid 1.2.24
+- **API Documentation**: Knife4j 4.5.0 / OpenAPI 3
+- **Object Mapping**: MapStruct 1.6.3
+- **Cache / Distributed Locking**: Redis, Redisson 3.40.2, Caffeine
+- **Object Storage**: MinIO 8.5.10
+- **Utilities / Helpers**: Hutool 5.8.34, Spring Dotenv 4.0.0, FastExcel 1.1.0
+- **Testing**: Spring Boot Test, Testcontainers 1.19.7, REST Assured-based API tests
+
+### Simulator
+- **Language / Runtime**: Java 17
+- **Framework**: Spring Boot 3.3.5
+- **Job Infrastructure**: PowerJob Worker 5.1.1
+- **Communication**: Spring Web, Jackson Databind
 
 ## Project Setup
 

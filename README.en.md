@@ -37,8 +37,10 @@ In the source tree, the main implementation lives under `apps/frontend/src/views
 - **Alert List**: Displays alerts such as low stock, expiry soon, overstock, communication down, and payment terminal failures, with status management.
 - **External World Simulation**: Uses PowerJob Worker to send heartbeat and payment events and reproduce backend monitoring flows.
 
-### Customer Management
-- TODO
+### Customer Management (Future Scope / Phase 2+)
+- **Remote Support**: Provides remote customer support for troubleshooting and payment errors during store purchases.
+- **Refund & Return Management**: Extends capabilities to process refund requests and manage return statuses for unmanned checkouts.
+- **Member & Purchase Analysis**: Integrates with official store mobile apps to manage purchase history, points, and marketing for each customer.
 
 ### System Features
 - **Admin Foundation**: Includes user, role, menu, department, dictionary, and notification management as the platform base.
@@ -48,7 +50,7 @@ In the source tree, the main implementation lives under `apps/frontend/src/views
 
 ## Screenshots
 
-TODO
+*(Screen captures are currently in preparation. Main screens: Dashboard, Store List, Device Monitoring, Alert List, etc.)*
 
 ## Technology Stack
 
@@ -115,6 +117,7 @@ npm install pnpm -g
 # Install dependencies
 pnpm install
 
-# Start
-pnpm run
+# Start (Frontend)
+cd apps/frontend
+pnpm run dev
 ``` 

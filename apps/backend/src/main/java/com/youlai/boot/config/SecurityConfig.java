@@ -77,9 +77,10 @@ public class SecurityConfig {
                             .requestMatchers("/api/v1/auth/refresh-token").permitAll()
                             .requestMatchers("/ws/**").permitAll();
 
-                            // demo ユーザー（ROLE_DEMO）は DELETE 操作を禁止
+                            // demo ユーザー（ROLE_DEMO）は他ユーザーのアカウント削除・更新を禁止
                             requestMatcherRegistry
-                            .requestMatchers(HttpMethod.DELETE, "/**").not().hasRole("DEMO");
+                            .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").not().hasRole("DEMO")
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").not().hasRole("DEMO");
 
                             // 其他所有请求需登录后访问
                             requestMatcherRegistry.anyRequest().authenticated();

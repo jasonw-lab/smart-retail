@@ -159,6 +159,14 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         } else {
             menuList = this.baseMapper.getMenusByRoleCodes(roleCodes);
         }
+        // demo ユーザーはテンプレート系・開発者向けメニューを非表示にする
+        if (roleCodes.contains("DEMO")) {
+            Set<String> hiddenPaths = Set.of("/api", "/doc", "/component", "/function", "/route-param", "/codegen", "/multi-level");
+            menuList = menuList.stream()
+                    .filter(menu -> !hiddenPaths.contains(menu.getRoutePath()))
+                    .collect(Collectors.toList());
+        }
+
         return buildRoutes(SystemConstants.ROOT_NODE_ID, menuList);
     }
 

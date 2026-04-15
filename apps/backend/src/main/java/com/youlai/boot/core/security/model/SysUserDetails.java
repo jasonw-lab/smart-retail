@@ -10,7 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -75,12 +76,18 @@ public class SysUserDetails implements UserDetails {
         this.dataScope = user.getDataScope();
 
         // 初始化角色权限集合
-        this.authorities = CollectionUtil.isNotEmpty(user.getRoles())
+        Set<SimpleGrantedAuthority> auths = CollectionUtil.isNotEmpty(user.getRoles())
                 ? user.getRoles().stream()
                 // 角色名加上前缀 "ROLE_"，用于区分角色 (ROLE_ADMIN) 和权限 (user:add)
                 .map(role -> new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role))
-                .collect(Collectors.toSet())
-                : Collections.emptySet();
+                .collect(Collectors.toCollection(HashSet::new))
+                : new HashSet<>();
+
+        // demo ユーザーには ROLE_DEMO を付与（破壊的操作を制限するため）
+        if ("demo".equals(user.getUsername())) {
+            auths.add(new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + "DEMO"));
+        }
+        this.authorities = auths;
     }
 
 

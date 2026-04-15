@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-02-11T00:19:00.000Z" agent="Smart Retail" version="24.0.0" type="device">
+  <diagram id="seq-login" name="1. ログイン認証">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="title1" value="シーケンス図 1: ログイン認証フロー" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="user" value="ユーザー&#xa;(Browser)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="120" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe" value="Frontend&#xa;(Vue/Axios)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="120" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="authctrl" value="AuthController&#xa;(/api/v1/auth)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="540" y="80" width="130" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="authsvc" value="AuthService&#xa;Impl" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="760" y="80" width="120" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="authmgr" value="Authentication&#xa;Manager" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="80" width="120" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="jwtmgr" value="JwtToken&#xa;Manager" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="80" width="120" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="redis" value="Redis" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="80" width="100" height="900" as="geometry"/>
+        </mxCell>
+        <!-- Step 1: Get Captcha -->
+        <mxCell id="s1" value="1. ログイン画面表示" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0;exitX=1;exitY=0;rounded=0;" edge="1" parent="1" source="user" target="fe">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="140" y="160" as="sourcePoint"/><mxPoint x="300" y="160" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="s2" value="2. GET /api/v1/auth/captcha" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="190" as="sourcePoint"/><mxPoint x="600" y="190" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="s2r" value="captchaKey + captchaBase64" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="600" y="220" as="sourcePoint"/><mxPoint x="360" y="220" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="s2r2" value="キャプチャ画像表示" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="300" y="250" as="sourcePoint"/><mxPoint x="140" y="250" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Step 2: User Input -->
+        <mxCell id="s3" value="3. username, password,&#xa;captchaKey, captchaCode 入力" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="140" y="290" as="sourcePoint"/><mxPoint x="360" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Step 3: CaptchaValidationFilter -->
+        <mxCell id="s4" value="4. POST /api/v1/auth/login&#xa;(FormData)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="340" as="sourcePoint"/><mxPoint x="600" y="340" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="note1" value="SecurityConfig: &#xa;/api/v1/auth/login/** → permitAll()&#xa;CaptchaValidationFilter でキャプチャ検証" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="420" y="360" width="250" height="60" as="geometry"/>
+        </mxCell>
+        <!-- Step 4: AuthService.login -->
+        <mxCell id="s5" value="5. login(username, password)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="610" y="440" as="sourcePoint"/><mxPoint x="820" y="440" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Step 5: AuthenticationManager -->
+        <mxCell id="s6" value="6. authenticate(&#xa;UsernamePasswordAuthenticationToken)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="820" y="480" as="sourcePoint"/><mxPoint x="1030" y="480" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="note2" value="DaoAuthenticationProvider:&#xa;UserDetailsService でDB照会&#xa;PasswordEncoder でパスワード検証" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="500" width="230" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="s6r" value="Authentication (認証済み)" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1030" y="570" as="sourcePoint"/><mxPoint x="820" y="570" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Step 6: Generate Token -->
+        <mxCell id="s7" value="7. generateToken(authentication)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="820" y="610" as="sourcePoint"/><mxPoint x="1240" y="610" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="note3" value="JWTペイロード:&#xa;userId, deptId, dataScope,&#xa;subject(username), authorities(roles),&#xa;jti, exp" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="620" width="210" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="s7r" value="AuthenticationToken&#xa;{accessToken, refreshToken,&#xa;tokenType:&quot;Bearer&quot;, expiresIn}" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1240" y="700" as="sourcePoint"/><mxPoint x="820" y="700" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Return to Controller -->
+        <mxCell id="s8r" value="AuthenticationToken" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="820" y="740" as="sourcePoint"/><mxPoint x="610" y="740" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Return to Frontend -->
+        <mxCell id="s9r" value="8. Result&lt;AuthenticationToken&gt;" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="600" y="780" as="sourcePoint"/><mxPoint x="360" y="780" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Store Token -->
+        <mxCell id="s10" value="9. localStorage に保存&#xa;access_token, refresh_token" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="270" y="810" width="190" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s10r" value="10. ダッシュボードへ遷移" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="300" y="880" as="sourcePoint"/><mxPoint x="140" y="880" as="targetPoint"/></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-api-auth" name="2. API認可(トークン検証)">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="t2" value="シーケンス図 2: API認可フロー（トークン検証）" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="500" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="a_fe" value="Frontend&#xa;(Axios Interceptor)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="140" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_rl" value="RateLimiter&#xa;Filter" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="310" y="80" width="110" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_tf" value="TokenAuthentication&#xa;Filter" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="510" y="80" width="140" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_tm" value="JwtToken&#xa;Manager" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="730" y="80" width="120" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_redis" value="Redis&#xa;(Blacklist)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="940" y="80" width="100" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_sc" value="SecurityContext&#xa;Holder" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="80" width="120" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_api" value="Business&#xa;Controller&#xa;(@PreAuthorize)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="80" width="130" height="850" as="geometry"/>
+        </mxCell>
+        <!-- Flow -->
+        <mxCell id="b1" value="1. GET /api/v1/retail/xxx&#xa;Authorization: Bearer {accessToken}" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="150" y="160" as="sourcePoint"/><mxPoint x="365" y="160" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b1n" value="Axios requestインターセプター:&#xa;localStorage から access_token 取得&#xa;Authorizationヘッダーに付与" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="30" y="180" width="230" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="b2" value="2. レート制限チェック" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="365" y="250" as="sourcePoint"/><mxPoint x="580" y="250" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b3" value="3. Authorizationヘッダー取得&#xa;Bearer プレフィックス除去" style="html=1;rounded=0;align=left;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="290" as="sourcePoint"/><mxPoint x="790" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b4" value="4. validateToken(rawToken)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="330" as="sourcePoint"/><mxPoint x="790" y="330" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b4a" value="4a. JWT検証（署名 + 有効期限）" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="800" y="340" width="210" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="b5" value="4b. ブラックリスト確認&#xa;(jti キー)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="790" y="400" as="sourcePoint"/><mxPoint x="990" y="400" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b5r" value="存在しない (有効)" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="990" y="430" as="sourcePoint"/><mxPoint x="790" y="430" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b6r" value="true (有効)" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="790" y="470" as="sourcePoint"/><mxPoint x="580" y="470" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b7" value="5. parseToken(rawToken)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="510" as="sourcePoint"/><mxPoint x="790" y="510" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b7n" value="JWTペイロードから抽出:&#xa;userId, deptId, dataScope,&#xa;username, authorities(roles)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="800" y="520" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="b7r" value="Authentication&#xa;(UsernamePasswordAuthenticationToken)" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="790" y="590" as="sourcePoint"/><mxPoint x="580" y="590" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b8" value="6. setAuthentication(auth)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="630" as="sourcePoint"/><mxPoint x="1190" y="630" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b9" value="7. filterChain.doFilter()&#xa;→ DispatcherServlet" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="680" as="sourcePoint"/><mxPoint x="1400" y="680" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="b9n" value="@PreAuthorize で権限チェック&#xa;(hasRole, hasAuthority)&#xa;SecurityContextから認証情報取得" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="700" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="b10r" value="8. Result&lt;T&gt; (ビジネスレスポンス)" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1400" y="770" as="sourcePoint"/><mxPoint x="150" y="770" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <!-- Alt: Token Invalid -->
+        <mxCell id="alt1" value="alt [Token無効の場合]" style="shape=umlFrame;whiteSpace=wrap;html=1;width=160;height=20;fillColor=#f8cecc;strokeColor=#b85450;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="460" y="810" width="600" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="b11" value="ACCESS_TOKEN_INVALID (A0230)" style="html=1;dashed=1;rounded=0;strokeColor=#b85450;fontColor=#b85450;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="580" y="860" as="sourcePoint"/><mxPoint x="150" y="860" as="targetPoint"/></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-refresh" name="3. トークンリフレッシュ">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="t3" value="シーケンス図 3: トークンリフレッシュフロー" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="450" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="c_fe" value="Frontend&#xa;(Axios Response&#xa;Interceptor)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="140" height="750" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_ac" value="AuthController&#xa;(/api/v1/auth)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="360" y="80" width="130" height="750" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_as" value="AuthService&#xa;Impl" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="120" height="750" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_jwt" value="JwtToken&#xa;Manager" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="840" y="80" width="120" height="750" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_q" value="Waiting&#xa;Queue" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="80" width="100" height="750" as="geometry"/>
+        </mxCell>
+        <!-- Flow -->
+        <mxCell id="c1n" value="Axiosレスポンスインターセプター:&#xa;code === ACCESS_TOKEN_INVALID&#xa;を検出してリフレッシュ開始" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="30" y="140" width="230" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1" value="1. 失敗リクエストをキューに追加" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="150" y="220" as="sourcePoint"/><mxPoint x="1110" y="220" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c1a" value="isRefreshing=false の場合のみ実行&#xa;（重複リフレッシュ防止）" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="240" width="200" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2" value="2. POST /api/v1/auth/refresh-token&#xa;?refreshToken={refreshToken}&#xa;Authorization: &quot;no-auth&quot;" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="150" y="310" as="sourcePoint"/><mxPoint x="425" y="310" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c3" value="3. refreshToken(refreshToken)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="425" y="360" as="sourcePoint"/><mxPoint x="660" y="360" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c4" value="4. validateRefreshToken()" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="400" as="sourcePoint"/><mxPoint x="900" y="400" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c4r" value="true" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="900" y="430" as="sourcePoint"/><mxPoint x="660" y="430" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c5" value="5. refreshToken(refreshToken)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="470" as="sourcePoint"/><mxPoint x="900" y="470" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c5n" value="refreshTokenからAuthentication解析&#xa;新しいaccessToken生成&#xa;refreshTokenはそのまま維持" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="910" y="480" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="c5r" value="AuthenticationToken&#xa;{新accessToken, 同refreshToken}" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="900" y="550" as="sourcePoint"/><mxPoint x="660" y="550" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c6r" value="AuthenticationToken" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="590" as="sourcePoint"/><mxPoint x="425" y="590" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c7r" value="6. Result&lt;AuthenticationToken&gt;" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="425" y="630" as="sourcePoint"/><mxPoint x="150" y="630" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="c8n" value="7. localStorage更新&#xa;(新しいaccessToken保存)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="30" y="650" width="180" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="c9" value="8. キュー内の全リクエストを&#xa;新トークンで再実行" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="150" y="720" as="sourcePoint"/><mxPoint x="1110" y="720" as="targetPoint"/></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-logout" name="4. ログアウト">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Title -->
+        <mxCell id="t4" value="シーケンス図 4: ログアウトフロー" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Actors -->
+        <mxCell id="d_fe" value="Frontend&#xa;(Vue)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="100" y="80" width="120" height="620" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_ac" value="AuthController&#xa;(/api/v1/auth)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="360" y="80" width="130" height="620" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_as" value="AuthService&#xa;Impl" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="120" height="620" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_jwt" value="JwtToken&#xa;Manager" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="840" y="80" width="120" height="620" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_redis" value="Redis&#xa;(Blacklist)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;size=40;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="80" width="100" height="620" as="geometry"/>
+        </mxCell>
+        <!-- Flow -->
+        <mxCell id="d1" value="1. DELETE /api/v1/auth/logout&#xa;Authorization: Bearer {accessToken}" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="160" y="170" as="sourcePoint"/><mxPoint x="425" y="170" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d2" value="2. logout()" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="425" y="220" as="sourcePoint"/><mxPoint x="660" y="220" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d3" value="3. SecurityUtils.getTokenFromRequest()&#xa;→ Bearer プレフィックス除去" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="550" y="240" width="230" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="d4" value="4. invalidateToken(token)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="310" as="sourcePoint"/><mxPoint x="900" y="310" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d5" value="5. JWT解析 → jti, exp取得" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="850" y="330" width="190" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6" value="6. SET blacklist_token:{jti}&#xa;TTL = 残り有効期限(秒)" style="html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="900" y="390" as="sourcePoint"/><mxPoint x="1110" y="390" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d6r" value="OK" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="1110" y="420" as="sourcePoint"/><mxPoint x="900" y="420" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d7" value="7. SecurityContextHolder.clearContext()" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="550" y="450" width="250" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="d8r" value="8. Result.success()" style="html=1;dashed=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="425" y="510" as="sourcePoint"/><mxPoint x="160" y="510" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="d9n" value="9. localStorage クリア&#xa;(access_token, refresh_token 削除)&#xa;/login へリダイレクト" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=18;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="210" height="55" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

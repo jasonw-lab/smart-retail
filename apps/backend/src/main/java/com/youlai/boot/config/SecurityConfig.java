@@ -22,6 +22,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -75,6 +76,10 @@ public class SecurityConfig {
                             .requestMatchers("/api/v1/auth/login/**").permitAll()
                             .requestMatchers("/api/v1/auth/refresh-token").permitAll()
                             .requestMatchers("/ws/**").permitAll();
+
+                            // demo ユーザー（ROLE_DEMO）は DELETE 操作を禁止
+                            requestMatcherRegistry
+                            .requestMatchers(HttpMethod.DELETE, "/**").not().hasRole("DEMO");
 
                             // 其他所有请求需登录后访问
                             requestMatcherRegistry.anyRequest().authenticated();

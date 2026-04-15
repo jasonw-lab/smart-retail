@@ -153,13 +153,12 @@ xxxxx
 ## Issue対応フロー
 
 ### 1. ブランチ作成
-- 未コミットCodeあれば、一旦待避する　（ユーザーに確認）
-- 最新コードは origin/develop を checkout 
+
+- 新しいissueに対応するとき、ブランチを現在のbranchから対応用branch新規作成する
 ```bash
 git fetch origin
 ```
 作業ブランチ: feature/issue-<番号>-<概要>
-- 未コミットCodeを復帰する
 
 
 ### 2. 実装
@@ -246,10 +245,3 @@ Closes #X
 - 該当 Issue のステータスを「対応完了」に変更
 - 完了日時とPR番号を記録
 
-```markdown
-## Issue一覧
-docs/issues/plan_issue.md　を参照
-| Issue番号 | タイトル | ステータス | 担当 | 完了日 | PR |
-|----------|---------|----------|------|--------|-----|
-| issue-001 | 機能追加 | ✅ 完了 | - | 2026-01-29 | #123 |
-```

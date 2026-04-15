@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3498db" />
+      <stop offset="100%" stop-color="#2c3e50" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="30" fill="url(#gradient)" />
+  <g fill="#ffffff">
+    <!-- S letter -->
+    <path d="M50,50 C65,45 75,55 75,65 C75,75 65,80 55,85 C45,90 35,95 35,110 C35,125 50,130 65,125 L70,110 C60,115 45,110 45,100 C45,90 55,85 65,80 C75,75 85,70 85,55 C85,40 70,35 55,40 L50,50 Z" />
+    <!-- R letter -->
+    <path d="M90,50 L90,120 L100,120 L100,90 L110,90 L125,120 L135,120 L120,90 C130,85 135,75 135,65 C135,55 125,50 115,50 L90,50 Z M100,60 L115,60 C120,60 125,62 125,70 C125,78 120,80 115,80 L100,80 L100,60 Z" />
+    <!-- P letter -->
+    <path d="M140,50 L140,120 L150,120 L150,80 L165,80 C175,80 180,75 180,65 C180,55 175,50 165,50 L140,50 Z M150,60 L165,60 C170,60 170,62 170,65 C170,68 170,70 165,70 L150,70 L150,60 Z" />
+  </g>
+  <!-- Shopping cart icon -->
+  <path d="M60,145 L70,160 L140,160 L150,145 L60,145 Z" fill="#ffffff" />
+  <circle cx="85" cy="170" r="7" fill="#ffffff" />
+  <circle cx="125" cy="170" r="7" fill="#ffffff" />
+</svg>

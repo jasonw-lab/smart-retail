@@ -26,7 +26,7 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
     @BeforeEach
     @Override
-    protected void setUp() {
+    protected void setUp() {　
         super.setUp();
         baseUrl = "/api/v1/retail/categories";
     }
@@ -35,10 +35,10 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
     void testListCategories() {
         // レスポンスデータを変数に格納
         Response response = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-        .when()
-            .get(baseUrl);
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .when()
+                .get(baseUrl);
 
         // レスポンスボディを変数に格納
         ResponseBody responseBody = response.getBody();
@@ -54,10 +54,10 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         response.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data", not(empty()));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data", not(empty()));
     }
 
     @Test
@@ -66,11 +66,11 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスデータを変数に格納
         Response response = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", categoryId)
-        .when()
-            .get(baseUrl + "/{id}");
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", categoryId)
+                .when()
+                .get(baseUrl + "/{id}");
 
         // レスポンスボディを変数に格納
         ResponseBody responseBody = response.getBody();
@@ -87,10 +87,10 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         response.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data.id", anyOf(equalTo(categoryId.intValue()), equalTo(categoryId.toString())));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data.id", anyOf(equalTo(categoryId.intValue()), equalTo(categoryId.toString())));
     }
 
     @Test
@@ -103,11 +103,11 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // Create category - レスポンスデータを変数に格納
         Response createResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .body(category)
-        .when()
-            .post(baseUrl);
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .body(category)
+                .when()
+                .post(baseUrl);
 
         // レスポンスボディを変数に格納
         ResponseBody createResponseBody = createResponse.getBody();
@@ -130,17 +130,17 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         createResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data", equalTo(null));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data", equalTo(null));
 
         // Get all categories to find the newly created one
         Response listResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-        .when()
-            .get(baseUrl);
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .when()
+                .get(baseUrl);
 
         // レスポンスボディを変数に格納
         ResponseBody listResponseBody = listResponse.getBody();
@@ -161,12 +161,12 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // カテゴリ更新 - レスポンスデータを変数に格納
         Response updateResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", categoryId)
-            .body(category)
-        .when()
-            .put(baseUrl + "/{id}");
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", categoryId)
+                .body(category)
+                .when()
+                .put(baseUrl + "/{id}");
 
         // レスポンスボディを変数に格納
         ResponseBody updateResponseBody = updateResponse.getBody();
@@ -181,18 +181,18 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         updateResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data", equalTo(null));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data", equalTo(null));
 
         // Get the updated category
         Response getUpdatedResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", categoryId)
-        .when()
-            .get(baseUrl + "/{id}");
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", categoryId)
+                .when()
+                .get(baseUrl + "/{id}");
 
         // レスポンスボディを変数に格納
         ResponseBody getUpdatedResponseBody = getUpdatedResponse.getBody();
@@ -206,18 +206,18 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         getUpdatedResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data.name", equalTo("更新テストカテゴリ"));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data.name", equalTo("更新テストカテゴリ"));
 
         // Delete the category
         Response deleteResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", categoryId)
-        .when()
-            .delete(baseUrl + "/{id}");
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", categoryId)
+                .when()
+                .delete(baseUrl + "/{id}");
 
         // レスポンスボディを変数に格納
         ResponseBody deleteResponseBody = deleteResponse.getBody();
@@ -231,18 +231,18 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         deleteResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data", equalTo(null));
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data", equalTo(null));
 
         // Verify the category is deleted
         Response verifyDeleteResponse = given()
-            .contentType(ContentType.JSON)
-            .header("Authorization", bearerToken)
-            .pathParam("id", categoryId)
-        .when()
-            .get(baseUrl + "/{id}");
+                .contentType(ContentType.JSON)
+                .header("Authorization", bearerToken)
+                .pathParam("id", categoryId)
+                .when()
+                .get(baseUrl + "/{id}");
 
         // レスポンスボディを変数に格納
         ResponseBody verifyDeleteResponseBody = verifyDeleteResponse.getBody();
@@ -256,9 +256,9 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
         // レスポンスに対してアサーション
         verifyDeleteResponse.then()
-            .statusCode(HttpStatus.OK.value())
-            .body("code", equalTo("00000"))
-            .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
-            .body("data", nullValue());
+                .statusCode(HttpStatus.OK.value())
+                .body("code", equalTo("00000"))
+                .body("msg", anyOf(equalTo("Success"), equalTo("一切ok")))
+                .body("data", nullValue());
     }
 }

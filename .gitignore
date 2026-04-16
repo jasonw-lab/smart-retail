@@ -82,3 +82,5 @@ __api*.json
 plan*.md
 
 .backup
+target
+.env

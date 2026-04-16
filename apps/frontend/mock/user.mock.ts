@@ -7,11 +7,11 @@ export default defineMock([
     body: {
       code: "00000",
       data: {
-        userId: 2,
-        username: "admin",
-        nickname: "系统管理员",
+        userId: 4,
+        username: "demo",
+        nickname: "Demo User",
         avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "DEMO"],
         perms: [
           "sys:user:query",
           "sys:user:add",
@@ -73,13 +73,13 @@ export default defineMock([
       data: {
         list: [
           {
-            id: 2,
-            username: "admin",
-            nickname: "系统管理员",
+            id: 4,
+            username: "demo",
+            nickname: "Demo User",
             mobile: "17621210366",
             gender: 1,
             avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
-            email: "",
+            email: "demo@example.com",
             status: 1,
             deptId: 1,
             roleIds: [2],

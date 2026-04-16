@@ -80,7 +80,8 @@ public class SecurityConfig {
                             // demo ユーザー（ROLE_DEMO）は他ユーザーのアカウント削除・更新を禁止
                             requestMatcherRegistry
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").not().hasRole("DEMO")
-                            .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").not().hasRole("DEMO");
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").not().hasRole("DEMO")
+                            .requestMatchers(HttpMethod.PATCH, "/api/v1/users/**").not().hasRole("DEMO");
 
                             // 其他所有请求需登录后访问
                             requestMatcherRegistry.anyRequest().authenticated();

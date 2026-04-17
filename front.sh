@@ -2,6 +2,12 @@
 
 set -e
 
+# Load BASEPATH and other shell envs.
+if [ -f "$HOME/.bashrc" ]; then
+    # shellcheck source=/dev/null
+    source "$HOME/.bashrc"
+fi
+
 # Setup Node.js (Volta)
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
@@ -10,23 +16,25 @@ echo "npm version: $(npm -v)"
 
 # Get script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ENV_FILE="$SCRIPT_DIR/platform/docker/.env"
+ENV_FILE="${BASEPATH}/nginx/apps-env/mall-retail/platform/docker/.env.prod"
 
-# Load BASEPATH from .env
-if [ -f "$ENV_FILE" ]; then
-    BASEPATH=$(grep '^BASEPATH=' "$ENV_FILE" | cut -d '=' -f2-)
-    echo "Loaded from: $ENV_FILE"
-    echo "BASEPATH: $BASEPATH"
-else
+if [ -z "$BASEPATH" ]; then
+    echo "Error: BASEPATH is not set"
+    exit 1
+fi
+
+if [ ! -d "$BASEPATH" ]; then
+    echo "Error: BASEPATH does not exist: $BASEPATH"
+    exit 1
+fi
+
+if [ ! -f "$ENV_FILE" ]; then
     echo "Error: .env file not found at $ENV_FILE"
     exit 1
 fi
 
-# Validate BASEPATH
-if [ -z "$BASEPATH" ]; then
-    echo "Error: BASEPATH is not set in .env"
-    exit 1
-fi
+echo "Loaded from: $ENV_FILE"
+echo "BASEPATH: $BASEPATH"
 
 # Deploy directory
 DEPLOY_DIR="$BASEPATH/nginx/html/retail"

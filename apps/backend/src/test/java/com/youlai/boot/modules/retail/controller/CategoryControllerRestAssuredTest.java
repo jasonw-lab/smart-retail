@@ -26,7 +26,7 @@ public class CategoryControllerRestAssuredTest extends BaseControllerTest {
 
     @BeforeEach
     @Override
-    protected void setUp() {　
+    protected void setUp() {
         super.setUp();
         baseUrl = "/api/v1/retail/categories";
     }

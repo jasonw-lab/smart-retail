@@ -84,3 +84,4 @@ plan*.md
 .backup
 target
 .env
+load_db.py

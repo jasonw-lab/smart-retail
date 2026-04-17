@@ -83,19 +83,17 @@ DEPLOY_DIR="$BASEPATH/nginx/html/retail"
 
 echo "Starting build process for frontend..."
 
-# Pull latest changes
-git pull
-
 # Navigate to the frontend directory
 cd "$SCRIPT_DIR/apps/frontend"
 
 # Install dependencies
 echo "Installing dependencies..."
-pnpm install
+HUSKY=0 pnpm install --frozen-lockfile
 
-# Build the project
+# Build production assets without running the slower type-check on VPS.
+# Keep type validation in CI or local development instead.
 echo "Building the project..."
-pnpm build
+pnpm build-only
 
 # Create target directory
 echo "Creating target directory..."

@@ -74,9 +74,6 @@ echo "BASEPATH source: ${BASEPATH_SOURCE:-unknown}"
 
 echo "Starting backend deployment..."
 
-# Pull latest changes
-git pull
-
 # Navigate to the docker directory
 cd "$SCRIPT_DIR/platform/docker"
 

@@ -22,6 +22,9 @@ const pathSrc = resolve(__dirname, "src");
 // Vite配置  https://cn.vitejs.dev/config
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd());
+  const buildMinify = env.VITE_BUILD_MINIFY || "terser";
+  const reportCompressedSize = env.VITE_BUILD_REPORT_COMPRESSED_SIZE !== "false";
+
   return {
     base: mode === "production" ? "/retail/" : "/",
     resolve: {
@@ -188,18 +191,22 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     },
     // 构建配置
     build: {
+      reportCompressedSize,
       chunkSizeWarningLimit: 2000, // 消除打包大小超过500kb警告
-      minify: "terser", // Vite 2.6.x 以上需要配置 minify: "terser", terserOptions 才能生效
-      terserOptions: {
-        compress: {
-          keep_infinity: true, // 防止 Infinity 被压缩成 1/0，这可能会导致 Chrome 上的性能问题
-          drop_console: true, // 生产环境去除 console
-          drop_debugger: true, // 生产环境去除 debugger
-        },
-        format: {
-          comments: false, // 删除注释
-        },
-      },
+      minify: buildMinify as "terser" | "esbuild" | false,
+      terserOptions:
+        buildMinify === "terser"
+          ? {
+              compress: {
+                keep_infinity: true, // 防止 Infinity 被压缩成 1/0，这可能会导致 Chrome 上的性能问题
+                drop_console: true, // 生产环境去除 console
+                drop_debugger: true, // 生产环境去除 debugger
+              },
+              format: {
+                comments: false, // 删除注释
+              },
+            }
+          : undefined,
       rollupOptions: {
         output: {
           // manualChunks: {

@@ -93,6 +93,12 @@ HUSKY=0 pnpm install --frozen-lockfile
 # Build production assets without running the slower type-check on VPS.
 # Keep type validation in CI or local development instead.
 echo "Building the project..."
+export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=1536}"
+export VITE_BUILD_MINIFY="${VITE_BUILD_MINIFY:-esbuild}"
+export VITE_BUILD_REPORT_COMPRESSED_SIZE="${VITE_BUILD_REPORT_COMPRESSED_SIZE:-false}"
+echo "NODE_OPTIONS: $NODE_OPTIONS"
+echo "VITE_BUILD_MINIFY: $VITE_BUILD_MINIFY"
+echo "VITE_BUILD_REPORT_COMPRESSED_SIZE: $VITE_BUILD_REPORT_COMPRESSED_SIZE"
 pnpm build-only
 
 # Create target directory

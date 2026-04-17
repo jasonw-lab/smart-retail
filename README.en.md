@@ -50,7 +50,7 @@ In the source tree, the main implementation lives under `apps/frontend/src/views
 
 ## Screenshots
 
-*(Screen captures are currently in preparation. Main screens: Dashboard, Store List, Device Monitoring, Alert List, etc.)*
+![](./screen.png)
 
 ## Technology Stack
 

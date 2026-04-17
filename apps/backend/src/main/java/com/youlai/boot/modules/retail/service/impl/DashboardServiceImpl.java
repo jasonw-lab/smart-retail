@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,6 +83,9 @@ public class DashboardServiceImpl implements DashboardService {
     public List<SalesTrendVO> getSalesTrend(LocalDate startDate, LocalDate endDate) {
         // データベースから売上推移取得
         List<SalesTrendVO> trendList = dashboardMapper.getSalesTrend(startDate, endDate);
+        if (trendList == null || trendList.isEmpty()) {
+            trendList = generateDemoSalesTrend(startDate, endDate);
+        }
 
         // 前日比計算
         for (int i = 0; i < trendList.size(); i++) {
@@ -103,6 +108,65 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         return trendList;
+    }
+
+    /**
+     * デモ用売上推移を生成する（店舗ごと: 毎日10件）
+     * 対象期間は 2026-01-01 から 2026-09-30 まで。
+     */
+    private List<SalesTrendVO> generateDemoSalesTrend(LocalDate startDate, LocalDate endDate) {
+        LocalDate demoStart = LocalDate.of(2026, 1, 1);
+        LocalDate demoEnd = LocalDate.of(2026, 9, 30);
+        LocalDate from = startDate.isAfter(demoStart) ? startDate : demoStart;
+        LocalDate to = endDate.isBefore(demoEnd) ? endDate : demoEnd;
+        if (from.isAfter(to)) {
+            return new ArrayList<>();
+        }
+
+        Integer stores = dashboardMapper.getTotalStoreCount();
+        int storeCount = (stores == null || stores <= 0) ? 10 : stores;
+        List<SalesTrendVO> result = new ArrayList<>();
+        long totalDays = ChronoUnit.DAYS.between(demoStart, demoEnd) + 1L;
+
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            BigDecimal dayTotal = BigDecimal.ZERO;
+            long dayIndex = ChronoUnit.DAYS.between(demoStart, date);
+            // 期間中央が最も高くなる山型（0.75〜1.45倍）
+            double x = (dayIndex / (double) (totalDays - 1)) * 2.0 - 1.0;
+            double mountainFactor = 0.75 + (1.0 - x * x) * 0.70;
+            for (int storeId = 1; storeId <= storeCount; storeId++) {
+                for (int orderSeq = 1; orderSeq <= 10; orderSeq++) {
+                    dayTotal = dayTotal.add(calculateDemoOrderAmount(date, storeId, orderSeq, mountainFactor));
+                }
+            }
+
+            SalesTrendVO vo = new SalesTrendVO();
+            vo.setDate(date);
+            vo.setSalesAmount(dayTotal.setScale(2, RoundingMode.HALF_UP));
+            vo.setGrowthRate(BigDecimal.ZERO);
+            result.add(vo);
+        }
+        return result;
+    }
+
+    /**
+     * デモ注文金額を日付・店舗・注文番号から決定的に算出する。
+     */
+    private BigDecimal calculateDemoOrderAmount(LocalDate date, int storeId, int orderSeq, double mountainFactor) {
+        BigDecimal base = BigDecimal.valueOf(1800 + storeId * 120L);
+        int dayOfWeekIndex = date.getDayOfWeek().getValue(); // 1(Mon) - 7(Sun)
+        double wx = ((dayOfWeekIndex - 1) / 6.0) * 2.0 - 1.0;
+        // 週内で両端が低く中央が高い山型カーブ（やや強め）
+        double weeklyMountainFactor = 0.78 + (1.0 - wx * wx) * 0.44;
+        double seasonal = mountainFactor * weeklyMountainFactor
+                + Math.sin(date.getDayOfYear() / 9.0) * 0.06
+                + Math.cos(storeId * 0.8) * 0.03;
+        BigDecimal multiplier = BigDecimal.valueOf(0.78 + orderSeq * 0.05); // 10件で段階的に単価差をつける
+        BigDecimal offset = BigDecimal.valueOf((date.getDayOfMonth() * 17 + storeId * 13 + orderSeq * 29) % 220);
+        return base.multiply(BigDecimal.valueOf(seasonal))
+                .multiply(multiplier)
+                .add(offset)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override

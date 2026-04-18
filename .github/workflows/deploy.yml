@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/frontend/**'
       - 'apps/backend/**'
+      - 'apps/simulator/**'
       - 'platform/docker/**'
       - 'front.sh'
       - 'back.sh'
@@ -30,14 +31,50 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check for backend changes
-        id: check_backend
+      - name: Check for app changes
+        id: check_apps
         run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -Eq "^(apps/backend/|platform/docker/|back\.sh$)"; then
+          CHANGED_FILES="$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} || true)"
+
+          BACKEND_CHANGED=false
+          SIMULATOR_CHANGED=false
+
+          if grep -Eq "^(apps/backend/|platform/docker/Dockerfile\.backend$)" <<< "$CHANGED_FILES"; then
+            BACKEND_CHANGED=true
+          fi
+
+          if grep -Eq "^(apps/simulator/|platform/docker/Dockerfile\.simulator$)" <<< "$CHANGED_FILES"; then
+            SIMULATOR_CHANGED=true
+          fi
+
+          if grep -Eq "^(platform/docker/docker-compose-app\.yml|platform/docker/start-retail-app\.sh|back\.sh$)" <<< "$CHANGED_FILES"; then
+            BACKEND_CHANGED=true
+            SIMULATOR_CHANGED=true
+          fi
+
+          if [[ "$BACKEND_CHANGED" == "true" || "$SIMULATOR_CHANGED" == "true" ]]; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
+
+          echo "backend_changed=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
+          echo "simulator_changed=$SIMULATOR_CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Set backend deploy target
+        id: backend_target
+        run: |
+          TARGET=""
+
+          if [[ "${{ steps.check_apps.outputs.backend_changed }}" == "true" && "${{ steps.check_apps.outputs.simulator_changed }}" == "true" ]]; then
+            TARGET="all"
+          elif [[ "${{ steps.check_apps.outputs.backend_changed }}" == "true" ]]; then
+            TARGET="backend"
+          elif [[ "${{ steps.check_apps.outputs.simulator_changed }}" == "true" ]]; then
+            TARGET="simulator"
+          fi
+
+          echo "target=$TARGET" >> $GITHUB_OUTPUT
 
       - name: Set build arguments
         id: changes
@@ -46,7 +83,7 @@ jobs:
           if [[ "${{ steps.check_frontend.outputs.changed }}" == "true" ]]; then
             BUILD_ARGS="frontend"
           fi
-          if [[ "${{ steps.check_backend.outputs.changed }}" == "true" ]]; then
+          if [[ "${{ steps.check_apps.outputs.changed }}" == "true" ]]; then
             if [[ -n "$BUILD_ARGS" ]]; then
               BUILD_ARGS="$BUILD_ARGS backend"
             else
@@ -76,6 +113,6 @@ jobs:
             fi
 
             # Execute back.sh if there are backend changes
-            if [[ "${{ steps.check_backend.outputs.changed }}" == "true" ]]; then
-              bash ./back.sh
+            if [[ "${{ steps.check_apps.outputs.changed }}" == "true" ]]; then
+              bash ./back.sh "${{ steps.backend_target.outputs.target }}"
             fi

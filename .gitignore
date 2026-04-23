@@ -85,3 +85,5 @@ plan*.md
 target
 .env
 load_db.py
+
+docs/interview.md

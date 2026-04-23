@@ -3,31 +3,31 @@
     <!-- 搜索区域 -->
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
-        <el-form-item prop="keywords" label="关键字">
+        <el-form-item prop="keywords" :label="t('system.common.keyword')">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="日志内容"
+            :placeholder="t('system.log.placeholder.keywords')"
             clearable
             @keyup.enter="handleQuery"
           />
         </el-form-item>
 
-        <el-form-item prop="createTime" label="操作时间">
+        <el-form-item prop="createTime" :label="t('system.log.operationTime')">
           <el-date-picker
             v-model="queryParams.createTime"
             :editable="false"
             type="daterange"
             range-separator="~"
-            start-placeholder="开始时间"
-            end-placeholder="截止时间"
+            :start-placeholder="t('system.common.startTime')"
+            :end-placeholder="t('system.common.endTime')"
             value-format="YYYY-MM-DD"
             style="width: 200px"
           />
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">{{ t('system.common.search') }}</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -40,15 +40,15 @@
         border
         class="data-table__content"
       >
-        <el-table-column label="操作时间" prop="createTime" width="180" />
-        <el-table-column label="操作人" prop="operator" width="120" />
-        <el-table-column label="日志模块" prop="module" width="100" />
-        <el-table-column label="日志内容" prop="content" min-width="200" />
-        <el-table-column label="IP 地址" prop="ip" width="150" />
-        <el-table-column label="地区" prop="region" width="150" />
-        <el-table-column label="浏览器" prop="browser" width="150" />
-        <el-table-column label="终端系统" prop="os" width="200" show-overflow-tooltip />
-        <el-table-column label="执行时间(ms)" prop="executionTime" width="150" />
+        <el-table-column :label="t('system.log.operationTime')" prop="createTime" width="180" />
+        <el-table-column :label="t('system.log.operator')" prop="operator" width="120" />
+        <el-table-column :label="t('system.log.module')" prop="module" width="100" />
+        <el-table-column :label="t('system.log.content')" prop="content" min-width="200" />
+        <el-table-column :label="t('system.log.ip')" prop="ip" width="150" />
+        <el-table-column :label="t('system.log.region')" prop="region" width="150" />
+        <el-table-column :label="t('system.log.browser')" prop="browser" width="150" />
+        <el-table-column :label="t('system.log.os')" prop="os" width="200" show-overflow-tooltip />
+        <el-table-column :label="t('system.log.executionTime')" prop="executionTime" width="150" />
       </el-table>
 
       <pagination
@@ -63,12 +63,16 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 defineOptions({
   name: "Log",
   inheritAttrs: false,
 });
 
 import LogAPI, { LogPageVO, LogPageQuery } from "@/api/system/log.api";
+
+const { t } = useI18n();
 
 const queryFormRef = ref();
 

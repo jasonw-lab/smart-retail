@@ -4,18 +4,18 @@
     <!-- 搜索区域 -->
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
-        <el-form-item label="关键字" prop="keywords">
+        <el-form-item :label="t('system.common.keyword')" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="请输入配置键\配置名称"
+            :placeholder="t('system.config.placeholder.keywords')"
             clearable
             @keyup.enter="handleQuery"
           />
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">{{ t('system.common.search') }}</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -29,7 +29,7 @@
             icon="plus"
             @click="handleOpenDialog()"
           >
-            新增
+            {{ t('system.common.add') }}
           </el-button>
           <el-button
             v-hasPerm="['sys:config:refresh']"
@@ -37,7 +37,7 @@
             icon="RefreshLeft"
             @click="handleRefreshCache"
           >
-            刷新缓存
+            {{ t('system.config.refreshCache') }}
           </el-button>
         </div>
       </div>
@@ -51,12 +51,12 @@
         border
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column key="configName" label="配置名称" prop="configName" min-width="100" />
-        <el-table-column key="configKey" label="配置键" prop="configKey" min-width="100" />
-        <el-table-column key="configValue" label="配置值" prop="configValue" min-width="100" />
-        <el-table-column key="remark" label="描述" prop="remark" min-width="100" />
-        <el-table-column fixed="right" label="操作" width="220">
+        <el-table-column type="index" :label="t('system.config.index')" width="60" />
+        <el-table-column key="configName" :label="t('system.config.name')" prop="configName" min-width="100" />
+        <el-table-column key="configKey" :label="t('system.config.key')" prop="configKey" min-width="100" />
+        <el-table-column key="configValue" :label="t('system.config.value')" prop="configValue" min-width="100" />
+        <el-table-column key="remark" :label="t('system.config.description')" prop="remark" min-width="100" />
+        <el-table-column fixed="right" :label="t('system.common.operation')" width="220">
           <template #default="scope">
             <el-button
               v-hasPerm="['sys:config:update']"
@@ -66,7 +66,7 @@
               icon="edit"
               @click="handleOpenDialog(scope.row.id)"
             >
-              编辑
+              {{ t('system.common.edit') }}
             </el-button>
             <el-button
               v-hasPerm="['sys:config:delete']"
@@ -76,7 +76,7 @@
               icon="delete"
               @click="handleDelete(scope.row.id)"
             >
-              删除
+              {{ t('system.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -105,30 +105,30 @@
         label-suffix=":"
         label-width="100px"
       >
-        <el-form-item label="配置名称" prop="configName">
-          <el-input v-model="formData.configName" placeholder="请输入配置名称" :maxlength="50" />
+        <el-form-item :label="t('system.config.name')" prop="configName">
+          <el-input v-model="formData.configName" :placeholder="t('system.config.placeholder.name')" :maxlength="50" />
         </el-form-item>
-        <el-form-item label="配置键" prop="configKey">
-          <el-input v-model="formData.configKey" placeholder="请输入配置键" :maxlength="50" />
+        <el-form-item :label="t('system.config.key')" prop="configKey">
+          <el-input v-model="formData.configKey" :placeholder="t('system.config.placeholder.key')" :maxlength="50" />
         </el-form-item>
-        <el-form-item label="配置值" prop="configValue">
-          <el-input v-model="formData.configValue" placeholder="请输入配置值" :maxlength="100" />
+        <el-form-item :label="t('system.config.value')" prop="configValue">
+          <el-input v-model="formData.configValue" :placeholder="t('system.config.placeholder.value')" :maxlength="100" />
         </el-form-item>
-        <el-form-item label="描述" prop="remark">
+        <el-form-item :label="t('system.config.description')" prop="remark">
           <el-input
             v-model="formData.remark"
             :rows="4"
             :maxlength="100"
             show-word-limit
             type="textarea"
-            placeholder="请输入描述"
+            :placeholder="t('system.config.placeholder.description')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
+          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -136,12 +136,16 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 defineOptions({
   name: "Config",
   inheritAttrs: false,
 });
 
 import ConfigAPI, { ConfigPageVO, ConfigForm, ConfigPageQuery } from "@/api/system/config.api";
+
+const { t } = useI18n();
 
 const queryFormRef = ref();
 const dataFormRef = ref();
@@ -172,11 +176,11 @@ const formData = reactive<ConfigForm>({
   remark: "",
 });
 
-const rules = reactive({
-  configName: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
-  configKey: [{ required: true, message: "请输入系统配置编码", trigger: "blur" }],
-  configValue: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
-});
+const rules = computed(() => ({
+  configName: [{ required: true, message: t('system.config.rules.name'), trigger: "blur" }],
+  configKey: [{ required: true, message: t('system.config.rules.key'), trigger: "blur" }],
+  configValue: [{ required: true, message: t('system.config.rules.value'), trigger: "blur" }],
+}));
 
 // 查询系统配置
 function handleQuery() {
@@ -208,12 +212,12 @@ function handleSelectionChange(selection: any) {
 function handleOpenDialog(id?: string) {
   dialog.visible = true;
   if (id) {
-    dialog.title = "修改系统配置";
+    dialog.title = t('system.config.editConfig');
     ConfigAPI.getFormData(id).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = "新增系统配置";
+    dialog.title = t('system.config.addConfig');
     formData.id = undefined;
   }
 }
@@ -221,7 +225,7 @@ function handleOpenDialog(id?: string) {
 // 刷新缓存(防抖)
 const handleRefreshCache = useDebounceFn(() => {
   ConfigAPI.refreshCache().then(() => {
-    ElMessage.success("刷新成功");
+    ElMessage.success(t('system.config.refreshSuccess'));
   });
 }, 1000);
 
@@ -234,7 +238,7 @@ function handleSubmit() {
       if (id) {
         ConfigAPI.update(id, formData)
           .then(() => {
-            ElMessage.success("修改成功");
+            ElMessage.success(t('system.common.editSuccess'));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -242,7 +246,7 @@ function handleSubmit() {
       } else {
         ConfigAPI.create(formData)
           .then(() => {
-            ElMessage.success("新增成功");
+            ElMessage.success(t('system.common.addSuccess'));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -267,15 +271,15 @@ function handleCloseDialog() {
 
 // 删除系统配置
 function handleDelete(id: string) {
-  ElMessageBox.confirm("确认删除该项配置?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('system.config.confirmDeleteConfig'), t('system.common.warning'), {
+    confirmButtonText: t('system.common.confirm'),
+    cancelButtonText: t('system.common.cancel'),
     type: "warning",
   }).then(() => {
     loading.value = true;
     ConfigAPI.deleteById(id)
       .then(() => {
-        ElMessage.success("删除成功");
+        ElMessage.success(t('system.common.deleteSuccess'));
         handleResetQuery();
       })
       .finally(() => (loading.value = false));

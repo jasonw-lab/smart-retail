@@ -1,7 +1,7 @@
 <!-- 部门树 -->
 <template>
   <el-card shadow="never">
-    <el-input v-model="deptName" placeholder="部门名称" clearable>
+    <el-input v-model="deptName" :placeholder="t('system.dept.name')" clearable>
       <template #prefix>
         <el-icon><Search /></el-icon>
       </template>
@@ -21,7 +21,11 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import DeptAPI from "@/api/system/dept.api";
+
+const { t } = useI18n();
+
 const props = defineProps({
   modelValue: {
     type: [String, Number],

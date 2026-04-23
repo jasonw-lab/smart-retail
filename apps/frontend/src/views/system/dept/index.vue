@@ -3,26 +3,26 @@
     <!-- 搜索区域 -->
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
-        <el-form-item label="关键字" prop="keywords">
+        <el-form-item :label="t('system.common.keyword')" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="部门名称"
+            :placeholder="t('system.dept.placeholder.keywords')"
             @keyup.enter="handleQuery"
           />
         </el-form-item>
 
-        <el-form-item label="部门状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="全部" clearable style="width: 100px">
-            <el-option :value="1" label="正常" />
-            <el-option :value="0" label="禁用" />
+        <el-form-item :label="t('system.common.status')" prop="status">
+          <el-select v-model="queryParams.status" :placeholder="t('system.common.all')" clearable style="width: 100px">
+            <el-option :value="1" :label="t('system.common.enable')" />
+            <el-option :value="0" :label="t('system.common.disable')" />
           </el-select>
         </el-form-item>
 
         <el-form-item class="search-buttons">
           <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">
-            搜索
+            {{ t('system.common.search') }}
           </el-button>
-          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -36,7 +36,7 @@
             icon="plus"
             @click="handleOpenDialog()"
           >
-            新增
+            {{ t('system.common.add') }}
           </el-button>
           <el-button
             v-hasPerm="['sys:dept:delete']"
@@ -45,7 +45,7 @@
             icon="delete"
             @click="handleDelete()"
           >
-            删除
+            {{ t('system.common.delete') }}
           </el-button>
         </div>
       </div>
@@ -60,18 +60,18 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column prop="name" label="部门名称" min-width="200" />
-        <el-table-column prop="code" label="部门编号" width="200" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="name" :label="t('system.dept.name')" min-width="200" />
+        <el-table-column prop="code" :label="t('system.dept.code')" width="200" />
+        <el-table-column prop="status" :label="t('system.common.status')" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.status == 1" type="success">正常</el-tag>
-            <el-tag v-else type="info">禁用</el-tag>
+            <el-tag v-if="scope.row.status == 1" type="success">{{ t('system.common.enable') }}</el-tag>
+            <el-tag v-else type="info">{{ t('system.common.disable') }}</el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="sort" label="排序" width="100" />
+        <el-table-column prop="sort" :label="t('system.common.sort')" width="100" />
 
-        <el-table-column label="操作" fixed="right" align="left" width="200">
+        <el-table-column :label="t('system.common.operation')" fixed="right" align="left" width="200">
           <template #default="scope">
             <el-button
               v-hasPerm="['sys:dept:add']"
@@ -81,7 +81,7 @@
               icon="plus"
               @click.stop="handleOpenDialog(scope.row.id, undefined)"
             >
-              新增
+              {{ t('system.common.add') }}
             </el-button>
             <el-button
               v-hasPerm="['sys:dept:edit']"
@@ -91,7 +91,7 @@
               icon="edit"
               @click.stop="handleOpenDialog(scope.row.parentId, scope.row.id)"
             >
-              编辑
+              {{ t('system.common.edit') }}
             </el-button>
             <el-button
               v-hasPerm="['sys:dept:delete']"
@@ -101,7 +101,7 @@
               icon="delete"
               @click.stop="handleDelete(scope.row.id)"
             >
-              删除
+              {{ t('system.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -115,23 +115,23 @@
       @closed="handleCloseDialog"
     >
       <el-form ref="deptFormRef" :model="formData" :rules="rules" label-width="80px">
-        <el-form-item label="上级部门" prop="parentId">
+        <el-form-item :label="t('system.dept.parentDept')" prop="parentId">
           <el-tree-select
             v-model="formData.parentId"
-            placeholder="选择上级部门"
+            :placeholder="t('system.dept.placeholder.selectParent')"
             :data="deptOptions"
             filterable
             check-strictly
             :render-after-expand="false"
           />
         </el-form-item>
-        <el-form-item label="部门名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入部门名称" />
+        <el-form-item :label="t('system.dept.name')" prop="name">
+          <el-input v-model="formData.name" :placeholder="t('system.dept.placeholder.name')" />
         </el-form-item>
-        <el-form-item label="部门编号" prop="code">
-          <el-input v-model="formData.code" placeholder="请输入部门编号" />
+        <el-form-item :label="t('system.dept.code')" prop="code">
+          <el-input v-model="formData.code" :placeholder="t('system.dept.placeholder.code')" />
         </el-form-item>
-        <el-form-item label="显示排序" prop="sort">
+        <el-form-item :label="t('system.dept.displaySort')" prop="sort">
           <el-input-number
             v-model="formData.sort"
             controls-position="right"
@@ -139,18 +139,18 @@
             :min="0"
           />
         </el-form-item>
-        <el-form-item label="部门状态">
+        <el-form-item :label="t('system.common.status')">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="1">正常</el-radio>
-            <el-radio :value="0">禁用</el-radio>
+            <el-radio :value="1">{{ t('system.common.enable') }}</el-radio>
+            <el-radio :value="0">{{ t('system.common.disable') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
+          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -158,12 +158,16 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 defineOptions({
   name: "Dept",
   inheritAttrs: false,
 });
 
 import DeptAPI, { DeptVO, DeptForm, DeptQuery } from "@/api/system/dept.api";
+
+const { t } = useI18n();
 
 const queryFormRef = ref();
 const deptFormRef = ref();
@@ -185,12 +189,12 @@ const formData = reactive<DeptForm>({
   sort: 1,
 });
 
-const rules = reactive({
-  parentId: [{ required: true, message: "上级部门不能为空", trigger: "change" }],
-  name: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
-  code: [{ required: true, message: "部门编号不能为空", trigger: "blur" }],
-  sort: [{ required: true, message: "显示排序不能为空", trigger: "blur" }],
-});
+const rules = computed(() => ({
+  parentId: [{ required: true, message: t('system.dept.rules.parentDept'), trigger: "change" }],
+  name: [{ required: true, message: t('system.dept.rules.name'), trigger: "blur" }],
+  code: [{ required: true, message: t('system.dept.rules.code'), trigger: "blur" }],
+  sort: [{ required: true, message: t('system.dept.rules.sort'), trigger: "blur" }],
+}));
 
 // 查询部门
 function handleQuery() {
@@ -224,19 +228,19 @@ async function handleOpenDialog(parentId?: string, deptId?: string) {
   deptOptions.value = [
     {
       value: "0",
-      label: "顶级部门",
+      label: t('system.dept.topDept'),
       children: data,
     },
   ];
 
   dialog.visible = true;
   if (deptId) {
-    dialog.title = "修改部门";
+    dialog.title = t('system.dept.editDept');
     DeptAPI.getFormData(deptId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = "新增部门";
+    dialog.title = t('system.dept.addDept');
     formData.parentId = parentId || "0";
   }
 }
@@ -250,7 +254,7 @@ function handleSubmit() {
       if (deptId) {
         DeptAPI.update(deptId, formData)
           .then(() => {
-            ElMessage.success("修改成功");
+            ElMessage.success(t('system.common.editSuccess'));
             handleCloseDialog();
             handleQuery();
           })
@@ -258,7 +262,7 @@ function handleSubmit() {
       } else {
         DeptAPI.create(formData)
           .then(() => {
-            ElMessage.success("新增成功");
+            ElMessage.success(t('system.common.addSuccess'));
             handleCloseDialog();
             handleQuery();
           })
@@ -273,26 +277,26 @@ function handleDelete(deptId?: number) {
   const deptIds = [deptId || selectIds.value].join(",");
 
   if (!deptIds) {
-    ElMessage.warning("请勾选删除项");
+    ElMessage.warning(t('system.common.selectDeleteItem'));
     return;
   }
 
-  ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
+    confirmButtonText: t('system.common.confirm'),
+    cancelButtonText: t('system.common.cancel'),
     type: "warning",
   }).then(
     () => {
       loading.value = true;
       DeptAPI.deleteByIds(deptIds)
         .then(() => {
-          ElMessage.success("删除成功");
+          ElMessage.success(t('system.common.deleteSuccess'));
           handleResetQuery();
         })
         .finally(() => (loading.value = false));
     },
     () => {
-      ElMessage.info("已取消删除");
+      ElMessage.info(t('system.common.cancelDelete'));
     }
   );
 }

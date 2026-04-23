@@ -3,10 +3,10 @@
     <!-- 搜索区域 -->
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
-        <el-form-item label="通知标题" prop="title">
+        <el-form-item :label="t('system.notice.noticeTableTitle')" prop="title">
           <el-input
             v-model="queryParams.title"
-            placeholder="关键字"
+            :placeholder="t('system.notice.placeholder.keyword')"
             clearable
             @keyup.enter="handleQuery()"
           />
@@ -17,13 +17,13 @@
             <template #icon>
               <Search />
             </template>
-            搜索
+            {{ t('system.common.search') }}
           </el-button>
           <el-button @click="handleResetQuery()">
             <template #icon>
               <Refresh />
             </template>
-            重置
+            {{ t('system.common.reset') }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -37,15 +37,15 @@
         highlight-current-row
         class="data-table__content"
       >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column label="通知标题" prop="title" min-width="200" />
-        <el-table-column align="center" label="通知类型" width="150">
+        <el-table-column type="index" :label="t('system.config.index')" width="60" />
+        <el-table-column :label="t('system.notice.noticeTableTitle')" prop="title" min-width="200" />
+        <el-table-column align="center" :label="t('system.notice.type')" width="150">
           <template #default="scope">
             <DictLabel v-model="scope.row.type" code="notice_type" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="发布人" prop="publisherName" width="100" />
-        <el-table-column align="center" label="通知等级" width="100">
+        <el-table-column align="center" :label="t('system.notice.publisher')" prop="publisherName" width="100" />
+        <el-table-column align="center" :label="t('system.notice.level')" width="100">
           <template #default="scope">
             <DictLabel v-model="scope.row.level" code="notice_level" />
           </template>
@@ -53,22 +53,22 @@
         <el-table-column
           key="releaseTime"
           align="center"
-          label="发布时间"
+          :label="t('system.notice.publishTime')"
           prop="publishTime"
           width="150"
         />
 
-        <el-table-column align="center" label="发布人" prop="publisherName" width="150" />
-        <el-table-column align="center" label="状态" width="100">
+        <el-table-column align="center" :label="t('system.notice.publisher')" prop="publisherName" width="150" />
+        <el-table-column align="center" :label="t('system.notice.myNotice.readStatus')" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.isRead == 1" type="success">已读</el-tag>
-            <el-tag v-else type="info">未读</el-tag>
+            <el-tag v-if="scope.row.isRead == 1" type="success">{{ t('system.notice.myNotice.read') }}</el-tag>
+            <el-tag v-else type="info">{{ t('system.notice.myNotice.unread') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column align="center" fixed="right" label="操作" width="80">
+        <el-table-column align="center" fixed="right" :label="t('system.common.operation')" width="80">
           <template #default="scope">
             <el-button type="primary" size="small" link @click="handleReadNotice(scope.row.id)">
-              查看
+              {{ t('system.notice.view') }}
             </el-button>
           </template>
         </el-table-column>
@@ -85,7 +85,7 @@
 
     <el-dialog
       v-model="noticeDialogVisible"
-      :title="noticeDetail?.title ?? '通知详情'"
+      :title="noticeDetail?.title ?? t('system.notice.detail')"
       width="800px"
       custom-class="notice-detail"
     >
@@ -110,12 +110,16 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 defineOptions({
   name: "MyNotice",
   inheritAttrs: false,
 });
 
 import NoticeAPI, { NoticePageVO, NoticePageQuery, NoticeDetailVO } from "@/api/system/notice.api";
+
+const { t } = useI18n();
 
 const queryFormRef = ref();
 const pageData = ref<NoticePageVO[]>([]);

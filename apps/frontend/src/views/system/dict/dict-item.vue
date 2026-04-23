@@ -5,10 +5,10 @@
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-row :gutter="22">
           <el-col :span="24" :md="12" :lg="6">
-            <el-form-item label="关键字" prop="keywords">
+            <el-form-item :label="t('system.common.keyword')" prop="keywords">
               <el-input
                 v-model="queryParams.keywords"
-                placeholder="字典标签/字典值"
+                :placeholder="t('system.dict.item.placeholder.keywords')"
                 clearable
                 @keyup.enter="handleQuery"
               />
@@ -18,8 +18,8 @@
           <div class="search-form-btn-box">
             <div class="search-form-btn-box-item">
               <el-form-item>
-                <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
-                <el-button icon="refresh" @click="handleResetQuery()">重置</el-button>
+                <el-button type="primary" icon="search" @click="handleQuery()">{{ t('system.common.search') }}</el-button>
+                <el-button icon="refresh" @click="handleResetQuery()">{{ t('system.common.reset') }}</el-button>
               </el-form-item>
             </div>
           </div>
@@ -29,9 +29,9 @@
 
     <el-card shadow="never">
       <div class="mb-[10px]">
-        <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
+        <el-button type="success" icon="plus" @click="handleOpenDialog()">{{ t('system.common.add') }}</el-button>
         <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
+          {{ t('system.common.delete') }}
         </el-button>
       </div>
 
@@ -43,18 +43,18 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="字典项标签" prop="label" />
-        <el-table-column label="字典项值" prop="value" />
-        <el-table-column label="排序" prop="sort" />
-        <el-table-column label="状态">
+        <el-table-column :label="t('system.dict.item.label')" prop="label" />
+        <el-table-column :label="t('system.dict.item.value')" prop="value" />
+        <el-table-column :label="t('system.common.sort')" prop="sort" />
+        <el-table-column :label="t('system.common.status')">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-              {{ scope.row.status === 1 ? "启用" : "禁用" }}
+              {{ scope.row.status === 1 ? t('system.common.enabled') : t('system.common.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column fixed="right" label="操作" align="center" width="220">
+        <el-table-column fixed="right" :label="t('system.common.operation')" align="center" width="220">
           <template #default="scope">
             <el-button
               type="primary"
@@ -63,7 +63,7 @@
               icon="edit"
               @click.stop="handleOpenDialog(scope.row)"
             >
-              编辑
+              {{ t('system.common.edit') }}
             </el-button>
             <el-button
               type="danger"
@@ -72,7 +72,7 @@
               icon="delete"
               @click.stop="handleDelete(scope.row.id)"
             >
-              删除
+              {{ t('system.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -96,22 +96,22 @@
     >
       <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
         <el-card shadow="never">
-          <el-form-item label="字典项标签" prop="label">
-            <el-input v-model="formData.label" placeholder="请输入字典标签" />
+          <el-form-item :label="t('system.dict.item.label')" prop="label">
+            <el-input v-model="formData.label" :placeholder="t('system.dict.item.placeholder.label')" />
           </el-form-item>
-          <el-form-item label="字典项值" prop="value">
-            <el-input v-model="formData.value" placeholder="请输入字典值" />
+          <el-form-item :label="t('system.dict.item.value')" prop="value">
+            <el-input v-model="formData.value" :placeholder="t('system.dict.item.placeholder.value')" />
           </el-form-item>
-          <el-form-item label="状态">
+          <el-form-item :label="t('system.common.status')">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="1">启用</el-radio>
-              <el-radio :value="0">禁用</el-radio>
+              <el-radio :value="1">{{ t('system.common.enabled') }}</el-radio>
+              <el-radio :value="0">{{ t('system.common.disabled') }}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="排序">
+          <el-form-item :label="t('system.common.sort')">
             <el-input-number v-model="formData.sort" controls-position="right" />
           </el-form-item>
-          <el-form-item label="标签类型">
+          <el-form-item :label="t('system.dict.item.tagType')">
             <el-tag v-if="formData.tagType" :type="formData.tagType" class="mr-2">
               {{ formData.label }}
             </el-tag>
@@ -121,7 +121,7 @@
               <el-radio value="info" border size="small">info</el-radio>
               <el-radio value="primary" border size="small">primary</el-radio>
               <el-radio value="danger" border size="small">danger</el-radio>
-              <el-radio value="" border size="small">清空</el-radio>
+              <el-radio value="" border size="small">{{ t('system.dict.item.clear') }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-card>
@@ -129,8 +129,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button type="primary" @click="handleSubmitClick">{{ t('system.common.confirm') }}</el-button>
+          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -138,7 +138,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import DictAPI, { DictItemPageQuery, DictItemPageVO, DictItemForm } from "@/api/system/dict.api";
+
+const { t } = useI18n();
 
 const route = useRoute();
 
@@ -167,8 +170,8 @@ const formData = reactive<DictItemForm>({});
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
-    value: [{ required: true, message: "请输入字典值", trigger: "blur" }],
-    label: [{ required: true, message: "请输入字典标签", trigger: "blur" }],
+    value: [{ required: true, message: t('system.dict.item.rules.value'), trigger: "blur" }],
+    label: [{ required: true, message: t('system.dict.item.rules.label'), trigger: "blur" }],
   };
   return rules;
 });
@@ -201,7 +204,7 @@ function handleSelectionChange(selection: any) {
 // 打开弹窗
 function handleOpenDialog(row?: DictItemPageVO) {
   dialog.visible = true;
-  dialog.title = row ? "编辑字典项" : "新增字典项";
+  dialog.title = row ? t('system.dict.item.editItem') : t('system.dict.item.addItem');
 
   if (row?.id) {
     DictAPI.getDictItemFormData(dictCode.value, row.id).then((data) => {
@@ -220,7 +223,7 @@ function handleSubmitClick() {
       if (id) {
         DictAPI.updateDictItem(dictCode.value, id, formData)
           .then(() => {
-            ElMessage.success("修改成功");
+            ElMessage.success(t('system.common.editSuccess'));
             handleCloseDialog();
             handleQuery();
           })
@@ -228,7 +231,7 @@ function handleSubmitClick() {
       } else {
         DictAPI.createDictItem(dictCode.value, formData)
           .then(() => {
-            ElMessage.success("新增成功");
+            ElMessage.success(t('system.common.addSuccess'));
             handleCloseDialog();
             handleQuery();
           })
@@ -257,22 +260,22 @@ function handleCloseDialog() {
 function handleDelete(id?: number) {
   const itemIds = [id || ids.value].join(",");
   if (!itemIds) {
-    ElMessage.warning("请勾选删除项");
+    ElMessage.warning(t('system.common.selectDeleteItem'));
     return;
   }
-  ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
+    confirmButtonText: t('system.common.confirm'),
+    cancelButtonText: t('system.common.cancel'),
     type: "warning",
   }).then(
     () => {
       DictAPI.deleteDictItems(dictCode.value, itemIds).then(() => {
-        ElMessage.success("删除成功");
+        ElMessage.success(t('system.common.deleteSuccess'));
         handleResetQuery();
       });
     },
     () => {
-      ElMessage.info("已取消删除");
+      ElMessage.info(t('system.common.cancelDelete'));
     }
   );
 }

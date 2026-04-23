@@ -3,18 +3,22 @@
     <!-- 搜索区域 -->
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
-        <el-form-item prop="keywords" label="关键字">
+        <el-form-item prop="keywords" :label="t('system.common.keyword')">
           <el-input
             v-model="queryParams.keywords"
-            placeholder="角色名称"
+            :placeholder="t('system.role.placeholder.keywords')"
             clearable
             @keyup.enter="handleQuery"
           />
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">
+            {{ t('system.common.search') }}
+          </el-button>
+          <el-button icon="refresh" @click="handleResetQuery">
+            {{ t('system.common.reset') }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -22,14 +26,16 @@
     <el-card shadow="hover" class="data-table">
       <div class="data-table__toolbar">
         <div class="data-table__toolbar--actions">
-          <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
+          <el-button type="success" icon="plus" @click="handleOpenDialog()">
+            {{ t('system.common.add') }}
+          </el-button>
           <el-button
             type="danger"
             :disabled="ids.length === 0"
             icon="delete"
             @click="handleDelete()"
           >
-            删除
+            {{ t('system.common.delete') }}
           </el-button>
         </div>
       </div>
@@ -44,19 +50,21 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="角色名称" prop="name" min-width="100" />
-        <el-table-column label="角色编码" prop="code" width="150" />
+        <el-table-column :label="t('system.role.name')" prop="name" min-width="100" />
+        <el-table-column :label="t('system.role.code')" prop="code" width="150" />
 
-        <el-table-column label="状态" align="center" width="100">
+        <el-table-column :label="t('system.common.status')" align="center" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
-            <el-tag v-else type="info">禁用</el-tag>
+            <el-tag v-if="scope.row.status === 1" type="success">
+              {{ t('system.role.status.normal') }}
+            </el-tag>
+            <el-tag v-else type="info">{{ t('system.role.status.disabled') }}</el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column label="排序" align="center" width="80" prop="sort" />
+        <el-table-column :label="t('system.common.sort')" align="center" width="80" prop="sort" />
 
-        <el-table-column fixed="right" label="操作" width="220">
+        <el-table-column fixed="right" :label="t('system.common.operation')" width="220">
           <template #default="scope">
             <el-button
               type="primary"
@@ -65,7 +73,7 @@
               icon="position"
               @click="handleOpenAssignPermDialog(scope.row)"
             >
-              分配权限
+              {{ t('system.role.assignPermission') }}
             </el-button>
             <el-button
               type="primary"
@@ -74,7 +82,7 @@
               icon="edit"
               @click="handleOpenDialog(scope.row.id)"
             >
-              编辑
+              {{ t('system.common.edit') }}
             </el-button>
             <el-button
               type="danger"
@@ -83,7 +91,7 @@
               icon="delete"
               @click="handleDelete(scope.row.id)"
             >
-              删除
+              {{ t('system.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -106,31 +114,31 @@
       @close="handleCloseDialog"
     >
       <el-form ref="roleFormRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入角色名称" />
+        <el-form-item :label="t('system.role.name')" prop="name">
+          <el-input v-model="formData.name" :placeholder="t('system.role.placeholder.name')" />
         </el-form-item>
 
-        <el-form-item label="角色编码" prop="code">
-          <el-input v-model="formData.code" placeholder="请输入角色编码" />
+        <el-form-item :label="t('system.role.code')" prop="code">
+          <el-input v-model="formData.code" :placeholder="t('system.role.placeholder.code')" />
         </el-form-item>
 
-        <el-form-item label="数据权限" prop="dataScope">
+        <el-form-item :label="t('system.role.dataScope')" prop="dataScope">
           <el-select v-model="formData.dataScope">
-            <el-option :key="1" label="全部数据" :value="1" />
-            <el-option :key="2" label="部门及子部门数据" :value="2" />
-            <el-option :key="3" label="本部门数据" :value="3" />
-            <el-option :key="4" label="本人数据" :value="4" />
+            <el-option :key="1" :label="t('system.role.dataScopeOptions.all')" :value="1" />
+            <el-option :key="2" :label="t('system.role.dataScopeOptions.deptAndChild')" :value="2" />
+            <el-option :key="3" :label="t('system.role.dataScopeOptions.dept')" :value="3" />
+            <el-option :key="4" :label="t('system.role.dataScopeOptions.self')" :value="4" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="状态" prop="status">
+        <el-form-item :label="t('system.common.status')" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="1">正常</el-radio>
-            <el-radio :value="0">停用</el-radio>
+            <el-radio :value="1">{{ t('system.role.status.normal') }}</el-radio>
+            <el-radio :value="0">{{ t('system.role.status.disabled') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="排序" prop="sort">
+        <el-form-item :label="t('system.common.sort')" prop="sort">
           <el-input-number
             v-model="formData.sort"
             controls-position="right"
@@ -142,8 +150,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
+          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -151,11 +159,11 @@
     <!-- 分配权限弹窗 -->
     <el-drawer
       v-model="assignPermDialogVisible"
-      :title="'【' + checkedRole.name + '】权限分配'"
+      :title="'【' + checkedRole.name + '】' + t('system.role.permission.title')"
       :size="drawerSize"
     >
       <div class="flex-x-between">
-        <el-input v-model="permKeywords" clearable class="w-[150px]" placeholder="菜单权限名称">
+        <el-input v-model="permKeywords" clearable class="w-[150px]" :placeholder="t('system.role.permission.menuName')">
           <template #prefix>
             <Search />
           </template>
@@ -166,19 +174,19 @@
             <template #icon>
               <Switch />
             </template>
-            {{ isExpanded ? "收缩" : "展开" }}
+            {{ isExpanded ? t('system.role.permission.collapse') : t('system.role.permission.expand') }}
           </el-button>
           <el-checkbox
             v-model="parentChildLinked"
             class="ml-5"
             @change="handleparentChildLinkedChange"
           >
-            父子联动
+            {{ t('system.role.permission.parentChildLinked') }}
           </el-checkbox>
 
           <el-tooltip placement="bottom">
             <template #content>
-              如果只需勾选菜单权限，不需要勾选子菜单或者按钮权限，请关闭父子联动
+              {{ t('system.role.permission.linkTip') }}
             </template>
             <el-icon class="ml-1 color-[--el-color-primary] inline-block cursor-pointer">
               <QuestionFilled />
@@ -203,8 +211,8 @@
       </el-tree>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleAssignPermSubmit">确 定</el-button>
-          <el-button @click="assignPermDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="handleAssignPermSubmit">{{ t('system.common.confirm') }}</el-button>
+          <el-button @click="assignPermDialogVisible = false">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -212,6 +220,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/store/modules/app.store";
 import { DeviceEnum } from "@/enums/settings/device.enum";
 
@@ -223,6 +232,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
+const { t } = useI18n();
 const appStore = useAppStore();
 
 const queryFormRef = ref();
@@ -257,12 +267,12 @@ const formData = reactive<RoleForm>({
   status: 1,
 });
 
-const rules = reactive({
-  name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
-  code: [{ required: true, message: "请输入角色编码", trigger: "blur" }],
-  dataScope: [{ required: true, message: "请选择数据权限", trigger: "blur" }],
-  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
-});
+const rules = computed(() => ({
+  name: [{ required: true, message: t('system.role.rules.name'), trigger: "blur" }],
+  code: [{ required: true, message: t('system.role.rules.code'), trigger: "blur" }],
+  dataScope: [{ required: true, message: t('system.role.rules.dataScope'), trigger: "blur" }],
+  status: [{ required: true, message: t('system.role.rules.status'), trigger: "blur" }],
+}));
 
 // 选中的角色
 interface CheckedRole {
@@ -307,12 +317,12 @@ function handleSelectionChange(selection: any) {
 function handleOpenDialog(roleId?: string) {
   dialog.visible = true;
   if (roleId) {
-    dialog.title = "修改角色";
+    dialog.title = t('system.role.editRole');
     RoleAPI.getFormData(roleId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = "新增角色";
+    dialog.title = t('system.role.addRole');
   }
 }
 
@@ -325,7 +335,7 @@ function handleSubmit() {
       if (roleId) {
         RoleAPI.update(roleId, formData)
           .then(() => {
-            ElMessage.success("修改成功");
+            ElMessage.success(t('system.common.editSuccess'));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -333,7 +343,7 @@ function handleSubmit() {
       } else {
         RoleAPI.create(formData)
           .then(() => {
-            ElMessage.success("新增成功");
+            ElMessage.success(t('system.common.addSuccess'));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -359,26 +369,26 @@ function handleCloseDialog() {
 function handleDelete(roleId?: number) {
   const roleIds = [roleId || ids.value].join(",");
   if (!roleIds) {
-    ElMessage.warning("请勾选删除项");
+    ElMessage.warning(t('system.common.selectDeleteItem'));
     return;
   }
 
-  ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
+  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
+    confirmButtonText: t('system.common.confirm'),
+    cancelButtonText: t('system.common.cancel'),
     type: "warning",
   }).then(
     () => {
       loading.value = true;
       RoleAPI.deleteByIds(roleIds)
         .then(() => {
-          ElMessage.success("删除成功");
+          ElMessage.success(t('system.common.deleteSuccess'));
           handleResetQuery();
         })
         .finally(() => (loading.value = false));
     },
     () => {
-      ElMessage.info("已取消删除");
+      ElMessage.info(t('system.common.cancelDelete'));
     }
   );
 }
@@ -419,7 +429,7 @@ function handleAssignPermSubmit() {
     loading.value = true;
     RoleAPI.updateRoleMenus(roleId, checkedMenuIds)
       .then(() => {
-        ElMessage.success("分配权限成功");
+        ElMessage.success(t('system.role.permission.assignSuccess'));
         assignPermDialogVisible.value = false;
         handleResetQuery();
       })

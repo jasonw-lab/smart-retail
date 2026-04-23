@@ -3,7 +3,7 @@
     <el-dialog
       v-model="visible"
       :align-center="true"
-      title="导入数据"
+      :title="t('system.user.import.title')"
       width="600px"
       @close="handleClose"
     >
@@ -15,7 +15,7 @@
           :model="importFormData"
           :rules="importFormRules"
         >
-          <el-form-item label="文件名" prop="files">
+          <el-form-item :label="t('system.user.import.fileName')" prop="files">
             <el-upload
               ref="uploadRef"
               v-model:file-list="importFormData.files"
@@ -28,19 +28,19 @@
             >
               <el-icon class="el-icon--upload"><upload-filled /></el-icon>
               <div class="el-upload__text">
-                将文件拖到此处，或
-                <em>点击上传</em>
+                {{ t('system.user.import.dragText') }}
+                <em>{{ t('system.user.import.clickUpload') }}</em>
               </div>
               <template #tip>
                 <div class="el-upload__tip">
-                  格式为*.xlsx / *.xls，文件不超过一个
+                  {{ t('system.user.import.tip') }}
                   <el-link
                     type="primary"
                     icon="download"
                     underline="never"
                     @click="handleDownloadTemplate"
                   >
-                    下载模板
+                    {{ t('system.user.import.downloadTemplate') }}
                   </el-link>
                 </div>
               </template>
@@ -51,29 +51,29 @@
       <template #footer>
         <div style="padding-right: var(--el-dialog-padding-primary)">
           <el-button v-if="resultData.length > 0" type="primary" @click="handleShowResult">
-            错误信息
+            {{ t('system.user.import.errorInfo') }}
           </el-button>
           <el-button
             type="primary"
             :disabled="importFormData.files.length === 0"
             @click="handleUpload"
           >
-            确 定
+            {{ t('system.common.confirm') }}
           </el-button>
-          <el-button @click="handleClose">取 消</el-button>
+          <el-button @click="handleClose">{{ t('system.common.cancel') }}</el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="resultVisible" title="导入结果" width="600px">
+    <el-dialog v-model="resultVisible" :title="t('system.user.import.result')" width="600px">
       <el-alert
-        :title="`导入结果：${invalidCount}条无效数据，${validCount}条有效数据`"
+        :title="t('system.user.import.resultInfo', { invalid: invalidCount, valid: validCount })"
         type="warning"
         :closable="false"
       />
       <el-table :data="resultData" style="width: 100%; max-height: 400px">
-        <el-table-column prop="index" align="center" width="100" type="index" label="序号" />
-        <el-table-column prop="message" label="错误信息" width="400">
+        <el-table-column prop="index" align="center" width="100" type="index" :label="t('system.user.import.index')" />
+        <el-table-column prop="message" :label="t('system.user.import.errorInfo')" width="400">
           <template #default="scope">
             {{ scope.row }}
           </template>
@@ -81,7 +81,7 @@
       </el-table>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseResult">关闭</el-button>
+          <el-button @click="handleCloseResult">{{ t('system.common.close') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -89,9 +89,12 @@
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from "vue-i18n";
 import { ElMessage, type UploadUserFile } from "element-plus";
 import UserAPI from "@/api/system/user.api";
 import { ResultEnum } from "@/enums/api/result.enum";
+
+const { t } = useI18n();
 
 const emit = defineEmits(["import-success"]);
 const visible = defineModel("modelValue", {
@@ -123,13 +126,13 @@ watch(visible, (newValue) => {
   }
 });
 
-const importFormRules = {
-  files: [{ required: true, message: "文件不能为空", trigger: "blur" }],
-};
+const importFormRules = computed(() => ({
+  files: [{ required: true, message: t('system.user.import.fileRequired'), trigger: "blur" }],
+}));
 
 // 文件超出个数限制
 const handleFileExceed = () => {
-  ElMessage.warning("只能上传一个文件");
+  ElMessage.warning(t('system.user.import.fileLimit'));
 };
 
 // 下载导入模板
@@ -158,18 +161,18 @@ const handleDownloadTemplate = () => {
 // 上传文件
 const handleUpload = async () => {
   if (!importFormData.files.length) {
-    ElMessage.warning("请选择文件");
+    ElMessage.warning(t('system.user.import.selectFile'));
     return;
   }
 
   try {
     const result = await UserAPI.import("1", importFormData.files[0].raw as File);
     if (result.code === ResultEnum.SUCCESS && result.invalidCount === 0) {
-      ElMessage.success("导入成功，导入数据：" + result.validCount + "条");
+      ElMessage.success(t('system.user.import.success', { count: result.validCount }));
       emit("import-success");
       handleClose();
     } else {
-      ElMessage.error("上传失败");
+      ElMessage.error(t('system.user.import.failed'));
       resultVisible.value = true;
       resultData.value = result.messageList;
       invalidCount.value = result.invalidCount;
@@ -177,7 +180,7 @@ const handleUpload = async () => {
     }
   } catch (error: any) {
     console.error(error);
-    ElMessage.error("上传失败：" + error);
+    ElMessage.error(t('system.user.import.failed') + "：" + error);
   }
 };
 

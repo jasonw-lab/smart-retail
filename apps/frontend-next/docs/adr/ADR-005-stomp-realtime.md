@@ -456,7 +456,7 @@ import type { Alert } from '@/features/alerts/types/alert';
 
 export default async function AlertsPage() {
   // 初期データはServer Componentで取得
-  const initialAlerts = await fetchFromProxy<Alert[]>('retail/alerts?status=unread');
+  const initialAlerts = await fetchFromBackend<Alert[]>('retail/alerts?status=unread');
 
   return (
     <div>

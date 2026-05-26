@@ -154,6 +154,6 @@ apps/frontend-next/
 | ルーティング | `app/` ディレクトリベースのファイルシステムルーティング |
 | レイアウト | Route Groups + Nested Layouts |
 | データ取得 | Server Componentでfetch、Client ComponentでTanStack Query |
-| 認証 | Route Handlers経由でJWT管理（ADR-002参照）|
+| 認証 | ハイブリッド: Server→Backend直接, Client→Route Handler（ADR-002参照）|
 | ローディング | `loading.tsx` + Suspense |
 | エラー | `error.tsx`、`not-found.tsx` |

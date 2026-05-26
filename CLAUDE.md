@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Component | Path | Stack |
 |-----------|------|-------|
-| Backend API | `apps/backend/` | Java 17, Spring Boot 3.3, MyBatis Plus, Spring Security |
+| Backend API | `../smart-dx-backend/apps/backend/` | Java 17, Spring Boot 3.3, MyBatis Plus, Spring Security |
 | Frontend UI | `apps/frontend/` | Vue 3, TypeScript, Vite, Element Plus, Pinia |
 | Frontend EC | `apps/frontend-ec/` | E-commerce frontend (separate) |
 | Docker | `platform/docker/` | Docker Compose environment |
@@ -18,17 +18,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Backend
 ```bash
 # Run application
-cd apps/backend && ./mvnw spring-boot:run
+cd ../smart-dx-backend/apps/backend && ./mvnw spring-boot:run
 
 # Run all tests
-cd apps/backend && ./mvnw test
+cd ../smart-dx-backend/apps/backend && ./mvnw test
 
 # Run single test class
-cd apps/backend && ./mvnw test -Dtest=ProductControllerRestAssuredTest
+cd ../smart-dx-backend/apps/backend && ./mvnw test -Dtest=ProductControllerRestAssuredTest
 
 # Build
-cd apps/backend && ./mvnw clean package -DskipTests
+cd ../smart-dx-backend/apps/backend && ./mvnw clean package -DskipTests
 ```
+
+> **Note**: `apps/backend/` in this repository is deprecated. Use `../smart-dx-backend/apps/backend/` instead.
 
 ### Frontend
 ```bash
@@ -64,7 +66,7 @@ cd platform/docker && docker compose -f docker-compose-env.yml down
 
 ### Backend Structure
 ```
-apps/backend/src/main/java/com/youlai/boot/
+../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/
 ├── modules/retail/          # Business modules (modifiable)
 │   ├── controller/          # REST endpoints
 │   ├── converter/           # MapStruct converters (entity/form/vo)
@@ -98,8 +100,8 @@ apps/frontend/src/
 ## Modifiable Scope
 
 Freely modifiable:
-- `apps/backend/src/main/java/com/youlai/boot/modules/retail/`
-- `apps/backend/src/main/resources/mapper/retail/`
+- `../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/modules/retail/`
+- `../smart-dx-backend/apps/backend/src/main/resources/mapper/retail/`
 - `apps/frontend/src/` (retail-related)
 - `platform/docker/` (Docker configuration)
 
@@ -110,7 +112,7 @@ Changes outside these directories require justification.
 ### Backend
 - All Java files: `@author jason.w`
 - Tests: REST Assured integration tests extending `BaseControllerTest`
-- Test location: `apps/backend/src/test/java/com/youlai/boot/modules/retail/`
+- Test location: `../smart-dx-backend/apps/backend/src/test/java/com/youlai/boot/modules/retail/`
 - Test profile: `@ActiveProfiles("test")`
 
 ### Frontend API Pattern

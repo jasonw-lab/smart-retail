@@ -44,8 +44,10 @@ git push origin --delete <branch>
 
 ### 変更可能な範囲
 下記のディレクトリは変更可能:
-- `backend/src/main/java/com/youlai/boot/modules/retail`
-- `backend/src/main/resources/mapper/retail`
+- `../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/modules/retail`
+- `../smart-dx-backend/apps/backend/src/main/resources/mapper/retail`
+
+> **Note**: `apps/backend/` は廃止予定。`../smart-dx-backend/apps/backend/` を使用すること。
 
 **上記以外を変更する場合は、変更理由を確認してから実施すること**
 
@@ -55,8 +57,8 @@ git push origin --delete <branch>
 
 | プロジェクト | パス | 説明 |
 |-------------|------|------|
-| Backend API | `backend/` | Java + Spring Boot + MyBatis |
-| Frontend UI | `frontend/` | React + TypeScript + Ant Design |
+| Backend API | `../smart-dx-backend/apps/backend/` | Java + Spring Boot + MyBatis |
+| Frontend UI | `apps/frontend/` | Vue 3 + TypeScript + Element Plus |
 
 ### フロントエンド開発
 - **frontendも確認した上で変更を行う**
@@ -72,7 +74,7 @@ git push origin --delete <branch>
 
 ### ビジネスロジックの標準構造
 ```
-backend/src/main/java/com/youlai/boot/modules/retail/
+../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/modules/retail/
 ├── controller          # REST API エンドポイント
 ├── converter          # entity, form, vo の変換
 ├── mapper             # MyBatis マッパーインターフェース
@@ -84,8 +86,8 @@ backend/src/main/java/com/youlai/boot/modules/retail/
 ├── service            # ビジネスロジックインターフェース
 └── service/impl       # ビジネスロジック実装
 
-backend/src/main/resources/mapper/retail/  # MyBatis XML マッパー
-backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
+../smart-dx-backend/apps/backend/src/main/resources/mapper/retail/  # MyBatis XML マッパー
+../smart-dx-backend/apps/backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 ```
 
 ### 参照実装
@@ -99,7 +101,7 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 - **ProductControllerRestAssuredTest.java** - テストケース参考
 
 ### フロントエンド連携ルール
-- **API呼び出しの実装方針**: `frontend/src/api/system/user.api.ts` と同じ形式で実装する
+- **API呼び出しの実装方針**: `apps/frontend/src/api/system/user.api.ts` と同じ形式で実装する
   - `request<any, T>({ url, method, params, data })` を使用する（`request.get/post/...` 直呼びは避ける）
   - `@/utils/request` は **成功時に `response.data.data` を返す**（code判定してdataをunwrap）ため、画面側で `res.data...` は参照しない
   - `ApiResponse` のような独自ラッパ型は作らず、**バックエンドの `data` 部分の型**をそのまま `T` にする
@@ -112,7 +114,7 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
   - backend の `productName/unitPrice` 等の命名差は、画面側で必要に応じてマッピングして整合させる
 
 ### テスト駆動開発
-- テスト配置場所: `backend/src/test/java/com/youlai/boot/modules/retail`
+- テスト配置場所: `../smart-dx-backend/apps/backend/src/test/java/com/youlai/boot/modules/retail`
 - 参考テスト: `ProductControllerRestAssuredTest.java`
 - REST Assured を使用した統合テスト
 

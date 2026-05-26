@@ -232,7 +232,7 @@ pnpm add tailwindcss @tailwindcss/postcss
 | カテゴリ | 影響 |
 |---------|------|
 | スタイリング | Tailwind CSS（ユーティリティクラス） |
-| テーマ | tailwind.config.ts + CSS変数 |
+| テーマ | CSS変数 (`@theme`ディレクティブ、v4ではconfig不要) |
 | コンポーネント配置 | components/ui/ |
 | フォーム | React Hook Form + Zod + shadcn/ui Form |
 | テーブル | TanStack Table + shadcn/ui Table |

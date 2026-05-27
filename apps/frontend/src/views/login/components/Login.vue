@@ -107,7 +107,7 @@ const captchaBase64 = ref();
 const loginFormData = ref<LoginFormData>({
   username: "demo",
   password: "demo123",
-  captchaKey: "",
+  captchaId: "",
   captchaCode: "",
   rememberMe: false,
 });
@@ -149,7 +149,7 @@ function getCaptcha() {
   codeLoading.value = true;
   AuthAPI.getCaptcha()
     .then((data) => {
-      loginFormData.value.captchaKey = data.captchaKey;
+      loginFormData.value.captchaId = data.captchaId;
       captchaBase64.value = data.captchaBase64;
     })
     .finally(() => (codeLoading.value = false));

@@ -22,7 +22,7 @@ const UserAPI = {
    */
   getPage(queryParams: UserPageQuery) {
     return request<any, PageResult<UserPageVO[]>>({
-      url: `${USER_BASE_URL}/page`,
+      url: `${USER_BASE_URL}`,
       method: "get",
       params: queryParams,
     });
@@ -216,6 +216,12 @@ export default UserAPI;
 export interface UserInfo {
   /** 用户ID */
   userId?: string;
+
+  /** 租户ID */
+  tenantId?: string;
+
+  /** 租户名称 */
+  tenantName?: string;
 
   /** 用户名 */
   username?: string;

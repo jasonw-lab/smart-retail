@@ -130,13 +130,48 @@ export const DISCARD_REASON_OPTIONS = [
 ];
 
 const InventoryAPI = {
-  /** 在庫一覧を取得（ページング） */
-  getPage(params: InventoryPageQuery) {
-    return request<any, InventoryListData>({
-      url: `${INVENTORY_BASE_URL}/page`,
+  /** 在庫一覧を取得（ページング） - クライアントサイドページング */
+  async getPage(params: InventoryPageQuery): Promise<InventoryListData> {
+    const allInventories = await request<any, InventoryPageVO[]>({
+      url: `${INVENTORY_BASE_URL}`,
       method: "get",
-      params,
+      params: {
+        storeId: params.storeId,
+        productId: params.productId,
+      },
     });
+
+    // フィルタリング
+    let filtered = allInventories || [];
+    if (params.productName) {
+      filtered = filtered.filter((i) =>
+        i.productName?.toLowerCase().includes(params.productName!.toLowerCase())
+      );
+    }
+    if (params.lotNumber) {
+      filtered = filtered.filter((i) =>
+        i.lotNumber?.toLowerCase().includes(params.lotNumber!.toLowerCase())
+      );
+    }
+    if (params.status) {
+      filtered = filtered.filter((i) => i.status === params.status);
+    }
+    if (params.location) {
+      filtered = filtered.filter((i) =>
+        i.location?.toLowerCase().includes(params.location!.toLowerCase())
+      );
+    }
+    if (params.expiredOnly) {
+      filtered = filtered.filter((i) => i.status === "EXPIRED");
+    }
+
+    // ページング
+    const total = filtered.length;
+    const start = (params.pageNum - 1) * params.pageSize;
+    const end = start + params.pageSize;
+    const list = filtered.slice(start, end);
+
+    return { list, total };
   },
 
   /** 在庫詳細を取得 */

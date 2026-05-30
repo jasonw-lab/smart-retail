@@ -1,5 +1,11 @@
 # AGENT.md
 
+## 共通ルール
+
+全プロジェクト共通の AI 向けルールは下記を参照する（レビュー記録フォーマット等）。
+
+@~/ai-rules/ai-common.md
+
 ## 参照ドキュメント
 
 ### 要件定義
@@ -44,8 +50,10 @@ git push origin --delete <branch>
 
 ### 変更可能な範囲
 下記のディレクトリは変更可能:
-- `backend/src/main/java/com/youlai/boot/modules/retail`
-- `backend/src/main/resources/mapper/retail`
+- `../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/modules/retail`
+- `../smart-dx-backend/apps/backend/src/main/resources/mapper/retail`
+
+> **Note**: `apps/backend/` は廃止予定。`../smart-dx-backend/apps/backend/` を使用すること。
 
 **上記以外を変更する場合は、変更理由を確認してから実施すること**
 
@@ -55,8 +63,8 @@ git push origin --delete <branch>
 
 | プロジェクト | パス | 説明 |
 |-------------|------|------|
-| Backend API | `backend/` | Java + Spring Boot + MyBatis |
-| Frontend UI | `frontend/` | React + TypeScript + Ant Design |
+| Backend API | `../smart-dx-backend/apps/backend/` | Java + Spring Boot + MyBatis |
+| Frontend UI | `apps/frontend/` | Vue 3 + TypeScript + Element Plus |
 
 ### フロントエンド開発
 - **frontendも確認した上で変更を行う**
@@ -72,7 +80,7 @@ git push origin --delete <branch>
 
 ### ビジネスロジックの標準構造
 ```
-backend/src/main/java/com/youlai/boot/modules/retail/
+../smart-dx-backend/apps/backend/src/main/java/com/youlai/boot/modules/retail/
 ├── controller          # REST API エンドポイント
 ├── converter          # entity, form, vo の変換
 ├── mapper             # MyBatis マッパーインターフェース
@@ -84,8 +92,8 @@ backend/src/main/java/com/youlai/boot/modules/retail/
 ├── service            # ビジネスロジックインターフェース
 └── service/impl       # ビジネスロジック実装
 
-backend/src/main/resources/mapper/retail/  # MyBatis XML マッパー
-backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
+../smart-dx-backend/apps/backend/src/main/resources/mapper/retail/  # MyBatis XML マッパー
+../smart-dx-backend/apps/backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 ```
 
 ### 参照実装
@@ -99,7 +107,7 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 - **ProductControllerRestAssuredTest.java** - テストケース参考
 
 ### フロントエンド連携ルール
-- **API呼び出しの実装方針**: `frontend/src/api/system/user.api.ts` と同じ形式で実装する
+- **API呼び出しの実装方針**: `apps/frontend/src/api/system/user.api.ts` と同じ形式で実装する
   - `request<any, T>({ url, method, params, data })` を使用する（`request.get/post/...` 直呼びは避ける）
   - `@/utils/request` は **成功時に `response.data.data` を返す**（code判定してdataをunwrap）ため、画面側で `res.data...` は参照しない
   - `ApiResponse` のような独自ラッパ型は作らず、**バックエンドの `data` 部分の型**をそのまま `T` にする
@@ -112,7 +120,7 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
   - backend の `productName/unitPrice` 等の命名差は、画面側で必要に応じてマッピングして整合させる
 
 ### テスト駆動開発
-- テスト配置場所: `backend/src/test/java/com/youlai/boot/modules/retail`
+- テスト配置場所: `../smart-dx-backend/apps/backend/src/test/java/com/youlai/boot/modules/retail`
 - 参考テスト: `ProductControllerRestAssuredTest.java`
 - REST Assured を使用した統合テスト
 
@@ -121,6 +129,14 @@ backend/src/test/java/com/youlai/boot/modules/retail/  # テストコード
 - [ ] MyBatis XML マッパーファイル
 - [ ] テストソース
 - [ ] フロントエンドAPI呼び出し箇所（影響がある場合）
+
+### マルチテナント対応レビュー
+- SQL/DB設計で `tenant_id` を追加する場合、単独の `fk_*_tenant` だけでは不十分。子テーブルの `tenant_id` と `store_id` / `product_id` / `sales_id` など参照先のテナントが一致することを、複合FKや同等の制約で確認する。
+- テナント内一意に変更すべき業務キーは漏れなく確認する。例: 店舗コード、商品コード、カテゴリコード、デバイスコード、注文番号。
+- `TenantLineInnerInterceptor` の ignore 対象は最小化する。`tenant_id` を持たない明細テーブルを ignore する場合は、直接クエリを禁止し、必ず親テーブルJOINでテナント条件を担保する。
+- デモデータや移行SQLの `DELETE` / `UPDATE` / 重複チェックにも `tenant_id` 条件を入れる。`tenant_id` を持たない子テーブルは親テーブル経由で対象テナントに限定する。
+- 設計書の移行SQLは既存DDLの実インデックス名・制約名と照合し、そのまま実行できる名前になっているか確認する。
+- Backend 側で `TenantLineInnerInterceptor`、テナントコンテキスト、JWT claims、INSERT時の `tenant_id` 設定、ignore対象テーブルのテストが揃っているか確認する。
 
 
 ## 設計変更
@@ -244,4 +260,3 @@ Closes #X
 - **PR マージ後**、`plan_issue.md` を更新
 - 該当 Issue のステータスを「対応完了」に変更
 - 完了日時とPR番号を記録
-

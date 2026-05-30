@@ -52,13 +52,36 @@ export interface StoreListParams {
 }
 
 const StoreAPI = {
-  /** 店舗一覧を取得（ページング） */
-  getPage(params: StoreListParams) {
-    return request<any, StoreListData>({
-      url: `${STORE_BASE_URL}/page`,
+  /** 店舗一覧を取得（ページング） - クライアントサイドページング */
+  async getPage(params: StoreListParams): Promise<StoreListData> {
+    const allStores = await request<any, Store[]>({
+      url: `${STORE_BASE_URL}`,
       method: "get",
-      params,
     });
+
+    // フィルタリング
+    let filtered = allStores || [];
+    if (params.storeName) {
+      filtered = filtered.filter((s) =>
+        s.storeName?.toLowerCase().includes(params.storeName!.toLowerCase())
+      );
+    }
+    if (params.manager) {
+      filtered = filtered.filter((s) =>
+        s.manager?.toLowerCase().includes(params.manager!.toLowerCase())
+      );
+    }
+    if (params.status) {
+      filtered = filtered.filter((s) => s.status === params.status);
+    }
+
+    // ページング
+    const total = filtered.length;
+    const start = (params.pageNum - 1) * params.pageSize;
+    const end = start + params.pageSize;
+    const list = filtered.slice(start, end) as StorePageVO[];
+
+    return { list, total };
   },
 
   /** 店舗一覧を取得（全件） */

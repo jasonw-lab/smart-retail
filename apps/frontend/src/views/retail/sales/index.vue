@@ -182,7 +182,7 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="プロバイダ">
-            {{ salesDetail.paymentProvider || '-' }}
+            {{ salesDetail.paymentProvider || "-" }}
           </el-descriptions-item>
           <el-descriptions-item label="決済参照ID" :span="2">
             <code v-if="salesDetail.paymentReferenceId" class="reference-id">
@@ -212,7 +212,8 @@
             </el-table-column>
           </el-table>
           <div class="items-total">
-            合計: <span>{{ formatCurrency(salesDetail.totalAmount) }}</span>
+            合計:
+            <span>{{ formatCurrency(salesDetail.totalAmount) }}</span>
           </div>
         </div>
       </div>
@@ -365,8 +366,11 @@ const formatRelativeTime = (dateTime: string) => {
     if (date.toDateString() === yesterday.toDateString()) {
       return `昨日 ${date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`;
     }
-    return date.toLocaleDateString("ja-JP", { month: "2-digit", day: "2-digit" }) +
-      " " + date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    return (
+      date.toLocaleDateString("ja-JP", { month: "2-digit", day: "2-digit" }) +
+      " " +
+      date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })
+    );
   }
 };
 

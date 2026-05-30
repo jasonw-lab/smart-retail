@@ -73,13 +73,41 @@ export interface AlertListParams {
 }
 
 const AlertAPI = {
-  /** アラート一覧を取得（ページング） */
-  getPage(params: AlertListParams) {
-    return request<any, AlertListData>({
-      url: `${ALERT_BASE_URL}/page`,
+  /** アラート一覧を取得（ページング） - クライアントサイドページング */
+  async getPage(params: AlertListParams): Promise<AlertListData> {
+    const allAlerts = await request<any, AlertPageVO[]>({
+      url: `${ALERT_BASE_URL}`,
       method: "get",
-      params,
+      params: {
+        storeId: params.storeId,
+        status: params.status,
+      },
     });
+
+    // フィルタリング
+    let filtered = allAlerts || [];
+    if (params.alertType) {
+      filtered = filtered.filter((a) => a.alertType === params.alertType);
+    }
+    if (params.priority) {
+      filtered = filtered.filter((a) => a.priority === params.priority);
+    }
+    if (params.productId) {
+      filtered = filtered.filter((a) => a.productId === params.productId);
+    }
+    if (params.lotNumber) {
+      filtered = filtered.filter((a) =>
+        a.lotNumber?.toLowerCase().includes(params.lotNumber!.toLowerCase())
+      );
+    }
+
+    // ページング
+    const total = filtered.length;
+    const start = (params.pageNum - 1) * params.pageSize;
+    const end = start + params.pageSize;
+    const list = filtered.slice(start, end);
+
+    return { list, total };
   },
 
   /** アラート詳細を取得 */
@@ -94,7 +122,7 @@ const AlertAPI = {
   updateStatus(id: number, data: AlertStatusForm) {
     return request({
       url: `${ALERT_BASE_URL}/${id}/status`,
-      method: "put",
+      method: "patch",
       data,
     });
   },

@@ -25,7 +25,12 @@ async function handler(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const backendPath = path.join('/');
+  // path already includes 'api/v1/...' but BACKEND_URL already has /api/v1
+  // So we strip the 'api/v1' prefix from path
+  let backendPath = path.join('/');
+  if (backendPath.startsWith('api/v1/')) {
+    backendPath = backendPath.replace('api/v1/', '');
+  }
   const url = new URL(`${BACKEND_URL}/${backendPath}`);
 
   // クエリパラメータを転送

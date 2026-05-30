@@ -1,87 +1,86 @@
 import { Metadata } from 'next';
 import { fetchFromBackend } from '@/lib/api/server';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, ShoppingCart, Warehouse, AlertTriangle } from 'lucide-react';
+import {
+  WelcomeMessage,
+  KPICards,
+  KPICardsBottom,
+  SalesChart,
+  AlertPanel,
+  getMockKPIData,
+  getMockAlerts,
+  type KPIData,
+  type AlertItem,
+} from '@/features/dashboard/components';
 
 export const metadata: Metadata = {
   title: 'ダッシュボード',
 };
 
-interface DashboardStats {
-  productCount: number;
-  totalSales: number;
-  lowStockCount: number;
-  alertCount: number;
+interface UserInfo {
+  userId: number;
+  username: string;
+  nickname?: string;
+  avatar?: string;
+  roles: string[];
+  perms: string[];
 }
 
-async function getDashboardStats(): Promise<DashboardStats | null> {
+async function getDashboardKPI(): Promise<KPIData> {
   try {
-    return await fetchFromBackend<DashboardStats>('retail/dashboard/stats');
+    const data = await fetchFromBackend<KPIData>('retail/dashboard/kpi');
+    return data;
   } catch {
-    // ダッシュボード統計APIがない場合はダミーデータ
-    return {
-      productCount: 128,
-      totalSales: 1250000,
-      lowStockCount: 12,
-      alertCount: 5,
-    };
+    // ダッシュボードKPI APIがない場合はモックデータ
+    return getMockKPIData();
+  }
+}
+
+async function getDashboardAlerts(): Promise<AlertItem[]> {
+  try {
+    const data = await fetchFromBackend<AlertItem[]>(
+      'retail/dashboard/alerts'
+    );
+    return data;
+  } catch {
+    // ダッシュボードアラートAPIがない場合はモックデータ
+    return getMockAlerts();
+  }
+}
+
+async function getUserInfo(): Promise<UserInfo | null> {
+  try {
+    const data = await fetchFromBackend<UserInfo>('users/me');
+    return data;
+  } catch {
+    return null;
   }
 }
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+  const [userInfo, kpiData, alerts] = await Promise.all([
+    getUserInfo(),
+    getDashboardKPI(),
+    getDashboardAlerts(),
+  ]);
+
+  const userName = userInfo?.nickname || userInfo?.username || 'デモユーザー';
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">ダッシュボード</h1>
+      {/* ウェルカムメッセージ */}
+      <WelcomeMessage userName={userName} />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">商品数</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.productCount ?? '-'}</div>
-            <p className="text-xs text-muted-foreground">登録商品数</p>
-          </CardContent>
-        </Card>
+      {/* KPIカード (上段4つ) */}
+      <KPICards data={kpiData} />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">売上合計</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.totalSales?.toLocaleString() ?? '-'}円
-            </div>
-            <p className="text-xs text-muted-foreground">今月の売上</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">在庫不足</CardTitle>
-            <Warehouse className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.lowStockCount ?? '-'}</div>
-            <p className="text-xs text-muted-foreground">要補充商品</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">アラート</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.alertCount ?? '-'}</div>
-            <p className="text-xs text-muted-foreground">未読アラート</p>
-          </CardContent>
-        </Card>
+      {/* 売上グラフとアラートパネル */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <SalesChart />
+        <AlertPanel alerts={alerts} className="lg:col-span-1" />
       </div>
+
+      {/* 下段KPIカード (3つ) */}
+      <KPICardsBottom data={kpiData} />
     </div>
   );
 }

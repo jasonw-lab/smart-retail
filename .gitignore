@@ -89,3 +89,5 @@ load_db.py
 docs/interview.md
 p*.md
 review_*.md
+playwright-report
+test-results

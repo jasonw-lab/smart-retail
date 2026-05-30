@@ -17,13 +17,13 @@
             <template #icon>
               <Search />
             </template>
-            {{ t('system.common.search') }}
+            {{ t("system.common.search") }}
           </el-button>
           <el-button @click="handleResetQuery()">
             <template #icon>
               <Refresh />
             </template>
-            {{ t('system.common.reset') }}
+            {{ t("system.common.reset") }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -38,13 +38,22 @@
         class="data-table__content"
       >
         <el-table-column type="index" :label="t('system.config.index')" width="60" />
-        <el-table-column :label="t('system.notice.noticeTableTitle')" prop="title" min-width="200" />
+        <el-table-column
+          :label="t('system.notice.noticeTableTitle')"
+          prop="title"
+          min-width="200"
+        />
         <el-table-column align="center" :label="t('system.notice.type')" width="150">
           <template #default="scope">
             <DictLabel v-model="scope.row.type" code="notice_type" />
           </template>
         </el-table-column>
-        <el-table-column align="center" :label="t('system.notice.publisher')" prop="publisherName" width="100" />
+        <el-table-column
+          align="center"
+          :label="t('system.notice.publisher')"
+          prop="publisherName"
+          width="100"
+        />
         <el-table-column align="center" :label="t('system.notice.level')" width="100">
           <template #default="scope">
             <DictLabel v-model="scope.row.level" code="notice_level" />
@@ -58,17 +67,29 @@
           width="150"
         />
 
-        <el-table-column align="center" :label="t('system.notice.publisher')" prop="publisherName" width="150" />
+        <el-table-column
+          align="center"
+          :label="t('system.notice.publisher')"
+          prop="publisherName"
+          width="150"
+        />
         <el-table-column align="center" :label="t('system.notice.myNotice.readStatus')" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.isRead == 1" type="success">{{ t('system.notice.myNotice.read') }}</el-tag>
-            <el-tag v-else type="info">{{ t('system.notice.myNotice.unread') }}</el-tag>
+            <el-tag v-if="scope.row.isRead == 1" type="success">
+              {{ t("system.notice.myNotice.read") }}
+            </el-tag>
+            <el-tag v-else type="info">{{ t("system.notice.myNotice.unread") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column align="center" fixed="right" :label="t('system.common.operation')" width="80">
+        <el-table-column
+          align="center"
+          fixed="right"
+          :label="t('system.common.operation')"
+          width="80"
+        >
           <template #default="scope">
             <el-button type="primary" size="small" link @click="handleReadNotice(scope.row.id)">
-              {{ t('system.notice.view') }}
+              {{ t("system.notice.view") }}
             </el-button>
           </template>
         </el-table-column>

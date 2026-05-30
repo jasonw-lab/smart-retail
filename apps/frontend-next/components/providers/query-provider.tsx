@@ -20,6 +20,9 @@ export function QueryProvider({ children }: QueryProviderProps) {
             retry: 1,
             // 自動リフェッチの設定
             refetchOnWindowFocus: false,
+            // クエリエラーをError Boundaryにスローしない
+            // エラーはuseQueryのisError/errorで処理する
+            throwOnError: false,
           },
         },
       })

@@ -43,7 +43,9 @@ const deptId = useVModel(props, "modelValue", emits);
 
 watchEffect(
   () => {
-    deptTreeRef.value.filter(deptName.value);
+    if (deptTreeRef.value) {
+      deptTreeRef.value.filter(deptName.value);
+    }
   },
   {
     flush: "post", // watchEffect会在DOM挂载或者更新之前就会触发，此属性控制在DOM元素更新后运行

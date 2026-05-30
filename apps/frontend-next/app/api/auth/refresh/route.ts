@@ -28,14 +28,17 @@ export async function POST() {
       );
     }
 
-    // Backend refresh API呼び出し
-    const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${refreshToken}`,
-      },
-    });
+    // Backend refresh API呼び出し (refreshToken をクエリパラメータで送信)
+    // BACKEND_URL already includes /api/v1 prefix
+    const response = await fetch(
+      `${BACKEND_URL}/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       // リフレッシュ失敗 - Cookieをクリア
@@ -60,10 +63,15 @@ export async function POST() {
 
     const { accessToken, refreshToken: newRefreshToken, expiresIn } = result.data;
 
+    // localhost ではSecureを無効化（開発・テスト環境対応）
+    const isSecure =
+      process.env.NODE_ENV === 'production' &&
+      !process.env.BACKEND_URL?.includes('localhost');
+
     // 新しいトークンをCookieに保存
     cookieStore.set('access_token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
       maxAge: expiresIn || 3600,
@@ -72,7 +80,7 @@ export async function POST() {
     if (newRefreshToken) {
       cookieStore.set('refresh_token', newRefreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isSecure,
         sameSite: 'lax',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,

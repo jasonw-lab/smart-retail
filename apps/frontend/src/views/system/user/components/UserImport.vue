@@ -28,19 +28,19 @@
             >
               <el-icon class="el-icon--upload"><upload-filled /></el-icon>
               <div class="el-upload__text">
-                {{ t('system.user.import.dragText') }}
-                <em>{{ t('system.user.import.clickUpload') }}</em>
+                {{ t("system.user.import.dragText") }}
+                <em>{{ t("system.user.import.clickUpload") }}</em>
               </div>
               <template #tip>
                 <div class="el-upload__tip">
-                  {{ t('system.user.import.tip') }}
+                  {{ t("system.user.import.tip") }}
                   <el-link
                     type="primary"
                     icon="download"
                     underline="never"
                     @click="handleDownloadTemplate"
                   >
-                    {{ t('system.user.import.downloadTemplate') }}
+                    {{ t("system.user.import.downloadTemplate") }}
                   </el-link>
                 </div>
               </template>
@@ -51,16 +51,16 @@
       <template #footer>
         <div style="padding-right: var(--el-dialog-padding-primary)">
           <el-button v-if="resultData.length > 0" type="primary" @click="handleShowResult">
-            {{ t('system.user.import.errorInfo') }}
+            {{ t("system.user.import.errorInfo") }}
           </el-button>
           <el-button
             type="primary"
             :disabled="importFormData.files.length === 0"
             @click="handleUpload"
           >
-            {{ t('system.common.confirm') }}
+            {{ t("system.common.confirm") }}
           </el-button>
-          <el-button @click="handleClose">{{ t('system.common.cancel') }}</el-button>
+          <el-button @click="handleClose">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -72,7 +72,13 @@
         :closable="false"
       />
       <el-table :data="resultData" style="width: 100%; max-height: 400px">
-        <el-table-column prop="index" align="center" width="100" type="index" :label="t('system.user.import.index')" />
+        <el-table-column
+          prop="index"
+          align="center"
+          width="100"
+          type="index"
+          :label="t('system.user.import.index')"
+        />
         <el-table-column prop="message" :label="t('system.user.import.errorInfo')" width="400">
           <template #default="scope">
             {{ scope.row }}
@@ -81,7 +87,7 @@
       </el-table>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseResult">{{ t('system.common.close') }}</el-button>
+          <el-button @click="handleCloseResult">{{ t("system.common.close") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -127,12 +133,12 @@ watch(visible, (newValue) => {
 });
 
 const importFormRules = computed(() => ({
-  files: [{ required: true, message: t('system.user.import.fileRequired'), trigger: "blur" }],
+  files: [{ required: true, message: t("system.user.import.fileRequired"), trigger: "blur" }],
 }));
 
 // 文件超出个数限制
 const handleFileExceed = () => {
-  ElMessage.warning(t('system.user.import.fileLimit'));
+  ElMessage.warning(t("system.user.import.fileLimit"));
 };
 
 // 下载导入模板
@@ -161,18 +167,18 @@ const handleDownloadTemplate = () => {
 // 上传文件
 const handleUpload = async () => {
   if (!importFormData.files.length) {
-    ElMessage.warning(t('system.user.import.selectFile'));
+    ElMessage.warning(t("system.user.import.selectFile"));
     return;
   }
 
   try {
     const result = await UserAPI.import("1", importFormData.files[0].raw as File);
     if (result.code === ResultEnum.SUCCESS && result.invalidCount === 0) {
-      ElMessage.success(t('system.user.import.success', { count: result.validCount }));
+      ElMessage.success(t("system.user.import.success", { count: result.validCount }));
       emit("import-success");
       handleClose();
     } else {
-      ElMessage.error(t('system.user.import.failed'));
+      ElMessage.error(t("system.user.import.failed"));
       resultVisible.value = true;
       resultData.value = result.messageList;
       invalidCount.value = result.invalidCount;
@@ -180,7 +186,7 @@ const handleUpload = async () => {
     }
   } catch (error: any) {
     console.error(error);
-    ElMessage.error(t('system.user.import.failed') + "：" + error);
+    ElMessage.error(t("system.user.import.failed") + "：" + error);
   }
 };
 

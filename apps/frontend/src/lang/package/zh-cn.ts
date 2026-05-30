@@ -193,11 +193,14 @@ export default {
         visibleStatus: "请选择显示状态",
       },
       tooltip: {
-        routeName: "如果需要开启缓存，需保证页面 defineOptions 中的 name 与此处一致，建议使用驼峰。",
-        routePath: "定义应用中不同页面对应的 URL 路径，目录需以 / 开头，菜单项不用。例如：系统管理目录 /system，系统管理下的用户管理菜单 user。",
+        routeName:
+          "如果需要开启缓存，需保证页面 defineOptions 中的 name 与此处一致，建议使用驼峰。",
+        routePath:
+          "定义应用中不同页面对应的 URL 路径，目录需以 / 开头，菜单项不用。例如：系统管理目录 /system，系统管理下的用户管理菜单 user。",
         component: "组件页面完整路径，相对于 src/views/，如 system/user/index，缺省后缀 .vue",
         routeParams: "组件页面使用 `useRoute().query.参数名` 获取路由参数值。",
-        alwaysShow: '选择"是"，即使目录或菜单下只有一个子节点，也会显示父节点。\n选择"否"，如果目录或菜单下只有一个子节点，则只显示该子节点，隐藏父节点。\n如果是叶子节点，请选择"否"。',
+        alwaysShow:
+          '选择"是"，即使目录或菜单下只有一个子节点，也会显示父节点。\n选择"否"，如果目录或菜单下只有一个子节点，则只显示该子节点，隐藏父节点。\n如果是叶子节点，请选择"否"。',
       },
       message: {
         parentCannotBeSelf: "父级菜单不能为当前菜单",

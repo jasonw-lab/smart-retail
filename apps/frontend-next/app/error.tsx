@@ -11,6 +11,9 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error('Application error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error digest:', error.digest);
   }, [error]);
 
   return (

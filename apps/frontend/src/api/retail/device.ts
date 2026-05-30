@@ -76,28 +76,57 @@ export const DEVICE_STATUS_OPTIONS = [
 ];
 
 const DeviceAPI = {
-  /** デバイス一覧を取得（ページング） */
-  getPage(params: DeviceListParams) {
-    return request<any, DeviceListData>({
-      url: `${DEVICE_BASE_URL}/page`,
+  /** デバイス一覧を取得（ページング） - クライアントサイドページング */
+  async getPage(params: DeviceListParams): Promise<DeviceListData> {
+    const allDevices = await request<any, Device[]>({
+      url: `${DEVICE_BASE_URL}`,
       method: "get",
-      params,
+      params: { storeId: params.storeId },
     });
+
+    // フィルタリング
+    let filtered = (allDevices || []) as DevicePageVO[];
+    if (params.deviceType) {
+      filtered = filtered.filter((d) => d.deviceType === params.deviceType);
+    }
+    if (params.status) {
+      filtered = filtered.filter((d) => d.status === params.status);
+    }
+    if (params.deviceName) {
+      filtered = filtered.filter((d) =>
+        d.deviceName?.toLowerCase().includes(params.deviceName!.toLowerCase())
+      );
+    }
+    if (params.deviceCode) {
+      filtered = filtered.filter((d) =>
+        d.deviceCode?.toLowerCase().includes(params.deviceCode!.toLowerCase())
+      );
+    }
+
+    // ページング
+    const total = filtered.length;
+    const start = (params.pageNum - 1) * params.pageSize;
+    const end = start + params.pageSize;
+    const list = filtered.slice(start, end);
+
+    return { list, total };
   },
 
   /** デバイス一覧を取得（全件） */
-  getList() {
+  getList(storeId?: number) {
     return request<any, Device[]>({
       url: `${DEVICE_BASE_URL}`,
       method: "get",
+      params: storeId ? { storeId } : undefined,
     });
   },
 
   /** 店舗別デバイス一覧を取得 */
   getListByStoreId(storeId: number) {
     return request<any, Device[]>({
-      url: `${DEVICE_BASE_URL}/store/${storeId}`,
+      url: `${DEVICE_BASE_URL}`,
       method: "get",
+      params: { storeId },
     });
   },
 

@@ -1,0 +1,85 @@
+{
+  "feature": "retail-multi-tenant",
+  "started_at": "20260528-100327",
+  "updated_at": "2026-05-28T10:03:27.015405",
+  "status": "failed",
+  "tasks": [
+    {
+      "id": "task_1",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_2",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_3",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_4",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_5",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_6",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_7",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_8",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_9",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_10",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    },
+    {
+      "id": "task_11",
+      "status": "skipped",
+      "iterations": 0,
+      "session_id": null,
+      "error": null
+    }
+  ]
+}

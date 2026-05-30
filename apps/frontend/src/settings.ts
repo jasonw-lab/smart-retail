@@ -23,7 +23,7 @@ const defaultSettings: AppSettings = {
   // 组件大小 default | medium | small | large
   size: ComponentSize.DEFAULT,
   // 语言
-  language: LanguageEnum.EN,
+  language: LanguageEnum.JA,
   // 主题颜色
   themeColor: "#4080FF",
   // 是否开启水印

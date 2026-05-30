@@ -121,7 +121,7 @@ const model = ref<Model>({
   username: "admin",
   password: "123456",
   confirmPassword: "",
-  captchaKey: "",
+  captchaId: "",
   captchaCode: "",
   rememberMe: false,
 });
@@ -182,7 +182,7 @@ function getCaptcha() {
   codeLoading.value = true;
   AuthAPI.getCaptcha()
     .then((data) => {
-      model.value.captchaKey = data.captchaKey;
+      model.value.captchaId = data.captchaId;
       captchaBase64.value = data.captchaBase64;
     })
     .finally(() => (codeLoading.value = false));

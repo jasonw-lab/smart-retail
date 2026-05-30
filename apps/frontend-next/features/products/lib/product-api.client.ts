@@ -7,7 +7,7 @@ import type {
   UpdateProductDto,
 } from '../types/product';
 
-const BASE_URL = '/api/proxy/retail/products';
+const BASE_URL = '/api/proxy/api/v1/retail/products';
 
 /**
  * Client Component専用のProduct API

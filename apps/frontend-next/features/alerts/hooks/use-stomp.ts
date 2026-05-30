@@ -24,6 +24,10 @@ export function useStomp(options: UseStompOptions) {
   const pendingSubscriptionsRef = useRef<SubscriptionRequest[]>([]);
   const activeSubscriptionsRef = useRef<Map<string, StompSubscription>>(new Map());
 
+  // Store callbacks in refs to avoid re-renders
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   const { setConnected, setReconnectCount, incrementReconnectCount } = useConnectionStore();
 
   const stableOptions = useMemo(() => ({
@@ -105,7 +109,7 @@ export function useStomp(options: UseStompOptions) {
       setConnected(true);
       setReconnectCount(0);
       console.log('WebSocket接続確立');
-      options.onConnect?.();
+      optionsRef.current.onConnect?.();
 
       // 接続確立後に保留中の購読を実行
       executePendingSubscriptions();
@@ -114,7 +118,7 @@ export function useStomp(options: UseStompOptions) {
     client.onDisconnect = () => {
       setConnected(false);
       console.log('WebSocket切断');
-      options.onDisconnect?.();
+      optionsRef.current.onDisconnect?.();
     };
 
     client.onWebSocketClose = async (event) => {
@@ -137,11 +141,12 @@ export function useStomp(options: UseStompOptions) {
 
     client.onStompError = (frame) => {
       console.error('STOMP Error:', frame.headers, frame.body);
-      options.onError?.(new Error(frame.body || 'STOMP Error'));
+      optionsRef.current.onError?.(new Error(frame.body || 'STOMP Error'));
     };
 
     clientRef.current = client;
     client.activate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     getConnectionToken,
     stableOptions,
@@ -149,7 +154,7 @@ export function useStomp(options: UseStompOptions) {
     setReconnectCount,
     incrementReconnectCount,
     executePendingSubscriptions,
-    options,
+    // options is intentionally excluded - callbacks are stable via refs
   ]);
 
   const disconnect = useCallback(() => {
@@ -209,11 +214,14 @@ export function useStomp(options: UseStompOptions) {
     };
   }, [disconnect]);
 
+  // Get isConnected at hook level (correct hook usage)
+  const isConnected = useConnectionStore((state) => state.isConnected);
+
   return {
     connect,
     disconnect,
     subscribe,
     unsubscribe,
-    isConnected: useConnectionStore((state) => state.isConnected),
+    isConnected,
   };
 }

@@ -10,6 +10,9 @@ const AuthAPI = {
     formData.append("password", data.password);
     formData.append("captchaId", data.captchaId);
     formData.append("captchaCode", data.captchaCode);
+    if (data.tenantId) {
+      formData.append("tenantId", data.tenantId);
+    }
     return request<any, LoginResult>({
       url: `${AUTH_BASE_URL}/login`,
       method: "post",
@@ -36,7 +39,7 @@ const AuthAPI = {
   logout() {
     return request({
       url: `${AUTH_BASE_URL}/logout`,
-      method: "delete",
+      method: "post",
     });
   },
 
@@ -63,6 +66,8 @@ export interface LoginFormData {
   captchaCode: string;
   /** 记住我 */
   rememberMe: boolean;
+  /** 租户ID (可选, マルチテナント用) */
+  tenantId?: string;
 }
 
 /** 登录响应 */

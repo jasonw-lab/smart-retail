@@ -47,10 +47,10 @@
 
             <el-form-item class="search-buttons">
               <el-button type="primary" icon="search" @click="handleQuery">
-                {{ t('system.common.search') }}
+                {{ t("system.common.search") }}
               </el-button>
               <el-button icon="refresh" @click="handleResetQuery">
-                {{ t('system.common.reset') }}
+                {{ t("system.common.reset") }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -65,7 +65,7 @@
                 icon="plus"
                 @click="handleOpenDialog()"
               >
-                {{ t('system.common.add') }}
+                {{ t("system.common.add") }}
               </el-button>
               <el-button
                 v-hasPerm="'sys:user:delete'"
@@ -74,7 +74,7 @@
                 :disabled="selectIds.length === 0"
                 @click="handleDelete()"
               >
-                {{ t('system.common.delete') }}
+                {{ t("system.common.delete") }}
               </el-button>
             </div>
             <div class="data-table__toolbar--tools">
@@ -83,11 +83,11 @@
                 icon="upload"
                 @click="handleOpenImportDialog"
               >
-                {{ t('system.common.import') }}
+                {{ t("system.common.import") }}
               </el-button>
 
               <el-button v-hasPerm="'sys:user:export'" icon="download" @click="handleExport">
-                {{ t('system.common.export') }}
+                {{ t("system.common.export") }}
               </el-button>
             </div>
           </div>
@@ -103,23 +103,55 @@
           >
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column :label="t('system.user.username')" prop="username" />
-            <el-table-column :label="t('system.user.nickname')" width="150" align="center" prop="nickname" />
+            <el-table-column
+              :label="t('system.user.nickname')"
+              width="150"
+              align="center"
+              prop="nickname"
+            />
             <el-table-column :label="t('system.user.gender')" width="100" align="center">
               <template #default="scope">
                 <DictLabel v-model="scope.row.gender" code="gender" />
               </template>
             </el-table-column>
-            <el-table-column :label="t('system.user.department')" width="120" align="center" prop="deptName" />
-            <el-table-column :label="t('system.user.mobile')" align="center" prop="mobile" width="120" />
-            <el-table-column :label="t('system.user.email')" align="center" prop="email" width="160" />
-            <el-table-column :label="t('system.common.status')" align="center" prop="status" width="80">
+            <el-table-column
+              :label="t('system.user.department')"
+              width="120"
+              align="center"
+              prop="deptName"
+            />
+            <el-table-column
+              :label="t('system.user.mobile')"
+              align="center"
+              prop="mobile"
+              width="120"
+            />
+            <el-table-column
+              :label="t('system.user.email')"
+              align="center"
+              prop="email"
+              width="160"
+            />
+            <el-table-column
+              :label="t('system.common.status')"
+              align="center"
+              prop="status"
+              width="80"
+            >
               <template #default="scope">
                 <el-tag :type="scope.row.status == 1 ? 'success' : 'info'">
-                  {{ scope.row.status == 1 ? t('system.common.enable') : t('system.common.disable') }}
+                  {{
+                    scope.row.status == 1 ? t("system.common.enable") : t("system.common.disable")
+                  }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="t('system.common.createTime')" align="center" prop="createTime" width="150" />
+            <el-table-column
+              :label="t('system.common.createTime')"
+              align="center"
+              prop="createTime"
+              width="150"
+            />
             <el-table-column :label="t('system.common.operation')" fixed="right" width="220">
               <template #default="scope">
                 <el-button
@@ -130,7 +162,7 @@
                   link
                   @click="hancleResetPassword(scope.row)"
                 >
-                  {{ t('system.user.resetPassword') }}
+                  {{ t("system.user.resetPassword") }}
                 </el-button>
                 <el-button
                   v-hasPerm="'sys:user:edit'"
@@ -140,7 +172,7 @@
                   size="small"
                   @click="handleOpenDialog(scope.row.id)"
                 >
-                  {{ t('system.common.edit') }}
+                  {{ t("system.common.edit") }}
                 </el-button>
                 <el-button
                   v-hasPerm="'sys:user:delete'"
@@ -150,7 +182,7 @@
                   size="small"
                   @click="handleDelete(scope.row.id)"
                 >
-                  {{ t('system.common.delete') }}
+                  {{ t("system.common.delete") }}
                 </el-button>
               </template>
             </el-table-column>
@@ -185,7 +217,10 @@
         </el-form-item>
 
         <el-form-item :label="t('system.user.userNickname')" prop="nickname">
-          <el-input v-model="formData.nickname" :placeholder="t('system.user.placeholder.nickname')" />
+          <el-input
+            v-model="formData.nickname"
+            :placeholder="t('system.user.placeholder.nickname')"
+          />
         </el-form-item>
 
         <el-form-item :label="t('system.user.belongDept')" prop="deptId">
@@ -204,7 +239,11 @@
         </el-form-item>
 
         <el-form-item :label="t('system.user.role')" prop="roleIds">
-          <el-select v-model="formData.roleIds" multiple :placeholder="t('system.common.pleaseSelect')">
+          <el-select
+            v-model="formData.roleIds"
+            multiple
+            :placeholder="t('system.common.pleaseSelect')"
+          >
             <el-option
               v-for="item in roleOptions"
               :key="item.value"
@@ -215,11 +254,19 @@
         </el-form-item>
 
         <el-form-item :label="t('system.user.mobile')" prop="mobile">
-          <el-input v-model="formData.mobile" :placeholder="t('system.user.placeholder.mobile')" maxlength="11" />
+          <el-input
+            v-model="formData.mobile"
+            :placeholder="t('system.user.placeholder.mobile')"
+            maxlength="11"
+          />
         </el-form-item>
 
         <el-form-item :label="t('system.user.email')" prop="email">
-          <el-input v-model="formData.email" :placeholder="t('system.user.placeholder.email')" maxlength="50" />
+          <el-input
+            v-model="formData.email"
+            :placeholder="t('system.user.placeholder.email')"
+            maxlength="50"
+          />
         </el-form-item>
 
         <el-form-item :label="t('system.common.status')" prop="status">
@@ -236,8 +283,10 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -290,21 +339,21 @@ const formData = reactive<UserForm>({
 });
 
 const rules = computed(() => ({
-  username: [{ required: true, message: t('system.user.rules.username'), trigger: "blur" }],
-  nickname: [{ required: true, message: t('system.user.rules.nickname'), trigger: "blur" }],
-  deptId: [{ required: true, message: t('system.user.rules.department'), trigger: "blur" }],
-  roleIds: [{ required: true, message: t('system.user.rules.role'), trigger: "blur" }],
+  username: [{ required: true, message: t("system.user.rules.username"), trigger: "blur" }],
+  nickname: [{ required: true, message: t("system.user.rules.nickname"), trigger: "blur" }],
+  deptId: [{ required: true, message: t("system.user.rules.department"), trigger: "blur" }],
+  roleIds: [{ required: true, message: t("system.user.rules.role"), trigger: "blur" }],
   email: [
     {
       pattern: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
-      message: t('system.user.rules.email'),
+      message: t("system.user.rules.email"),
       trigger: "blur",
     },
   ],
   mobile: [
     {
       pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-      message: t('system.user.rules.mobile'),
+      message: t("system.user.rules.mobile"),
       trigger: "blur",
     },
   ],
@@ -349,21 +398,25 @@ function handleSelectionChange(selection: any[]) {
 
 // 重置密码
 function hancleResetPassword(row: UserPageVO) {
-  ElMessageBox.prompt(t('system.user.message.resetPasswordPrompt', { username: row.username }), t('system.user.message.resetPasswordTitle'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
-  }).then(
+  ElMessageBox.prompt(
+    t("system.user.message.resetPasswordPrompt", { username: row.username }),
+    t("system.user.message.resetPasswordTitle"),
+    {
+      confirmButtonText: t("system.common.confirm"),
+      cancelButtonText: t("system.common.cancel"),
+    }
+  ).then(
     ({ value }) => {
       if (!value || value.length < 6) {
-        ElMessage.warning(t('system.user.message.passwordMinLength'));
+        ElMessage.warning(t("system.user.message.passwordMinLength"));
         return false;
       }
       UserAPI.resetPassword(row.id, value).then(() => {
-        ElMessage.success(t('system.user.message.resetPasswordSuccess', { password: value }));
+        ElMessage.success(t("system.user.message.resetPasswordSuccess", { password: value }));
       });
     },
     () => {
-      ElMessage.info(t('system.user.message.cancelResetPassword'));
+      ElMessage.info(t("system.user.message.cancelResetPassword"));
     }
   );
 }
@@ -381,12 +434,12 @@ async function handleOpenDialog(id?: string) {
   deptOptions.value = await DeptAPI.getOptions();
 
   if (id) {
-    dialog.title = t('system.user.editUser');
+    dialog.title = t("system.user.editUser");
     UserAPI.getFormData(id).then((data) => {
       Object.assign(formData, { ...data });
     });
   } else {
-    dialog.title = t('system.user.addUser');
+    dialog.title = t("system.user.addUser");
   }
 }
 
@@ -409,7 +462,7 @@ const handleSubmit = useDebounceFn(() => {
       if (userId) {
         UserAPI.update(userId, formData)
           .then(() => {
-            ElMessage.success(t('system.common.editSuccess'));
+            ElMessage.success(t("system.common.editSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -417,7 +470,7 @@ const handleSubmit = useDebounceFn(() => {
       } else {
         UserAPI.create(formData)
           .then(() => {
-            ElMessage.success(t('system.common.addSuccess'));
+            ElMessage.success(t("system.common.addSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -435,26 +488,26 @@ const handleSubmit = useDebounceFn(() => {
 function handleDelete(id?: number) {
   const userIds = [id || selectIds.value].join(",");
   if (!userIds) {
-    ElMessage.warning(t('system.common.selectDeleteItem'));
+    ElMessage.warning(t("system.common.selectDeleteItem"));
     return;
   }
 
-  ElMessageBox.confirm(t('system.user.message.confirmDeleteUser'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.user.message.confirmDeleteUser"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(
     function () {
       loading.value = true;
       UserAPI.deleteByIds(userIds)
         .then(() => {
-          ElMessage.success(t('system.common.deleteSuccess'));
+          ElMessage.success(t("system.common.deleteSuccess"));
           handleResetQuery();
         })
         .finally(() => (loading.value = false));
     },
     function () {
-      ElMessage.info(t('system.common.cancelDelete'));
+      ElMessage.info(t("system.common.cancelDelete"));
     }
   );
 }

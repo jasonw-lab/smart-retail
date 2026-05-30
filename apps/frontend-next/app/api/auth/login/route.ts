@@ -6,6 +6,9 @@ const BACKEND_URL = process.env.BACKEND_URL;
 interface LoginRequest {
   username: string;
   password: string;
+  captchaId?: string;
+  captchaCode?: string;
+  tenantId?: number;
 }
 
 interface AuthToken {
@@ -26,6 +29,7 @@ export async function POST(request: Request) {
     const body: LoginRequest = await request.json();
 
     // Backend認証API呼び出し
+    // BACKEND_URL already includes /api/v1 prefix
     const response = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -54,9 +58,14 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
 
     // httpOnly Cookieにトークンを保存
+    // localhost ではSecureを無効化（開発・テスト環境対応）
+    const isSecure =
+      process.env.NODE_ENV === 'production' &&
+      !process.env.BACKEND_URL?.includes('localhost');
+
     cookieStore.set('access_token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
       maxAge: expiresIn || 3600,
@@ -64,7 +73,7 @@ export async function POST(request: Request) {
 
     cookieStore.set('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60,

@@ -12,7 +12,12 @@
         </el-form-item>
 
         <el-form-item :label="t('system.common.status')" prop="status">
-          <el-select v-model="queryParams.status" :placeholder="t('system.common.all')" clearable style="width: 100px">
+          <el-select
+            v-model="queryParams.status"
+            :placeholder="t('system.common.all')"
+            clearable
+            style="width: 100px"
+          >
             <el-option :value="1" :label="t('system.common.enable')" />
             <el-option :value="0" :label="t('system.common.disable')" />
           </el-select>
@@ -20,9 +25,11 @@
 
         <el-form-item class="search-buttons">
           <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">
-            {{ t('system.common.search') }}
+            {{ t("system.common.search") }}
           </el-button>
-          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">
+            {{ t("system.common.reset") }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -36,7 +43,7 @@
             icon="plus"
             @click="handleOpenDialog()"
           >
-            {{ t('system.common.add') }}
+            {{ t("system.common.add") }}
           </el-button>
           <el-button
             v-hasPerm="['sys:dept:delete']"
@@ -45,7 +52,7 @@
             icon="delete"
             @click="handleDelete()"
           >
-            {{ t('system.common.delete') }}
+            {{ t("system.common.delete") }}
           </el-button>
         </div>
       </div>
@@ -64,14 +71,21 @@
         <el-table-column prop="code" :label="t('system.dept.code')" width="200" />
         <el-table-column prop="status" :label="t('system.common.status')" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.status == 1" type="success">{{ t('system.common.enable') }}</el-tag>
-            <el-tag v-else type="info">{{ t('system.common.disable') }}</el-tag>
+            <el-tag v-if="scope.row.status == 1" type="success">
+              {{ t("system.common.enable") }}
+            </el-tag>
+            <el-tag v-else type="info">{{ t("system.common.disable") }}</el-tag>
           </template>
         </el-table-column>
 
         <el-table-column prop="sort" :label="t('system.common.sort')" width="100" />
 
-        <el-table-column :label="t('system.common.operation')" fixed="right" align="left" width="200">
+        <el-table-column
+          :label="t('system.common.operation')"
+          fixed="right"
+          align="left"
+          width="200"
+        >
           <template #default="scope">
             <el-button
               v-hasPerm="['sys:dept:add']"
@@ -81,7 +95,7 @@
               icon="plus"
               @click.stop="handleOpenDialog(scope.row.id, undefined)"
             >
-              {{ t('system.common.add') }}
+              {{ t("system.common.add") }}
             </el-button>
             <el-button
               v-hasPerm="['sys:dept:edit']"
@@ -91,7 +105,7 @@
               icon="edit"
               @click.stop="handleOpenDialog(scope.row.parentId, scope.row.id)"
             >
-              {{ t('system.common.edit') }}
+              {{ t("system.common.edit") }}
             </el-button>
             <el-button
               v-hasPerm="['sys:dept:delete']"
@@ -101,7 +115,7 @@
               icon="delete"
               @click.stop="handleDelete(scope.row.id)"
             >
-              {{ t('system.common.delete') }}
+              {{ t("system.common.delete") }}
             </el-button>
           </template>
         </el-table-column>
@@ -141,16 +155,18 @@
         </el-form-item>
         <el-form-item :label="t('system.common.status')">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="1">{{ t('system.common.enable') }}</el-radio>
-            <el-radio :value="0">{{ t('system.common.disable') }}</el-radio>
+            <el-radio :value="1">{{ t("system.common.enable") }}</el-radio>
+            <el-radio :value="0">{{ t("system.common.disable") }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -190,10 +206,10 @@ const formData = reactive<DeptForm>({
 });
 
 const rules = computed(() => ({
-  parentId: [{ required: true, message: t('system.dept.rules.parentDept'), trigger: "change" }],
-  name: [{ required: true, message: t('system.dept.rules.name'), trigger: "blur" }],
-  code: [{ required: true, message: t('system.dept.rules.code'), trigger: "blur" }],
-  sort: [{ required: true, message: t('system.dept.rules.sort'), trigger: "blur" }],
+  parentId: [{ required: true, message: t("system.dept.rules.parentDept"), trigger: "change" }],
+  name: [{ required: true, message: t("system.dept.rules.name"), trigger: "blur" }],
+  code: [{ required: true, message: t("system.dept.rules.code"), trigger: "blur" }],
+  sort: [{ required: true, message: t("system.dept.rules.sort"), trigger: "blur" }],
 }));
 
 // 查询部门
@@ -228,19 +244,19 @@ async function handleOpenDialog(parentId?: string, deptId?: string) {
   deptOptions.value = [
     {
       value: "0",
-      label: t('system.dept.topDept'),
+      label: t("system.dept.topDept"),
       children: data,
     },
   ];
 
   dialog.visible = true;
   if (deptId) {
-    dialog.title = t('system.dept.editDept');
+    dialog.title = t("system.dept.editDept");
     DeptAPI.getFormData(deptId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = t('system.dept.addDept');
+    dialog.title = t("system.dept.addDept");
     formData.parentId = parentId || "0";
   }
 }
@@ -254,7 +270,7 @@ function handleSubmit() {
       if (deptId) {
         DeptAPI.update(deptId, formData)
           .then(() => {
-            ElMessage.success(t('system.common.editSuccess'));
+            ElMessage.success(t("system.common.editSuccess"));
             handleCloseDialog();
             handleQuery();
           })
@@ -262,7 +278,7 @@ function handleSubmit() {
       } else {
         DeptAPI.create(formData)
           .then(() => {
-            ElMessage.success(t('system.common.addSuccess'));
+            ElMessage.success(t("system.common.addSuccess"));
             handleCloseDialog();
             handleQuery();
           })
@@ -277,26 +293,26 @@ function handleDelete(deptId?: number) {
   const deptIds = [deptId || selectIds.value].join(",");
 
   if (!deptIds) {
-    ElMessage.warning(t('system.common.selectDeleteItem'));
+    ElMessage.warning(t("system.common.selectDeleteItem"));
     return;
   }
 
-  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.common.confirmDelete"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(
     () => {
       loading.value = true;
       DeptAPI.deleteByIds(deptIds)
         .then(() => {
-          ElMessage.success(t('system.common.deleteSuccess'));
+          ElMessage.success(t("system.common.deleteSuccess"));
           handleResetQuery();
         })
         .finally(() => (loading.value = false));
     },
     () => {
-      ElMessage.info(t('system.common.cancelDelete'));
+      ElMessage.info(t("system.common.cancelDelete"));
     }
   );
 }

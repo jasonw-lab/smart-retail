@@ -14,8 +14,12 @@
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">{{ t('system.common.search') }}</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">
+            {{ t("system.common.search") }}
+          </el-button>
+          <el-button icon="refresh" @click="handleResetQuery">
+            {{ t("system.common.reset") }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -29,7 +33,7 @@
             icon="plus"
             @click="handleOpenDialog()"
           >
-            {{ t('system.common.add') }}
+            {{ t("system.common.add") }}
           </el-button>
           <el-button
             v-hasPerm="['sys:config:refresh']"
@@ -37,7 +41,7 @@
             icon="RefreshLeft"
             @click="handleRefreshCache"
           >
-            {{ t('system.config.refreshCache') }}
+            {{ t("system.config.refreshCache") }}
           </el-button>
         </div>
       </div>
@@ -52,10 +56,30 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="index" :label="t('system.config.index')" width="60" />
-        <el-table-column key="configName" :label="t('system.config.name')" prop="configName" min-width="100" />
-        <el-table-column key="configKey" :label="t('system.config.key')" prop="configKey" min-width="100" />
-        <el-table-column key="configValue" :label="t('system.config.value')" prop="configValue" min-width="100" />
-        <el-table-column key="remark" :label="t('system.config.description')" prop="remark" min-width="100" />
+        <el-table-column
+          key="configName"
+          :label="t('system.config.name')"
+          prop="configName"
+          min-width="100"
+        />
+        <el-table-column
+          key="configKey"
+          :label="t('system.config.key')"
+          prop="configKey"
+          min-width="100"
+        />
+        <el-table-column
+          key="configValue"
+          :label="t('system.config.value')"
+          prop="configValue"
+          min-width="100"
+        />
+        <el-table-column
+          key="remark"
+          :label="t('system.config.description')"
+          prop="remark"
+          min-width="100"
+        />
         <el-table-column fixed="right" :label="t('system.common.operation')" width="220">
           <template #default="scope">
             <el-button
@@ -66,7 +90,7 @@
               icon="edit"
               @click="handleOpenDialog(scope.row.id)"
             >
-              {{ t('system.common.edit') }}
+              {{ t("system.common.edit") }}
             </el-button>
             <el-button
               v-hasPerm="['sys:config:delete']"
@@ -76,7 +100,7 @@
               icon="delete"
               @click="handleDelete(scope.row.id)"
             >
-              {{ t('system.common.delete') }}
+              {{ t("system.common.delete") }}
             </el-button>
           </template>
         </el-table-column>
@@ -106,13 +130,25 @@
         label-width="100px"
       >
         <el-form-item :label="t('system.config.name')" prop="configName">
-          <el-input v-model="formData.configName" :placeholder="t('system.config.placeholder.name')" :maxlength="50" />
+          <el-input
+            v-model="formData.configName"
+            :placeholder="t('system.config.placeholder.name')"
+            :maxlength="50"
+          />
         </el-form-item>
         <el-form-item :label="t('system.config.key')" prop="configKey">
-          <el-input v-model="formData.configKey" :placeholder="t('system.config.placeholder.key')" :maxlength="50" />
+          <el-input
+            v-model="formData.configKey"
+            :placeholder="t('system.config.placeholder.key')"
+            :maxlength="50"
+          />
         </el-form-item>
         <el-form-item :label="t('system.config.value')" prop="configValue">
-          <el-input v-model="formData.configValue" :placeholder="t('system.config.placeholder.value')" :maxlength="100" />
+          <el-input
+            v-model="formData.configValue"
+            :placeholder="t('system.config.placeholder.value')"
+            :maxlength="100"
+          />
         </el-form-item>
         <el-form-item :label="t('system.config.description')" prop="remark">
           <el-input
@@ -127,8 +163,10 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -177,9 +215,9 @@ const formData = reactive<ConfigForm>({
 });
 
 const rules = computed(() => ({
-  configName: [{ required: true, message: t('system.config.rules.name'), trigger: "blur" }],
-  configKey: [{ required: true, message: t('system.config.rules.key'), trigger: "blur" }],
-  configValue: [{ required: true, message: t('system.config.rules.value'), trigger: "blur" }],
+  configName: [{ required: true, message: t("system.config.rules.name"), trigger: "blur" }],
+  configKey: [{ required: true, message: t("system.config.rules.key"), trigger: "blur" }],
+  configValue: [{ required: true, message: t("system.config.rules.value"), trigger: "blur" }],
 }));
 
 // 查询系统配置
@@ -212,12 +250,12 @@ function handleSelectionChange(selection: any) {
 function handleOpenDialog(id?: string) {
   dialog.visible = true;
   if (id) {
-    dialog.title = t('system.config.editConfig');
+    dialog.title = t("system.config.editConfig");
     ConfigAPI.getFormData(id).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = t('system.config.addConfig');
+    dialog.title = t("system.config.addConfig");
     formData.id = undefined;
   }
 }
@@ -225,7 +263,7 @@ function handleOpenDialog(id?: string) {
 // 刷新缓存(防抖)
 const handleRefreshCache = useDebounceFn(() => {
   ConfigAPI.refreshCache().then(() => {
-    ElMessage.success(t('system.config.refreshSuccess'));
+    ElMessage.success(t("system.config.refreshSuccess"));
   });
 }, 1000);
 
@@ -238,7 +276,7 @@ function handleSubmit() {
       if (id) {
         ConfigAPI.update(id, formData)
           .then(() => {
-            ElMessage.success(t('system.common.editSuccess'));
+            ElMessage.success(t("system.common.editSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -246,7 +284,7 @@ function handleSubmit() {
       } else {
         ConfigAPI.create(formData)
           .then(() => {
-            ElMessage.success(t('system.common.addSuccess'));
+            ElMessage.success(t("system.common.addSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -271,15 +309,15 @@ function handleCloseDialog() {
 
 // 删除系统配置
 function handleDelete(id: string) {
-  ElMessageBox.confirm(t('system.config.confirmDeleteConfig'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.config.confirmDeleteConfig"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(() => {
     loading.value = true;
     ConfigAPI.deleteById(id)
       .then(() => {
-        ElMessage.success(t('system.common.deleteSuccess'));
+        ElMessage.success(t("system.common.deleteSuccess"));
         handleResetQuery();
       })
       .finally(() => (loading.value = false));

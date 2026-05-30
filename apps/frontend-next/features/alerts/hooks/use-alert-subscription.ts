@@ -9,7 +9,7 @@ export function useAlertSubscription() {
   const isInitializedRef = useRef(false);
 
   const { connect, subscribe, disconnect, isConnected } = useStomp({
-    brokerURL: process.env.NEXT_PUBLIC_WS_ENDPOINT || 'ws://localhost:8080/ws',
+    brokerURL: process.env.NEXT_PUBLIC_WS_ENDPOINT || 'ws://localhost:8091/ws',
     onConnect: () => console.log('アラート購読準備完了'),
     onError: (error) => console.error('STOMP接続エラー:', error),
   });

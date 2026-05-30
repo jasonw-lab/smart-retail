@@ -1,6 +1,7 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from "axios";
 import qs from "qs";
 import { useUserStoreHook } from "@/store/modules/user.store";
+import { useTenantStoreHook } from "@/store/modules/tenant.store";
 import { ResultEnum } from "@/enums/api/result.enum";
 import { getAccessToken } from "@/utils/auth";
 import router from "@/router";
@@ -29,6 +30,13 @@ service.interceptors.request.use(
     } else {
       delete config.headers.Authorization;
     }
+
+    // Multi-tenant: Inject X-Tenant-ID header from tenant store
+    const tenantStore = useTenantStoreHook();
+    if (tenantStore.tenantId) {
+      config.headers["X-Tenant-ID"] = tenantStore.tenantId;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

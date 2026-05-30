@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Sidebar } from '@/components/layout/sidebar';
-import { Header } from '@/components/layout/header';
+import { MainContent } from '@/components/layout/main-content';
 
 async function getUser() {
   const cookieStore = await cookies();
@@ -11,7 +11,6 @@ async function getUser() {
     return null;
   }
 
-  // ユーザー情報取得は任意（ヘッダー表示用）
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/users/me`, {
       headers: {
@@ -50,14 +49,9 @@ export default async function DashboardLayout({
   const user = await getUser();
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-surface">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={user} />
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
-      </div>
+      <MainContent user={user}>{children}</MainContent>
     </div>
   );
 }

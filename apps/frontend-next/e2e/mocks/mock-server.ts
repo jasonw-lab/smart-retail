@@ -1,7 +1,22 @@
 import { createServer } from 'http';
-import { mockUsers, mockProducts, mockDashboardStats, mockAlerts } from './handlers';
+import {
+  mockUsers,
+  mockProducts,
+  mockDashboardStats,
+  mockAlerts,
+  mockStores,
+  mockDevices,
+  mockInventory,
+  mockTransactions,
+  mockSystemUsers,
+  mockRoles,
+  mockDepts,
+  mockMenus,
+  mockDicts,
+  mockLogs,
+} from './handlers';
 
-const PORT = 8080;
+const PORT = Number(process.env.PORT || 8091);
 
 /**
  * Helper to wrap response in API format
@@ -61,6 +76,17 @@ const server = createServer(async (req, res) => {
 
   try {
     // Routes
+
+    // Auth: Captcha (GET)
+    if (path === '/auth/captcha' && method === 'GET') {
+      res.writeHead(200);
+      res.end(apiResponse({
+        captchaId: 'mock_captcha_id_' + Date.now(),
+        captchaBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      }));
+      return;
+    }
+
     if (path === '/auth/login' && method === 'POST') {
       const { username, password } = body as { username: string; password: string };
       const user = Object.values(mockUsers).find(
@@ -200,12 +226,158 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Stores (supports both /retail/stores and /retail/stores/page)
+    if ((path === '/retail/stores' || path === '/retail/stores/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockStores.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockStores.length }));
+      return;
+    }
+
+    // Devices (supports both /retail/devices and /retail/devices/page)
+    if ((path === '/retail/devices' || path === '/retail/devices/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockDevices.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockDevices.length }));
+      return;
+    }
+
+    // Inventory (supports both /retail/inventories and /retail/inventory/page)
+    if ((path === '/retail/inventories' || path === '/retail/inventory/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockInventory.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockInventory.length }));
+      return;
+    }
+
+    // Transactions/Sales (supports both /retail/sales and /retail/transactions/page)
+    if ((path === '/retail/sales' || path === '/retail/transactions/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 20;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockTransactions.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockTransactions.length }));
+      return;
+    }
+
     if (path === '/ws/ticket' && method === 'POST') {
       res.writeHead(200);
       res.end(apiResponse({
         ticket: `mock_ws_ticket_${Date.now()}`,
         expiresIn: 30,
       }));
+      return;
+    }
+
+    // System: Users
+    if ((path === '/users' || path === '/users/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockSystemUsers.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockSystemUsers.length }));
+      return;
+    }
+
+    // System: Roles
+    if ((path === '/roles' || path === '/roles/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockRoles.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockRoles.length }));
+      return;
+    }
+
+    // System: Role options (for select dropdowns)
+    if (path === '/roles/options' && method === 'GET') {
+      const options = mockRoles.map((role) => ({
+        value: role.id,
+        label: role.name,
+      }));
+      res.writeHead(200);
+      res.end(apiResponse(options));
+      return;
+    }
+
+    // System: Departments
+    if (path === '/depts' && method === 'GET') {
+      res.writeHead(200);
+      res.end(apiResponse(mockDepts));
+      return;
+    }
+
+    // System: Department options (for select dropdowns)
+    if (path === '/depts/options' && method === 'GET') {
+      // Flatten department tree to options format
+      const flattenDepts = (depts: typeof mockDepts, result: Array<{ value: number; label: string }> = []) => {
+        for (const dept of depts) {
+          result.push({ value: dept.id, label: dept.name });
+          if (dept.children && dept.children.length > 0) {
+            flattenDepts(dept.children as typeof mockDepts, result);
+          }
+        }
+        return result;
+      };
+      res.writeHead(200);
+      res.end(apiResponse(flattenDepts(mockDepts)));
+      return;
+    }
+
+    // System: Menus
+    if ((path === '/menus' || path === '/menus/options') && method === 'GET') {
+      res.writeHead(200);
+      res.end(apiResponse(mockMenus));
+      return;
+    }
+
+    // System: Dictionaries
+    if ((path === '/dicts' || path === '/dicts/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockDicts.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockDicts.length }));
+      return;
+    }
+
+    // System: Logs
+    if ((path === '/logs' || path === '/logs/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+
+      const start = (pageNum - 1) * pageSize;
+      const list = mockLogs.slice(start, start + pageSize);
+
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: mockLogs.length }));
       return;
     }
 

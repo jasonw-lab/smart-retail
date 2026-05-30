@@ -14,8 +14,12 @@
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery()">{{ t('system.common.search') }}</el-button>
-          <el-button icon="refresh" @click="handleResetQuery()">{{ t('system.common.reset') }}</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery()">
+            {{ t("system.common.search") }}
+          </el-button>
+          <el-button icon="refresh" @click="handleResetQuery()">
+            {{ t("system.common.reset") }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -23,14 +27,16 @@
     <el-card shadow="hover" class="data-table">
       <div class="data-table__toolbar">
         <div class="data-table__toolbar--actions">
-          <el-button type="success" icon="plus" @click="handleAddClick()">{{ t('system.common.add') }}</el-button>
+          <el-button type="success" icon="plus" @click="handleAddClick()">
+            {{ t("system.common.add") }}
+          </el-button>
           <el-button
             type="danger"
             :disabled="ids.length === 0"
             icon="delete"
             @click="handleDelete()"
           >
-            {{ t('system.common.delete') }}
+            {{ t("system.common.delete") }}
           </el-button>
         </div>
       </div>
@@ -49,17 +55,24 @@
         <el-table-column :label="t('system.common.status')" prop="status">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-              {{ scope.row.status === 1 ? t('system.common.enabled') : t('system.common.disabled') }}
+              {{
+                scope.row.status === 1 ? t("system.common.enabled") : t("system.common.disabled")
+              }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" :label="t('system.common.operation')" align="center" width="220">
+        <el-table-column
+          fixed="right"
+          :label="t('system.common.operation')"
+          align="center"
+          width="220"
+        >
           <template #default="scope">
             <el-button type="primary" link size="small" @click.stop="handleOpenDictData(scope.row)">
               <template #icon>
                 <Collection />
               </template>
-              {{ t('system.dict.dictData') }}
+              {{ t("system.dict.dictData") }}
             </el-button>
 
             <el-button
@@ -69,7 +82,7 @@
               icon="edit"
               @click.stop="handleEditClick(scope.row.id)"
             >
-              {{ t('system.common.edit') }}
+              {{ t("system.common.edit") }}
             </el-button>
             <el-button
               type="danger"
@@ -78,7 +91,7 @@
               icon="delete"
               @click.stop="handleDelete(scope.row.id)"
             >
-              {{ t('system.common.delete') }}
+              {{ t("system.common.delete") }}
             </el-button>
           </template>
         </el-table-column>
@@ -107,26 +120,35 @@
           </el-form-item>
 
           <el-form-item :label="t('system.dict.code')" prop="dictCode">
-            <el-input v-model="formData.dictCode" :placeholder="t('system.dict.placeholder.code')" />
+            <el-input
+              v-model="formData.dictCode"
+              :placeholder="t('system.dict.placeholder.code')"
+            />
           </el-form-item>
 
           <el-form-item :label="t('system.common.status')">
             <el-radio-group v-model="formData.status">
-              <el-radio :value="1">{{ t('system.common.enabled') }}</el-radio>
-              <el-radio :value="0">{{ t('system.common.disabled') }}</el-radio>
+              <el-radio :value="1">{{ t("system.common.enabled") }}</el-radio>
+              <el-radio :value="0">{{ t("system.common.disabled") }}</el-radio>
             </el-radio-group>
           </el-form-item>
 
           <el-form-item :label="t('system.dict.remark')">
-            <el-input v-model="formData.remark" type="textarea" :placeholder="t('system.dict.placeholder.remark')" />
+            <el-input
+              v-model="formData.remark"
+              type="textarea"
+              :placeholder="t('system.dict.placeholder.remark')"
+            />
           </el-form-item>
         </el-card>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmitClick">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmitClick">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -170,8 +192,8 @@ const formData = reactive<DictForm>({});
 
 const computedRules = computed(() => {
   const rules: Partial<Record<string, any>> = {
-    name: [{ required: true, message: t('system.dict.rules.name'), trigger: "blur" }],
-    dictCode: [{ required: true, message: t('system.dict.rules.code'), trigger: "blur" }],
+    name: [{ required: true, message: t("system.dict.rules.name"), trigger: "blur" }],
+    dictCode: [{ required: true, message: t("system.dict.rules.code"), trigger: "blur" }],
   };
   return rules;
 });
@@ -205,7 +227,7 @@ function handleSelectionChange(selection: any) {
 // 新增字典
 function handleAddClick() {
   dialog.visible = true;
-  dialog.title = t('system.dict.addDict');
+  dialog.title = t("system.dict.addDict");
 }
 
 /**
@@ -215,7 +237,7 @@ function handleAddClick() {
  */
 function handleEditClick(id: string) {
   dialog.visible = true;
-  dialog.title = t('system.dict.editDict');
+  dialog.title = t("system.dict.editDict");
   DictAPI.getFormData(id).then((data) => {
     Object.assign(formData, data);
   });
@@ -230,7 +252,7 @@ function handleSubmitClick() {
       if (id) {
         DictAPI.update(id, formData)
           .then(() => {
-            ElMessage.success(t('system.common.editSuccess'));
+            ElMessage.success(t("system.common.editSuccess"));
             handleCloseDialog();
             handleQuery();
           })
@@ -238,7 +260,7 @@ function handleSubmitClick() {
       } else {
         DictAPI.create(formData)
           .then(() => {
-            ElMessage.success(t('system.common.addSuccess'));
+            ElMessage.success(t("system.common.addSuccess"));
             handleCloseDialog();
             handleQuery();
           })
@@ -265,22 +287,22 @@ function handleCloseDialog() {
 function handleDelete(id?: number) {
   const attrGroupIds = [id || ids.value].join(",");
   if (!attrGroupIds) {
-    ElMessage.warning(t('system.common.selectDeleteItem'));
+    ElMessage.warning(t("system.common.selectDeleteItem"));
     return;
   }
-  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.common.confirmDelete"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(
     () => {
       DictAPI.deleteByIds(attrGroupIds).then(() => {
-        ElMessage.success(t('system.common.deleteSuccess'));
+        ElMessage.success(t("system.common.deleteSuccess"));
         handleResetQuery();
       });
     },
     () => {
-      ElMessage.info(t('system.common.cancelDelete'));
+      ElMessage.info(t("system.common.cancelDelete"));
     }
   );
 }
@@ -289,7 +311,7 @@ function handleDelete(id?: number) {
 function handleOpenDictData(row: DictPageVO) {
   router.push({
     path: "/system/dict-item",
-    query: { dictCode: row.dictCode, title: "【" + row.name + "】" + t('system.dict.dictData') },
+    query: { dictCode: row.dictCode, title: "【" + row.name + "】" + t("system.dict.dictData") },
   });
 }
 

@@ -95,7 +95,9 @@
       "Bash(chmod:*)",
       "Bash(docker exec:*)",
       "Bash(TOKEN:*)",
-      "Bash(./front.sh)"
+      "Bash(./front.sh)",
+      "Read(//Users/wangjw/.claude/agents/**)",
+      "Bash(pnpm exec playwright test:*)"
     ],
     "deny": [
       "Bash(rm -rf *:*)",

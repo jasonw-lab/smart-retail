@@ -35,7 +35,7 @@ const mockProducts = [
 
 export const productHandlers = [
   // 商品一覧
-  http.get('http://localhost:3000/api/proxy/retail/products/page', ({ request }) => {
+  http.get('http://localhost:3001/api/proxy/retail/products/page', ({ request }) => {
     const url = new URL(request.url);
     const pageNum = Number(url.searchParams.get('pageNum')) || 1;
     const pageSize = Number(url.searchParams.get('pageSize')) || 10;
@@ -59,7 +59,7 @@ export const productHandlers = [
   }),
 
   // 商品詳細
-  http.get('http://localhost:3000/api/proxy/retail/products/:id', ({ params }) => {
+  http.get('http://localhost:3001/api/proxy/retail/products/:id', ({ params }) => {
     const id = Number(params.id);
     const product = mockProducts.find((p) => p.id === id);
 
@@ -71,17 +71,17 @@ export const productHandlers = [
   }),
 
   // 商品作成
-  http.post('http://localhost:3000/api/proxy/retail/products', () => {
+  http.post('http://localhost:3001/api/proxy/retail/products', () => {
     return new HttpResponse(null, { status: 201 });
   }),
 
   // 商品更新
-  http.put('http://localhost:3000/api/proxy/retail/products/:id', () => {
+  http.put('http://localhost:3001/api/proxy/retail/products/:id', () => {
     return new HttpResponse(null, { status: 204 });
   }),
 
   // 商品削除
-  http.delete('http://localhost:3000/api/proxy/retail/products/:id', () => {
+  http.delete('http://localhost:3001/api/proxy/retail/products/:id', () => {
     return new HttpResponse(null, { status: 204 });
   }),
 ];

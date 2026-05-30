@@ -130,6 +130,14 @@ git push origin --delete <branch>
 - [ ] テストソース
 - [ ] フロントエンドAPI呼び出し箇所（影響がある場合）
 
+### マルチテナント対応レビュー
+- SQL/DB設計で `tenant_id` を追加する場合、単独の `fk_*_tenant` だけでは不十分。子テーブルの `tenant_id` と `store_id` / `product_id` / `sales_id` など参照先のテナントが一致することを、複合FKや同等の制約で確認する。
+- テナント内一意に変更すべき業務キーは漏れなく確認する。例: 店舗コード、商品コード、カテゴリコード、デバイスコード、注文番号。
+- `TenantLineInnerInterceptor` の ignore 対象は最小化する。`tenant_id` を持たない明細テーブルを ignore する場合は、直接クエリを禁止し、必ず親テーブルJOINでテナント条件を担保する。
+- デモデータや移行SQLの `DELETE` / `UPDATE` / 重複チェックにも `tenant_id` 条件を入れる。`tenant_id` を持たない子テーブルは親テーブル経由で対象テナントに限定する。
+- 設計書の移行SQLは既存DDLの実インデックス名・制約名と照合し、そのまま実行できる名前になっているか確認する。
+- Backend 側で `TenantLineInnerInterceptor`、テナントコンテキスト、JWT claims、INSERT時の `tenant_id` 設定、ignore対象テーブルのテストが揃っているか確認する。
+
 
 ## 設計変更
 
@@ -252,4 +260,3 @@ Closes #X
 - **PR マージ後**、`plan_issue.md` を更新
 - 該当 Issue のステータスを「対応完了」に変更
 - 完了日時とPR番号を記録
-

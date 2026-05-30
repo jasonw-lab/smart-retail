@@ -1,6 +1,7 @@
 import { store } from "@/store";
 import { usePermissionStoreHook } from "@/store/modules/permission.store";
 import { useDictStoreHook } from "@/store/modules/dict.store";
+import { useTenantStoreHook } from "@/store/modules/tenant.store";
 
 import AuthAPI, { type LoginFormData } from "@/api/auth.api";
 import UserAPI, { type UserInfo } from "@/api/system/user.api";
@@ -45,6 +46,16 @@ export const useUserStore = defineStore("user", () => {
             return;
           }
           Object.assign(userInfo.value, { ...data });
+
+          // Initialize tenant store from user info
+          if (data.tenantId) {
+            useTenantStoreHook().setTenant({
+              id: String(data.tenantId),
+              code: "",
+              name: data.tenantName || "",
+            });
+          }
+
           resolve(data);
         })
         .catch((error) => {
@@ -97,6 +108,7 @@ export const useUserStore = defineStore("user", () => {
       clearToken();
       usePermissionStoreHook().resetRouter();
       useDictStoreHook().clearDictCache();
+      useTenantStoreHook().clearTenant();
       userInfo.value = {} as UserInfo;
       resolve();
     });

@@ -13,8 +13,12 @@
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">{{ t('system.common.search') }}</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">
+            {{ t("system.common.search") }}
+          </el-button>
+          <el-button icon="refresh" @click="handleResetQuery">
+            {{ t("system.common.reset") }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -28,7 +32,7 @@
             icon="plus"
             @click="handleOpenDialog('0')"
           >
-            {{ t('system.common.add') }}
+            {{ t("system.common.add") }}
           </el-button>
         </div>
       </div>
@@ -61,24 +65,59 @@
 
         <el-table-column :label="t('system.menu.type')" align="center" width="80">
           <template #default="scope">
-            <el-tag v-if="scope.row.type === MenuTypeEnum.CATALOG" type="warning">{{ t('system.menu.types.catalog') }}</el-tag>
-            <el-tag v-if="scope.row.type === MenuTypeEnum.MENU" type="success">{{ t('system.menu.types.menu') }}</el-tag>
-            <el-tag v-if="scope.row.type === MenuTypeEnum.BUTTON" type="danger">{{ t('system.menu.types.button') }}</el-tag>
-            <el-tag v-if="scope.row.type === MenuTypeEnum.EXTLINK" type="info">{{ t('system.menu.types.extlink') }}</el-tag>
+            <el-tag v-if="scope.row.type === MenuTypeEnum.CATALOG" type="warning">
+              {{ t("system.menu.types.catalog") }}
+            </el-tag>
+            <el-tag v-if="scope.row.type === MenuTypeEnum.MENU" type="success">
+              {{ t("system.menu.types.menu") }}
+            </el-tag>
+            <el-tag v-if="scope.row.type === MenuTypeEnum.BUTTON" type="danger">
+              {{ t("system.menu.types.button") }}
+            </el-tag>
+            <el-tag v-if="scope.row.type === MenuTypeEnum.EXTLINK" type="info">
+              {{ t("system.menu.types.extlink") }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="t('system.menu.routeName')" align="left" width="150" prop="routeName" />
-        <el-table-column :label="t('system.menu.routePath')" align="left" width="150" prop="routePath" />
-        <el-table-column :label="t('system.menu.component')" align="left" width="250" prop="component" />
-        <el-table-column :label="t('system.menu.permission')" align="center" width="200" prop="perm" />
+        <el-table-column
+          :label="t('system.menu.routeName')"
+          align="left"
+          width="150"
+          prop="routeName"
+        />
+        <el-table-column
+          :label="t('system.menu.routePath')"
+          align="left"
+          width="150"
+          prop="routePath"
+        />
+        <el-table-column
+          :label="t('system.menu.component')"
+          align="left"
+          width="250"
+          prop="component"
+        />
+        <el-table-column
+          :label="t('system.menu.permission')"
+          align="center"
+          width="200"
+          prop="perm"
+        />
         <el-table-column :label="t('system.common.status')" align="center" width="80">
           <template #default="scope">
-            <el-tag v-if="scope.row.visible === 1" type="success">{{ t('system.common.show') }}</el-tag>
-            <el-tag v-else type="info">{{ t('system.common.hide') }}</el-tag>
+            <el-tag v-if="scope.row.visible === 1" type="success">
+              {{ t("system.common.show") }}
+            </el-tag>
+            <el-tag v-else type="info">{{ t("system.common.hide") }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="t('system.common.sort')" align="center" width="80" prop="sort" />
-        <el-table-column fixed="right" align="center" :label="t('system.common.operation')" width="220">
+        <el-table-column
+          fixed="right"
+          align="center"
+          :label="t('system.common.operation')"
+          width="220"
+        >
           <template #default="scope">
             <el-button
               v-if="scope.row.type == MenuTypeEnum.CATALOG || scope.row.type == MenuTypeEnum.MENU"
@@ -89,7 +128,7 @@
               icon="plus"
               @click.stop="handleOpenDialog(scope.row.id)"
             >
-              {{ t('system.common.add') }}
+              {{ t("system.common.add") }}
             </el-button>
 
             <el-button
@@ -100,7 +139,7 @@
               icon="edit"
               @click.stop="handleOpenDialog(undefined, scope.row.id)"
             >
-              {{ t('system.common.edit') }}
+              {{ t("system.common.edit") }}
             </el-button>
             <el-button
               v-hasPerm="['sys:menu:delete']"
@@ -110,7 +149,7 @@
               icon="delete"
               @click.stop="handleDelete(scope.row.id)"
             >
-              {{ t('system.common.delete') }}
+              {{ t("system.common.delete") }}
             </el-button>
           </template>
         </el-table-column>
@@ -141,24 +180,31 @@
 
         <el-form-item :label="t('system.menu.type')" prop="type">
           <el-radio-group v-model="formData.type" @change="handleMenuTypeChange">
-            <el-radio :value="MenuTypeEnum.CATALOG">{{ t('system.menu.types.catalog') }}</el-radio>
-            <el-radio :value="MenuTypeEnum.MENU">{{ t('system.menu.types.menu') }}</el-radio>
-            <el-radio :value="MenuTypeEnum.BUTTON">{{ t('system.menu.types.button') }}</el-radio>
-            <el-radio :value="MenuTypeEnum.EXTLINK">{{ t('system.menu.types.extlink') }}</el-radio>
+            <el-radio :value="MenuTypeEnum.CATALOG">{{ t("system.menu.types.catalog") }}</el-radio>
+            <el-radio :value="MenuTypeEnum.MENU">{{ t("system.menu.types.menu") }}</el-radio>
+            <el-radio :value="MenuTypeEnum.BUTTON">{{ t("system.menu.types.button") }}</el-radio>
+            <el-radio :value="MenuTypeEnum.EXTLINK">{{ t("system.menu.types.extlink") }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item v-if="formData.type == MenuTypeEnum.EXTLINK" :label="t('system.menu.externalLink')" prop="path">
-          <el-input v-model="formData.routePath" :placeholder="t('system.menu.placeholder.externalLink')" />
+        <el-form-item
+          v-if="formData.type == MenuTypeEnum.EXTLINK"
+          :label="t('system.menu.externalLink')"
+          prop="path"
+        >
+          <el-input
+            v-model="formData.routePath"
+            :placeholder="t('system.menu.placeholder.externalLink')"
+          />
         </el-form-item>
 
         <el-form-item v-if="formData.type == MenuTypeEnum.MENU" prop="routeName">
           <template #label>
             <div class="flex-y-center">
-              {{ t('system.menu.routeName') }}
+              {{ t("system.menu.routeName") }}
               <el-tooltip placement="bottom" effect="light">
                 <template #content>
-                  {{ t('system.menu.tooltip.routeName') }}
+                  {{ t("system.menu.tooltip.routeName") }}
                 </template>
                 <el-icon class="ml-1 cursor-pointer">
                   <QuestionFilled />
@@ -166,7 +212,10 @@
               </el-tooltip>
             </div>
           </template>
-          <el-input v-model="formData.routeName" :placeholder="t('system.menu.placeholder.routeName')" />
+          <el-input
+            v-model="formData.routeName"
+            :placeholder="t('system.menu.placeholder.routeName')"
+          />
         </el-form-item>
 
         <el-form-item
@@ -175,10 +224,10 @@
         >
           <template #label>
             <div class="flex-y-center">
-              {{ t('system.menu.routePath') }}
+              {{ t("system.menu.routePath") }}
               <el-tooltip placement="bottom" effect="light">
                 <template #content>
-                  {{ t('system.menu.tooltip.routePath') }}
+                  {{ t("system.menu.tooltip.routePath") }}
                 </template>
                 <el-icon class="ml-1 cursor-pointer">
                   <QuestionFilled />
@@ -191,16 +240,20 @@
             v-model="formData.routePath"
             :placeholder="t('system.menu.placeholder.routePathCatalog')"
           />
-          <el-input v-else v-model="formData.routePath" :placeholder="t('system.menu.placeholder.routePathMenu')" />
+          <el-input
+            v-else
+            v-model="formData.routePath"
+            :placeholder="t('system.menu.placeholder.routePathMenu')"
+          />
         </el-form-item>
 
         <el-form-item v-if="formData.type == MenuTypeEnum.MENU" prop="component">
           <template #label>
             <div class="flex-y-center">
-              {{ t('system.menu.component') }}
+              {{ t("system.menu.component") }}
               <el-tooltip placement="bottom" effect="light">
                 <template #content>
-                  {{ t('system.menu.tooltip.component') }}
+                  {{ t("system.menu.tooltip.component") }}
                 </template>
                 <el-icon class="ml-1 cursor-pointer">
                   <QuestionFilled />
@@ -209,7 +262,11 @@
             </div>
           </template>
 
-          <el-input v-model="formData.component" :placeholder="t('system.menu.placeholder.component')" style="width: 95%">
+          <el-input
+            v-model="formData.component"
+            :placeholder="t('system.menu.placeholder.component')"
+            style="width: 95%"
+          >
             <template v-if="formData.type == MenuTypeEnum.MENU" #prepend>src/views/</template>
             <template v-if="formData.type == MenuTypeEnum.MENU" #append>.vue</template>
           </el-input>
@@ -218,10 +275,10 @@
         <el-form-item v-if="formData.type == MenuTypeEnum.MENU">
           <template #label>
             <div class="flex-y-center">
-              {{ t('system.menu.routeParams') }}
+              {{ t("system.menu.routeParams") }}
               <el-tooltip placement="bottom" effect="light">
                 <template #content>
-                  {{ t('system.menu.tooltip.routeParams') }}
+                  {{ t("system.menu.tooltip.routeParams") }}
                 </template>
                 <el-icon class="ml-1 cursor-pointer">
                   <QuestionFilled />
@@ -232,17 +289,25 @@
 
           <div v-if="!formData.params || formData.params.length === 0">
             <el-button type="success" plain @click="formData.params = [{ key: '', value: '' }]">
-              {{ t('system.menu.addRouteParams') }}
+              {{ t("system.menu.addRouteParams") }}
             </el-button>
           </div>
 
           <div v-else>
             <div v-for="(item, index) in formData.params" :key="index">
-              <el-input v-model="item.key" :placeholder="t('system.menu.paramName')" style="width: 100px" />
+              <el-input
+                v-model="item.key"
+                :placeholder="t('system.menu.paramName')"
+                style="width: 100px"
+              />
 
               <span class="mx-1">=</span>
 
-              <el-input v-model="item.value" :placeholder="t('system.menu.paramValue')" style="width: 100px" />
+              <el-input
+                v-model="item.value"
+                :placeholder="t('system.menu.paramValue')"
+                style="width: 100px"
+              />
 
               <el-icon
                 v-if="formData.params.indexOf(item) === formData.params.length - 1"
@@ -263,10 +328,14 @@
           </div>
         </el-form-item>
 
-        <el-form-item v-if="formData.type !== MenuTypeEnum.BUTTON" prop="visible" :label="t('system.menu.visibleStatus')">
+        <el-form-item
+          v-if="formData.type !== MenuTypeEnum.BUTTON"
+          prop="visible"
+          :label="t('system.menu.visibleStatus')"
+        >
           <el-radio-group v-model="formData.visible">
-            <el-radio :value="1">{{ t('system.common.show') }}</el-radio>
-            <el-radio :value="0">{{ t('system.common.hide') }}</el-radio>
+            <el-radio :value="1">{{ t("system.common.show") }}</el-radio>
+            <el-radio :value="0">{{ t("system.common.hide") }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -275,10 +344,10 @@
         >
           <template #label>
             <div class="flex-y-center">
-              {{ t('system.menu.alwaysShow') }}
+              {{ t("system.menu.alwaysShow") }}
               <el-tooltip placement="bottom" effect="light">
                 <template #content>
-                  <div style="white-space: pre-line">{{ t('system.menu.tooltip.alwaysShow') }}</div>
+                  <div style="white-space: pre-line">{{ t("system.menu.tooltip.alwaysShow") }}</div>
                 </template>
                 <el-icon class="ml-1 cursor-pointer">
                   <QuestionFilled />
@@ -288,15 +357,18 @@
           </template>
 
           <el-radio-group v-model="formData.alwaysShow">
-            <el-radio :value="1">{{ t('system.common.yes') }}</el-radio>
-            <el-radio :value="0">{{ t('system.common.no') }}</el-radio>
+            <el-radio :value="1">{{ t("system.common.yes") }}</el-radio>
+            <el-radio :value="0">{{ t("system.common.no") }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item v-if="formData.type === MenuTypeEnum.MENU" :label="t('system.menu.cachePage')">
+        <el-form-item
+          v-if="formData.type === MenuTypeEnum.MENU"
+          :label="t('system.menu.cachePage')"
+        >
           <el-radio-group v-model="formData.keepAlive">
-            <el-radio :value="1">{{ t('system.common.open') }}</el-radio>
-            <el-radio :value="0">{{ t('system.common.close') }}</el-radio>
+            <el-radio :value="1">{{ t("system.common.open") }}</el-radio>
+            <el-radio :value="0">{{ t("system.common.close") }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -310,24 +382,43 @@
         </el-form-item>
 
         <!-- 权限标识 -->
-        <el-form-item v-if="formData.type == MenuTypeEnum.BUTTON" :label="t('system.menu.permission')" prop="perm">
-          <el-input v-model="formData.perm" :placeholder="t('system.menu.placeholder.permission')" />
+        <el-form-item
+          v-if="formData.type == MenuTypeEnum.BUTTON"
+          :label="t('system.menu.permission')"
+          prop="perm"
+        >
+          <el-input
+            v-model="formData.perm"
+            :placeholder="t('system.menu.placeholder.permission')"
+          />
         </el-form-item>
 
-        <el-form-item v-if="formData.type !== MenuTypeEnum.BUTTON" :label="t('system.menu.icon')" prop="icon">
+        <el-form-item
+          v-if="formData.type !== MenuTypeEnum.BUTTON"
+          :label="t('system.menu.icon')"
+          prop="icon"
+        >
           <!-- 图标选择器 -->
           <icon-select v-model="formData.icon" />
         </el-form-item>
 
-        <el-form-item v-if="formData.type == MenuTypeEnum.CATALOG" :label="t('system.menu.redirect')">
-          <el-input v-model="formData.redirect" :placeholder="t('system.menu.placeholder.redirect')" />
+        <el-form-item
+          v-if="formData.type == MenuTypeEnum.CATALOG"
+          :label="t('system.menu.redirect')"
+        >
+          <el-input
+            v-model="formData.redirect"
+            :placeholder="t('system.menu.placeholder.redirect')"
+          />
         </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -381,13 +472,13 @@ const initialMenuFormData = ref<MenuForm>({
 const formData = ref({ ...initialMenuFormData.value });
 // 表单验证规则
 const rules = computed(() => ({
-  parentId: [{ required: true, message: t('system.menu.rules.parentMenu'), trigger: "blur" }],
-  name: [{ required: true, message: t('system.menu.rules.name'), trigger: "blur" }],
-  type: [{ required: true, message: t('system.menu.rules.type'), trigger: "blur" }],
-  routeName: [{ required: true, message: t('system.menu.rules.routeName'), trigger: "blur" }],
-  routePath: [{ required: true, message: t('system.menu.rules.routePath'), trigger: "blur" }],
-  component: [{ required: true, message: t('system.menu.rules.component'), trigger: "blur" }],
-  visible: [{ required: true, message: t('system.menu.rules.visibleStatus'), trigger: "change" }],
+  parentId: [{ required: true, message: t("system.menu.rules.parentMenu"), trigger: "blur" }],
+  name: [{ required: true, message: t("system.menu.rules.name"), trigger: "blur" }],
+  type: [{ required: true, message: t("system.menu.rules.type"), trigger: "blur" }],
+  routeName: [{ required: true, message: t("system.menu.rules.routeName"), trigger: "blur" }],
+  routePath: [{ required: true, message: t("system.menu.rules.routePath"), trigger: "blur" }],
+  component: [{ required: true, message: t("system.menu.rules.component"), trigger: "blur" }],
+  visible: [{ required: true, message: t("system.menu.rules.visibleStatus"), trigger: "change" }],
 }));
 
 // 选择表格的行菜单ID
@@ -425,18 +516,18 @@ function handleRowClick(row: MenuVO) {
 function handleOpenDialog(parentId?: string, menuId?: string) {
   MenuAPI.getOptions(true)
     .then((data) => {
-      menuOptions.value = [{ value: "0", label: t('system.menu.topMenu'), children: data }];
+      menuOptions.value = [{ value: "0", label: t("system.menu.topMenu"), children: data }];
     })
     .then(() => {
       dialog.visible = true;
       if (menuId) {
-        dialog.title = t('system.menu.editMenu');
+        dialog.title = t("system.menu.editMenu");
         MenuAPI.getFormData(menuId).then((data) => {
           initialMenuFormData.value = { ...data };
           formData.value = data;
         });
       } else {
-        dialog.title = t('system.menu.addMenu');
+        dialog.title = t("system.menu.addMenu");
         formData.value.parentId = parentId?.toString();
       }
     });
@@ -469,17 +560,17 @@ function handleSubmit() {
       if (menuId) {
         //修改时父级菜单不能为当前菜单
         if (formData.value.parentId == menuId) {
-          ElMessage.error(t('system.menu.message.parentCannotBeSelf'));
+          ElMessage.error(t("system.menu.message.parentCannotBeSelf"));
           return;
         }
         MenuAPI.update(menuId, formData.value).then(() => {
-          ElMessage.success(t('system.common.editSuccess'));
+          ElMessage.success(t("system.common.editSuccess"));
           handleCloseDialog();
           handleQuery();
         });
       } else {
         MenuAPI.create(formData.value).then(() => {
-          ElMessage.success(t('system.common.addSuccess'));
+          ElMessage.success(t("system.common.addSuccess"));
           handleCloseDialog();
           handleQuery();
         });
@@ -491,20 +582,20 @@ function handleSubmit() {
 // 删除菜单
 function handleDelete(menuId: string) {
   if (!menuId) {
-    ElMessage.warning(t('system.common.selectDeleteItem'));
+    ElMessage.warning(t("system.common.selectDeleteItem"));
     return false;
   }
 
-  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.common.confirmDelete"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(
     () => {
       loading.value = true;
       MenuAPI.deleteById(menuId)
         .then(() => {
-          ElMessage.success(t('system.common.deleteSuccess'));
+          ElMessage.success(t("system.common.deleteSuccess"));
           handleQuery();
         })
         .finally(() => {
@@ -512,7 +603,7 @@ function handleDelete(menuId: string) {
         });
     },
     () => {
-      ElMessage.info(t('system.common.cancelDelete'));
+      ElMessage.info(t("system.common.cancelDelete"));
     }
   );
 }

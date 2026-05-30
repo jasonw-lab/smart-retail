@@ -26,8 +26,12 @@
         </el-form-item>
 
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery">{{ t('system.common.search') }}</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">{{ t('system.common.reset') }}</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">
+            {{ t("system.common.search") }}
+          </el-button>
+          <el-button icon="refresh" @click="handleResetQuery">
+            {{ t("system.common.reset") }}
+          </el-button>
         </el-form-item>
       </el-form>
     </div>

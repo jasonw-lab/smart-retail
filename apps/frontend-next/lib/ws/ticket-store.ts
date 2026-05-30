@@ -1,4 +1,4 @@
-500 Internal Server Error /**
+/**
  * WebSocket用短寿命チケットストア
  * 本番環境ではRedis等の分散キャッシュを使用
  */

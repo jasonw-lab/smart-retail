@@ -134,7 +134,8 @@ export default {
         expand: "Expand",
         collapse: "Collapse",
         parentChildLinked: "Parent-Child Linked",
-        linkTip: "If you only need to check menu permissions without checking sub-menus or button permissions, please disable parent-child linking",
+        linkTip:
+          "If you only need to check menu permissions without checking sub-menus or button permissions, please disable parent-child linking",
         assignSuccess: "Permission assigned successfully",
       },
       status: {
@@ -193,11 +194,15 @@ export default {
         visibleStatus: "Please select visible status",
       },
       tooltip: {
-        routeName: "If caching is needed, ensure the name in defineOptions matches this value. CamelCase is recommended.",
-        routePath: "Define URL paths for different pages. Catalogs should start with /, menu items should not. Example: /system for System Management catalog, user for User Management menu.",
-        component: "Full component path relative to src/views/, e.g., system/user/index, .vue suffix is optional",
+        routeName:
+          "If caching is needed, ensure the name in defineOptions matches this value. CamelCase is recommended.",
+        routePath:
+          "Define URL paths for different pages. Catalogs should start with /, menu items should not. Example: /system for System Management catalog, user for User Management menu.",
+        component:
+          "Full component path relative to src/views/, e.g., system/user/index, .vue suffix is optional",
         routeParams: "Use `useRoute().query.paramName` in component to get route param values.",
-        alwaysShow: "Select 'Yes' to always show parent node even with only one child.\nSelect 'No' to show only the child node when there's only one.\nFor leaf nodes, select 'No'.",
+        alwaysShow:
+          "Select 'Yes' to always show parent node even with only one child.\nSelect 'No' to show only the child node when there's only one.\nFor leaf nodes, select 'No'.",
       },
       message: {
         parentCannotBeSelf: "Parent menu cannot be current menu",

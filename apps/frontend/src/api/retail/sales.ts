@@ -69,13 +69,38 @@ export interface SalesListParams {
 }
 
 const SalesAPI = {
-  /** 決済履歴一覧を取得（ページング） */
-  getPage(params: SalesListParams) {
-    return request<any, SalesListData>({
-      url: `${SALES_BASE_URL}/page`,
+  /** 決済履歴一覧を取得（ページング） - クライアントサイドページング */
+  async getPage(params: SalesListParams): Promise<SalesListData> {
+    const allSales = await request<any, SalesPageVO[]>({
+      url: `${SALES_BASE_URL}`,
       method: "get",
-      params,
+      params: { storeId: params.storeId },
     });
+
+    // フィルタリング
+    let filtered = allSales || [];
+    if (params.paymentMethod) {
+      filtered = filtered.filter((s) => s.paymentMethod === params.paymentMethod);
+    }
+    if (params.orderNumber) {
+      filtered = filtered.filter((s) =>
+        s.orderNumber?.toLowerCase().includes(params.orderNumber!.toLowerCase())
+      );
+    }
+    if (params.startDate) {
+      filtered = filtered.filter((s) => s.saleTimestamp >= params.startDate!);
+    }
+    if (params.endDate) {
+      filtered = filtered.filter((s) => s.saleTimestamp <= params.endDate!);
+    }
+
+    // ページング
+    const total = filtered.length;
+    const start = (params.pageNum - 1) * params.pageSize;
+    const end = start + params.pageSize;
+    const list = filtered.slice(start, end);
+
+    return { list, total };
   },
 
   /** 決済詳細を取得 */
@@ -86,13 +111,46 @@ const SalesAPI = {
     });
   },
 
-  /** 決済サマリを取得 */
-  getSummary(params?: Omit<SalesListParams, "pageNum" | "pageSize">) {
-    return request<any, SalesSummaryVO>({
-      url: `${SALES_BASE_URL}/summary`,
+  /** 決済サマリを取得 - クライアントサイド計算 */
+  async getSummary(params?: Omit<SalesListParams, "pageNum" | "pageSize">): Promise<SalesSummaryVO> {
+    const allSales = await request<any, SalesPageVO[]>({
+      url: `${SALES_BASE_URL}`,
       method: "get",
-      params,
+      params: { storeId: params?.storeId },
     });
+
+    // フィルタリング
+    let filtered = allSales || [];
+    if (params?.paymentMethod) {
+      filtered = filtered.filter((s) => s.paymentMethod === params.paymentMethod);
+    }
+    if (params?.startDate) {
+      filtered = filtered.filter((s) => s.saleTimestamp >= params.startDate!);
+    }
+    if (params?.endDate) {
+      filtered = filtered.filter((s) => s.saleTimestamp <= params.endDate!);
+    }
+
+    // サマリ計算
+    const totalAmount = filtered.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+    const totalCount = filtered.length;
+    const cardCount = filtered.filter((s) => s.paymentMethod === "CARD").length;
+    const qrCount = filtered.filter((s) => s.paymentMethod === "QR").length;
+    const cashCount = filtered.filter((s) => s.paymentMethod === "CASH").length;
+    const otherCount = totalCount - cardCount - qrCount - cashCount;
+
+    return {
+      totalAmount,
+      totalCount,
+      cardCount,
+      qrCount,
+      cashCount,
+      otherCount,
+      cardRatio: totalCount > 0 ? Math.round((cardCount / totalCount) * 100) : 0,
+      qrRatio: totalCount > 0 ? Math.round((qrCount / totalCount) * 100) : 0,
+      cashRatio: totalCount > 0 ? Math.round((cashCount / totalCount) * 100) : 0,
+      otherRatio: totalCount > 0 ? Math.round((otherCount / totalCount) * 100) : 0,
+    };
   },
 };
 

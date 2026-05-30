@@ -14,10 +14,10 @@
 
         <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">
-            {{ t('system.common.search') }}
+            {{ t("system.common.search") }}
           </el-button>
           <el-button icon="refresh" @click="handleResetQuery">
-            {{ t('system.common.reset') }}
+            {{ t("system.common.reset") }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -27,7 +27,7 @@
       <div class="data-table__toolbar">
         <div class="data-table__toolbar--actions">
           <el-button type="success" icon="plus" @click="handleOpenDialog()">
-            {{ t('system.common.add') }}
+            {{ t("system.common.add") }}
           </el-button>
           <el-button
             type="danger"
@@ -35,7 +35,7 @@
             icon="delete"
             @click="handleDelete()"
           >
-            {{ t('system.common.delete') }}
+            {{ t("system.common.delete") }}
           </el-button>
         </div>
       </div>
@@ -56,9 +56,9 @@
         <el-table-column :label="t('system.common.status')" align="center" width="100">
           <template #default="scope">
             <el-tag v-if="scope.row.status === 1" type="success">
-              {{ t('system.role.status.normal') }}
+              {{ t("system.role.status.normal") }}
             </el-tag>
-            <el-tag v-else type="info">{{ t('system.role.status.disabled') }}</el-tag>
+            <el-tag v-else type="info">{{ t("system.role.status.disabled") }}</el-tag>
           </template>
         </el-table-column>
 
@@ -73,7 +73,7 @@
               icon="position"
               @click="handleOpenAssignPermDialog(scope.row)"
             >
-              {{ t('system.role.assignPermission') }}
+              {{ t("system.role.assignPermission") }}
             </el-button>
             <el-button
               type="primary"
@@ -82,7 +82,7 @@
               icon="edit"
               @click="handleOpenDialog(scope.row.id)"
             >
-              {{ t('system.common.edit') }}
+              {{ t("system.common.edit") }}
             </el-button>
             <el-button
               type="danger"
@@ -91,7 +91,7 @@
               icon="delete"
               @click="handleDelete(scope.row.id)"
             >
-              {{ t('system.common.delete') }}
+              {{ t("system.common.delete") }}
             </el-button>
           </template>
         </el-table-column>
@@ -125,7 +125,11 @@
         <el-form-item :label="t('system.role.dataScope')" prop="dataScope">
           <el-select v-model="formData.dataScope">
             <el-option :key="1" :label="t('system.role.dataScopeOptions.all')" :value="1" />
-            <el-option :key="2" :label="t('system.role.dataScopeOptions.deptAndChild')" :value="2" />
+            <el-option
+              :key="2"
+              :label="t('system.role.dataScopeOptions.deptAndChild')"
+              :value="2"
+            />
             <el-option :key="3" :label="t('system.role.dataScopeOptions.dept')" :value="3" />
             <el-option :key="4" :label="t('system.role.dataScopeOptions.self')" :value="4" />
           </el-select>
@@ -133,8 +137,8 @@
 
         <el-form-item :label="t('system.common.status')" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="1">{{ t('system.role.status.normal') }}</el-radio>
-            <el-radio :value="0">{{ t('system.role.status.disabled') }}</el-radio>
+            <el-radio :value="1">{{ t("system.role.status.normal") }}</el-radio>
+            <el-radio :value="0">{{ t("system.role.status.disabled") }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -150,8 +154,10 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="handleCloseDialog">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="handleCloseDialog">{{ t("system.common.cancel") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -163,7 +169,12 @@
       :size="drawerSize"
     >
       <div class="flex-x-between">
-        <el-input v-model="permKeywords" clearable class="w-[150px]" :placeholder="t('system.role.permission.menuName')">
+        <el-input
+          v-model="permKeywords"
+          clearable
+          class="w-[150px]"
+          :placeholder="t('system.role.permission.menuName')"
+        >
           <template #prefix>
             <Search />
           </template>
@@ -174,19 +185,21 @@
             <template #icon>
               <Switch />
             </template>
-            {{ isExpanded ? t('system.role.permission.collapse') : t('system.role.permission.expand') }}
+            {{
+              isExpanded ? t("system.role.permission.collapse") : t("system.role.permission.expand")
+            }}
           </el-button>
           <el-checkbox
             v-model="parentChildLinked"
             class="ml-5"
             @change="handleparentChildLinkedChange"
           >
-            {{ t('system.role.permission.parentChildLinked') }}
+            {{ t("system.role.permission.parentChildLinked") }}
           </el-checkbox>
 
           <el-tooltip placement="bottom">
             <template #content>
-              {{ t('system.role.permission.linkTip') }}
+              {{ t("system.role.permission.linkTip") }}
             </template>
             <el-icon class="ml-1 color-[--el-color-primary] inline-block cursor-pointer">
               <QuestionFilled />
@@ -211,8 +224,12 @@
       </el-tree>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleAssignPermSubmit">{{ t('system.common.confirm') }}</el-button>
-          <el-button @click="assignPermDialogVisible = false">{{ t('system.common.cancel') }}</el-button>
+          <el-button type="primary" @click="handleAssignPermSubmit">
+            {{ t("system.common.confirm") }}
+          </el-button>
+          <el-button @click="assignPermDialogVisible = false">
+            {{ t("system.common.cancel") }}
+          </el-button>
         </div>
       </template>
     </el-drawer>
@@ -268,10 +285,10 @@ const formData = reactive<RoleForm>({
 });
 
 const rules = computed(() => ({
-  name: [{ required: true, message: t('system.role.rules.name'), trigger: "blur" }],
-  code: [{ required: true, message: t('system.role.rules.code'), trigger: "blur" }],
-  dataScope: [{ required: true, message: t('system.role.rules.dataScope'), trigger: "blur" }],
-  status: [{ required: true, message: t('system.role.rules.status'), trigger: "blur" }],
+  name: [{ required: true, message: t("system.role.rules.name"), trigger: "blur" }],
+  code: [{ required: true, message: t("system.role.rules.code"), trigger: "blur" }],
+  dataScope: [{ required: true, message: t("system.role.rules.dataScope"), trigger: "blur" }],
+  status: [{ required: true, message: t("system.role.rules.status"), trigger: "blur" }],
 }));
 
 // 选中的角色
@@ -317,12 +334,12 @@ function handleSelectionChange(selection: any) {
 function handleOpenDialog(roleId?: string) {
   dialog.visible = true;
   if (roleId) {
-    dialog.title = t('system.role.editRole');
+    dialog.title = t("system.role.editRole");
     RoleAPI.getFormData(roleId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = t('system.role.addRole');
+    dialog.title = t("system.role.addRole");
   }
 }
 
@@ -335,7 +352,7 @@ function handleSubmit() {
       if (roleId) {
         RoleAPI.update(roleId, formData)
           .then(() => {
-            ElMessage.success(t('system.common.editSuccess'));
+            ElMessage.success(t("system.common.editSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -343,7 +360,7 @@ function handleSubmit() {
       } else {
         RoleAPI.create(formData)
           .then(() => {
-            ElMessage.success(t('system.common.addSuccess'));
+            ElMessage.success(t("system.common.addSuccess"));
             handleCloseDialog();
             handleResetQuery();
           })
@@ -369,26 +386,26 @@ function handleCloseDialog() {
 function handleDelete(roleId?: number) {
   const roleIds = [roleId || ids.value].join(",");
   if (!roleIds) {
-    ElMessage.warning(t('system.common.selectDeleteItem'));
+    ElMessage.warning(t("system.common.selectDeleteItem"));
     return;
   }
 
-  ElMessageBox.confirm(t('system.common.confirmDelete'), t('system.common.warning'), {
-    confirmButtonText: t('system.common.confirm'),
-    cancelButtonText: t('system.common.cancel'),
+  ElMessageBox.confirm(t("system.common.confirmDelete"), t("system.common.warning"), {
+    confirmButtonText: t("system.common.confirm"),
+    cancelButtonText: t("system.common.cancel"),
     type: "warning",
   }).then(
     () => {
       loading.value = true;
       RoleAPI.deleteByIds(roleIds)
         .then(() => {
-          ElMessage.success(t('system.common.deleteSuccess'));
+          ElMessage.success(t("system.common.deleteSuccess"));
           handleResetQuery();
         })
         .finally(() => (loading.value = false));
     },
     () => {
-      ElMessage.info(t('system.common.cancelDelete'));
+      ElMessage.info(t("system.common.cancelDelete"));
     }
   );
 }
@@ -429,7 +446,7 @@ function handleAssignPermSubmit() {
     loading.value = true;
     RoleAPI.updateRoleMenus(roleId, checkedMenuIds)
       .then(() => {
-        ElMessage.success(t('system.role.permission.assignSuccess'));
+        ElMessage.success(t("system.role.permission.assignSuccess"));
         assignPermDialogVisible.value = false;
         handleResetQuery();
       })

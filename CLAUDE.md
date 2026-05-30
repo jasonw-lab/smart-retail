@@ -129,6 +129,10 @@ The request wrapper returns `response.data.data` directly. Frontend receives:
 - `Result<T>` -> `T`
 - `PageResult<T>` -> `{ list, total }`
 
+## Environment Variables
+
+- 環境変数は `apps/backend/.env` を参照する
+
 ## Reference Documents
 
 - Requirements: `docs/architecture/design/smart-retail-requirements.md`

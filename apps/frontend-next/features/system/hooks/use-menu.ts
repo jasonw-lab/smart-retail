@@ -47,7 +47,8 @@ export function useCreateMenu() {
 export function useUpdateMenu() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: MenuForm }) => updateMenu(id, data),
+    mutationFn: ({ id, data }: { id: number; data: MenuForm }) =>
+      updateMenu(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menus'] });
       queryClient.invalidateQueries({ queryKey: ['menu-options'] });

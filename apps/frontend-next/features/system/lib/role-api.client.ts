@@ -1,4 +1,10 @@
-import type { Role, RoleQuery, RolePageResult, RoleForm, MenuOption } from '../types/role';
+import type {
+  Role,
+  RoleQuery,
+  RolePageResult,
+  RoleForm,
+  MenuOption,
+} from '../types/role';
 
 const BASE_URL = '/api/proxy/api/v1/roles';
 
@@ -19,7 +25,9 @@ export async function getRole(id: number): Promise<Role> {
   return res.json();
 }
 
-export async function getRoleOptions(): Promise<{ value: number; label: string }[]> {
+export async function getRoleOptions(): Promise<
+  { value: number; label: string }[]
+> {
   const res = await fetch(`${BASE_URL}/options`);
   if (!res.ok) throw new Error('Failed to fetch role options');
   return res.json();
@@ -55,7 +63,10 @@ export async function getRoleMenuIds(roleId: number): Promise<number[]> {
   return res.json();
 }
 
-export async function updateRoleMenus(roleId: number, menuIds: number[]): Promise<void> {
+export async function updateRoleMenus(
+  roleId: number,
+  menuIds: number[]
+): Promise<void> {
   const res = await fetch(`${BASE_URL}/${roleId}/menus`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

@@ -13,7 +13,12 @@ import {
   updateDictItem,
   deleteDictItems,
 } from '../lib/dict-api.client';
-import type { DictQuery, DictForm, DictItemQuery, DictItemForm } from '../types/dict';
+import type {
+  DictQuery,
+  DictForm,
+  DictItemQuery,
+  DictItemForm,
+} from '../types/dict';
 
 export function useDicts(params: DictQuery) {
   return useQuery({
@@ -43,7 +48,8 @@ export function useCreateDict() {
 export function useUpdateDict() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DictForm }) => updateDict(id, data),
+    mutationFn: ({ id, data }: { id: number; data: DictForm }) =>
+      updateDict(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dicts'] });
     },
@@ -80,8 +86,13 @@ export function useDictItem(dictCode: string | null, id: number | null) {
 export function useCreateDictItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ dictCode, data }: { dictCode: string; data: DictItemForm }) =>
-      createDictItem(dictCode, data),
+    mutationFn: ({
+      dictCode,
+      data,
+    }: {
+      dictCode: string;
+      data: DictItemForm;
+    }) => createDictItem(dictCode, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dict-items'] });
     },
@@ -91,8 +102,15 @@ export function useCreateDictItem() {
 export function useUpdateDictItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ dictCode, id, data }: { dictCode: string; id: number; data: DictItemForm }) =>
-      updateDictItem(dictCode, id, data),
+    mutationFn: ({
+      dictCode,
+      id,
+      data,
+    }: {
+      dictCode: string;
+      id: number;
+      data: DictItemForm;
+    }) => updateDictItem(dictCode, id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dict-items'] });
     },

@@ -1,32 +1,8 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { Providers } from '@/components/providers';
-import './globals.css';
+import type { ReactNode } from 'react';
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-});
+// next-intl requires this minimal root layout
+// The actual layout is in app/[locale]/layout.tsx
 
-export const metadata: Metadata = {
-  title: {
-    default: 'SmartRetail Pro',
-    template: '%s | SmartRetail Pro',
-  },
-  description: 'Retail inventory and sales management system',
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="ja" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return children;
 }

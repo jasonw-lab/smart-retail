@@ -18,7 +18,9 @@ test.describe('ダッシュボードUI構造', () => {
 
     // KPIカードはCardTitleとして h3 を持つ
     // 少なくとも1つのh3要素（カードタイトル）が存在すること
-    await expect(mainContent.locator('h3').first()).toBeVisible({ timeout: 10000 });
+    await expect(mainContent.locator('h3').first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('ダッシュボード統計情報の表示', async ({ page }) => {

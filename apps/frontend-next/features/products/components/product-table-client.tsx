@@ -11,7 +11,11 @@ import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { formatCurrency } from '@/lib/format';
 import { useProducts, useDeleteProduct } from '../hooks/use-products';
-import type { Product, ProductQuery, ProductPageResult } from '../types/product';
+import type {
+  Product,
+  ProductQuery,
+  ProductPageResult,
+} from '../types/product';
 
 interface ProductTableClientProps {
   initialData: ProductPageResult;
@@ -20,12 +24,12 @@ interface ProductTableClientProps {
 
 // Category badge colors
 const categoryColors: Record<string, string> = {
-  '飲料': 'bg-blue-100 text-blue-800',
-  '食品': 'bg-green-100 text-green-800',
-  '日用品': 'bg-purple-100 text-purple-800',
-  'お菓子': 'bg-pink-100 text-pink-800',
-  '酒類': 'bg-amber-100 text-amber-800',
-  'default': 'bg-gray-100 text-gray-800',
+  飲料: 'bg-blue-100 text-blue-800',
+  食品: 'bg-green-100 text-green-800',
+  日用品: 'bg-purple-100 text-purple-800',
+  お菓子: 'bg-pink-100 text-pink-800',
+  酒類: 'bg-amber-100 text-amber-800',
+  default: 'bg-gray-100 text-gray-800',
 };
 
 export function ProductTableClient({
@@ -39,11 +43,17 @@ export function ProductTableClient({
   const [params, setParams] = useState<ProductQuery>(initialParams);
   const [filterValues, setFilterValues] = useState({
     productName: initialParams.productName || '',
-    categoryId: initialParams.categoryId ? String(initialParams.categoryId) : '',
+    categoryId: initialParams.categoryId
+      ? String(initialParams.categoryId)
+      : '',
   });
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
-  const { data = initialData, isLoading, isError } = useProducts(params, {
+  const {
+    data = initialData,
+    isLoading,
+    isError,
+  } = useProducts(params, {
     placeholderData: initialData,
   });
 
@@ -80,7 +90,9 @@ export function ProductTableClient({
       ...params,
       pageNum: 1,
       productName: filterValues.productName || undefined,
-      categoryId: filterValues.categoryId ? parseInt(filterValues.categoryId, 10) : undefined,
+      categoryId: filterValues.categoryId
+        ? parseInt(filterValues.categoryId, 10)
+        : undefined,
     };
     setParams(newParams);
     updateURL(newParams);
@@ -146,16 +158,16 @@ export function ProductTableClient({
       key: 'productName',
       header: '商品名',
       sortable: true,
-      render: (_, row) => (
-        <div className="font-medium">{row.productName}</div>
-      ),
+      render: (_, row) => <div className="font-medium">{row.productName}</div>,
     },
     {
       key: 'categoryName',
       header: 'カテゴリ',
       width: '100px',
       render: (_, row) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(row.categoryName)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(row.categoryName)}`}
+        >
           {row.categoryName || '-'}
         </span>
       ),
@@ -286,7 +298,8 @@ export function ProductTableClient({
         {deleteTarget && (
           <div className="space-y-2">
             <p className="text-sm">
-              商品名: <span className="font-medium">{deleteTarget.productName}</span>
+              商品名:{' '}
+              <span className="font-medium">{deleteTarget.productName}</span>
             </p>
             <p className="text-sm text-muted-foreground">
               商品コード: {deleteTarget.productCode}

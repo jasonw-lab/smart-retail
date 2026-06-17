@@ -1,7 +1,17 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { AlertTriangle, Info, XCircle, CheckCircle, Bell, Wifi, Store, Clock, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle,
+  Info,
+  XCircle,
+  CheckCircle,
+  Bell,
+  Wifi,
+  Store,
+  Clock,
+  RefreshCw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,11 +38,11 @@ const alertTypeLabels: Record<string, string> = {
 };
 
 const alertCategoryLabels: Record<AlertCategory, string> = {
-  '通信障害': '通信障害',
-  '冷蔵異常': '冷蔵異常',
-  '在庫異常': '在庫異常',
-  '決済異常': '決済異常',
-  'その他': 'その他',
+  通信障害: '通信障害',
+  冷蔵異常: '冷蔵異常',
+  在庫異常: '在庫異常',
+  決済異常: '決済異常',
+  その他: 'その他',
 };
 
 const severityIcons = {
@@ -153,13 +163,22 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
       alertMap.set(alert.id, alert);
     }
     for (const alert of initialAlerts) {
-      alertMap.set(alert.id, { ...alert, priority: alert.priority || 2, status: alert.status || 'unread' });
+      alertMap.set(alert.id, {
+        ...alert,
+        priority: alert.priority || 2,
+        status: alert.status || 'unread',
+      });
     }
     for (const alert of realtimeAlerts) {
-      alertMap.set(alert.id, { ...alert, priority: alert.priority || 2, status: alert.status || 'unread' });
+      alertMap.set(alert.id, {
+        ...alert,
+        priority: alert.priority || 2,
+        status: alert.status || 'unread',
+      });
     }
     return Array.from(alertMap.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }, [initialAlerts, realtimeAlerts]);
 
@@ -168,7 +187,7 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
     let filtered = allAlerts;
     if (selectedPriority !== 'all') {
       const priority = parseInt(selectedPriority) as AlertPriority;
-      filtered = filtered.filter(a => a.priority === priority);
+      filtered = filtered.filter((a) => a.priority === priority);
     }
     return filtered;
   }, [allAlerts, selectedPriority]);
@@ -176,10 +195,10 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
   // Count by priority
   const priorityCounts = useMemo(() => {
     return {
-      1: allAlerts.filter(a => a.priority === 1).length,
-      2: allAlerts.filter(a => a.priority === 2).length,
-      3: allAlerts.filter(a => a.priority === 3).length,
-      4: allAlerts.filter(a => a.priority === 4).length,
+      1: allAlerts.filter((a) => a.priority === 1).length,
+      2: allAlerts.filter((a) => a.priority === 2).length,
+      3: allAlerts.filter((a) => a.priority === 3).length,
+      4: allAlerts.filter((a) => a.priority === 4).length,
     };
   }, [allAlerts]);
 
@@ -247,7 +266,10 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
     } else if (diffHours < 24) {
       return `${diffHours}時間前`;
     } else {
-      return date.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
+      return date.toLocaleDateString('ja-JP', {
+        month: '2-digit',
+        day: '2-digit',
+      });
     }
   };
 
@@ -276,7 +298,9 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
       header: '種別',
       width: '100px',
       render: (_, row) => (
-        <span className="text-sm">{row.category || alertTypeLabels[row.type]}</span>
+        <span className="text-sm">
+          {row.category || alertTypeLabels[row.type]}
+        </span>
       ),
     },
     {
@@ -295,7 +319,9 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
           resolved: 'bg-success/10 text-success',
         };
         return (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[row.status]}`}>
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[row.status]}`}
+          >
             {statusLabels[row.status]}
           </span>
         );
@@ -317,8 +343,18 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
       width: '100px',
       render: (_, row) => (
         <div className="text-sm text-muted-foreground">
-          <p>{new Date(row.createdAt).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' })}</p>
-          <p>{new Date(row.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</p>
+          <p>
+            {new Date(row.createdAt).toLocaleDateString('ja-JP', {
+              month: '2-digit',
+              day: '2-digit',
+            })}
+          </p>
+          <p>
+            {new Date(row.createdAt).toLocaleTimeString('ja-JP', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
         </div>
       ),
     },
@@ -349,23 +385,29 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
       <Tabs value={selectedPriority} onValueChange={setSelectedPriority}>
         <div className="flex items-center justify-between">
           <TabsList>
-            <TabsTrigger value="all">
-              全て
-            </TabsTrigger>
+            <TabsTrigger value="all">全て</TabsTrigger>
             <TabsTrigger value="1" className="gap-2">
-              <span className="bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">P1</span>
+              <span className="bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">
+                P1
+              </span>
               <span>{priorityCounts[1]}</span>件
             </TabsTrigger>
             <TabsTrigger value="2" className="gap-2">
-              <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded">P2</span>
+              <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded">
+                P2
+              </span>
               <span>{priorityCounts[2]}</span>件
             </TabsTrigger>
             <TabsTrigger value="3" className="gap-2">
-              <span className="bg-warning text-warning-foreground text-xs px-1.5 py-0.5 rounded">P3</span>
+              <span className="bg-warning text-warning-foreground text-xs px-1.5 py-0.5 rounded">
+                P3
+              </span>
               <span>{priorityCounts[3]}</span>件
             </TabsTrigger>
             <TabsTrigger value="4" className="gap-2">
-              <span className="bg-info text-info-foreground text-xs px-1.5 py-0.5 rounded">P4</span>
+              <span className="bg-info text-info-foreground text-xs px-1.5 py-0.5 rounded">
+                P4
+              </span>
               <span>{priorityCounts[4]}</span>件
             </TabsTrigger>
           </TabsList>
@@ -382,7 +424,14 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
             values={filterValues}
             onChange={setFilterValues}
             onSearch={() => {}}
-            onReset={() => setFilterValues({ priority: '', status: '', category: '', storeId: '' })}
+            onReset={() =>
+              setFilterValues({
+                priority: '',
+                status: '',
+                category: '',
+                storeId: '',
+              })
+            }
           />
         </div>
 
@@ -408,8 +457,8 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              "h-2 w-2 rounded-full",
-              isConnected ? "bg-success" : "bg-destructive"
+              'h-2 w-2 rounded-full',
+              isConnected ? 'bg-success' : 'bg-destructive'
             )}
           />
           <span>{isConnected ? '接続中' : '切断'}</span>
@@ -428,7 +477,9 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-success">{networkStability}%</span>
+              <span className="text-3xl font-bold text-success">
+                {networkStability}%
+              </span>
               <span className="text-sm text-muted-foreground">安定</span>
             </div>
             <Progress value={networkStability} className="mt-3 h-2" />
@@ -446,9 +497,14 @@ export function AlertListClient({ initialAlerts }: AlertListClientProps) {
           <CardContent>
             <div className="space-y-2">
               {incidentStores.map((store) => (
-                <div key={store.name} className="flex items-center justify-between text-sm">
+                <div
+                  key={store.name}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span>{store.name}</span>
-                  <Badge variant="destructive" className="text-xs">{store.issues}件</Badge>
+                  <Badge variant="destructive" className="text-xs">
+                    {store.issues}件
+                  </Badge>
                 </div>
               ))}
             </div>

@@ -1,16 +1,27 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, User, Lock, ShieldCheck, RefreshCw, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import {
+  Loader2,
+  User,
+  Lock,
+  ShieldCheck,
+  RefreshCw,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -30,6 +41,8 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
+  const t = useTranslations('auth');
+  const tValidation = useTranslations('validation');
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +97,7 @@ export function LoginForm() {
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.error || 'Login failed');
+        setError(data.error || t('loginFailed'));
         fetchCaptcha();
         return;
       }
@@ -92,7 +105,7 @@ export function LoginForm() {
       router.push(redirect);
       router.refresh();
     } catch {
-      setError('Login failed');
+      setError(t('loginFailed'));
       fetchCaptcha();
     } finally {
       setIsLoading(false);
@@ -109,8 +122,11 @@ export function LoginForm() {
 
       {/* Username Field */}
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-xs font-medium text-on-surface-variant ml-1">
-          Username or Email
+        <Label
+          htmlFor="username"
+          className="text-xs font-medium text-on-surface-variant ml-1"
+        >
+          {t('username')}
         </Label>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
@@ -127,14 +143,17 @@ export function LoginForm() {
           />
         </div>
         {form.formState.errors.username && (
-          <p className="text-sm text-error">{form.formState.errors.username.message}</p>
+          <p className="text-sm text-error">{tValidation('required')}</p>
         )}
       </div>
 
       {/* Password Field */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-xs font-medium text-on-surface-variant ml-1">
-          Password
+        <Label
+          htmlFor="password"
+          className="text-xs font-medium text-on-surface-variant ml-1"
+        >
+          {t('password')}
         </Label>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
@@ -143,7 +162,7 @@ export function LoginForm() {
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Enter your password"
+            placeholder="••••••••"
             autoComplete="current-password"
             disabled={isLoading}
             className="pl-10 pr-12 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -154,18 +173,25 @@ export function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline-variant hover:text-on-surface transition-colors"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
           </button>
         </div>
         {form.formState.errors.password && (
-          <p className="text-sm text-error">{form.formState.errors.password.message}</p>
+          <p className="text-sm text-error">{tValidation('required')}</p>
         )}
       </div>
 
       {/* Verification Code (Captcha) */}
       <div className="space-y-2">
-        <Label htmlFor="captchaCode" className="text-xs font-medium text-on-surface-variant ml-1">
-          Verification Code
+        <Label
+          htmlFor="captchaCode"
+          className="text-xs font-medium text-on-surface-variant ml-1"
+        >
+          {t('captcha')}
         </Label>
         <div className="flex gap-4">
           <div className="relative flex-1 group">
@@ -175,7 +201,7 @@ export function LoginForm() {
             <Input
               id="captchaCode"
               type="text"
-              placeholder="Enter code"
+              placeholder="A1B2"
               disabled={isLoading}
               className="pl-10 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               {...form.register('captchaCode')}
@@ -190,7 +216,6 @@ export function LoginForm() {
                 alt="Captcha"
                 className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={fetchCaptcha}
-                title="Click to refresh"
               />
             ) : (
               <button
@@ -198,7 +223,7 @@ export function LoginForm() {
                 onClick={fetchCaptcha}
                 className="text-xs text-outline-variant hover:text-on-surface transition-colors"
               >
-                Load captcha
+                Load
               </button>
             )}
           </div>
@@ -210,11 +235,13 @@ export function LoginForm() {
             disabled={captchaLoading}
             className="shrink-0"
           >
-            <RefreshCw className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`}
+            />
           </Button>
         </div>
         {form.formState.errors.captchaCode && (
-          <p className="text-sm text-error">{form.formState.errors.captchaCode.message}</p>
+          <p className="text-sm text-error">{tValidation('required')}</p>
         )}
       </div>
 
@@ -224,15 +251,23 @@ export function LoginForm() {
           <Checkbox
             id="rememberMe"
             checked={form.watch('rememberMe')}
-            onCheckedChange={(checked) => form.setValue('rememberMe', checked as boolean)}
+            onCheckedChange={(checked) =>
+              form.setValue('rememberMe', checked as boolean)
+            }
             className="border-outline-variant"
           />
-          <Label htmlFor="rememberMe" className="text-sm text-on-surface-variant cursor-pointer">
-            Remember me
+          <Label
+            htmlFor="rememberMe"
+            className="text-sm text-on-surface-variant cursor-pointer"
+          >
+            {t('rememberMe')}
           </Label>
         </div>
-        <Link href="/forgot-password" className="text-xs text-primary hover:underline transition-all font-medium">
-          Forgot password?
+        <Link
+          href="/forgot-password"
+          className="text-xs text-primary hover:underline transition-all font-medium"
+        >
+          {t('forgotPassword')}
         </Link>
       </div>
 
@@ -246,7 +281,7 @@ export function LoginForm() {
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            <span>Login</span>
+            <span>{t('login')}</span>
             <ArrowRight className="h-5 w-5" />
           </>
         )}

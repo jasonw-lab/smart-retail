@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +70,9 @@ export function StoreForm({ store, mode }: StoreFormProps) {
       }
       router.push('/stores');
     } catch (error) {
-      toast.error(mode === 'create' ? '登録に失敗しました' : '更新に失敗しました');
+      toast.error(
+        mode === 'create' ? '登録に失敗しました' : '更新に失敗しました'
+      );
     }
   };
 

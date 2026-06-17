@@ -26,7 +26,11 @@ interface HistoryDialogProps {
   onClose: () => void;
 }
 
-export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) {
+export function HistoryDialog({
+  inventory,
+  open,
+  onClose,
+}: HistoryDialogProps) {
   const { data: history = [], isLoading } = useInventoryHistory(
     inventory?.storeId || 0,
     inventory?.productId || 0
@@ -45,7 +49,9 @@ export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) 
 
         <div className="max-h-80 overflow-y-auto">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">読み込み中...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              読み込み中...
+            </div>
           ) : history.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               履歴がありません

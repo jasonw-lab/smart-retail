@@ -1,5 +1,9 @@
 import { fetchFromBackend } from '@/lib/api/server';
-import type { Transaction, TransactionQuery, TransactionPageResult } from '../types/transaction';
+import type {
+  Transaction,
+  TransactionQuery,
+  TransactionPageResult,
+} from '../types/transaction';
 
 /**
  * Server Component専用のTransaction API

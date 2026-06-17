@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { LogOut, Bell, Maximize, Globe, ChevronDown, Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+import { LogOut, Bell, Maximize, ChevronDown, Menu } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/app-store';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface HeaderProps {
   user?: {
@@ -23,48 +23,53 @@ interface HeaderProps {
   };
 }
 
-// Breadcrumb mapping
-const pathTitleMap: Record<string, string> = {
-  '/': 'Dashboard',
-  '/stores': 'Store Management',
-  '/devices': 'Device Management',
-  '/products': 'Product Management',
-  '/inventory': 'Product/Inventory',
-  '/transactions': 'Payments',
-  '/alerts': 'Alert Information',
-  '/system': 'System Management',
-  '/system/user': 'User Management',
-  '/system/role': 'Role Management',
-  '/system/menu': 'Menu Management',
-  '/system/dept': 'Dept Management',
-  '/system/dict': 'Dict Management',
-  '/system/log': 'System Log',
-};
-
-function getBreadcrumbs(pathname: string): { label: string; href: string }[] {
-  const segments = pathname.split('/').filter(Boolean);
-  const breadcrumbs: { label: string; href: string }[] = [
-    { label: 'Dashboard', href: '/' },
-  ];
-
-  if (segments.length === 0) return breadcrumbs;
-
-  let currentPath = '';
-  for (const segment of segments) {
-    currentPath += `/${segment}`;
-    const title = pathTitleMap[currentPath];
-    if (title && title !== 'Dashboard') {
-      breadcrumbs.push({ label: title, href: currentPath });
-    }
-  }
-
-  return breadcrumbs;
-}
-
 export function Header({ user }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { toggleSidebarCollapse } = useAppStore();
+  const t = useTranslations('navigation');
+  const tAuth = useTranslations('auth');
+
+  // Breadcrumb mapping using translation keys
+  const pathTitleMap: Record<string, string> = {
+    '/': t('dashboard'),
+    '/stores': t('stores'),
+    '/devices': t('devices'),
+    '/products': t('products'),
+    '/inventory': t('inventory'),
+    '/transactions': t('transactions'),
+    '/alerts': t('alerts'),
+    '/system': t('system'),
+    '/system/user': t('user'),
+    '/system/role': t('role'),
+    '/system/menu': t('menu'),
+    '/system/dept': t('dept'),
+    '/system/dict': t('dict'),
+    '/system/log': t('log'),
+  };
+
+  function getBreadcrumbs(
+    currentPath: string
+  ): { label: string; href: string }[] {
+    const segments = currentPath.split('/').filter(Boolean);
+    const breadcrumbs: { label: string; href: string }[] = [
+      { label: t('dashboard'), href: '/' },
+    ];
+
+    if (segments.length === 0) return breadcrumbs;
+
+    let accPath = '';
+    for (const segment of segments) {
+      accPath += `/${segment}`;
+      const title = pathTitleMap[accPath];
+      if (title && title !== t('dashboard')) {
+        breadcrumbs.push({ label: title, href: accPath });
+      }
+    }
+
+    return breadcrumbs;
+  }
+
   const breadcrumbs = getBreadcrumbs(pathname);
 
   const handleLogout = async () => {
@@ -93,9 +98,13 @@ export function Header({ user }: HeaderProps) {
         <nav className="flex items-center space-x-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
             <span key={crumb.href} className="flex items-center">
-              {index > 0 && <span className="text-outline-variant mx-2">/</span>}
+              {index > 0 && (
+                <span className="text-outline-variant mx-2">/</span>
+              )}
               {index === breadcrumbs.length - 1 ? (
-                <span className="text-primary font-semibold">{crumb.label}</span>
+                <span className="text-primary font-semibold">
+                  {crumb.label}
+                </span>
               ) : (
                 <Link
                   href={crumb.href}
@@ -119,10 +128,8 @@ export function Header({ user }: HeaderProps) {
           <Maximize className="h-5 w-5" />
         </button>
 
-        {/* Language */}
-        <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
-          <Globe className="h-5 w-5" />
-        </button>
+        {/* Language Switcher */}
+        <LanguageSwitcher />
 
         {/* Notifications */}
         <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative">
@@ -138,7 +145,9 @@ export function Header({ user }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 pl-2 cursor-pointer group hover:bg-surface-container-low rounded-lg pr-2 py-1 transition-colors">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-sm font-medium border border-outline-variant group-hover:border-primary transition-colors">
-                {(user?.nickname || user?.username || 'D').charAt(0).toUpperCase()}
+                {(user?.nickname || user?.username || 'D')
+                  .charAt(0)
+                  .toUpperCase()}
               </div>
               <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
                 {user?.nickname || user?.username || 'demo'}
@@ -161,7 +170,7 @@ export function Header({ user }: HeaderProps) {
               className="text-error cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              {tAuth('logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

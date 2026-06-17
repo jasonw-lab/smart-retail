@@ -19,7 +19,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrency, formatDateTime } from '@/lib/format';
-import { PaymentMethodLabel, PaymentMethodIcon, type Transaction } from '../types/transaction';
+import {
+  PaymentMethodLabel,
+  PaymentMethodIcon,
+  type Transaction,
+} from '../types/transaction';
 
 interface TransactionDetailDialogProps {
   transaction: Transaction | null;
@@ -45,9 +49,7 @@ export function TransactionDetailDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            💳 決済詳細 - {transaction.orderNumber}
-          </DialogTitle>
+          <DialogTitle>💳 決済詳細 - {transaction.orderNumber}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -146,7 +148,9 @@ export function TransactionDetailDialog({
                 </Table>
               </div>
               <div className="flex justify-end mt-2">
-                <span className="text-sm text-muted-foreground mr-2">合計:</span>
+                <span className="text-sm text-muted-foreground mr-2">
+                  合計:
+                </span>
                 <span className="font-semibold">
                   {formatCurrency(transaction.totalAmount)}
                 </span>

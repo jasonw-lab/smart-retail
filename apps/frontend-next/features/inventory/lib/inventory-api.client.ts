@@ -23,7 +23,9 @@ export const inventoryApiClient = {
     if (params.productName) searchParams.set('productName', params.productName);
     if (params.status) searchParams.set('status', params.status);
 
-    return fetchApi<InventoryPageResult>(`${BASE_URL}?${searchParams.toString()}`);
+    return fetchApi<InventoryPageResult>(
+      `${BASE_URL}?${searchParams.toString()}`
+    );
   },
 
   /**
@@ -75,7 +77,10 @@ export const inventoryApiClient = {
    * 在庫履歴取得
    * Backend: GET /api/v1/retail/inventory-transactions/page with filters
    */
-  async getHistory(storeId: number, productId: number): Promise<StockHistory[]> {
+  async getHistory(
+    storeId: number,
+    productId: number
+  ): Promise<StockHistory[]> {
     const searchParams = new URLSearchParams();
     searchParams.set('storeId', String(storeId));
     searchParams.set('productId', String(productId));

@@ -90,5 +90,7 @@ export async function login(
     }
   }
 
-  throw new Error(`Login failed after ${maxAttempts} attempts: ${lastError?.message}`);
+  throw new Error(
+    `Login failed after ${maxAttempts} attempts: ${lastError?.message}`
+  );
 }

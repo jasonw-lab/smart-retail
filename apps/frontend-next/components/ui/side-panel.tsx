@@ -69,9 +69,7 @@ export function SidePanel({
       >
         {/* ヘッダー */}
         <div className="flex h-14 items-center justify-between border-b px-4">
-          {title && (
-            <h2 className="text-lg font-semibold">{title}</h2>
-          )}
+          {title && <h2 className="text-lg font-semibold">{title}</h2>}
           <Button
             variant="ghost"
             size="icon"
@@ -83,15 +81,9 @@ export function SidePanel({
           </Button>
         </div>
         {/* コンテンツ */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto p-4">{children}</div>
         {/* フッター */}
-        {footer && (
-          <div className="border-t p-4">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="border-t p-4">{footer}</div>}
       </aside>
     </>
   );

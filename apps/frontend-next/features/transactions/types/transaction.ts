@@ -10,7 +10,8 @@ export const PaymentMethod = {
   OTHER: 'OTHER',
 } as const;
 
-export type PaymentMethodType = (typeof PaymentMethod)[keyof typeof PaymentMethod];
+export type PaymentMethodType =
+  (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
 export const PaymentMethodLabel: Record<PaymentMethodType, string> = {
   CARD: 'カード',

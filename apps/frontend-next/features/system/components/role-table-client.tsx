@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Edit, Shield, Search, RotateCcw, Download, Settings } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Shield,
+  Search,
+  RotateCcw,
+  Download,
+  Settings,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -26,14 +35,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useRoles, useDeleteRoles } from '../hooks/use-role';
 import { RoleDialog } from './role-dialog';
 import { RolePermissionDialog } from './role-permission-dialog';
-import { DataScopeLabel, type Role, type RoleQuery, type RolePageResult } from '../types/role';
+import {
+  DataScopeLabel,
+  type Role,
+  type RoleQuery,
+  type RolePageResult,
+} from '../types/role';
 
 interface RoleTableClientProps {
   initialData: RolePageResult;
   initialParams: RoleQuery;
 }
 
-export function RoleTableClient({ initialData, initialParams }: RoleTableClientProps) {
+export function RoleTableClient({
+  initialData,
+  initialParams,
+}: RoleTableClientProps) {
   const [params, setParams] = useState<RoleQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [status, setStatus] = useState<string>('');
@@ -93,7 +110,9 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Role Name / Keyword</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Role Name / Keyword
+              </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -103,8 +122,13 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
-              <Select value={status || 'all'} onValueChange={(v) => setStatus(v === 'all' ? '' : v)}>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Status
+              </span>
+              <Select
+                value={status || 'all'}
+                onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
@@ -116,7 +140,10 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
+              <Button
+                onClick={handleSearch}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -169,7 +196,10 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
               <TableRow className="bg-muted/50">
                 <TableHead className="w-12">
                   <Checkbox
-                    checked={displayData.list.length > 0 && selectedIds.length === displayData.list.length}
+                    checked={
+                      displayData.list.length > 0 &&
+                      selectedIds.length === displayData.list.length
+                    }
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
@@ -183,14 +213,20 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No roles found
                   </TableCell>
                 </TableRow>
@@ -201,7 +237,9 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                     <TableCell>
                       <Checkbox
                         checked={selectedIds.includes(role.id)}
-                        onCheckedChange={(checked) => handleSelectOne(role.id, !!checked)}
+                        onCheckedChange={(checked) =>
+                          handleSelectOne(role.id, !!checked)
+                        }
                       />
                     </TableCell>
                     <TableCell className="font-medium">{role.name}</TableCell>
@@ -211,7 +249,9 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                       </code>
                     </TableCell>
                     <TableCell>
-                      <StatusBadge variant={role.status === 1 ? 'success' : 'muted'}>
+                      <StatusBadge
+                        variant={role.status === 1 ? 'success' : 'muted'}
+                      >
                         {role.status === 1 ? 'Normal' : 'Disabled'}
                       </StatusBadge>
                     </TableCell>
@@ -262,7 +302,8 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {(params.pageNum - 1) * params.pageSize + 1} to{' '}
-            {Math.min(params.pageNum * params.pageSize, displayData.total)} of {displayData.total} entries
+            {Math.min(params.pageNum * params.pageSize, displayData.total)} of{' '}
+            {displayData.total} entries
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -302,7 +343,8 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
 
       {/* Footer */}
       <div className="text-center text-sm text-muted-foreground py-4 border-t">
-        2024 SMARTRETAIL PRO V2.4.1 | SERVER STATUS: HEALTHY | SYSTEM TIME: {new Date().toLocaleTimeString()}
+        2024 SMARTRETAIL PRO V2.4.1 | SERVER STATUS: HEALTHY | SYSTEM TIME:{' '}
+        {new Date().toLocaleTimeString()}
       </div>
 
       {/* Dialogs */}

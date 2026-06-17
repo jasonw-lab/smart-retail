@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from '@/i18n/routing';
+
+const intlMiddleware = createIntlMiddleware(routing);
 
 // 認証不要のパス
 const publicPaths = ['/login', '/api/auth/login'];
@@ -20,9 +24,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 認証不要パスはスキップ
-  if (publicPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+  // i18nミドルウェアを適用
+  const response = intlMiddleware(request);
+
+  // 認証不要パスはスキップ（ロケールプレフィックス考慮）
+  const pathnameWithoutLocale = pathname.replace(/^\/(ja|en)/, '') || '/';
+  if (publicPaths.some((path) => pathnameWithoutLocale.startsWith(path))) {
+    return response;
   }
 
   // access_token Cookieの存在チェック
@@ -30,12 +38,13 @@ export function middleware(request: NextRequest) {
 
   if (!accessToken) {
     // 未認証 - ログインページへリダイレクト
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    const locale = pathname.match(/^\/(ja|en)/)?.[1] || 'ja';
+    const loginUrl = new URL(`/${locale}/login`, request.url);
+    loginUrl.searchParams.set('redirect', pathnameWithoutLocale);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

@@ -2,7 +2,16 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Edit, Trash2, Plus, Monitor, Wifi, WifiOff, AlertTriangle, Wrench } from 'lucide-react';
+import {
+  Edit,
+  Trash2,
+  Plus,
+  Monitor,
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+  Wrench,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,7 +64,11 @@ export function DeviceTableClient({
   });
   const [deleteTarget, setDeleteTarget] = useState<Device | null>(null);
 
-  const { data = initialData, isLoading, isError } = useDevices(params, {
+  const {
+    data = initialData,
+    isLoading,
+    isError,
+  } = useDevices(params, {
     placeholderData: initialData,
   });
 
@@ -68,9 +81,13 @@ export function DeviceTableClient({
   const statusSummary = useMemo(() => {
     const list = displayData?.list || [];
     const total = displayData?.total || list.length;
-    const online = list.filter(d => d.status === DeviceStatus.ONLINE).length;
-    const offline = list.filter(d => d.status === DeviceStatus.OFFLINE).length;
-    const maintenance = list.filter(d => d.status === DeviceStatus.MAINTENANCE).length;
+    const online = list.filter((d) => d.status === DeviceStatus.ONLINE).length;
+    const offline = list.filter(
+      (d) => d.status === DeviceStatus.OFFLINE
+    ).length;
+    const maintenance = list.filter(
+      (d) => d.status === DeviceStatus.MAINTENANCE
+    ).length;
 
     // If we have paginated data, estimate based on page ratio
     if (displayData?.total && displayData.total > list.length) {
@@ -107,7 +124,10 @@ export function DeviceTableClient({
       type: 'select',
       options: [
         { value: '', label: 'すべての種別' },
-        ...Object.entries(DeviceTypeLabel).map(([v, l]) => ({ value: v, label: l })),
+        ...Object.entries(DeviceTypeLabel).map(([v, l]) => ({
+          value: v,
+          label: l,
+        })),
       ],
     },
     {
@@ -116,7 +136,10 @@ export function DeviceTableClient({
       type: 'select',
       options: [
         { value: '', label: 'すべての状態' },
-        ...Object.entries(DeviceStatusLabel).map(([v, l]) => ({ value: v, label: l })),
+        ...Object.entries(DeviceStatusLabel).map(([v, l]) => ({
+          value: v,
+          label: l,
+        })),
       ],
     },
     {
@@ -133,8 +156,11 @@ export function DeviceTableClient({
       ...params,
       pageNum: 1,
       deviceName: filterValues.deviceName || undefined,
-      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
-      deviceType: (filterValues.deviceType as DeviceQuery['deviceType']) || undefined,
+      storeId: filterValues.storeId
+        ? parseInt(filterValues.storeId, 10)
+        : undefined,
+      deviceType:
+        (filterValues.deviceType as DeviceQuery['deviceType']) || undefined,
       status: (filterValues.status as DeviceQuery['status']) || undefined,
     };
     setParams(newParams);
@@ -142,7 +168,12 @@ export function DeviceTableClient({
   };
 
   const handleReset = () => {
-    setFilterValues({ deviceName: '', storeId: '', deviceType: '', status: '' });
+    setFilterValues({
+      deviceName: '',
+      storeId: '',
+      deviceType: '',
+      status: '',
+    });
     const newParams = { pageNum: 1, pageSize: params.pageSize };
     setParams(newParams);
     router.push(pathname);
@@ -186,9 +217,7 @@ export function DeviceTableClient({
       key: 'deviceName',
       header: 'デバイス名',
       sortable: true,
-      render: (_, row) => (
-        <span className="font-medium">{row.deviceName}</span>
-      ),
+      render: (_, row) => <span className="font-medium">{row.deviceName}</span>,
     },
     {
       key: 'deviceType',
@@ -246,7 +275,9 @@ export function DeviceTableClient({
       header: 'デバイスコード',
       width: '130px',
       render: (_, row) => (
-        <span className="font-mono text-xs text-muted-foreground">{row.deviceCode}</span>
+        <span className="font-mono text-xs text-muted-foreground">
+          {row.deviceCode}
+        </span>
       ),
     },
     {
@@ -304,7 +335,8 @@ export function DeviceTableClient({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">登録デバイスリスト</h2>
         <span className="text-sm text-muted-foreground">
-          表示中の件数: {displayData?.list?.length || 0} / {displayData?.total || 0}件
+          表示中の件数: {displayData?.list?.length || 0} /{' '}
+          {displayData?.total || 0}件
         </span>
       </div>
 
@@ -347,7 +379,9 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Online Now</p>
-                <p className="text-2xl font-bold text-success">{statusSummary.online}</p>
+                <p className="text-2xl font-bold text-success">
+                  {statusSummary.online}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -361,7 +395,9 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Disconnected</p>
-                <p className="text-2xl font-bold text-destructive">{statusSummary.disconnected}</p>
+                <p className="text-2xl font-bold text-destructive">
+                  {statusSummary.disconnected}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -375,7 +411,9 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Maintenance</p>
-                <p className="text-2xl font-bold text-warning">{statusSummary.maintenance}</p>
+                <p className="text-2xl font-bold text-warning">
+                  {statusSummary.maintenance}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -394,7 +432,8 @@ export function DeviceTableClient({
       >
         {deleteTarget && (
           <p className="text-sm">
-            デバイス名: <span className="font-medium">{deleteTarget.deviceName}</span>
+            デバイス名:{' '}
+            <span className="font-medium">{deleteTarget.deviceName}</span>
           </p>
         )}
       </ConfirmDialog>

@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// E2E用ポート設定（環境変数で上書き可能）
+const E2E_PORT = process.env.E2E_PORT || '3002';
+const MOCK_PORT = process.env.MOCK_PORT || '8091';
+const BASE_URL = `http://localhost:${E2E_PORT}`;
+const MOCK_URL = `http://localhost:${MOCK_PORT}`;
+
 export default defineConfig({
   testDir: './e2e/specs',
   fullyParallel: true,
@@ -16,7 +22,7 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     actionTimeout: 15000, // Increase action timeout
@@ -30,15 +36,15 @@ export default defineConfig({
   webServer: [
     // Mock API server (backend mock)
     {
-      command: 'pnpm mock:server',
-      url: 'http://localhost:8091/api/v1/retail/dashboard/stats',
+      command: `MOCK_PORT=${MOCK_PORT} pnpm mock:server`,
+      url: `${MOCK_URL}/api/v1/retail/dashboard/stats`,
       reuseExistingServer: !process.env.CI,
       timeout: 30 * 1000,
     },
     // Next.js production server (build first if needed)
     {
-      command: 'pnpm build && pnpm start:test',
-      url: 'http://localhost:3001',
+      command: `pnpm build && BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
+      url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 180 * 1000, // Build can take time
     },

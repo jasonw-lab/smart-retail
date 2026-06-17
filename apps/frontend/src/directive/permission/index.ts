@@ -18,15 +18,17 @@ export const hasPerm: Directive = {
 
     const { roles, perms } = useUserStore().userInfo;
 
-    // 超级管理员拥有所有权限，如果是”*:*:*”权限标识，则不需要进行权限校验
-    if (roles.includes("ROOT") || requiredPerms.includes("*:*:*")) {
+    // 超级管理员拥有所有权限，如果是"*:*:*"权限标识，则不需要进行权限校验
+    if (roles?.includes("ROOT") || requiredPerms.includes("*:*:*")) {
       return;
     }
 
-    // 检查权限
-    const hasAuth = Array.isArray(requiredPerms)
-      ? requiredPerms.some((perm) => perms.includes(perm))
-      : perms.includes(requiredPerms);
+    // 检查权限 (perms 可能为 null)
+    const hasAuth = perms
+      ? Array.isArray(requiredPerms)
+        ? requiredPerms.some((perm) => perms.includes(perm))
+        : perms.includes(requiredPerms)
+      : false;
 
     // 如果没有权限，移除该元素
     if (!hasAuth && el.parentNode) {
@@ -51,10 +53,12 @@ export const hasRole: Directive = {
 
     const { roles } = useUserStore().userInfo;
 
-    // 检查是否有对应角色权限
-    const hasAuth = Array.isArray(requiredRoles)
-      ? requiredRoles.some((role) => roles.includes(role))
-      : roles.includes(requiredRoles);
+    // 检查是否有对应角色权限 (roles 可能为 null)
+    const hasAuth = roles
+      ? Array.isArray(requiredRoles)
+        ? requiredRoles.some((role) => roles.includes(role))
+        : roles.includes(requiredRoles)
+      : false;
 
     // 如果没有权限，移除元素
     if (!hasAuth && el.parentNode) {

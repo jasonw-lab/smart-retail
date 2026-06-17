@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { refreshLocalMockToken } from '@/lib/auth/mock-auth';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -22,10 +23,36 @@ export async function POST() {
     const refreshToken = cookieStore.get('refresh_token')?.value;
 
     if (!refreshToken) {
-      return NextResponse.json(
-        { error: 'No refresh token' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
+    }
+
+    const mockToken = refreshLocalMockToken(refreshToken);
+    if (mockToken) {
+      // localhost ではSecureを無効化（開発・テスト環境対応）
+      const isSecure =
+        process.env.NODE_ENV === 'production' &&
+        !process.env.BACKEND_URL?.includes('localhost');
+
+      cookieStore.set('access_token', mockToken.accessToken, {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: mockToken.expiresIn || 3600,
+      });
+
+      cookieStore.set('refresh_token', mockToken.refreshToken, {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60,
+      });
+
+      return NextResponse.json({
+        success: true,
+        expiresIn: mockToken.expiresIn,
+      });
     }
 
     // Backend refresh API呼び出し (refreshToken をクエリパラメータで送信)
@@ -61,7 +88,11 @@ export async function POST() {
       );
     }
 
-    const { accessToken, refreshToken: newRefreshToken, expiresIn } = result.data;
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      expiresIn,
+    } = result.data;
 
     // localhost ではSecureを無効化（開発・テスト環境対応）
     const isSecure =

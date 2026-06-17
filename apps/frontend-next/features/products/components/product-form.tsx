@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -10,7 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateProduct, useUpdateProduct } from '../hooks/use-products';
-import { productFormSchema, type ProductFormValues } from '../schemas/product-schema';
+import {
+  productFormSchema,
+  type ProductFormValues,
+} from '../schemas/product-schema';
 import type { Product } from '../types/product';
 
 interface ProductFormProps {

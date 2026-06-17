@@ -45,9 +45,10 @@ async function handler(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-      body: request.method !== 'GET' && request.method !== 'HEAD'
-        ? await request.text()
-        : undefined,
+      body:
+        request.method !== 'GET' && request.method !== 'HEAD'
+          ? await request.text()
+          : undefined,
     });
 
     if (backendResponse.status === 401) {

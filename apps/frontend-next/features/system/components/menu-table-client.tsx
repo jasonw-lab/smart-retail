@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit, ChevronRight, ChevronDown, Search, RotateCcw, X } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Edit,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  RotateCcw,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -25,7 +34,13 @@ import {
 } from '@/components/ui/select';
 import { useMenus, useDeleteMenu } from '../hooks/use-menu';
 import { MenuDialog } from './menu-dialog';
-import { MenuType, MenuTypeLabel, MenuTypeColor, type Menu, type MenuQuery } from '../types/menu';
+import {
+  MenuType,
+  MenuTypeLabel,
+  MenuTypeColor,
+  type Menu,
+  type MenuQuery,
+} from '../types/menu';
 
 interface MenuTableClientProps {
   initialData: Menu[];
@@ -42,7 +57,10 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
   const [keywords, setKeywords] = useState('');
   const [status, setStatus] = useState<string>('');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-  const [editTarget, setEditTarget] = useState<{ parentId?: number; menu?: Menu } | null>(null);
+  const [editTarget, setEditTarget] = useState<{
+    parentId?: number;
+    menu?: Menu;
+  } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('menu-management');
@@ -105,7 +123,9 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
     }
   };
 
-  const getTypeVariant = (type: number): 'warning' | 'success' | 'error' | 'info' => {
+  const getTypeVariant = (
+    type: number
+  ): 'warning' | 'success' | 'error' | 'info' => {
     switch (type) {
       case MenuType.CATALOG:
         return 'warning';
@@ -123,13 +143,17 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
   const renderMenuRow = (menu: Menu, level: number = 0): React.ReactNode => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isExpanded = expandedIds.has(menu.id);
-    const canAddChild = menu.type === MenuType.CATALOG || menu.type === MenuType.MENU;
+    const canAddChild =
+      menu.type === MenuType.CATALOG || menu.type === MenuType.MENU;
 
     return (
       <React.Fragment key={menu.id}>
         <TableRow>
           <TableCell>
-            <div className="flex items-center" style={{ paddingLeft: level * 24 }}>
+            <div
+              className="flex items-center"
+              style={{ paddingLeft: level * 24 }}
+            >
               {hasChildren && (
                 <Button
                   variant="ghost"
@@ -202,7 +226,9 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
             </div>
           </TableCell>
         </TableRow>
-        {hasChildren && isExpanded && menu.children!.map((child) => renderMenuRow(child, level + 1))}
+        {hasChildren &&
+          isExpanded &&
+          menu.children!.map((child) => renderMenuRow(child, level + 1))}
       </React.Fragment>
     );
   };
@@ -240,7 +266,9 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword Search</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Keyword Search
+              </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -250,8 +278,13 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
-              <Select value={status || 'all'} onValueChange={(v) => setStatus(v === 'all' ? '' : v)}>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Status
+              </span>
+              <Select
+                value={status || 'all'}
+                onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
@@ -263,7 +296,10 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
+              <Button
+                onClick={handleSearch}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -306,14 +342,20 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No menus found
                   </TableCell>
                 </TableRow>
@@ -362,9 +404,7 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
           <span>Server Load: 72%</span>
           <span>Sync Interval: 5m</span>
         </div>
-        <div>
-          2024 SmartRetail Pro V2.4.1
-        </div>
+        <div>2024 SmartRetail Pro V2.4.1</div>
       </div>
 
       {/* Dialogs */}

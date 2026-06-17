@@ -69,7 +69,11 @@ export function StoreTableClient({
   });
   const [deleteTarget, setDeleteTarget] = useState<Store | null>(null);
 
-  const { data = initialData, isLoading, isError } = useStores(params, {
+  const {
+    data = initialData,
+    isLoading,
+    isError,
+  } = useStores(params, {
     placeholderData: initialData,
   });
 
@@ -133,9 +137,7 @@ export function StoreTableClient({
       key: 'storeName',
       header: '店舗名',
       sortable: true,
-      render: (_, row) => (
-        <span className="font-medium">{row.storeName}</span>
-      ),
+      render: (_, row) => <span className="font-medium">{row.storeName}</span>,
     },
     {
       key: 'address',
@@ -177,9 +179,7 @@ export function StoreTableClient({
       key: 'manager',
       header: '担当者',
       width: '100px',
-      render: (_, row) => (
-        <span className="text-sm">{row.manager || '-'}</span>
-      ),
+      render: (_, row) => <span className="text-sm">{row.manager || '-'}</span>,
     },
     {
       key: 'todaySales',
@@ -188,7 +188,11 @@ export function StoreTableClient({
       align: 'right',
       sortable: true,
       render: (_, row) => (
-        <span className={row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'}>
+        <span
+          className={
+            row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'
+          }
+        >
           {row.status === StoreStatus.ACTIVE && row.todaySales != null
             ? formatCurrency(row.todaySales)
             : '-'}
@@ -201,9 +205,14 @@ export function StoreTableClient({
       width: '100px',
       align: 'center',
       render: (_, row) => {
-        if (!row.alertCount) return <span className="text-muted-foreground">-</span>;
-        const variant = row.highestAlertPriority === 1 ? 'error' :
-                       row.highestAlertPriority === 2 ? 'orange' : 'warning';
+        if (!row.alertCount)
+          return <span className="text-muted-foreground">-</span>;
+        const variant =
+          row.highestAlertPriority === 1
+            ? 'error'
+            : row.highestAlertPriority === 2
+              ? 'orange'
+              : 'warning';
         return (
           <StatusBadge variant={variant}>
             <AlertTriangle className="h-3 w-3" />
@@ -299,7 +308,8 @@ export function StoreTableClient({
       >
         {deleteTarget && (
           <p className="text-sm">
-            店舗名: <span className="font-medium">{deleteTarget.storeName}</span>
+            店舗名:{' '}
+            <span className="font-medium">{deleteTarget.storeName}</span>
           </p>
         )}
       </ConfirmDialog>

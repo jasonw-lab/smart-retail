@@ -35,40 +35,46 @@ const mockProducts = [
 
 export const productHandlers = [
   // 商品一覧
-  http.get('http://localhost:3001/api/proxy/retail/products/page', ({ request }) => {
-    const url = new URL(request.url);
-    const pageNum = Number(url.searchParams.get('pageNum')) || 1;
-    const pageSize = Number(url.searchParams.get('pageSize')) || 10;
-    const productName = url.searchParams.get('productName') || '';
+  http.get(
+    'http://localhost:3001/api/proxy/retail/products/page',
+    ({ request }) => {
+      const url = new URL(request.url);
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+      const productName = url.searchParams.get('productName') || '';
 
-    let filtered = [...mockProducts];
-    if (productName) {
-      filtered = filtered.filter((p) =>
-        p.productName.toLowerCase().includes(productName.toLowerCase())
-      );
+      let filtered = [...mockProducts];
+      if (productName) {
+        filtered = filtered.filter((p) =>
+          p.productName.toLowerCase().includes(productName.toLowerCase())
+        );
+      }
+
+      const start = (pageNum - 1) * pageSize;
+      const end = start + pageSize;
+      const list = filtered.slice(start, end);
+
+      return HttpResponse.json({
+        list,
+        total: filtered.length,
+      });
     }
-
-    const start = (pageNum - 1) * pageSize;
-    const end = start + pageSize;
-    const list = filtered.slice(start, end);
-
-    return HttpResponse.json({
-      list,
-      total: filtered.length,
-    });
-  }),
+  ),
 
   // 商品詳細
-  http.get('http://localhost:3001/api/proxy/retail/products/:id', ({ params }) => {
-    const id = Number(params.id);
-    const product = mockProducts.find((p) => p.id === id);
+  http.get(
+    'http://localhost:3001/api/proxy/retail/products/:id',
+    ({ params }) => {
+      const id = Number(params.id);
+      const product = mockProducts.find((p) => p.id === id);
 
-    if (!product) {
-      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      if (!product) {
+        return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+
+      return HttpResponse.json(product);
     }
-
-    return HttpResponse.json(product);
-  }),
+  ),
 
   // 商品作成
   http.post('http://localhost:3001/api/proxy/retail/products', () => {

@@ -154,7 +154,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 }
 
@@ -179,7 +181,11 @@
 
 /* Material Symbols font (optional - can use Lucide icons instead) */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
   vertical-align: middle;
 }
 
@@ -192,11 +198,15 @@
 
 /* Grid pattern for login page background */
 .grid-pattern {
-  background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+  background-image:
+    linear-gradient(#e2e8f0 1px, transparent 1px),
+    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 /* Login card shadow */
 .login-card-shadow {
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0px 1px 3px rgba(0, 0, 0, 0.05),
+    0px 10px 15px -3px rgba(0, 0, 0, 0.02);
 }

@@ -21,7 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCreateDept, useUpdateDept, useDeptOptions } from '../hooks/use-dept';
+import {
+  useCreateDept,
+  useUpdateDept,
+  useDeptOptions,
+} from '../hooks/use-dept';
 import type { Dept, DeptOption } from '../types/dept';
 
 const deptSchema = z.object({
@@ -91,7 +95,10 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const flattenOptions = (options: DeptOption[], level = 0): { value: number; label: string }[] => {
+  const flattenOptions = (
+    options: DeptOption[],
+    level = 0
+  ): { value: number; label: string }[] => {
     const result: { value: number; label: string }[] = [];
     for (const opt of options) {
       result.push({ value: opt.value, label: '　'.repeat(level) + opt.label });
@@ -102,7 +109,10 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
     return result;
   };
 
-  const flatOptions = [{ value: 0, label: 'トップレベル' }, ...flattenOptions(deptOptions)];
+  const flatOptions = [
+    { value: 0, label: 'トップレベル' },
+    ...flattenOptions(deptOptions),
+  ];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -133,17 +143,29 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="name">部門名 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="部門名を入力" />
+            <Input
+              id="name"
+              {...form.register('name')}
+              placeholder="部門名を入力"
+            />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.name.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="code">コード *</Label>
-            <Input id="code" {...form.register('code')} placeholder="例: SALES, HR" />
+            <Input
+              id="code"
+              {...form.register('code')}
+              placeholder="例: SALES, HR"
+            />
             {form.formState.errors.code && (
-              <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.code.message}
+              </p>
             )}
           </div>
 

@@ -2,11 +2,11 @@
  * アラート種別
  */
 export type AlertType =
-  | 'LOW_STOCK'        // 在庫切れ
-  | 'EXPIRING'         // 期限切れ間近
-  | 'OVERSTOCK'        // 在庫過多
-  | 'DEVICE_ERROR'     // 通信断
-  | 'PAYMENT_ERROR';   // 決済端末異常
+  | 'LOW_STOCK' // 在庫切れ
+  | 'EXPIRING' // 期限切れ間近
+  | 'OVERSTOCK' // 在庫過多
+  | 'DEVICE_ERROR' // 通信断
+  | 'PAYMENT_ERROR'; // 決済端末異常
 
 /**
  * 優先度レベル
@@ -30,7 +30,12 @@ export const AlertPriorityColor: Record<AlertPriority, string> = {
 /**
  * アラートカテゴリ
  */
-export type AlertCategory = '通信障害' | '冷蔵異常' | '在庫異常' | '決済異常' | 'その他';
+export type AlertCategory =
+  | '通信障害'
+  | '冷蔵異常'
+  | '在庫異常'
+  | '決済異常'
+  | 'その他';
 
 /**
  * アラートエンティティ

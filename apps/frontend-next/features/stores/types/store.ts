@@ -17,7 +17,10 @@ export const StoreStatusLabel: Record<StoreStatusType, string> = {
   INACTIVE: '停止中',
 };
 
-export const StoreStatusColor: Record<StoreStatusType, 'success' | 'warning' | 'error'> = {
+export const StoreStatusColor: Record<
+  StoreStatusType,
+  'success' | 'warning' | 'error'
+> = {
   ACTIVE: 'success',
   MAINTENANCE: 'warning',
   INACTIVE: 'error',

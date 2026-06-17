@@ -8,7 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DataTable, type Column } from '@/components/ui/data-table';
 import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency, formatRelativeTime, formatDateTime, formatPercent } from '@/lib/format';
+import {
+  formatCurrency,
+  formatRelativeTime,
+  formatDateTime,
+  formatPercent,
+} from '@/lib/format';
 import {
   Tooltip,
   TooltipContent,
@@ -58,9 +63,14 @@ export function TransactionTableClient({
     period: initialParams.period || 'today',
     orderNumber: initialParams.orderNumber || '',
   });
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
 
-  const { data = initialData, isLoading, isError } = useTransactions(params, {
+  const {
+    data = initialData,
+    isLoading,
+    isError,
+  } = useTransactions(params, {
     placeholderData: initialData,
   });
 
@@ -109,8 +119,12 @@ export function TransactionTableClient({
       ...params,
       pageNum: 1,
       orderNumber: filterValues.orderNumber || undefined,
-      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
-      paymentMethod: (filterValues.paymentMethod as TransactionQuery['paymentMethod']) || undefined,
+      storeId: filterValues.storeId
+        ? parseInt(filterValues.storeId, 10)
+        : undefined,
+      paymentMethod:
+        (filterValues.paymentMethod as TransactionQuery['paymentMethod']) ||
+        undefined,
       period: filterValues.period,
     };
     setParams(newParams);
@@ -118,8 +132,17 @@ export function TransactionTableClient({
   };
 
   const handleReset = () => {
-    setFilterValues({ storeId: '', paymentMethod: '', period: 'today', orderNumber: '' });
-    const newParams: TransactionQuery = { pageNum: 1, pageSize: params.pageSize, period: 'today' };
+    setFilterValues({
+      storeId: '',
+      paymentMethod: '',
+      period: 'today',
+      orderNumber: '',
+    });
+    const newParams: TransactionQuery = {
+      pageNum: 1,
+      pageSize: params.pageSize,
+      period: 'today',
+    };
     setParams(newParams);
     router.push(pathname);
   };
@@ -151,7 +174,14 @@ export function TransactionTableClient({
       header: '注文番号',
       width: '150px',
       render: (_, row) => (
-        <a href="#" className="font-mono text-sm text-primary hover:underline" onClick={(e) => { e.preventDefault(); setSelectedTransaction(row); }}>
+        <a
+          href="#"
+          className="font-mono text-sm text-primary hover:underline"
+          onClick={(e) => {
+            e.preventDefault();
+            setSelectedTransaction(row);
+          }}
+        >
           {row.orderNumber}
         </a>
       ),
@@ -229,9 +259,24 @@ export function TransactionTableClient({
   const totalAmount = data.summary?.totalAmount || 4820500;
   const totalCount = data.summary?.totalCount || 1248;
   const byPaymentMethod = data.summary?.byPaymentMethod || [
-    { method: 'CARD' as PaymentMethodType, amount: 2892300, count: 748, ratio: 60 },
-    { method: 'QR' as PaymentMethodType, amount: 1446150, count: 374, ratio: 30 },
-    { method: 'CASH' as PaymentMethodType, amount: 482050, count: 126, ratio: 10 },
+    {
+      method: 'CARD' as PaymentMethodType,
+      amount: 2892300,
+      count: 748,
+      ratio: 60,
+    },
+    {
+      method: 'QR' as PaymentMethodType,
+      amount: 1446150,
+      count: 374,
+      ratio: 30,
+    },
+    {
+      method: 'CASH' as PaymentMethodType,
+      amount: 482050,
+      count: 126,
+      ratio: 10,
+    },
   ];
 
   // Calculate previous period comparison (mock data for now)
@@ -249,8 +294,12 @@ export function TransactionTableClient({
               <TrendingUp className="h-4 w-4 text-success" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{formatCurrency(totalAmount)}</span>
-              <span className="text-sm text-success">{previousPeriodComparison}</span>
+              <span className="text-3xl font-bold">
+                {formatCurrency(totalAmount)}
+              </span>
+              <span className="text-sm text-success">
+                {previousPeriodComparison}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -263,8 +312,15 @@ export function TransactionTableClient({
               <Receipt className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-bold">{totalCount.toLocaleString()}<span className="text-lg font-normal text-muted-foreground ml-1">件</span></span>
-              <span className="text-sm text-muted-foreground mt-1">本日: {Math.round(totalCount * 0.1)}件</span>
+              <span className="text-3xl font-bold">
+                {totalCount.toLocaleString()}
+                <span className="text-lg font-normal text-muted-foreground ml-1">
+                  件
+                </span>
+              </span>
+              <span className="text-sm text-muted-foreground mt-1">
+                本日: {Math.round(totalCount * 0.1)}件
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -273,7 +329,9 @@ export function TransactionTableClient({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">決済方法分布</span>
+              <span className="text-sm text-muted-foreground">
+                決済方法分布
+              </span>
               <span className="text-xs text-muted-foreground">本日計</span>
             </div>
             <div className="space-y-3">
@@ -290,7 +348,11 @@ export function TransactionTableClient({
                     value={item.ratio}
                     className="h-2"
                     indicatorClassName={`bg-[${PaymentMethodColor[item.method]}]`}
-                    style={{ '--progress-color': PaymentMethodColor[item.method] } as React.CSSProperties}
+                    style={
+                      {
+                        '--progress-color': PaymentMethodColor[item.method],
+                      } as React.CSSProperties
+                    }
                   />
                 </div>
               ))}

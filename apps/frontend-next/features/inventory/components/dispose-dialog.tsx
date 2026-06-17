@@ -39,7 +39,12 @@ const disposeReasons = [
   { value: 'OTHER', label: 'その他' },
 ];
 
-export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogProps) {
+export function DisposeDialog({
+  inventory,
+  lot,
+  open,
+  onClose,
+}: DisposeDialogProps) {
   const dispose = useDispose();
 
   // デフォルト理由: 期限切れの場合は「期限切れ」
@@ -136,7 +141,10 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
             <Label>
               理由 <span className="text-destructive">*</span>
             </Label>
-            <Select value={form.reason} onValueChange={(v) => setForm({ ...form, reason: v })}>
+            <Select
+              value={form.reason}
+              onValueChange={(v) => setForm({ ...form, reason: v })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="理由を選択" />
               </SelectTrigger>
@@ -164,7 +172,11 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
             <Button type="button" variant="outline" onClick={onClose}>
               キャンセル
             </Button>
-            <Button type="submit" variant="destructive" disabled={dispose.isPending}>
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={dispose.isPending}
+            >
               {dispose.isPending ? '登録中...' : '登録'}
             </Button>
           </DialogFooter>

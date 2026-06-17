@@ -17,6 +17,8 @@ export const roleApiServer = {
     if (params.keywords) {
       searchParams.set('keywords', params.keywords);
     }
-    return fetchFromBackend<RolePageResult>(`roles/page?${searchParams.toString()}`);
+    return fetchFromBackend<RolePageResult>(
+      `roles/page?${searchParams.toString()}`
+    );
   },
 };

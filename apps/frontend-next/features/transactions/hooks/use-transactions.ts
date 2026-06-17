@@ -2,7 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { transactionApiClient } from '../lib/transaction-api.client';
-import type { TransactionQuery, TransactionPageResult } from '../types/transaction';
+import type {
+  TransactionQuery,
+  TransactionPageResult,
+} from '../types/transaction';
 
 /**
  * Query Keys for transactions
@@ -10,7 +13,8 @@ import type { TransactionQuery, TransactionPageResult } from '../types/transacti
 export const transactionKeys = {
   all: ['transactions'] as const,
   lists: () => [...transactionKeys.all, 'list'] as const,
-  list: (params: TransactionQuery) => [...transactionKeys.lists(), params] as const,
+  list: (params: TransactionQuery) =>
+    [...transactionKeys.lists(), params] as const,
   details: () => [...transactionKeys.all, 'detail'] as const,
   detail: (id: number) => [...transactionKeys.details(), id] as const,
 };

@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getLocalMockUserFromToken } from '@/lib/auth/mock-auth';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -7,6 +8,19 @@ interface ApiResponse<T> {
   code: string;
   msg: string;
   data: T;
+}
+
+/**
+ * redirect()が投げるエラーかどうかを判定
+ * Next.jsのredirect()はNEXT_REDIRECTというdigestを持つエラーを投げる
+ */
+export function isRedirectError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'digest' in error &&
+    typeof (error as { digest?: string }).digest === 'string' &&
+    (error as { digest: string }).digest.startsWith('NEXT_REDIRECT')
+  );
 }
 
 /**
@@ -23,6 +37,11 @@ export async function fetchFromBackend<T>(
 
   if (!accessToken) {
     redirect('/login');
+  }
+
+  const mockUser = getLocalMockUserFromToken(accessToken);
+  if (mockUser && path === 'users/me') {
+    return mockUser as T;
   }
 
   const url = `${BACKEND_URL}/${path}`;
@@ -46,7 +65,9 @@ export async function fetchFromBackend<T>(
   }
 
   if (!response.ok) {
-    throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Backend API error: ${response.status} ${response.statusText}`
+    );
   }
 
   const result: ApiResponse<T> = await response.json();
@@ -75,7 +96,9 @@ export async function fetchFromBackendPublic<T>(
   });
 
   if (!response.ok) {
-    throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Backend API error: ${response.status} ${response.statusText}`
+    );
   }
 
   const result: ApiResponse<T> = await response.json();

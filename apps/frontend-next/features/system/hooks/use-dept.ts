@@ -47,7 +47,8 @@ export function useCreateDept() {
 export function useUpdateDept() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DeptForm }) => updateDept(id, data),
+    mutationFn: ({ id, data }: { id: number; data: DeptForm }) =>
+      updateDept(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['depts'] });
       queryClient.invalidateQueries({ queryKey: ['dept-options'] });

@@ -31,7 +31,9 @@ export const productApiClient = {
     if (params.status !== undefined) {
       searchParams.set('status', String(params.status));
     }
-    return fetchApi<ProductPageResult>(`${BASE_URL}/page?${searchParams.toString()}`);
+    return fetchApi<ProductPageResult>(
+      `${BASE_URL}/page?${searchParams.toString()}`
+    );
   },
 
   /**

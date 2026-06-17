@@ -99,17 +99,29 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">役割名 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="役割名を入力" />
+            <Input
+              id="name"
+              {...form.register('name')}
+              placeholder="役割名を入力"
+            />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.name.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="code">コード *</Label>
-            <Input id="code" {...form.register('code')} placeholder="例: ADMIN, USER" />
+            <Input
+              id="code"
+              {...form.register('code')}
+              placeholder="例: ADMIN, USER"
+            />
             {form.formState.errors.code && (
-              <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.code.message}
+              </p>
             )}
           </div>
 

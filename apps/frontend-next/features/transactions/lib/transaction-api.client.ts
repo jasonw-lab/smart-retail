@@ -22,7 +22,9 @@ export const transactionApiClient = {
     if (params.startDate) searchParams.set('startDate', params.startDate);
     if (params.endDate) searchParams.set('endDate', params.endDate);
 
-    return fetchApi<TransactionPageResult>(`${BASE_URL}?${searchParams.toString()}`);
+    return fetchApi<TransactionPageResult>(
+      `${BASE_URL}?${searchParams.toString()}`
+    );
   },
 
   /**

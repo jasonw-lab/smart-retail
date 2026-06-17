@@ -22,20 +22,31 @@ interface SubscriptionRequest {
 export function useStomp(options: UseStompOptions) {
   const clientRef = useRef<Client | null>(null);
   const pendingSubscriptionsRef = useRef<SubscriptionRequest[]>([]);
-  const activeSubscriptionsRef = useRef<Map<string, StompSubscription>>(new Map());
+  const activeSubscriptionsRef = useRef<Map<string, StompSubscription>>(
+    new Map()
+  );
 
   // Store callbacks in refs to avoid re-renders
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const { setConnected, setReconnectCount, incrementReconnectCount } = useConnectionStore();
+  const { setConnected, setReconnectCount, incrementReconnectCount } =
+    useConnectionStore();
 
-  const stableOptions = useMemo(() => ({
-    brokerURL: options.brokerURL,
-    reconnectDelay: options.reconnectDelay ?? 15000,
-    maxReconnectAttempts: options.maxReconnectAttempts ?? 3,
-    debug: options.debug ?? false,
-  }), [options.brokerURL, options.reconnectDelay, options.maxReconnectAttempts, options.debug]);
+  const stableOptions = useMemo(
+    () => ({
+      brokerURL: options.brokerURL,
+      reconnectDelay: options.reconnectDelay ?? 15000,
+      maxReconnectAttempts: options.maxReconnectAttempts ?? 3,
+      debug: options.debug ?? false,
+    }),
+    [
+      options.brokerURL,
+      options.reconnectDelay,
+      options.maxReconnectAttempts,
+      options.debug,
+    ]
+  );
 
   // 接続チケットを取得してaccessTokenに交換
   const getConnectionToken = useCallback(async (): Promise<string | null> => {
@@ -129,7 +140,9 @@ export function useStomp(options: UseStompOptions) {
       const reconnectCount = useConnectionStore.getState().reconnectCount;
       if (reconnectCount < stableOptions.maxReconnectAttempts) {
         incrementReconnectCount();
-        console.log(`再接続試行 (${reconnectCount + 1}/${stableOptions.maxReconnectAttempts})`);
+        console.log(
+          `再接続試行 (${reconnectCount + 1}/${stableOptions.maxReconnectAttempts})`
+        );
 
         setTimeout(async () => {
           // 再接続時は新しいトークンを取得
@@ -172,28 +185,34 @@ export function useStomp(options: UseStompOptions) {
   }, [setConnected, setReconnectCount]);
 
   // 購読登録（接続前でも呼び出し可能）
-  const subscribe = useCallback((destination: string, callback: (message: IMessage) => void) => {
-    // 既に購読済みの場合はスキップ
-    if (activeSubscriptionsRef.current.has(destination)) {
-      console.log(`既に購読中: ${destination}`);
-      return;
-    }
-
-    if (clientRef.current?.connected) {
-      // 接続済みなら即座に購読
-      try {
-        const subscription = clientRef.current.subscribe(destination, callback);
-        activeSubscriptionsRef.current.set(destination, subscription);
-        console.log(`購読成功: ${destination}`);
-      } catch (error) {
-        console.error(`購読失敗(${destination}):`, error);
+  const subscribe = useCallback(
+    (destination: string, callback: (message: IMessage) => void) => {
+      // 既に購読済みの場合はスキップ
+      if (activeSubscriptionsRef.current.has(destination)) {
+        console.log(`既に購読中: ${destination}`);
+        return;
       }
-    } else {
-      // 未接続なら保留リストに追加
-      pendingSubscriptionsRef.current.push({ destination, callback });
-      console.log(`購読保留: ${destination}`);
-    }
-  }, []);
+
+      if (clientRef.current?.connected) {
+        // 接続済みなら即座に購読
+        try {
+          const subscription = clientRef.current.subscribe(
+            destination,
+            callback
+          );
+          activeSubscriptionsRef.current.set(destination, subscription);
+          console.log(`購読成功: ${destination}`);
+        } catch (error) {
+          console.error(`購読失敗(${destination}):`, error);
+        }
+      } else {
+        // 未接続なら保留リストに追加
+        pendingSubscriptionsRef.current.push({ destination, callback });
+        console.log(`購読保留: ${destination}`);
+      }
+    },
+    []
+  );
 
   const unsubscribe = useCallback((destination: string) => {
     const subscription = activeSubscriptionsRef.current.get(destination);

@@ -1,7 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -107,10 +114,13 @@ export function DataTable<T>({
     onSelectionChange(newSet);
   };
 
-  const allSelected = data.length > 0 && data.every((row) => selectedKeys.has(getRowKey(row)));
+  const allSelected =
+    data.length > 0 && data.every((row) => selectedKeys.has(getRowKey(row)));
   const someSelected = data.some((row) => selectedKeys.has(getRowKey(row)));
 
-  const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 0;
+  const totalPages = pagination
+    ? Math.ceil(pagination.total / pagination.pageSize)
+    : 0;
 
   return (
     <div className="flex flex-col">
@@ -126,7 +136,9 @@ export function DataTable<T>({
                     onCheckedChange={handleSelectAll}
                     className="border-outline-variant text-primary"
                     aria-label="Select all"
-                    {...(someSelected && !allSelected ? { 'data-state': 'indeterminate' } : {})}
+                    {...(someSelected && !allSelected
+                      ? { 'data-state': 'indeterminate' }
+                      : {})}
                   />
                 </TableHead>
               )}
@@ -138,7 +150,8 @@ export function DataTable<T>({
                     'p-4 border-b border-outline-variant text-xs font-semibold text-on-surface-variant',
                     column.align === 'center' && 'text-center',
                     column.align === 'right' && 'text-right',
-                    column.sticky && 'sticky right-0 bg-surface shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]'
+                    column.sticky &&
+                      'sticky right-0 bg-surface shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]'
                   )}
                 >
                   {column.sortable && onSort ? (
@@ -221,7 +234,9 @@ export function DataTable<T>({
                         )}
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={(checked) => handleSelectRow(rowKey, !!checked)}
+                          onCheckedChange={(checked) =>
+                            handleSelectRow(rowKey, !!checked)
+                          }
                           onClick={(e) => e.stopPropagation()}
                           className="border-outline-variant text-primary"
                           aria-label="Select row"
@@ -237,7 +252,9 @@ export function DataTable<T>({
                       </td>
                     )}
                     {columns.map((column) => {
-                      const value = (row as Record<string, unknown>)[column.key];
+                      const value = (row as Record<string, unknown>)[
+                        column.key
+                      ];
                       return (
                         <TableCell
                           key={column.key}
@@ -245,7 +262,8 @@ export function DataTable<T>({
                             'p-4 text-sm',
                             column.align === 'center' && 'text-center',
                             column.align === 'right' && 'text-right',
-                            column.sticky && 'sticky right-0 bg-surface group-hover:bg-surface-container-low transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]'
+                            column.sticky &&
+                              'sticky right-0 bg-surface group-hover:bg-surface-container-low transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]'
                           )}
                         >
                           {column.render
@@ -271,17 +289,21 @@ export function DataTable<T>({
             {pagination.onPageSizeChange && (
               <Select
                 value={String(pagination.pageSize)}
-                onValueChange={(value) => pagination.onPageSizeChange?.(Number(value))}
+                onValueChange={(value) =>
+                  pagination.onPageSizeChange?.(Number(value))
+                }
               >
                 <SelectTrigger className="h-8 w-24 text-xs bg-surface border-outline-variant">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map((size) => (
-                    <SelectItem key={size} value={String(size)}>
-                      {size}/page
-                    </SelectItem>
-                  ))}
+                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map(
+                    (size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size}/page
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             )}

@@ -11,7 +11,8 @@ export const InventoryStatus = {
   NORMAL: 'NORMAL',
 } as const;
 
-export type InventoryStatusType = (typeof InventoryStatus)[keyof typeof InventoryStatus];
+export type InventoryStatusType =
+  (typeof InventoryStatus)[keyof typeof InventoryStatus];
 
 export const InventoryStatusLabel: Record<InventoryStatusType, string> = {
   EXPIRED: '期限切れ',
@@ -21,7 +22,10 @@ export const InventoryStatusLabel: Record<InventoryStatusType, string> = {
   NORMAL: '正常',
 };
 
-export const InventoryStatusColor: Record<InventoryStatusType, 'error' | 'orange' | 'warning' | 'success'> = {
+export const InventoryStatusColor: Record<
+  InventoryStatusType,
+  'error' | 'orange' | 'warning' | 'success'
+> = {
   EXPIRED: 'error',
   OUT_OF_STOCK: 'error',
   EXPIRING: 'orange',
@@ -106,7 +110,8 @@ export const StockHistoryType = {
   SALE: 'SALE',
 } as const;
 
-export type StockHistoryTypeType = (typeof StockHistoryType)[keyof typeof StockHistoryType];
+export type StockHistoryTypeType =
+  (typeof StockHistoryType)[keyof typeof StockHistoryType];
 
 export const StockHistoryTypeLabel: Record<StockHistoryTypeType, string> = {
   IN: '入庫',

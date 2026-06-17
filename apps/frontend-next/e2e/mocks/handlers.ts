@@ -366,7 +366,10 @@ function apiResponse<T>(data: T) {
 export const handlers = [
   // Auth: Login
   http.post(`${BACKEND_URL}/auth/login`, async ({ request }) => {
-    const body = await request.json() as { username: string; password: string };
+    const body = (await request.json()) as {
+      username: string;
+      password: string;
+    };
     const user = Object.values(mockUsers).find(
       (u) => u.username === body.username && u.password === body.password
     );
@@ -399,7 +402,8 @@ export const handlers = [
     // Extract username from token
     const match = authHeader.match(/mock_token_(\w+)_/);
     const username = match?.[1] || 'admin';
-    const user = mockUsers[username as keyof typeof mockUsers] || mockUsers.admin;
+    const user =
+      mockUsers[username as keyof typeof mockUsers] || mockUsers.admin;
 
     return apiResponse({
       userId: user.userId,
@@ -472,18 +476,25 @@ export const handlers = [
   }),
 
   // Products: Update
-  http.put(`${BACKEND_URL}/retail/products/:id`, async ({ params, request }) => {
-    const id = Number(params.id);
-    const body = await request.json();
-    const product = mockProducts.find((p) => p.id === id);
-    if (!product) {
-      return HttpResponse.json(
-        { code: 'B0001', msg: 'Product not found', data: null },
-        { status: 404 }
-      );
+  http.put(
+    `${BACKEND_URL}/retail/products/:id`,
+    async ({ params, request }) => {
+      const id = Number(params.id);
+      const body = await request.json();
+      const product = mockProducts.find((p) => p.id === id);
+      if (!product) {
+        return HttpResponse.json(
+          { code: 'B0001', msg: 'Product not found', data: null },
+          { status: 404 }
+        );
+      }
+      return apiResponse({
+        ...product,
+        ...body,
+        updateTime: new Date().toISOString(),
+      });
     }
-    return apiResponse({ ...product, ...body, updateTime: new Date().toISOString() });
-  }),
+  ),
 
   // Products: Delete
   http.delete(`${BACKEND_URL}/retail/products/:id`, ({ params }) => {
@@ -513,6 +524,11 @@ export const handlers = [
     const list = mockStores.slice(start, start + pageSize);
 
     return apiResponse({ list, total: mockStores.length });
+  }),
+
+  // Stores: List all (for select boxes)
+  http.get(`${BACKEND_URL}/retail/stores/list`, () => {
+    return apiResponse(mockStores);
   }),
 
   // Devices: List with pagination
@@ -674,7 +690,8 @@ export const handlers = [
   http.get(`${BACKEND_URL}/auth/captcha`, () => {
     return apiResponse({
       captchaId: `mock_captcha_${Date.now()}`,
-      captchaBase64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      captchaBase64:
+        'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iNDAiPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iNDAiIGZpbGw9IiNmMGYwZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzMyI+QTFCMjwvdGV4dD48L3N2Zz4=',
     });
   }),
 ];

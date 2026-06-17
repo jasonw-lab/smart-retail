@@ -1,5 +1,13 @@
 import type { PageQuery, PageResult } from '@/types/api';
-import { CreditCard, Camera, DoorOpen, Thermometer, Printer, Wifi, type LucideIcon } from 'lucide-react';
+import {
+  CreditCard,
+  Camera,
+  DoorOpen,
+  Thermometer,
+  Printer,
+  Wifi,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * デバイス種別
@@ -52,7 +60,10 @@ export const DeviceStatusLabel: Record<DeviceStatusType, string> = {
   MAINTENANCE: 'メンテナンス',
 };
 
-export const DeviceStatusColor: Record<DeviceStatusType, 'success' | 'error' | 'warning' | 'muted'> = {
+export const DeviceStatusColor: Record<
+  DeviceStatusType,
+  'success' | 'error' | 'warning' | 'muted'
+> = {
   ONLINE: 'success',
   OFFLINE: 'error',
   ERROR: 'warning',

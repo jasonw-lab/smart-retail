@@ -28,9 +28,15 @@ test.describe('認証フロー', () => {
     await page.click('button[type="submit"]');
 
     // 英語バリデーションメッセージ (zod schema)
-    await expect(page.locator('text=Username is required')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=Password is required')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=Verification code is required')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Username is required')).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.locator('text=Password is required')).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(
+      page.locator('text=Verification code is required')
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('ユーザー名のみ入力でバリデーションエラー', async ({ page }) => {
@@ -43,17 +49,23 @@ test.describe('認証フロー', () => {
     await page.fill('input[id="captchaCode"]', '');
     await page.click('button[type="submit"]');
 
-    await expect(page.locator('text=Password is required')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Password is required')).toBeVisible({
+      timeout: 5000,
+    });
   });
 
-  test('未認証でダッシュボードにアクセスするとログインページにリダイレクト', async ({ page }) => {
+  test('未認証でダッシュボードにアクセスするとログインページにリダイレクト', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     // ログインページにリダイレクトされる
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('未認証で商品ページにアクセスするとログインページにリダイレクト', async ({ page }) => {
+  test('未認証で商品ページにアクセスするとログインページにリダイレクト', async ({
+    page,
+  }) => {
     await page.goto('/products');
 
     await expect(page).toHaveURL(/\/login/);

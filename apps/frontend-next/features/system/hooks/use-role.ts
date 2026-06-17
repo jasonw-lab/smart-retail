@@ -50,7 +50,8 @@ export function useCreateRole() {
 export function useUpdateRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: RoleForm }) => updateRole(id, data),
+    mutationFn: ({ id, data }: { id: number; data: RoleForm }) =>
+      updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] });
       queryClient.invalidateQueries({ queryKey: ['role-options'] });

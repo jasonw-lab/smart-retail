@@ -22,7 +22,11 @@ interface ReplenishDialogProps {
   onClose: () => void;
 }
 
-export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogProps) {
+export function ReplenishDialog({
+  inventory,
+  open,
+  onClose,
+}: ReplenishDialogProps) {
   const replenish = useReplenish();
   const [form, setForm] = useState({
     quantity: '',

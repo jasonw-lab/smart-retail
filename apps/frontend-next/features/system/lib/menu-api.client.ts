@@ -17,8 +17,12 @@ export async function getMenu(id: number): Promise<Menu> {
   return res.json();
 }
 
-export async function getMenuOptions(onlyParent?: boolean): Promise<MenuOption[]> {
-  const url = onlyParent ? `${BASE_URL}/options?onlyParent=true` : `${BASE_URL}/options`;
+export async function getMenuOptions(
+  onlyParent?: boolean
+): Promise<MenuOption[]> {
+  const url = onlyParent
+    ? `${BASE_URL}/options?onlyParent=true`
+    : `${BASE_URL}/options`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch menu options');
   return res.json();

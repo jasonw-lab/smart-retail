@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Edit, KeyRound, Upload, Download, Search, RotateCcw } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Edit,
+  KeyRound,
+  Upload,
+  Download,
+  Search,
+  RotateCcw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -27,20 +36,30 @@ import { useUsers, useDeleteUsers } from '../hooks/use-user';
 import { UserDialog } from './user-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
 import { DeptTree } from './dept-tree';
-import { GenderLabel, type User, type UserQuery, type UserPageResult } from '../types/user';
+import {
+  GenderLabel,
+  type User,
+  type UserQuery,
+  type UserPageResult,
+} from '../types/user';
 
 interface UserTableClientProps {
   initialData: UserPageResult;
   initialParams: UserQuery;
 }
 
-export function UserTableClient({ initialData, initialParams }: UserTableClientProps) {
+export function UserTableClient({
+  initialData,
+  initialParams,
+}: UserTableClientProps) {
   const [params, setParams] = useState<UserQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [status, setStatus] = useState<string>(
     initialParams.status !== undefined ? String(initialParams.status) : ''
   );
-  const [deptId, setDeptId] = useState<number | undefined>(initialParams.deptId);
+  const [deptId, setDeptId] = useState<number | undefined>(
+    initialParams.deptId
+  );
   const [startTime, setStartTime] = useState(initialParams.startTime || '');
   const [endTime, setEndTime] = useState(initialParams.endTime || '');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -130,7 +149,9 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
           <CardContent className="py-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Keyword
+                </span>
                 <Input
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
@@ -140,8 +161,13 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
-                <Select value={status || 'all'} onValueChange={(v) => setStatus(v === 'all' ? '' : v)}>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Status
+                </span>
+                <Select
+                  value={status || 'all'}
+                  onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
+                >
                   <SelectTrigger className="w-24">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
@@ -153,7 +179,9 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Creation Date Range</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Creation Date Range
+                </span>
                 <Input
                   type="date"
                   value={startTime}
@@ -171,7 +199,10 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
+                <Button
+                  onClick={handleSearch}
+                  className="bg-teal-600 hover:bg-teal-700"
+                >
                   <Search className="mr-1 h-4 w-4" />
                   Search
                 </Button>
@@ -205,7 +236,10 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
               <Trash2 className="mr-1 h-4 w-4" />
               Bulk Delete
             </Button>
-            <Button variant="outline" className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
+            <Button
+              variant="outline"
+              className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
+            >
               <Upload className="mr-1 h-4 w-4" />
               Import
             </Button>
@@ -225,7 +259,10 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 <TableRow className="bg-muted/50">
                   <TableHead className="w-12">
                     <Checkbox
-                      checked={displayData.list.length > 0 && selectedIds.length === displayData.list.length}
+                      checked={
+                        displayData.list.length > 0 &&
+                        selectedIds.length === displayData.list.length
+                      }
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
@@ -241,14 +278,20 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={8}
+                      className="h-24 text-center text-muted-foreground"
+                    >
                       Loading...
                     </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && displayData.list.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={8}
+                      className="h-24 text-center text-muted-foreground"
+                    >
                       No users found
                     </TableCell>
                   </TableRow>
@@ -259,20 +302,30 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                       <TableCell>
                         <Checkbox
                           checked={selectedIds.includes(user.id)}
-                          onCheckedChange={(checked) => handleSelectOne(user.id, !!checked)}
+                          onCheckedChange={(checked) =>
+                            handleSelectOne(user.id, !!checked)
+                          }
                         />
                       </TableCell>
-                      <TableCell className="font-medium">{user.username}</TableCell>
+                      <TableCell className="font-medium">
+                        {user.username}
+                      </TableCell>
                       <TableCell>{user.nickname}</TableCell>
                       <TableCell>
-                        <StatusBadge variant={user.gender === 1 ? 'info' : 'warning'}>
+                        <StatusBadge
+                          variant={user.gender === 1 ? 'info' : 'warning'}
+                        >
                           {GenderLabel[user.gender] || '-'}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>{user.deptName || '-'}</TableCell>
-                      <TableCell className="font-mono text-sm">{user.mobile || '-'}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {user.mobile || '-'}
+                      </TableCell>
                       <TableCell>
-                        <StatusBadge variant={user.status === 1 ? 'success' : 'muted'}>
+                        <StatusBadge
+                          variant={user.status === 1 ? 'success' : 'muted'}
+                        >
                           {user.status === 1 ? 'ye' : 'no'}
                         </StatusBadge>
                       </TableCell>
@@ -319,7 +372,8 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {(params.pageNum - 1) * params.pageSize + 1} to{' '}
-              {Math.min(params.pageNum * params.pageSize, displayData.total)} of {displayData.total} entries
+              {Math.min(params.pageNum * params.pageSize, displayData.total)} of{' '}
+              {displayData.total} entries
             </p>
             <div className="flex items-center gap-2">
               <Button

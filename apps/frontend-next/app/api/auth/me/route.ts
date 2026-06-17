@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { getLocalMockUserFromToken } from '@/lib/auth/mock-auth';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -24,10 +25,12 @@ export async function GET() {
     const accessToken = cookieStore.get('access_token')?.value;
 
     if (!accessToken) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mockUser = getLocalMockUserFromToken(accessToken);
+    if (mockUser) {
+      return NextResponse.json(mockUser);
     }
 
     // Backend user info API呼び出し

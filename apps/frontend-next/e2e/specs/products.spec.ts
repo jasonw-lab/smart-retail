@@ -43,7 +43,9 @@ test.describe('商品管理UI構造', () => {
     await expect(page.locator('form')).toBeVisible({ timeout: 10000 });
 
     // 送信ボタンが存在する
-    await expect(page.locator('button[type="submit"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('button[type="submit"]')).toBeVisible({
+      timeout: 10000,
+    });
   });
 });
 
@@ -64,6 +66,12 @@ test.describe('商品フォームバリデーション', () => {
 
     // バリデーションエラーが表示される（エラー要素の存在確認）
     // 具体的なテキストではなく、エラー表示の存在を確認
-    await expect(page.locator('[class*="error"], [class*="Error"], .text-error, .text-destructive').first()).toBeVisible({ timeout: 5000 });
+    await expect(
+      page
+        .locator(
+          '[class*="error"], [class*="Error"], .text-error, .text-destructive'
+        )
+        .first()
+    ).toBeVisible({ timeout: 5000 });
   });
 });

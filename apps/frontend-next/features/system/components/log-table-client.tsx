@@ -45,13 +45,16 @@ const MODULE_COLORS: Record<string, string> = {
   'Login Events': '#2dd4bf',
   'Inventory Updates': '#f97316',
   'System Config': '#ef4444',
-  'User': '#3b82f6',
-  'Product': '#22c55e',
-  'Role': '#8b5cf6',
-  'Alert': '#ec4899',
+  User: '#3b82f6',
+  Product: '#22c55e',
+  Role: '#8b5cf6',
+  Alert: '#ec4899',
 };
 
-export function LogTableClient({ initialData, initialParams }: LogTableClientProps) {
+export function LogTableClient({
+  initialData,
+  initialParams,
+}: LogTableClientProps) {
   const [params, setParams] = useState<LogQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [startTime, setStartTime] = useState(initialParams.startTime || '');
@@ -110,7 +113,9 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
 
   const totalPages = Math.ceil((displayData.total || 0) / params.pageSize);
 
-  const getModuleBadgeVariant = (module: string): 'warning' | 'success' | 'error' | 'info' => {
+  const getModuleBadgeVariant = (
+    module: string
+  ): 'warning' | 'success' | 'error' | 'info' => {
     switch (module) {
       case 'DICTIONARY':
         return 'warning';
@@ -136,7 +141,9 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Keyword
+              </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -146,7 +153,9 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Operation Time Range</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Operation Time Range
+              </span>
               <Input
                 type="date"
                 value={startTime}
@@ -164,7 +173,10 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
+              <Button
+                onClick={handleSearch}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -200,14 +212,20 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No logs found
                   </TableCell>
                 </TableRow>
@@ -215,7 +233,9 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               {!isLoading &&
                 displayData.list.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-sm font-mono">{log.createTime}</TableCell>
+                    <TableCell className="text-sm font-mono">
+                      {log.createTime}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <span className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs">
@@ -229,11 +249,18 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
                         {log.module}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell className="max-w-[300px] truncate text-sm" title={log.content}>
+                    <TableCell
+                      className="max-w-[300px] truncate text-sm"
+                      title={log.content}
+                    >
                       {log.content}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{log.ip}</TableCell>
-                    <TableCell className="text-sm">{log.region || '0.0'}</TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {log.ip}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {log.region || '0.0'}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <Globe className="h-4 w-4 text-muted-foreground" />
@@ -291,7 +318,11 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
             })}
             {totalPages > 5 && <span className="px-2">...</span>}
             {totalPages > 5 && (
-              <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+              >
                 {totalPages}
               </Button>
             )}
@@ -338,11 +369,27 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={moduleStats.length > 0 ? moduleStats : [
-                        { name: 'Login Events', value: 24, color: '#2dd4bf' },
-                        { name: 'Inventory Updates', value: 47, color: '#f97316' },
-                        { name: 'System Config', value: 12, color: '#ef4444' },
-                      ]}
+                      data={
+                        moduleStats.length > 0
+                          ? moduleStats
+                          : [
+                              {
+                                name: 'Login Events',
+                                value: 24,
+                                color: '#2dd4bf',
+                              },
+                              {
+                                name: 'Inventory Updates',
+                                value: 47,
+                                color: '#f97316',
+                              },
+                              {
+                                name: 'System Config',
+                                value: 12,
+                                color: '#ef4444',
+                              },
+                            ]
+                      }
                       cx="50%"
                       cy="50%"
                       innerRadius={30}
@@ -350,11 +397,26 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
                       paddingAngle={2}
                       dataKey="value"
                     >
-                      {(moduleStats.length > 0 ? moduleStats : [
-                        { name: 'Login Events', value: 24, color: '#2dd4bf' },
-                        { name: 'Inventory Updates', value: 47, color: '#f97316' },
-                        { name: 'System Config', value: 12, color: '#ef4444' },
-                      ]).map((entry, index) => (
+                      {(moduleStats.length > 0
+                        ? moduleStats
+                        : [
+                            {
+                              name: 'Login Events',
+                              value: 24,
+                              color: '#2dd4bf',
+                            },
+                            {
+                              name: 'Inventory Updates',
+                              value: 47,
+                              color: '#f97316',
+                            },
+                            {
+                              name: 'System Config',
+                              value: 12,
+                              color: '#ef4444',
+                            },
+                          ]
+                      ).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -422,7 +484,7 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
 
       {/* Footer */}
       <div className="text-center text-sm text-muted-foreground py-4 border-t">
-        2026 SmartRetail Pro Management System. All rights reserved.
+        2026 SmartRetail Pro Management System. jason.w All rights reserved.
       </div>
     </div>
   );

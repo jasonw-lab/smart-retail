@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard,
   Package,
   Store,
-  Monitor,
   Boxes,
-  CreditCard,
   Bell,
   ChevronLeft,
   ChevronRight,
@@ -22,10 +20,8 @@ import {
   FileText,
   ChevronDown,
   LogOut,
-  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
   TooltipContent,
@@ -35,36 +31,36 @@ import {
 import { useAppStore } from '@/store/app-store';
 
 interface NavItem {
-  title: string;
+  titleKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   children?: NavItem[];
 }
 
 interface NavSection {
-  title: string;
+  titleKey: string;
   items: NavItem[];
 }
 
 const navSections: NavSection[] = [
   {
-    title: '',
+    titleKey: '',
     items: [
-      { title: 'Dashboard', href: '/', icon: LayoutDashboard },
-      { title: 'Store Management', href: '/stores', icon: Store },
-      { title: 'Product/Inventory', href: '/inventory', icon: Boxes },
-      { title: 'Alert Information', href: '/alerts', icon: Bell },
+      { titleKey: 'dashboard', href: '/', icon: LayoutDashboard },
+      { titleKey: 'stores', href: '/stores', icon: Store },
+      { titleKey: 'inventory', href: '/inventory', icon: Boxes },
+      { titleKey: 'alerts', href: '/alerts', icon: Bell },
     ],
   },
   {
-    title: 'System Management',
+    titleKey: 'system',
     items: [
-      { title: 'User Management', href: '/system/user', icon: Users },
-      { title: 'Role Management', href: '/system/role', icon: Shield },
-      { title: 'Menu Management', href: '/system/menu', icon: Menu },
-      { title: 'Dept Management', href: '/system/dept', icon: Building2 },
-      { title: 'Dict Management', href: '/system/dict', icon: Book },
-      { title: 'Logs', href: '/system/log', icon: FileText },
+      { titleKey: 'user', href: '/system/user', icon: Users },
+      { titleKey: 'role', href: '/system/role', icon: Shield },
+      { titleKey: 'menu', href: '/system/menu', icon: Menu },
+      { titleKey: 'dept', href: '/system/dept', icon: Building2 },
+      { titleKey: 'dict', href: '/system/dict', icon: Book },
+      { titleKey: 'log', href: '/system/log', icon: FileText },
     ],
   },
 ];
@@ -74,14 +70,19 @@ function NavItemComponent({
   pathname,
   collapsed,
   isSubItem = false,
+  t,
 }: {
   item: NavItem;
   pathname: string;
   collapsed: boolean;
   isSubItem?: boolean;
+  t: (key: string) => string;
 }) {
-  const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+  const isActive =
+    pathname === item.href ||
+    (item.href !== '/' && pathname.startsWith(item.href));
   const Icon = item.icon;
+  const title = t(item.titleKey);
 
   if (collapsed) {
     return (
@@ -99,7 +100,7 @@ function NavItemComponent({
             <Icon className="h-5 w-5" />
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{item.title}</TooltipContent>
+        <TooltipContent side="right">{title}</TooltipContent>
       </Tooltip>
     );
   }
@@ -116,7 +117,7 @@ function NavItemComponent({
       )}
     >
       <Icon className={cn('h-5 w-5', isSubItem && 'h-4 w-4')} />
-      <span className="text-sm">{item.title}</span>
+      <span className="text-sm">{title}</span>
     </Link>
   );
 }
@@ -126,6 +127,9 @@ export function Sidebar() {
   const router = useRouter();
   const { sidebarCollapsed, toggleSidebarCollapse } = useAppStore();
   const [systemExpanded, setSystemExpanded] = useState(false);
+  const t = useTranslations('navigation');
+  const tAuth = useTranslations('auth');
+  const tCommon = useTranslations('common');
 
   // Auto-expand system menu when on system pages
   useEffect(() => {
@@ -150,10 +154,17 @@ export function Sidebar() {
         )}
       >
         {/* Logo Header */}
-        <div className={cn('py-6 mb-2', sidebarCollapsed ? 'px-3 flex justify-center' : 'px-6')}>
+        <div
+          className={cn(
+            'py-6 mb-2',
+            sidebarCollapsed ? 'px-3 flex justify-center' : 'px-6'
+          )}
+        >
           {!sidebarCollapsed ? (
             <>
-              <h1 className="text-lg font-bold text-sidebar-primary">SmartRetail Pro</h1>
+              <h1 className="text-lg font-bold text-sidebar-primary">
+                {tCommon('appName')}
+              </h1>
               <p className="text-xs text-sidebar-muted/70">Admin Console</p>
             </>
           ) : (
@@ -172,6 +183,7 @@ export function Sidebar() {
               item={item}
               pathname={pathname}
               collapsed={sidebarCollapsed}
+              t={t}
             />
           ))}
 
@@ -183,11 +195,13 @@ export function Sidebar() {
                   onClick={() => setSystemExpanded(!systemExpanded)}
                   className={cn(
                     'flex w-full items-center gap-3 px-4 py-2 transition-colors',
-                    isSystemActive ? 'text-sidebar-primary' : 'text-sidebar-primary/80'
+                    isSystemActive
+                      ? 'text-sidebar-primary'
+                      : 'text-sidebar-primary/80'
                   )}
                 >
                   <Settings className="h-5 w-5" />
-                  <span className="text-sm font-medium">System Management</span>
+                  <span className="text-sm font-medium">{t('system')}</span>
                   <ChevronDown
                     className={cn(
                       'ml-auto h-4 w-4 transition-transform duration-200',
@@ -204,6 +218,7 @@ export function Sidebar() {
                         pathname={pathname}
                         collapsed={false}
                         isSubItem
+                        t={t}
                       />
                     ))}
                   </div>
@@ -224,7 +239,7 @@ export function Sidebar() {
                     <Settings className="h-5 w-5" />
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent side="right">System Management</TooltipContent>
+                <TooltipContent side="right">{t('system')}</TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -232,29 +247,6 @@ export function Sidebar() {
 
         {/* Bottom Section */}
         <div className="mt-auto border-t border-sidebar-border/30 pt-4 px-3 pb-4 space-y-1">
-          {/* Help Center */}
-          {!sidebarCollapsed ? (
-            <Link
-              href="/help"
-              className="flex h-10 items-center gap-3 rounded-md px-4 text-sidebar-foreground/80 hover:text-white transition-all"
-            >
-              <HelpCircle className="h-5 w-5" />
-              <span className="text-sm">Help Center</span>
-            </Link>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/help"
-                  className="flex h-10 w-full items-center justify-center rounded-md text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white transition-all"
-                >
-                  <HelpCircle className="h-5 w-5" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Help Center</TooltipContent>
-            </Tooltip>
-          )}
-
           {/* Logout */}
           {!sidebarCollapsed ? (
             <button
@@ -262,7 +254,7 @@ export function Sidebar() {
               className="flex h-10 w-full items-center gap-3 rounded-md px-4 text-sidebar-foreground/80 hover:text-white transition-all"
             >
               <LogOut className="h-5 w-5" />
-              <span className="text-sm">Logout</span>
+              <span className="text-sm">{tAuth('logout')}</span>
             </button>
           ) : (
             <Tooltip>
@@ -274,7 +266,7 @@ export function Sidebar() {
                   <LogOut className="h-5 w-5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">Logout</TooltipContent>
+              <TooltipContent side="right">{tAuth('logout')}</TooltipContent>
             </Tooltip>
           )}
 

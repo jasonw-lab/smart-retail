@@ -59,10 +59,12 @@ export function FilterBar<T extends Record<string, string>>({
   };
 
   return (
-    <div className={cn(
-      'bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-6',
-      className
-    )}>
+    <div
+      className={cn(
+        'bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-6',
+        className
+      )}
+    >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         {fields.map((field) => (
           <div key={field.key} className="space-y-2">
@@ -81,7 +83,10 @@ export function FilterBar<T extends Record<string, string>>({
               <Select
                 value={values[field.key] || EMPTY_VALUE_PLACEHOLDER}
                 onValueChange={(v) =>
-                  handleChange(field.key, v === EMPTY_VALUE_PLACEHOLDER ? '' : v)
+                  handleChange(
+                    field.key,
+                    v === EMPTY_VALUE_PLACEHOLDER ? '' : v
+                  )
                 }
               >
                 <SelectTrigger className="w-full bg-surface border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
@@ -120,11 +125,7 @@ export function FilterBar<T extends Record<string, string>>({
           </Button>
         </div>
       </div>
-      {actions && (
-        <div className="mt-4 flex items-center gap-2">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="mt-4 flex items-center gap-2">{actions}</div>}
     </div>
   );
 }

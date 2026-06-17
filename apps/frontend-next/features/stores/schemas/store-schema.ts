@@ -26,7 +26,11 @@ export const storeFormSchema = z.object({
     .email('有効なメールアドレスを入力してください')
     .optional()
     .or(z.literal('')),
-  status: z.enum([StoreStatus.ACTIVE, StoreStatus.MAINTENANCE, StoreStatus.INACTIVE]),
+  status: z.enum([
+    StoreStatus.ACTIVE,
+    StoreStatus.MAINTENANCE,
+    StoreStatus.INACTIVE,
+  ]),
 });
 
 export type StoreFormValues = z.infer<typeof storeFormSchema>;

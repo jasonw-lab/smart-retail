@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
-import { deviceFormSchema, type DeviceFormValues } from '../schemas/device-schema';
+import {
+  deviceFormSchema,
+  type DeviceFormValues,
+} from '../schemas/device-schema';
 import { useCreateDevice, useUpdateDevice } from '../hooks/use-devices';
 import {
   DeviceType,
@@ -48,7 +51,9 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
       status: device?.status || DeviceStatus.ONLINE,
       lastHeartbeat: device?.lastHeartbeat || '',
       errorCode: device?.errorCode || '',
-      metadataJson: device?.metadata ? JSON.stringify(device.metadata, null, 2) : '',
+      metadataJson: device?.metadata
+        ? JSON.stringify(device.metadata, null, 2)
+        : '',
     },
   });
 
@@ -94,14 +99,18 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
       }
       router.push('/devices');
     } catch {
-      toast.error(mode === 'create' ? '登録に失敗しました' : '更新に失敗しました');
+      toast.error(
+        mode === 'create' ? '登録に失敗しました' : '更新に失敗しました'
+      );
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{mode === 'create' ? 'デバイス登録' : 'デバイス編集'}</CardTitle>
+        <CardTitle>
+          {mode === 'create' ? 'デバイス登録' : 'デバイス編集'}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -144,7 +153,9 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
                 店舗 <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={form.watch('storeId') ? String(form.watch('storeId')) : ''}
+                value={
+                  form.watch('storeId') ? String(form.watch('storeId')) : ''
+                }
                 onValueChange={(v) => form.setValue('storeId', parseInt(v, 10))}
               >
                 <SelectTrigger>
@@ -170,7 +181,10 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
               <Select
                 value={form.watch('deviceType')}
                 onValueChange={(v) =>
-                  form.setValue('deviceType', v as DeviceFormValues['deviceType'])
+                  form.setValue(
+                    'deviceType',
+                    v as DeviceFormValues['deviceType']
+                  )
                 }
               >
                 <SelectTrigger>

@@ -1,5 +1,9 @@
 import { fetchFromBackend } from '@/lib/api/server';
-import type { Product, ProductQuery, ProductPageResult } from '../types/product';
+import type {
+  Product,
+  ProductQuery,
+  ProductPageResult,
+} from '../types/product';
 
 /**
  * Server Component専用のProduct API

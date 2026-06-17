@@ -2,7 +2,18 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { ChevronRight, ChevronDown, Package, History, Trash2, Download, AlertTriangle, Calendar, TrendingUp, Plus } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Package,
+  History,
+  Trash2,
+  Download,
+  AlertTriangle,
+  Calendar,
+  TrendingUp,
+  Plus,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -61,11 +72,20 @@ export function InventoryTableClient({
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Dialogs
-  const [replenishTarget, setReplenishTarget] = useState<Inventory | null>(null);
-  const [disposeTarget, setDisposeTarget] = useState<{ inventory: Inventory; lot: InventoryLot } | null>(null);
+  const [replenishTarget, setReplenishTarget] = useState<Inventory | null>(
+    null
+  );
+  const [disposeTarget, setDisposeTarget] = useState<{
+    inventory: Inventory;
+    lot: InventoryLot;
+  } | null>(null);
   const [historyTarget, setHistoryTarget] = useState<Inventory | null>(null);
 
-  const { data = initialData, isLoading, isError } = useInventory(params, {
+  const {
+    data = initialData,
+    isLoading,
+    isError,
+  } = useInventory(params, {
     placeholderData: initialData,
   });
 
@@ -75,13 +95,19 @@ export function InventoryTableClient({
   // Calculate inventory summary
   const summary = useMemo(() => {
     const list = displayData?.list || [];
-    const totalQuantity = list.reduce((sum, item) => sum + item.totalQuantity, 0);
-    const lowStockCount = list.filter(item =>
-      item.status === InventoryStatus.OUT_OF_STOCK ||
-      item.totalQuantity <= item.reorderPoint
+    const totalQuantity = list.reduce(
+      (sum, item) => sum + item.totalQuantity,
+      0
+    );
+    const lowStockCount = list.filter(
+      (item) =>
+        item.status === InventoryStatus.OUT_OF_STOCK ||
+        item.totalQuantity <= item.reorderPoint
     ).length;
-    const expiringCount = list.filter(item =>
-      item.status === InventoryStatus.EXPIRING || item.status === InventoryStatus.EXPIRED
+    const expiringCount = list.filter(
+      (item) =>
+        item.status === InventoryStatus.EXPIRING ||
+        item.status === InventoryStatus.EXPIRED
     ).length;
     // Mock turnover rate
     const turnoverRate = 97.1;
@@ -117,7 +143,10 @@ export function InventoryTableClient({
       type: 'select',
       options: [
         { value: '', label: 'すべてのステータス' },
-        ...Object.entries(InventoryStatusLabel).map(([v, l]) => ({ value: v, label: l })),
+        ...Object.entries(InventoryStatusLabel).map(([v, l]) => ({
+          value: v,
+          label: l,
+        })),
       ],
     },
   ];
@@ -126,7 +155,9 @@ export function InventoryTableClient({
     const newParams: InventoryQuery = {
       ...params,
       pageNum: 1,
-      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
+      storeId: filterValues.storeId
+        ? parseInt(filterValues.storeId, 10)
+        : undefined,
       productName: filterValues.productName || undefined,
       status: (filterValues.status as InventoryQuery['status']) || undefined,
     };
@@ -198,21 +229,35 @@ export function InventoryTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">在庫数</p>
-                <p className="text-2xl font-bold">{summary.totalQuantity.toLocaleString()}<span className="text-sm font-normal text-muted-foreground ml-1">件</span></p>
+                <p className="text-2xl font-bold">
+                  {summary.totalQuantity.toLocaleString()}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    件
+                  </span>
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className={summary.lowStockCount > 0 ? 'border-destructive/50' : ''}>
+        <Card
+          className={summary.lowStockCount > 0 ? 'border-destructive/50' : ''}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-destructive/10 p-3">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">在庫不足アラート</p>
-                <p className="text-2xl font-bold text-destructive">{summary.lowStockCount}<span className="text-sm font-normal text-muted-foreground ml-1">件</span></p>
+                <p className="text-sm text-muted-foreground">
+                  在庫不足アラート
+                </p>
+                <p className="text-2xl font-bold text-destructive">
+                  {summary.lowStockCount}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    件
+                  </span>
+                </p>
               </div>
             </div>
           </CardContent>
@@ -226,7 +271,12 @@ export function InventoryTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">期限切れ間近</p>
-                <p className="text-2xl font-bold text-warning">{summary.expiringCount}<span className="text-sm font-normal text-muted-foreground ml-1">件</span></p>
+                <p className="text-2xl font-bold text-warning">
+                  {summary.expiringCount}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    件
+                  </span>
+                </p>
               </div>
             </div>
           </CardContent>
@@ -240,7 +290,12 @@ export function InventoryTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">在庫回転率</p>
-                <p className="text-2xl font-bold text-success">{summary.turnoverRate}<span className="text-sm font-normal text-muted-foreground ml-1">%</span></p>
+                <p className="text-2xl font-bold text-success">
+                  {summary.turnoverRate}
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    %
+                  </span>
+                </p>
               </div>
             </div>
           </CardContent>
@@ -285,14 +340,20 @@ export function InventoryTableClient({
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={8}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   読み込み中...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && displayData?.list?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={8}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   在庫データが見つかりません
                 </TableCell>
               </TableRow>
@@ -324,7 +385,9 @@ export function InventoryTableClient({
                         )}
                       </TableCell>
                       <TableCell>{item.storeName}</TableCell>
-                      <TableCell className="font-medium">{item.productName}</TableCell>
+                      <TableCell className="font-medium">
+                        {item.productName}
+                      </TableCell>
                       <TableCell>
                         <span className="font-mono text-xs text-muted-foreground">
                           {firstLot?.lotNumber || '-'}
@@ -336,8 +399,8 @@ export function InventoryTableClient({
                             item.status === InventoryStatus.OUT_OF_STOCK
                               ? 'text-destructive font-semibold'
                               : item.status === InventoryStatus.OVERSTOCK
-                              ? 'text-amber-600 font-semibold'
-                              : ''
+                                ? 'text-amber-600 font-semibold'
+                                : ''
                           }
                         >
                           {item.totalQuantity}
@@ -353,8 +416,8 @@ export function InventoryTableClient({
                                     isExpired(item.oldestExpiryDate)
                                       ? 'text-destructive font-medium'
                                       : isExpiringSoon(item.oldestExpiryDate)
-                                      ? 'text-orange-600 font-medium'
-                                      : ''
+                                        ? 'text-orange-600 font-medium'
+                                        : ''
                                   }
                                 >
                                   {formatDate(item.oldestExpiryDate)}
@@ -370,7 +433,9 @@ export function InventoryTableClient({
                         )}
                       </TableCell>
                       <TableCell>
-                        <StatusBadge variant={InventoryStatusColor[item.status]}>
+                        <StatusBadge
+                          variant={InventoryStatusColor[item.status]}
+                        >
                           {InventoryStatusLabel[item.status]}
                         </StatusBadge>
                       </TableCell>
@@ -397,16 +462,21 @@ export function InventoryTableClient({
                     {/* Expanded lot rows */}
                     {isExpanded &&
                       item.lots?.map((lot) => (
-                        <TableRow key={`${item.id}-${lot.id}`} className="bg-muted/30">
+                        <TableRow
+                          key={`${item.id}-${lot.id}`}
+                          className="bg-muted/30"
+                        >
                           <TableCell></TableCell>
-                          <TableCell className="text-muted-foreground text-sm pl-6">
-
-                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm pl-6"></TableCell>
                           <TableCell></TableCell>
                           <TableCell>
-                            <span className="font-mono text-xs">{lot.lotNumber}</span>
+                            <span className="font-mono text-xs">
+                              {lot.lotNumber}
+                            </span>
                           </TableCell>
-                          <TableCell className="text-right text-sm">{lot.quantity}</TableCell>
+                          <TableCell className="text-right text-sm">
+                            {lot.quantity}
+                          </TableCell>
                           <TableCell>
                             {lot.expiryDate ? (
                               <span
@@ -414,8 +484,8 @@ export function InventoryTableClient({
                                   isExpired(lot.expiryDate)
                                     ? 'text-destructive font-medium text-sm'
                                     : isExpiringSoon(lot.expiryDate)
-                                    ? 'text-orange-600 text-sm'
-                                    : 'text-sm'
+                                      ? 'text-orange-600 text-sm'
+                                      : 'text-sm'
                                 }
                               >
                                 {formatDate(lot.expiryDate)}
@@ -430,7 +500,9 @@ export function InventoryTableClient({
                               variant="ghost"
                               size="sm"
                               className="text-destructive hover:text-destructive"
-                              onClick={() => setDisposeTarget({ inventory: item, lot })}
+                              onClick={() =>
+                                setDisposeTarget({ inventory: item, lot })
+                              }
                             >
                               <Trash2 className="mr-1 h-3 w-3" />
                               廃棄
@@ -449,8 +521,13 @@ export function InventoryTableClient({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            全{displayData?.total || 0}件中 {(params.pageNum - 1) * params.pageSize + 1}-
-            {Math.min(params.pageNum * params.pageSize, displayData?.total || 0)}件
+            全{displayData?.total || 0}件中{' '}
+            {(params.pageNum - 1) * params.pageSize + 1}-
+            {Math.min(
+              params.pageNum * params.pageSize,
+              displayData?.total || 0
+            )}
+            件
           </p>
           <div className="flex items-center gap-2">
             <Button

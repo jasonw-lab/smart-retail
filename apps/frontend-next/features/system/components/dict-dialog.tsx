@@ -96,9 +96,15 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">名前 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="字典名を入力" />
+            <Input
+              id="name"
+              {...form.register('name')}
+              placeholder="字典名を入力"
+            />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.name.message}
+              </p>
             )}
           </div>
 
@@ -111,7 +117,9 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
               disabled={isEditing}
             />
             {form.formState.errors.dictCode && (
-              <p className="text-sm text-destructive">{form.formState.errors.dictCode.message}</p>
+              <p className="text-sm text-destructive">
+                {form.formState.errors.dictCode.message}
+              </p>
             )}
           </div>
 
@@ -133,7 +141,12 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="remark">備考</Label>
-            <Textarea id="remark" {...form.register('remark')} placeholder="備考を入力" rows={3} />
+            <Textarea
+              id="remark"
+              {...form.register('remark')}
+              placeholder="備考を入力"
+              rows={3}
+            />
           </div>
 
           <DialogFooter>

@@ -59,7 +59,9 @@ export function DeptTree({ selectedId, onSelect }: DeptTreeProps) {
           <Building2 className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm truncate">{dept.name}</span>
         </div>
-        {hasChildren && isExpanded && dept.children!.map((child) => renderNode(child, level + 1))}
+        {hasChildren &&
+          isExpanded &&
+          dept.children!.map((child) => renderNode(child, level + 1))}
       </div>
     );
   };
@@ -68,9 +70,13 @@ export function DeptTree({ selectedId, onSelect }: DeptTreeProps) {
     <div className="border rounded-lg p-3">
       <h3 className="font-medium mb-3 text-sm text-muted-foreground">部門</h3>
       {isLoading ? (
-        <div className="text-center py-4 text-sm text-muted-foreground">読み込み中...</div>
+        <div className="text-center py-4 text-sm text-muted-foreground">
+          読み込み中...
+        </div>
       ) : depts.length === 0 ? (
-        <div className="text-center py-4 text-sm text-muted-foreground">部門がありません</div>
+        <div className="text-center py-4 text-sm text-muted-foreground">
+          部門がありません
+        </div>
       ) : (
         <div className="space-y-0.5">
           <div

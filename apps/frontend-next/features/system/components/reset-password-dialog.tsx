@@ -21,7 +21,11 @@ interface ResetPasswordDialogProps {
   user: User | null;
 }
 
-export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialogProps) {
+export function ResetPasswordDialog({
+  open,
+  onClose,
+  user,
+}: ResetPasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const resetMutation = useResetPassword();

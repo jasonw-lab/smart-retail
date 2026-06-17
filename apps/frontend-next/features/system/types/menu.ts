@@ -16,7 +16,10 @@ export const MenuTypeLabel: Record<MenuTypeValue, string> = {
   [MenuType.EXTLINK]: '外部リンク',
 };
 
-export const MenuTypeColor: Record<MenuTypeValue, 'warning' | 'success' | 'error' | 'info'> = {
+export const MenuTypeColor: Record<
+  MenuTypeValue,
+  'warning' | 'success' | 'error' | 'info'
+> = {
   [MenuType.CATALOG]: 'warning',
   [MenuType.MENU]: 'success',
   [MenuType.BUTTON]: 'error',

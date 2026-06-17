@@ -7,7 +7,8 @@ export async function getUsers(params: UserQuery): Promise<UserPageResult> {
   searchParams.set('pageNum', String(params.pageNum));
   searchParams.set('pageSize', String(params.pageSize));
   if (params.keywords) searchParams.set('keywords', params.keywords);
-  if (params.status !== undefined) searchParams.set('status', String(params.status));
+  if (params.status !== undefined)
+    searchParams.set('status', String(params.status));
   if (params.deptId) searchParams.set('deptId', String(params.deptId));
   if (params.startTime) searchParams.set('startTime', params.startTime);
   if (params.endTime) searchParams.set('endTime', params.endTime);
@@ -52,18 +53,25 @@ export async function deleteUsers(ids: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete users');
 }
 
-export async function resetPassword(userId: number, password: string): Promise<void> {
+export async function resetPassword(
+  userId: number,
+  password: string
+): Promise<void> {
   // Backend: PATCH /{id}/password with RequestParam password
-  const res = await fetch(`${BASE_URL}/${userId}/password?password=${encodeURIComponent(password)}`, {
-    method: 'PATCH',
-  });
+  const res = await fetch(
+    `${BASE_URL}/${userId}/password?password=${encodeURIComponent(password)}`,
+    {
+      method: 'PATCH',
+    }
+  );
   if (!res.ok) throw new Error('Failed to reset password');
 }
 
 export async function exportUsers(params: UserQuery): Promise<Blob> {
   const searchParams = new URLSearchParams();
   if (params.keywords) searchParams.set('keywords', params.keywords);
-  if (params.status !== undefined) searchParams.set('status', String(params.status));
+  if (params.status !== undefined)
+    searchParams.set('status', String(params.status));
   if (params.deptId) searchParams.set('deptId', String(params.deptId));
 
   const res = await fetch(`${BASE_URL}/export?${searchParams.toString()}`);

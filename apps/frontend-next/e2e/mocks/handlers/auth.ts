@@ -3,16 +3,16 @@ import { http, HttpResponse } from 'msw';
 export const authHandlers = [
   // ログイン
   http.post('http://localhost:3001/api/auth/login', async ({ request }) => {
-    const body = await request.json() as { username: string; password: string };
+    const body = (await request.json()) as {
+      username: string;
+      password: string;
+    };
 
     if (body.username === 'admin' && body.password === 'password') {
       return HttpResponse.json({ success: true });
     }
 
-    return HttpResponse.json(
-      { error: 'Invalid credentials' },
-      { status: 401 }
-    );
+    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }),
 
   // ユーザー情報取得

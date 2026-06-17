@@ -62,7 +62,8 @@ export function WelcomeMessage({ userName, avatarUrl }: WelcomeMessageProps) {
               {greeting}、{userName}さん！
             </h2>
             <p className="text-sm text-gray-500">
-              今日は{weather.description}、気温は{weather.temperature}度から25度で、来客の増。
+              今日は{weather.description}、気温は{weather.temperature}
+              度から25度で、来客の増。
             </p>
           </div>
         </div>

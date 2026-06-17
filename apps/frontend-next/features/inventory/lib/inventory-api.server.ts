@@ -1,5 +1,9 @@
 import { fetchFromBackend } from '@/lib/api/server';
-import type { Inventory, InventoryQuery, InventoryPageResult } from '../types/inventory';
+import type {
+  Inventory,
+  InventoryQuery,
+  InventoryPageResult,
+} from '../types/inventory';
 
 /**
  * Server Component専用のInventory API

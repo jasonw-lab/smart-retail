@@ -1,7 +1,21 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, Trash2, Edit, ChevronRight, ChevronDown, Search, RotateCcw, Download, ChevronUp, Users, BarChart3, FileText, X } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Edit,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  RotateCcw,
+  Download,
+  ChevronUp,
+  Users,
+  BarChart3,
+  FileText,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -43,7 +57,10 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
   const [status, setStatus] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
-  const [editTarget, setEditTarget] = useState<{ parentId?: number; dept?: Dept } | null>(null);
+  const [editTarget, setEditTarget] = useState<{
+    parentId?: number;
+    dept?: Dept;
+  } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number[] | null>(null);
   const [activeTab, setActiveTab] = useState('dept-management');
@@ -162,7 +179,10 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             />
           </TableCell>
           <TableCell>
-            <div className="flex items-center" style={{ paddingLeft: level * 24 }}>
+            <div
+              className="flex items-center"
+              style={{ paddingLeft: level * 24 }}
+            >
               {hasChildren && (
                 <Button
                   variant="ghost"
@@ -227,7 +247,9 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             </div>
           </TableCell>
         </TableRow>
-        {hasChildren && isExpanded && dept.children!.map((child) => renderDeptRow(child, level + 1))}
+        {hasChildren &&
+          isExpanded &&
+          dept.children!.map((child) => renderDeptRow(child, level + 1))}
       </React.Fragment>
     );
   };
@@ -265,7 +287,9 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Keyword
+              </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -275,8 +299,13 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Department Status</span>
-              <Select value={status || 'all'} onValueChange={(v) => setStatus(v === 'all' ? '' : v)}>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Department Status
+              </span>
+              <Select
+                value={status || 'all'}
+                onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
+              >
                 <SelectTrigger className="w-24">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
@@ -288,7 +317,10 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
+              <Button
+                onClick={handleSearch}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -343,14 +375,20 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No departments found
                   </TableCell>
                 </TableRow>
@@ -391,14 +429,21 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm opacity-90 mb-4">
-              Manage your organizational hierarchy with precision. Drag and drop functionality for departments is coming in the next update.
+              Manage your organizational hierarchy with precision. Drag and drop
+              functionality for departments is coming in the next update.
             </p>
             <div className="flex items-center gap-4">
-              <Button variant="outline" className="text-white border-white hover:bg-white/20">
+              <Button
+                variant="outline"
+                className="text-white border-white hover:bg-white/20"
+              >
                 <BarChart3 className="mr-1 h-4 w-4" />
                 View Org Chart
               </Button>
-              <Button variant="outline" className="text-white border-white hover:bg-white/20">
+              <Button
+                variant="outline"
+                className="text-white border-white hover:bg-white/20"
+              >
                 <FileText className="mr-1 h-4 w-4" />
                 Audit Logs
               </Button>

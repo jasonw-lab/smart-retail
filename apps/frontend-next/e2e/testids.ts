@@ -123,7 +123,11 @@ export const TESTIDS = {
   USER_TABLE: 'user-table',
   USER_TABLE_ROW: 'user-table-row',
   USER_SEARCH_INPUT: 'user-search-input',
+  USER_SEARCH_BUTTON: 'user-search-button',
+  USER_RESET_BUTTON: 'user-reset-button',
   USER_NEW_BUTTON: 'user-new-button',
+  USER_DELETE_BUTTON: 'user-delete-button',
+  USER_DEPT_TREE: 'user-dept-tree',
 
   // ============================================
   // System - Roles
@@ -131,6 +135,48 @@ export const TESTIDS = {
   ROLE_PAGE: 'role-page',
   ROLE_TABLE: 'role-table',
   ROLE_TABLE_ROW: 'role-table-row',
+  ROLE_SEARCH_INPUT: 'role-search-input',
+  ROLE_SEARCH_BUTTON: 'role-search-button',
+  ROLE_NEW_BUTTON: 'role-new-button',
+
+  // ============================================
+  // System - Menus
+  // ============================================
+  MENU_PAGE: 'menu-page',
+  MENU_TABLE: 'menu-table',
+  MENU_TABLE_ROW: 'menu-table-row',
+  MENU_NEW_BUTTON: 'menu-new-button',
+
+  // ============================================
+  // System - Departments
+  // ============================================
+  DEPT_PAGE: 'dept-page',
+  DEPT_TABLE: 'dept-table',
+  DEPT_TABLE_ROW: 'dept-table-row',
+  DEPT_SEARCH_INPUT: 'dept-search-input',
+  DEPT_SEARCH_BUTTON: 'dept-search-button',
+  DEPT_NEW_BUTTON: 'dept-new-button',
+
+  // ============================================
+  // System - Dictionaries
+  // ============================================
+  DICT_PAGE: 'dict-page',
+  DICT_TABLE: 'dict-table',
+  DICT_TABLE_ROW: 'dict-table-row',
+  DICT_SEARCH_INPUT: 'dict-search-input',
+  DICT_SEARCH_BUTTON: 'dict-search-button',
+  DICT_NEW_BUTTON: 'dict-new-button',
+
+  // ============================================
+  // System - Logs
+  // ============================================
+  LOG_PAGE: 'log-page',
+  LOG_TABLE: 'log-table',
+  LOG_TABLE_ROW: 'log-table-row',
+  LOG_SEARCH_INPUT: 'log-search-input',
+  LOG_SEARCH_BUTTON: 'log-search-button',
+  LOG_DATE_START: 'log-date-start',
+  LOG_DATE_END: 'log-date-end',
 
   // ============================================
   // Common Components

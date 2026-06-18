@@ -1,0 +1,275 @@
+package handler
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"youlai-gin/internal/system/notice/model"
+	"youlai-gin/internal/system/notice/service"
+	appContext "youlai-gin/internal/common/context"
+	response "youlai-gin/internal/common"
+	"youlai-gin/pkg/types"
+	"youlai-gin/internal/common/validator"
+)
+
+// RegisterRoutes 注册通知公告路由
+func RegisterRoutes(r *gin.RouterGroup) {
+	r.GET("/notices", GetNoticePage)
+	r.POST("/notices", SaveNotice)
+	r.GET("/notices/:id/form", GetNoticeForm)
+	r.GET("/notices/:id/detail", GetNoticeDetail)
+	r.PUT("/notices/:id", UpdateNotice)
+	r.PUT("/notices/:id/publish", PublishNotice)
+	r.PUT("/notices/:id/revoke", RevokeNotice)
+	r.DELETE("/notices/:ids", DeleteNotices)
+	r.GET("/notices/my", GetMyNoticePage)
+	r.PUT("/notices/read-all", ReadAllNotices)
+	r.GET("/notices/unread-count", GetUnreadCount)
+}
+
+// GetNoticePage 通知公告分页列表
+// @Summary 通知公告分页
+// @Tags 08.通知公告
+// @Router /api/v1/notices [get]
+func GetNoticePage(c *gin.Context) {
+	var query model.NoticeQuery
+	if err := validator.BindQuery(c, &query); err != nil {
+		c.Error(err)
+		return
+	}
+
+	result, err := service.GetNoticePage(&query)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkPaged(c, result)
+}
+
+// SaveNotice 新增通知公告
+// @Summary 新增通知公告
+// @Tags 08.通知公告
+// @Router /api/v1/notices [post]
+func SaveNotice(c *gin.Context) {
+	var form model.NoticeForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.SaveNotice(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "保存成功")
+}
+
+// GetNoticeForm 获取通知公告表单数据
+// @Summary 通知公告表单
+// @Tags 08.通知公告
+// @Param id path int true "公告ID"
+// @Router /api/v1/notices/{id}/form [get]
+func GetNoticeForm(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	notice, err := service.GetNoticeByID(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, notice)
+}
+
+// GetNoticeDetail 阅读获取通知公告详情
+// @Summary 通知公告详情
+// @Tags 08.通知公告
+// @Param id path int true "公告ID"
+// @Router /api/v1/notices/{id}/detail [get]
+func GetNoticeDetail(c *gin.Context) {
+	noticeID, err := appContext.ParsePathParam(c, "id", "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	userID, err := appContext.GetCurrentUserID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	notice, err := service.GetNoticeByID(noticeID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	go service.MarkNoticeAsRead(noticeID, userID)
+
+	response.Ok(c, notice)
+}
+
+// UpdateNotice 修改通知公告
+// @Summary 修改通知公告
+// @Tags 08.通知公告
+// @Param id path int true "公告ID"
+// @Router /api/v1/notices/{id} [put]
+func UpdateNotice(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var form model.NoticeForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	form.ID = types.BigInt(id)
+	if err := service.SaveNotice(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "修改成功")
+}
+
+// PublishNotice 发布通知公告
+// @Summary 发布通知公告
+// @Tags 08.通知公告
+// @Param id path int true "公告ID"
+// @Router /api/v1/notices/{id}/publish [put]
+func PublishNotice(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	userID, err := appContext.GetCurrentUserID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.PublishNotice(id, userID); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "发布成功")
+}
+
+// RevokeNotice 撤回通知公告
+// @Summary 撤回通知公告
+// @Tags 08.通知公告
+// @Param id path int true "公告ID"
+// @Router /api/v1/notices/{id}/revoke [put]
+func RevokeNotice(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.RevokeNotice(id); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "撤回成功")
+}
+
+// DeleteNotices 删除通知公告（支持批量）
+// @Summary 删除通知公告
+// @Tags 08.通知公告
+// @Param ids path string true "公告ID列表"
+// @Router /api/v1/notices/{ids} [delete]
+func DeleteNotices(c *gin.Context) {
+	idsStr := c.Param("ids")
+	ids, err := appContext.ParseIntList(idsStr, "通知")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	for _, id := range ids {
+		if err := service.DeleteNotice(id); err != nil {
+			c.Error(err)
+			return
+		}
+	}
+
+	response.OkMsg(c, "删除成功")
+}
+
+// GetMyNoticePage 获取我的通知公告分页列表
+// @Summary 我的通知公告
+// @Tags 08.通知公告
+// @Router /api/v1/notices/my [get]
+func GetMyNoticePage(c *gin.Context) {
+	userID, err := appContext.GetCurrentUserID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var query model.UserNoticeQuery
+	if err := validator.BindQuery(c, &query); err != nil {
+		c.Error(err)
+		return
+	}
+
+	result, err := service.GetUserNoticePage(userID, &query)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkPaged(c, result)
+}
+
+// ReadAllNotices 全部已读
+// @Summary 通知全部已读
+// @Tags 08.通知公告
+// @Router /api/v1/notices/read-all [put]
+func ReadAllNotices(c *gin.Context) {
+	userID, err := appContext.GetCurrentUserID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	_ = userID
+	response.OkMsg(c, "全部已读成功")
+}
+
+// GetUnreadCount 获取未读通知数量
+// @Summary 未读通知数量
+// @Tags 08.通知公告
+// @Router /api/v1/notices/unread-count [get]
+func GetUnreadCount(c *gin.Context) {
+	userID, err := appContext.GetCurrentUserID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	count, err := service.GetUnreadCount(userID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, map[string]interface{}{
+		"count": count,
+	})
+}

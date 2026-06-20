@@ -22,6 +22,14 @@
 - SSH 接続情報: `SSH_USER=noah` / `SSH_PASSWORD=pass`
 - ローカル開発時は `${SERVER_IP:-localhost}` のデフォルト値により `localhost` が使用されます
 
+## デプロイ先
+
+特に指示がない場合、デフォルトのデプロイは `${SERVER_IP}` のサーバーで実施してください。
+
+- SSH: `ssh ${SSH_USER}@${SERVER_IP}`
+- パスワード: `${SSH_PASSWORD}`
+- Docker / ミドルウェア接続も `${SERVER_IP}` を参照
+
 ---
 
 # backend

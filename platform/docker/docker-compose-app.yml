@@ -17,14 +17,15 @@ services:
     environment:
       - TZ=Asia/Tokyo
       - SPRING_PROFILES_ACTIVE=prod
-      - MYSQL_HOST=smart-retail-mysql-8
+      # デプロイ時は ${SERVER_IP} を参照。未設定時はローカル開発用のコンテナ名/ホスト名を使用
+      - MYSQL_HOST=${smart-retail-mysql-8}
       - MYSQL_PORT=3306
       - MYSQL_DATABASE=youlai_boot
       - MYSQL_USER=root
       - MYSQL_PASSWORD=${DATASOURCE_PASSWORD:-123456}
-      - SPRING_DATA_REDIS_HOST=ec-demo-redis
+      - SPRING_DATA_REDIS_HOST=${ec-demo-redis}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-123456}
-      - MINIO_ENDPOINT=http://ec-demo-minio:9000
+      - MINIO_ENDPOINT=${http://ec-demo-minio:9000}
     volumes:
       - ${BASEPATH}/app/backend/logs:/var/logs
       - /etc/localtime:/etc/localtime

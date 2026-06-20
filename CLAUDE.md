@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 本ファイルの共通ルールは [`rule.md`](./rule.md) に集約しています。併せて参照してください。
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview

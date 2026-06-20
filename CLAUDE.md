@@ -107,6 +107,10 @@ Freely modifiable:
 
 Changes outside these directories require justification.
 
+## Ignored Folders
+
+Folders matching `ign_*` are intentionally excluded from agent operations. Do not read, modify, or reference files inside them unless explicitly instructed.
+
 ## Development Conventions
 
 ### Backend

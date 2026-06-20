@@ -13,7 +13,7 @@ CLAUDE_ARGS="--print"
 
 # Kimi K2.6 CLI
 # 例: kimi --no-interactive --output-file <path>
-KIMI_CMD="kimi"
+KIMI_CMD="/Users/wangjw/.local/share/uv/tools/kimi-cli/bin/kimi"
 KIMI_ARGS=""
 
 # OpenAI Codex CLI

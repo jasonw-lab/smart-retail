@@ -92,3 +92,4 @@ p*.md
 review_*.md
 playwright-report
 test-results
+ign*

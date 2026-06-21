@@ -308,6 +308,7 @@ export default defineMock([
       const newProduct: Product = {
         id: products.length + 1,
         name: body.name,
+        code: body.code,
         categoryId: body.categoryId,
         categoryName: products.find((p) => p.categoryId === body.categoryId)?.categoryName || "",
         price: body.price,
@@ -340,6 +341,7 @@ export default defineMock([
       const updatedProduct: Product = {
         ...products[index],
         name: body.name,
+        code: body.code,
         categoryId: body.categoryId,
         categoryName: products.find((p) => p.categoryId === body.categoryId)?.categoryName || "",
         price: body.price,

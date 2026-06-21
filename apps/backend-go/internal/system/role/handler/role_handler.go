@@ -1,0 +1,254 @@
+package handler
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"youlai-gin/internal/system/role/model"
+	"youlai-gin/internal/system/role/service"
+	"youlai-gin/internal/common/auth"
+	appContext "youlai-gin/internal/common/context"
+	"youlai-gin/pkg/enums"
+	"youlai-gin/internal/middleware"
+	response "youlai-gin/internal/common"
+	"youlai-gin/pkg/types"
+	"youlai-gin/internal/common/validator"
+)
+
+// RegisterRoleRoutes
+func RegisterRoleRoutes(r *gin.RouterGroup) {
+	roles := r.Group("/roles")
+	{
+		roles.GET("", middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeList), GetRolePage)
+		roles.GET("/options", GetRoleOptions)
+		roles.POST("", auth.RequirePermission("sys:role:create"), middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeInsert), SaveRole)
+		roles.GET("/:id/form", auth.RequirePermission("sys:role:update"), GetRoleForm)
+		roles.PUT("/:id", auth.RequirePermission("sys:role:update"), middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeUpdate), UpdateRole)
+		roles.DELETE("/:id", auth.RequirePermission("sys:role:delete"), middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeDelete), DeleteRole)
+		roles.GET("/:id/menu-ids", auth.RequirePermission("sys:role:update"), GetRoleMenuIds)
+		roles.PUT("/:id/menus", auth.RequirePermission("sys:role:assign"), middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeGrant), UpdateRoleMenus)
+		roles.GET("/:id/dept-ids", GetRoleDeptIds)
+		roles.PUT("/:id/depts", auth.RequirePermission("sys:role:update"), middleware.OperationLog(enums.LogModuleRole, enums.ActionTypeGrant), UpdateRoleDepts)
+	}
+}
+
+// @Summary 角色分页列表
+// @Tags 03.角色接口
+// @Param pageNum query int false "页码"
+// @Param pageSize query int false "每页数量"
+// @Param keywords query string false "关键字"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles [get]
+func GetRolePage(c *gin.Context) {
+	var query model.RoleQuery
+	if err := validator.BindQuery(c, &query); err != nil {
+		c.Error(err)
+		return
+	}
+
+	result, err := service.GetRolePage(&query)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkPaged(c, result)
+}
+
+// @Summary 角色下拉列表
+// @Tags 03.角色接口
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/options [get]
+func GetRoleOptions(c *gin.Context) {
+	options, err := service.GetRoleOptions()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, options)
+}
+
+// @Summary 新增角色
+// @Tags 03.角色接口
+// @Param body body model.RoleForm true "角色信息"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles [post]
+func SaveRole(c *gin.Context) {
+	var form model.RoleForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.SaveRole(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "保存成功")
+}
+
+// @Summary 获取角色表单数据
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id}/form [get]
+func GetRoleForm(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	form, err := service.GetRoleForm(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, form)
+}
+
+// @Summary 更新角色
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Param body body model.RoleForm true "角色信息"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id} [put]
+func UpdateRole(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var form model.RoleForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	form.ID = types.BigInt(id)
+	if err := service.SaveRole(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "更新成功")
+}
+
+// @Summary 删除角色
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id} [delete]
+func DeleteRole(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.DeleteRole(id); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "删除成功")
+}
+
+// @Summary 获取角色菜单ID列表
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id}/menu-ids [get]
+func GetRoleMenuIds(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	menuIds, err := service.GetRoleMenuIds(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, menuIds)
+}
+
+// @Summary 分配菜单权限
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Param body body []int64 true "菜单ID列表"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id}/menus [put]
+func UpdateRoleMenus(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var menuIds []int64
+	if err := validator.BindJSON(c, &menuIds); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.UpdateRoleMenus(id, menuIds); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "分配成功")
+}
+
+// @Summary 获取角色自定义部门ID列表
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id}/dept-ids [get]
+func GetRoleDeptIds(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	deptIds, err := service.GetRoleDeptIds(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, deptIds)
+}
+
+// @Summary 分配角色自定义部门
+// @Tags 03.角色接口
+// @Param id path int true "角色ID"
+// @Param body body []int64 true "部门ID列表"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/roles/{id}/depts [put]
+func UpdateRoleDepts(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "角色")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var deptIds []int64
+	if err := validator.BindJSON(c, &deptIds); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.UpdateRoleDepts(id, deptIds); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "分配成功")
+}

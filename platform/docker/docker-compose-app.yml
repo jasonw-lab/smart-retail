@@ -5,12 +5,12 @@ networks:
 
 services:
   # Backend Service (Spring Boot)
-  smart-retail-backend:
+  smart-dx-backend:
     profiles: ["backend", "all"]
     build:
       context: ../../apps/backend
       dockerfile: app/Dockerfile
-    container_name: smart-retail-backend
+    container_name: smart-dx-backend
     restart: unless-stopped
     ports:
       - "18989:8080"

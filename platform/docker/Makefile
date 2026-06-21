@@ -4,7 +4,7 @@ export
 
 CONTEXT := ubuntu-stag
 
-.PHONY: deploy logs ps down local
+.PHONY: deploy logs ps down local fe
 
 deploy:
 	@echo "==> Switching Docker context to $(CONTEXT) ..."
@@ -13,6 +13,13 @@ deploy:
 	trap 'echo "==> Restoring Docker context to default ..."; docker context use default' EXIT; \
 	echo "==> Deploying to remote (platform: linux/amd64) ..."; \
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose-app.yml up -d --build
+
+fe:
+	@echo "==> Building and deploying frontend on remote ..."
+	@set -e; \
+	ssh $(SSH_USER)@$(SERVER_IP) 'export VOLTA_HOME="$$HOME/.volta" && export PATH="$$VOLTA_HOME/bin:$$PATH" && export BASEPATH=/mydata2 && cd ~/smart-retail-dx && ./front.sh'
+	@echo "==> Restarting remote nginx ..."
+	@ssh $(SSH_USER)@$(SERVER_IP) 'docker restart ec-demo-nginx'
 
 logs:
 	@echo "==> Showing remote container logs ..."

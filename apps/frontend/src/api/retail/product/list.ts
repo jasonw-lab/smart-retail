@@ -39,6 +39,8 @@ export interface ProductPageRecord {
   status?: string;
   createTime?: string;
   updateTime?: string;
+  stock?: number;
+  sales?: number;
 }
 
 export interface CreateProductDto {

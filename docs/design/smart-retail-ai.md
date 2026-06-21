@@ -1,46 +1,109 @@
-# Smart Retail AI機能 技術提案書
-> **目的**: 短期間で実装可能かつ技術アピール効果の高いAI機能を提案  
-> **対象**: SmartRetail Pro 管理画面への段階的なAI機能追加  
-> **優先度**: 実装工数が少なく、実用性・デモ映えする機能を優先
+# Smart Retail DX - AI機能 要件定義書
+
+**ドキュメントID**: REQ-AI-001
+**バージョン**: 1.0.0
+**作成日**: 2026/06/19
+**ステータス**: Draft
+**AI基盤**: Kimi (Moonshot AI)
 
 ---
 
-## 📋 目次
+## 1. 概要
 
-1. [AI機能の全体像](#ai機能の全体像)
-2. [Phase 1: RAGベース運用アシスタント](#phase-1-ragベース運用アシスタント)（最優先）
-3. [Phase 2: 在庫予測・異常検知](#phase-2-在庫予測異常検知)
-4. [Phase 3: 高度なAI機能](#phase-3-高度なai機能)
-5. [技術スタック](#技術スタック)
-6. [実装工数見積もり](#実装工数見積もり)
+### 1.1 目的
+
+本ドキュメントは、smart-retail-dx（無人スーパー管理システム）におけるAI機能の要件を定義する。Kimiの長文コンテキスト（200万トークン）を活用し、店舗運営の効率化・意思決定支援を実現する。
+
+### 1.2 スコープ
+
+| 対象 | 内容 |
+|------|------|
+| 対象システム | smart-retail-dx |
+| 対象ユーザー | 店舗スタッフ、エリアマネージャー、本部、経営層 |
+| AI基盤 | Kimi API（プライマリ）、Claude API（フォールバック） |
+| 対象フェーズ | Phase 1〜3（6ヶ月計画） |
+
+### 1.3 用語定義
+
+| 用語 | 定義 |
+|------|------|
+| SKU | Stock Keeping Unit。商品の最小管理単位 |
+| 需要予測 | 将来の販売数量を予測すること |
+| ダイナミックプライシング | 需要・在庫に応じて価格を動的に変更すること |
+| 廃棄率 | 廃棄金額 ÷ 仕入金額 × 100 |
+| 欠品率 | 欠品SKU数 ÷ 総SKU数 × 100 |
+| RAG | Retrieval-Augmented Generation。検索拡張生成 |
 
 ---
 
-## AI機能の全体像
+## 2. 機能一覧
 
-### 実装優先度マトリクス
+### 2.1 機能マップ
 
-| 機能                    | 実装工数 | 技術アピール | 実用性 | 優先度 |
-|------------------------|---------|------------|-------|--------|
-| RAG運用アシスタント        | 🟢 小    | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐ | **P0** |
-| 在庫需要予測              | 🟡 中    | ⭐⭐⭐⭐   | ⭐⭐⭐⭐⭐ | **P1** |
-| アラート優先度自動判定       | 🟢 小    | ⭐⭐⭐     | ⭐⭐⭐⭐ | **P1** |
-| 異常検知（売上・在庫）      | 🟡 中    | ⭐⭐⭐⭐   | ⭐⭐⭐⭐ | P2 |
-| 商品レコメンデーション      | 🟡 中    | ⭐⭐⭐     | ⭐⭐⭐  | P2 |
-| 画像認識（在庫確認）        | 🔴 大    | ⭐⭐⭐⭐⭐  | ⭐⭐⭐  | P3 |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Smart Retail AI 機能群                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  【店舗運営支援】                                            │
+│  ├─ AI-001: 需要予測AI                                      │
+│  ├─ AI-002: 自動発注AI                                      │
+│  ├─ AI-003: 価格最適化AI                                    │
+│  └─ AI-004: 廃棄削減AI                                      │
+│                                                             │
+│  【接客・運用支援】                                          │
+│  ├─ AI-005: 多言語接客AI                                    │
+│  ├─ AI-006: クレーム対応AI                                  │
+│  └─ AI-007: RAG運用アシスタント                             │
+│                                                             │
+│  【経営分析】                                                │
+│  ├─ AI-008: 売上分析AI                                      │
+│  ├─ AI-009: 顧客分析AI                                      │
+│  └─ AI-010: 経営ダッシュボードAI                            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 2.2 優先度・フェーズ
+
+| ID | 機能名 | 優先度 | Phase | 工数 | 技術アピール |
+|----|--------|--------|-------|------|------------|
+| AI-007 | RAG運用アシスタント | **最高** | 1 | S | ⭐⭐⭐⭐⭐ |
+| AI-001 | 需要予測AI | 高 | 1 | M | ⭐⭐⭐⭐ |
+| AI-002 | 自動発注AI | 高 | 1 | M | ⭐⭐⭐ |
+| AI-005 | 多言語接客AI | 中 | 1 | S | ⭐⭐⭐ |
+| AI-003 | 価格最適化AI | 高 | 2 | L | ⭐⭐⭐⭐ |
+| AI-004 | 廃棄削減AI | 中 | 2 | M | ⭐⭐⭐ |
+| AI-006 | クレーム対応AI | 中 | 2 | M | ⭐⭐⭐ |
+| AI-008 | 売上分析AI | 高 | 2 | L | ⭐⭐⭐⭐ |
+| AI-009 | 顧客分析AI | 低 | 3 | L | ⭐⭐⭐ |
+| AI-010 | 経営ダッシュボードAI | 中 | 3 | L | ⭐⭐⭐⭐ |
+
+**工数目安**: S=2週間, M=1ヶ月, L=2ヶ月
 
 ---
 
-## Phase 1: RAGベース運用アシスタント
+## 3. 機能要件詳細
 
-### 🎯 ユースケース
+### 3.1 AI-007: RAG運用アシスタント（最優先）
 
-**シナリオ**: 店舗オペレーターが管理画面で質問できるAIアシスタント
+#### 3.1.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-007 |
+| 機能名 | RAG運用アシスタント |
+| 概要 | 店舗運用データをRAGで検索し、自然言語で質問応答・分析を行う |
+| 主要ユーザー | 店舗スタッフ、エリアマネージャー |
+| 優先度 | **最高（P0）** |
+| 技術アピール度 | ⭐⭐⭐⭐⭐ |
+
+#### 3.1.2 ユースケース
 
 ```
 👤 オペレーター: 「渋谷店の在庫切れアラートが3件あるけど、どれから対応すべき?」
 
-🤖 AI Assistant: 
+🤖 AI Assistant:
 「渋谷店のアラートを分析しました:
 
 優先度1️⃣ 【緊急】おにぎり（ツナマヨ） - SKU: 10234
@@ -63,29 +126,87 @@
 🔗 関連: [渋谷店在庫一覧] [アラート詳細]」
 ```
 
----
+#### 3.1.3 機能要件
 
-### 💡 主な機能
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-007-FR-001 | 自然言語で運用に関する質問ができること | 必須 |
+| AI-007-FR-002 | アラート履歴・対応記録を検索・参照できること | 必須 |
+| AI-007-FR-003 | 在庫・売上データを分析・回答できること | 必須 |
+| AI-007-FR-004 | アラートの優先度を自動判定・説明できること | 必須 |
+| AI-007-FR-005 | 過去の類似事例・ベストプラクティスを提示できること | 必須 |
+| AI-007-FR-006 | 運用マニュアル・FAQを参照できること | 必須 |
+| AI-007-FR-007 | 回答の根拠データを表示できること | 推奨 |
+| AI-007-FR-008 | 関連画面へのリンクを提示できること | 推奨 |
+| AI-007-FR-009 | ストリーミング応答に対応すること | 推奨 |
+| AI-007-FR-010 | 会話履歴を保持・参照できること | 推奨 |
 
-#### 1.1 運用質問への回答（RAG）
+#### 3.1.4 対応できる質問例
 
-**対応できる質問例**:
-- 「今日対応すべき優先アラートは?」
-- 「新宿店の売上が下がった理由は?」
-- 「賞味期限切れ間近の商品をリストして」
-- 「過去の類似アラートはどう対応した?」
-- 「この商品の最適発注量は?」
+| カテゴリ | 質問例 |
+|---------|--------|
+| アラート対応 | 「今日対応すべき優先アラートは?」 |
+| 在庫分析 | 「渋谷店の在庫切れ商品をリストして」 |
+| 売上分析 | 「新宿店の売上が下がった理由は?」 |
+| 賞味期限 | 「賞味期限切れ間近の商品をリストして」 |
+| 過去事例 | 「過去の類似アラートはどう対応した?」 |
+| 発注 | 「この商品の最適発注量は?」 |
 
-**RAGの情報源**:
-- ✅ アラート履歴・対応記録
-- ✅ 在庫・売上データ
-- ✅ 商品マスタ情報
-- ✅ 運用マニュアル・FAQ
-- ✅ 過去のベストプラクティス
+#### 3.1.5 RAG情報源
 
----
+| 情報源 | データ内容 | 更新頻度 |
+|--------|-----------|---------|
+| アラート履歴 | アラート発生・対応記録 | リアルタイム |
+| 在庫データ | 現在庫・入出庫履歴 | リアルタイム |
+| 売上データ | 日次・時間帯別売上 | 日次 |
+| 商品マスタ | 商品情報・カテゴリ | 随時 |
+| 運用マニュアル | 標準作業手順書 | 月次 |
+| ベストプラクティス | 成功事例・対応ノウハウ | 随時 |
 
-#### 1.2 アラート自動サマリー
+#### 3.1.6 システム設計
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (Vue3)                           │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  💬 AI Chat Interface                                 │  │
+│  │  - Chat UI Component (Element Plus)                   │  │
+│  │  - Markdown Renderer (marked)                         │  │
+│  │  - Streaming Response (SSE)                           │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                            ↓ REST API / SSE
+┌─────────────────────────────────────────────────────────────┐
+│              Backend (Spring Boot)                           │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  🧠 AI Service Layer                                  │  │
+│  │  ┌─────────────────┐  ┌────────────────────────────┐│  │
+│  │  │ RAG Orchestrator│  │ Prompt Template Manager    ││  │
+│  │  │ - Query routing │  │ - System prompts           ││  │
+│  │  │ - Context build │  │ - Few-shot examples        ││  │
+│  │  └─────────────────┘  └────────────────────────────┘│  │
+│  └──────────────────────────────────────────────────────┘  │
+│                            ↓                                │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  📚 Knowledge Base                                    │  │
+│  │  ┌──────────────┐  ┌────────────┐  ┌─────────────┐  │  │
+│  │  │ Vector DB    │  │ MySQL      │  │ Redis       │  │  │
+│  │  │ (Chroma)     │  │ (構造化)    │  │ (キャッシュ) │  │  │
+│  │  └──────────────┘  └────────────┘  └─────────────┘  │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                            ↓ API Call
+┌─────────────────────────────────────────────────────────────┐
+│              AI Provider                                     │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Kimi API (Primary) / Claude API (Fallback)          │  │
+│  │  - Chat: 長文コンテキスト対応                         │  │
+│  │  - Embedding: テキスト埋め込み                        │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 3.1.7 アラート自動サマリー機能
 
 **Before（従来）**:
 ```
@@ -118,782 +239,654 @@
   3. 賞味期限商品を20%値引き設定
 ```
 
----
+#### 3.1.8 画面要件
 
-#### 1.3 データ分析アシスタント
+| 画面ID | 画面名 | 説明 |
+|--------|--------|------|
+| SCR-AI-007-01 | AIチャット画面 | チャットUI、Markdown表示、ストリーミング |
+| SCR-AI-007-02 | アラートサマリー | AI生成のアラート要約表示 |
+| SCR-AI-007-03 | 会話履歴 | 過去の会話検索・参照 |
 
-**例: 売上分析**
-```
-👤 「先週の売上が前週比-15%だった理由を分析して」
+#### 3.1.9 技術スタック
 
-🤖 「先週（1/15-1/21）の売上減少要因を特定しました:
+| レイヤー | 技術 |
+|---------|------|
+| Frontend | Vue 3 + Element Plus ChatBox + marked |
+| Backend | Spring Boot + Spring AI |
+| Vector DB | Chroma DB（開発）/ Qdrant（本番） |
+| LLM | Kimi API / Claude API（フォールバック） |
+| Cache | Redis（応答キャッシュ） |
 
-📉 主要因（影響度順）:
+#### 3.1.10 非機能要件
 
-1. 天候要因（-8%影響）
-   - 1/17-19の大雪で来店客数-35%
-   - 特に影響: 渋谷店(-¥120K)、新宿店(-¥95K)
-   
-2. 在庫切れ（-4%影響）
-   - おにぎり類: 平均3.2時間の欠品
-   - サンドイッチ: 平均2.1時間の欠品
-   - 推定機会損失: ¥85,000
-   
-3. 競合オープン（-3%影響）
-   - 池袋店から200m圏内にコンビニ新規出店
-   - 池袋店売上: -22%（特に飲料・菓子）
-
-📊 改善提案:
-  - 悪天候時の需要予測モデル導入
-  - 人気商品の安全在庫量+20%
-  - 池袋店: 差別化商品の拡充検討
-```
+| 要件 | 内容 |
+|------|------|
+| 応答時間 | 初回応答: 3秒以内、ストリーミング開始: 1秒以内 |
+| 精度 | 質問回答精度: 85%以上 |
+| 同時接続 | 100ユーザー同時利用可能 |
+| 可用性 | 99.5%以上 |
 
 ---
 
-### 🏗️ システム設計
+### 3.2 AI-001: 需要予測AI
 
-#### アーキテクチャ図
+#### 3.2.1 概要
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Frontend (Vue3)                       │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  💬 AI Chat Interface                             │  │
-│  │  - Chat UI Component                              │  │
-│  │  - Markdown Renderer                              │  │
-│  │  - Code/Data Display                              │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                            ↓ REST API
-┌─────────────────────────────────────────────────────────┐
-│              Backend (Spring Boot)                       │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  🧠 AI Service Layer                              │  │
-│  │  ┌────────────────┐  ┌─────────────────────────┐│  │
-│  │  │ RAG Orchestrator│  │ Prompt Engineering      ││  │
-│  │  │ - Query routing │  │ - Template management   ││  │
-│  │  │ - Context build │  │ - Few-shot examples     ││  │
-│  │  └────────────────┘  └─────────────────────────┘│  │
-│  └──────────────────────────────────────────────────┘  │
-│                            ↓                             │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  📚 Knowledge Base                                │  │
-│  │  ┌────────────┐  ┌──────────┐  ┌─────────────┐ │  │
-│  │  │ Vector DB  │  │ SQL DB   │  │ Cache(Redis)│ │  │
-│  │  │ (Chroma/   │  │ (MySQL)  │  │             │ │  │
-│  │  │  Qdrant)   │  │          │  │             │ │  │
-│  │  └────────────┘  └──────────┘  └─────────────┘ │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                            ↓ API Call
-┌─────────────────────────────────────────────────────────┐
-│              External AI Service                         │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  OpenAI API / Azure OpenAI                        │  │
-│  │  - GPT-4o-mini (高速・低コスト)                    │  │
-│  │  - text-embedding-3-small (埋め込み)              │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-001 |
+| 機能名 | 需要予測AI |
+| 概要 | 過去の販売データ・外部要因から将来の需要を予測する |
+| 主要ユーザー | 店舗スタッフ、エリアマネージャー |
+| 優先度 | 高 |
 
----
+#### 3.2.2 機能要件
 
-### 🛠️ 技術スタック
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-001-FR-001 | 日次・週次・月次の需要予測を生成できること | 必須 |
+| AI-001-FR-002 | SKU単位で需要予測を表示できること | 必須 |
+| AI-001-FR-003 | カテゴリ単位で需要予測を集計表示できること | 必須 |
+| AI-001-FR-004 | 天気予報を考慮した予測ができること | 必須 |
+| AI-001-FR-005 | イベント・祝日を考慮した予測ができること | 必須 |
+| AI-001-FR-006 | 予測の信頼度（%）を表示できること | 推奨 |
+| AI-001-FR-007 | 予測根拠を自然言語で説明できること | 推奨 |
+| AI-001-FR-008 | 過去の予測精度を確認できること | 推奨 |
 
-#### Frontend
-```typescript
-// AI Chat UI
+#### 3.2.3 入力データ
+
+| データ | ソース | 更新頻度 |
+|--------|--------|---------|
+| 販売履歴 | POSデータ（1年分） | 日次 |
+| 在庫データ | 在庫管理システム | リアルタイム |
+| 天気予報 | 外部API（OpenWeatherMap等） | 6時間毎 |
+| イベント情報 | 外部API + 手動登録 | 週次 |
+| 曜日・祝日 | システム内蔵 | - |
+| 競合情報 | 手動登録（オプション） | 随時 |
+
+#### 3.2.4 出力仕様
+
+```json
 {
-  "ui-library": "Element Plus ChatBox",
-  "markdown": "marked / markdown-it",
-  "code-highlight": "highlight.js",
-  "streaming": "EventSource (SSE)"
-}
-```
-
-#### Backend
-```java
-// Spring Boot AI Integration
-{
-  "ai-framework": "Spring AI (推奨) or LangChain4j",
-  "llm-provider": "OpenAI API (GPT-4o-mini)",
-  "embedding": "text-embedding-3-small",
-  "vector-db": "Chroma DB (軽量) or Qdrant",
-  "cache": "Redis (応答キャッシュ)"
-}
-```
-
-#### データ準備
-```python
-# Vector Database構築スクリプト
-{
-  "etl-tool": "Python (pandas + langchain)",
-  "embedding": "OpenAI Embeddings",
-  "chunking": "RecursiveCharacterTextSplitter",
-  "storage": "Chroma DB"
-}
-```
-
----
-
-### 📝 実装ステップ
-
-#### Step 1: 環境構築（1日）
-```bash
-# 1. Vector DB起動（Docker）
-docker run -d -p 8000:8000 \
-  -v ./chroma_data:/chroma/chroma \
-  chromadb/chroma:latest
-
-# 2. Spring AI依存関係追加
-# pom.xml
-<dependency>
-    <groupId>org.springframework.ai</groupId>
-    <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
-    <version>1.0.0-M1</version>
-</dependency>
-<dependency>
-    <groupId>org.springframework.ai</groupId>
-    <artifactId>spring-ai-chroma-store-spring-boot-starter</artifactId>
-</dependency>
-```
-
-#### Step 2: データ準備（1-2日）
-```python
-# scripts/build_knowledge_base.py
-
-import pandas as pd
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-
-# 1. データソース収集
-def collect_data():
-    """
-    以下のデータをJSON/CSVで抽出:
-    - アラート履歴（過去6ヶ月）
-    - 在庫トランザクション
-    - 商品マスタ
-    - 運用マニュアル（Markdown）
-    """
-    alerts = load_alerts_from_db()
-    inventory = load_inventory_history()
-    products = load_product_master()
-    manuals = load_operation_manuals()
-    
-    return combine_datasets(alerts, inventory, products, manuals)
-
-# 2. テキスト変換・チャンキング
-def prepare_documents(data):
-    """
-    構造化データをテキストに変換
-    例: 
-    「2024年1月15日、渋谷店でおにぎり（ツナマヨ）の在庫切れが発生。
-     対応: 緊急補充を実施、14時に到着。原因: 朝の需要予測ミス。」
-    """
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
-    )
-    return text_splitter.create_documents(data)
-
-# 3. Vector DBへ保存
-def build_vector_store(documents):
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    vectorstore = Chroma.from_documents(
-        documents=documents,
-        embedding=embeddings,
-        persist_directory="./chroma_db"
-    )
-    vectorstore.persist()
-```
-
-#### Step 3: Backend API実装（2-3日）
-```java
-// com.youlai.boot.modules.ai.service.AIAssistantService.java
-
-@Service
-public class AIAssistantService {
-    
-    @Autowired
-    private ChatClient chatClient;
-    
-    @Autowired
-    private VectorStore vectorStore;
-    
-    /**
-     * RAGベースのチャット応答
-     */
-    public String chat(String userQuestion, String userId) {
-        // 1. ベクトル検索で関連情報取得
-        List<Document> relevantDocs = vectorStore.similaritySearch(
-            SearchRequest.query(userQuestion).withTopK(5)
-        );
-        
-        // 2. コンテキスト構築
-        String context = buildContext(relevantDocs);
-        
-        // 3. プロンプト生成
-        String prompt = buildPrompt(userQuestion, context);
-        
-        // 4. LLM呼び出し
-        ChatResponse response = chatClient.call(
-            new Prompt(prompt,
-                OpenAiChatOptions.builder()
-                    .withModel("gpt-4o-mini")
-                    .withTemperature(0.3)
-                    .build()
-            )
-        );
-        
-        // 5. ログ記録
-        logConversation(userId, userQuestion, response.getResult().getOutput().getContent());
-        
-        return response.getResult().getOutput().getContent();
-    }
-    
-    private String buildPrompt(String question, String context) {
-        return String.format("""
-            あなたは無人スーパーの運用を支援するAIアシスタントです。
-            
-            【コンテキスト情報】
-            %s
-            
-            【ユーザーの質問】
-            %s
-            
-            【回答ルール】
-            1. 具体的な数値・日付を含める
-            2. 優先度を明示する
-            3. 次のアクションを提案する
-            4. 根拠データを示す
-            
-            回答:
-            """, context, question);
-    }
-}
-```
-
-#### Step 4: Frontend UI実装（2日）
-```vue
-<!-- src/views/ai/AIAssistant.vue -->
-
-<template>
-  <div class="ai-assistant-container">
-    <!-- チャットヘッダー -->
-    <div class="chat-header">
-      <el-icon><ChatDotRound /></el-icon>
-      <span>AI運用アシスタント</span>
-      <el-tag size="small" type="success">Beta</el-tag>
-    </div>
-
-    <!-- メッセージ表示エリア -->
-    <div class="chat-messages" ref="messagesContainer">
-      <div
-        v-for="message in messages"
-        :key="message.id"
-        :class="['message', message.role]"
-      >
-        <div class="message-avatar">
-          <el-icon v-if="message.role === 'user'">
-            <User />
-          </el-icon>
-          <el-icon v-else><Robot /></el-icon>
-        </div>
-        <div class="message-content">
-          <div v-if="message.role === 'assistant'" v-html="renderMarkdown(message.content)" />
-          <div v-else>{{ message.content }}</div>
-        </div>
-      </div>
-      
-      <!-- ローディング -->
-      <div v-if="isLoading" class="message assistant">
-        <div class="message-avatar">
-          <el-icon><Robot /></el-icon>
-        </div>
-        <div class="message-content">
-          <el-icon class="is-loading"><Loading /></el-icon>
-          考え中...
-        </div>
-      </div>
-    </div>
-
-    <!-- クイック質問ボタン -->
-    <div class="quick-questions">
-      <el-button
-        v-for="q in quickQuestions"
-        :key="q"
-        size="small"
-        @click="sendMessage(q)"
-      >
-        {{ q }}
-      </el-button>
-    </div>
-
-    <!-- 入力エリア -->
-    <div class="chat-input">
-      <el-input
-        v-model="inputMessage"
-        placeholder="質問を入力してください..."
-        @keyup.enter="sendMessage(inputMessage)"
-      >
-        <template #append>
-          <el-button
-            :icon="Promotion"
-            @click="sendMessage(inputMessage)"
-            :loading="isLoading"
-          />
-        </template>
-      </el-input>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, nextTick } from 'vue';
-import { marked } from 'marked';
-import AIAssistantAPI from '@/api/ai/assistant';
-
-const messages = ref<Message[]>([]);
-const inputMessage = ref('');
-const isLoading = ref(false);
-
-const quickQuestions = [
-  '今日の優先アラートは?',
-  '渋谷店の在庫状況を教えて',
-  '売上が下がった原因は?',
-  '賞味期限切れ商品をリスト'
-];
-
-const sendMessage = async (text: string) => {
-  if (!text.trim()) return;
-  
-  // ユーザーメッセージ追加
-  messages.value.push({
-    id: Date.now(),
-    role: 'user',
-    content: text
-  });
-  inputMessage.value = '';
-  
-  // スクロール
-  await nextTick();
-  scrollToBottom();
-  
-  // AI応答取得
-  isLoading.value = true;
-  try {
-    const response = await AIAssistantAPI.chat(text);
-    messages.value.push({
-      id: Date.now(),
-      role: 'assistant',
-      content: response.data
-    });
-  } catch (error) {
-    ElMessage.error('エラーが発生しました');
-  } finally {
-    isLoading.value = false;
-    await nextTick();
-    scrollToBottom();
-  }
-};
-
-const renderMarkdown = (content: string) => {
-  return marked(content);
-};
-</script>
-```
-
----
-
-### 💰 コスト見積もり
-
-#### OpenAI API使用料（月間）
-
-| 項目              | 使用量        | 単価          | 月額コスト |
-|------------------|-------------|--------------|----------|
-| GPT-4o-mini      | 100万トークン  | $0.15/1M     | $0.15    |
-| Embedding        | 50万トークン   | $0.02/1M     | $0.01    |
-| **合計**          |             |              | **$0.16** |
-
-**想定**: ユーザー10人 × 1日10質問 × 30日 = 3,000質問/月
-
-**実質コスト**: ほぼ無料（開発・検証レベル）
-
----
-
-### 📊 効果測定KPI
-
-| 指標                  | 目標値           |
-|----------------------|-----------------|
-| 質問回答精度           | 85%以上         |
-| 応答時間              | 3秒以内          |
-| ユーザー満足度         | 4.0/5.0以上     |
-| アラート対応時間短縮    | 30%削減         |
-| システム利用率         | 60%以上         |
-
----
-
-## Phase 2: 在庫予測・異常検知
-
-### 🎯 ユースケース
-
-#### 2.1 需要予測AI
-
-```python
-# 機械学習による在庫需要予測
-
-from sklearn.ensemble import RandomForestRegressor
-import pandas as pd
-
-# 特徴量
-features = [
-    '曜日', '時間帯', '天候', '気温',
-    '前日販売数', '前週同曜日販売数',
-    'イベント有無', '近隣店舗状況'
-]
-
-# 予測モデル
-model = RandomForestRegressor(n_estimators=100)
-model.fit(X_train, y_train)
-
-# 明日の予測
-predicted_demand = model.predict(tomorrow_features)
-```
-
-**UI表示**:
-```
-📊 明日の需要予測（渋谷店）
-
-おにぎり（ツナマヨ）
-  予測販売数: 52個 (±5個)
-  推奨発注量: 60個
-  現在在庫: 12個
-  → 🔴 48個の補充が必要です
-
-サンドイッチ（ハム）
-  予測販売数: 28個 (±3個)
-  推奨発注量: 35個
-  現在在庫: 45個
-  → 🟢 在庫充足（補充不要）
-
-💡 予測の根拠:
-  - 明日は金曜日（通常+15%増）
-  - 天気: 晴れ（通常比）
-  - 近隣イベント: なし
-```
-
----
-
-#### 2.2 異常検知AI
-
-```python
-# 売上異常の自動検知
-
-from sklearn.ensemble import IsolationForest
-
-# 異常検知モデル
-detector = IsolationForest(contamination=0.05)
-detector.fit(normal_sales_data)
-
-# リアルタイム監視
-if detector.predict([current_sales]) == -1:
-    alert = generate_anomaly_alert(current_sales)
-    send_notification(alert)
-```
-
-**アラート例**:
-```
-🚨 異常検知アラート
-
-新宿店: 売上急減を検知
-
-【検知内容】
-  時刻: 2024/01/25 14:30
-  現在売上: ¥8,500（14:30時点）
-  通常範囲: ¥15,000 - ¥18,000
-  乖離度: -43%（危険域）
-
-【考えられる原因】
-  1. 決済端末の不具合（可能性: 高）
-  2. 在庫切れによる販売不可（可能性: 中）
-  3. 近隣イベント等の影響（可能性: 低）
-
-【推奨アクション】
-  ✓ 店舗デバイス状態を確認
-  ✓ 主要商品の在庫を確認
-  ✓ 必要に応じて現地確認
-
-📊 詳細データ: [ダッシュボード]
-```
-
----
-
-#### 2.3 アラート優先度AI判定
-
-```java
-@Service
-public class AlertPriorityAIService {
-    
-    /**
-     * LLMによるアラート優先度自動判定
-     */
-    public AlertPriority classifyPriority(Alert alert) {
-        String prompt = String.format("""
-            以下のアラートの優先度を判定してください。
-            
-            【アラート情報】
-            - 種類: %s
-            - 店舗: %s（売上規模: %s）
-            - 商品: %s（販売数/日: %d個）
-            - 在庫: %d個
-            - 継続時間: %s
-            
-            【優先度基準】
-            CRITICAL: 売上への重大影響、安全リスク
-            HIGH: 即日対応必要
-            MEDIUM: 2-3日以内に対応
-            LOW: 監視継続
-            
-            優先度と理由を返してください。
-            """,
-            alert.getType(), alert.getStoreName(), alert.getStoreRevenue(),
-            alert.getProductName(), alert.getAvgDailySales(),
-            alert.getCurrentStock(), alert.getDuration()
-        );
-        
-        ChatResponse response = chatClient.call(new Prompt(prompt));
-        return parseAlertPriority(response);
-    }
-}
-```
-
----
-
-### 🛠️ 実装技術
-
-#### 機械学習モデル
-```python
-# scikit-learn ベースの予測モデル
-
-# 1. 需要予測
-{
-  "algorithm": "Random Forest / XGBoost",
-  "features": ["曜日", "天候", "過去販売数", "イベント"],
-  "training_data": "過去6ヶ月の販売実績",
-  "update_frequency": "週次"
-}
-
-# 2. 異常検知
-{
-  "algorithm": "Isolation Forest / LSTM",
-  "monitoring": "リアルタイム売上監視",
-  "threshold": "統計的外れ値（±3σ）",
-  "alert_trigger": "自動アラート生成"
-}
-```
-
----
-
-## Phase 3: 高度なAI機能
-
-### 3.1 画像認識（在庫確認）
-
-**ユースケース**: スマホで棚を撮影 → AI が商品・在庫数を自動認識
-
-```python
-# OpenAI Vision API 使用例
-
-from openai import OpenAI
-
-client = OpenAI()
-
-response = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[
+  "forecast_id": "FC-20260619-001",
+  "store_id": "store-shibuya-001",
+  "forecast_period": {
+    "start": "2026-06-22",
+    "end": "2026-06-28"
+  },
+  "generated_at": "2026-06-19T10:00:00Z",
+  "forecasts": [
+    {
+      "sku_id": "onigiri-salmon-001",
+      "sku_name": "おにぎり 鮭",
+      "category": "おにぎり",
+      "daily_forecasts": [
         {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": "この棚の在庫状況を確認してください。商品名と個数を教えてください。"
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": shelf_image_url
-                    }
-                }
-            ]
+          "date": "2026-06-22",
+          "predicted_quantity": 120,
+          "confidence": 0.85,
+          "factors": [
+            {"type": "day_of_week", "impact": "+10%", "reason": "日曜日"},
+            {"type": "weather", "impact": "+5%", "reason": "晴れ予報"},
+            {"type": "event", "impact": "+30%", "reason": "近隣花火大会"}
+          ]
         }
-    ]
-)
-
-# AI応答例:
-"""
-棚の在庫状況:
-- おにぎり（ツナマヨ）: 約12個
-- おにぎり（鮭）: 約8個
-- サンドイッチ: 約6個
-- 空き棚: 2段（要補充）
-
-注意: 左下の棚に賞味期限ラベルが見えます。確認推奨。
-"""
+      ],
+      "weekly_total": 750,
+      "vs_last_week": "+15%",
+      "recommendation": "通常より20%多めの発注を推奨"
+    }
+  ],
+  "alerts": [
+    {
+      "type": "high_demand",
+      "sku_id": "water-500ml-001",
+      "message": "猛暑予報により通常の2倍の需要が予測されます",
+      "severity": "warning"
+    }
+  ]
+}
 ```
+
+#### 3.2.5 画面要件
+
+| 画面ID | 画面名 | 説明 |
+|--------|--------|------|
+| SCR-AI-001-01 | 需要予測ダッシュボード | 週次予測の概要表示 |
+| SCR-AI-001-02 | SKU別予測詳細 | SKU単位の日次予測・根拠表示 |
+| SCR-AI-001-03 | 予測精度レポート | 過去予測の精度検証 |
+
+#### 3.2.6 非機能要件
+
+| 要件 | 内容 |
+|------|------|
+| 応答時間 | 予測生成: 30秒以内、予測表示: 2秒以内 |
+| 予測精度 | MAPE（平均絶対パーセント誤差）20%以内 |
+| データ保持 | 予測履歴: 1年間 |
 
 ---
 
-### 3.2 自然言語でのデータ操作
+### 3.3 AI-002: 自動発注AI
 
-**ユースケース**: 「先週の渋谷店の売上トップ10商品をグラフにして」
+#### 3.3.1 概要
 
-```typescript
-// Text-to-SQL + Chart Generation
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-002 |
+| 機能名 | 自動発注AI |
+| 概要 | 需要予測に基づき最適な発注量を算出・提案する |
+| 主要ユーザー | 店舗スタッフ |
+| 優先度 | 高 |
 
-async function naturalLanguageQuery(question: string) {
-  // 1. 自然言語 → SQLクエリ生成
-  const sql = await generateSQL(question);
-  
-  // 2. クエリ実行
-  const data = await executeQuery(sql);
-  
-  // 3. グラフ設定生成
-  const chartConfig = await generateChartConfig(question, data);
-  
-  // 4. EChartsで可視化
-  return { data, chartConfig };
+#### 3.3.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-002-FR-001 | 需要予測に基づく発注推奨量を算出できること | 必須 |
+| AI-002-FR-002 | 現在庫・安全在庫を考慮した発注量を算出できること | 必須 |
+| AI-002-FR-003 | リードタイムを考慮した発注タイミングを提案できること | 必須 |
+| AI-002-FR-004 | 発注ロット単位での調整ができること | 必須 |
+| AI-002-FR-005 | 発注リストを一括承認・編集できること | 必須 |
+| AI-002-FR-006 | 自動発注モード（承認不要）を設定できること | 推奨 |
+| AI-002-FR-007 | 発注履歴・実績を確認できること | 推奨 |
+| AI-002-FR-008 | 発注コストの予測を表示できること | 推奨 |
+
+#### 3.3.3 発注量算出ロジック
+
+```
+発注推奨量 = (予測需要 × 予測期間) + 安全在庫 - 現在庫 - 発注残
+
+安全在庫 = 平均日販 × 安全在庫日数 × (1 + 需要変動係数)
+
+発注点 = (リードタイム × 平均日販) + 安全在庫
+```
+
+#### 3.3.4 出力仕様
+
+```json
+{
+  "order_recommendation_id": "OR-20260619-001",
+  "store_id": "store-shibuya-001",
+  "generated_at": "2026-06-19T06:00:00Z",
+  "delivery_date": "2026-06-21",
+  "items": [
+    {
+      "sku_id": "onigiri-salmon-001",
+      "sku_name": "おにぎり 鮭",
+      "current_stock": 30,
+      "safety_stock": 20,
+      "predicted_demand": 120,
+      "recommended_quantity": 150,
+      "lot_size": 10,
+      "adjusted_quantity": 150,
+      "unit_cost": 80,
+      "total_cost": 12000,
+      "reason": "週末+花火大会で需要増加予測（通常比+40%）"
+    }
+  ],
+  "summary": {
+    "total_items": 45,
+    "total_cost": 285000,
+    "vs_last_week": "+12%"
+  },
+  "alerts": [
+    {
+      "type": "stockout_risk",
+      "sku_id": "water-500ml-001",
+      "message": "現在庫では6/23までに欠品リスクあり。緊急発注を推奨",
+      "severity": "critical"
+    }
+  ]
 }
 ```
 
 ---
 
-## 技術スタック
+### 3.4 AI-003: 価格最適化AI
 
-### 推奨構成
+#### 3.4.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-003 |
+| 機能名 | 価格最適化AI（ダイナミックプライシング） |
+| 概要 | 在庫・需要・消費期限に基づき最適な価格を提案する |
+| 主要ユーザー | 店舗責任者 |
+| 優先度 | 高 |
+
+#### 3.4.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-003-FR-001 | 消費期限に基づく値下げ推奨ができること | 必須 |
+| AI-003-FR-002 | 値下げ率と予測販売数の関係を表示できること | 必須 |
+| AI-003-FR-003 | 値下げ実施時の予測売上・利益を表示できること | 必須 |
+| AI-003-FR-004 | 値下げルール（タイミング・率）を設定できること | 必須 |
+| AI-003-FR-005 | 一括値下げを実行できること | 必須 |
+| AI-003-FR-006 | 値上げ機会（需要過多商品）を提案できること | 推奨 |
+| AI-003-FR-007 | 競合価格を考慮した価格設定ができること | 推奨 |
+| AI-003-FR-008 | 値下げ効果の実績分析ができること | 推奨 |
+
+#### 3.4.3 値下げロジック
+
+```
+値下げ推奨タイミング:
+- 消費期限まで6時間: 20%OFF推奨
+- 消費期限まで3時間: 30%OFF推奨
+- 消費期限まで1時間: 50%OFF推奨
+
+調整要因:
+- 在庫数が多い場合: +10%値下げ
+- 天気が悪い場合: +10%値下げ
+- 閉店間際: +10%値下げ
+- 人気商品: -10%値下げ（値下げ幅縮小）
+```
+
+#### 3.4.4 出力仕様
+
+```json
+{
+  "pricing_recommendation_id": "PR-20260619-001",
+  "store_id": "store-shibuya-001",
+  "generated_at": "2026-06-19T18:00:00Z",
+  "markdown_recommendations": [
+    {
+      "sku_id": "sandwich-egg-001",
+      "sku_name": "たまごサンド",
+      "current_price": 380,
+      "recommended_price": 190,
+      "discount_rate": 50,
+      "expiry_time": "2026-06-19T21:00:00Z",
+      "hours_until_expiry": 3,
+      "current_stock": 8,
+      "predicted_sales_at_current_price": 2,
+      "predicted_sales_at_recommended_price": 7,
+      "reason": "消費期限まで3時間、在庫8個。50%OFFで完売率85%",
+      "expected_revenue": {
+        "no_markdown": 760,
+        "with_markdown": 1330,
+        "waste_cost_saved": 480
+      }
+    }
+  ],
+  "markup_recommendations": [
+    {
+      "sku_id": "pudding-premium-001",
+      "sku_name": "濃厚プリン",
+      "current_price": 300,
+      "recommended_price": 350,
+      "reason": "SNS話題で需要増、常に売り切れ。価格弾力性低い",
+      "expected_impact": "+16% 売上増（数量変動なし想定）"
+    }
+  ]
+}
+```
+
+---
+
+### 3.5 AI-004: 廃棄削減AI
+
+#### 3.5.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-004 |
+| 機能名 | 廃棄削減AI |
+| 概要 | 廃棄リスクの早期検知と削減アクションを提案する |
+| 主要ユーザー | 店舗スタッフ、店舗責任者 |
+| 優先度 | 中 |
+
+#### 3.5.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-004-FR-001 | 廃棄リスクの高い商品を早期検知できること | 必須 |
+| AI-004-FR-002 | 廃棄削減アクション（値下げ・陳列変更等）を提案できること | 必須 |
+| AI-004-FR-003 | 廃棄率の推移をモニタリングできること | 必須 |
+| AI-004-FR-004 | カテゴリ別・SKU別の廃棄分析ができること | 必須 |
+| AI-004-FR-005 | 発注量と廃棄の相関分析ができること | 推奨 |
+| AI-004-FR-006 | 廃棄削減目標の設定・進捗管理ができること | 推奨 |
+
+---
+
+### 3.6 AI-005: 多言語接客AI
+
+#### 3.6.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-005 |
+| 機能名 | 多言語接客AI |
+| 概要 | 外国人顧客への接客をリアルタイム翻訳で支援する |
+| 主要ユーザー | 店舗スタッフ |
+| 優先度 | 中 |
+
+#### 3.6.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-005-FR-001 | 音声入力からリアルタイム翻訳ができること | 必須 |
+| AI-005-FR-002 | テキスト入力からの翻訳ができること | 必須 |
+| AI-005-FR-003 | 日本語・英語・中国語・韓国語に対応すること | 必須 |
+| AI-005-FR-004 | 商品説明の多言語表示ができること | 必須 |
+| AI-005-FR-005 | 定型文を登録・使用できること | 必須 |
+| AI-005-FR-006 | 商品バーコードスキャンで多言語説明を表示できること | 推奨 |
+| AI-005-FR-007 | ベトナム語・タイ語に対応すること | 推奨 |
+
+#### 3.6.3 対応言語
+
+| 言語 | Phase 1 | Phase 2 |
+|------|---------|---------|
+| 日本語 | ✅ | ✅ |
+| 英語 | ✅ | ✅ |
+| 中国語（簡体字） | ✅ | ✅ |
+| 中国語（繁体字） | - | ✅ |
+| 韓国語 | ✅ | ✅ |
+| ベトナム語 | - | ✅ |
+| タイ語 | - | ✅ |
+
+#### 3.6.4 定型文テンプレート
+
+| カテゴリ | 日本語 | 英語 | 中国語 |
+|---------|--------|------|--------|
+| 挨拶 | いらっしゃいませ | Welcome | 欢迎光临 |
+| 袋 | 袋は必要ですか？ | Do you need a bag? | 需要袋子吗？ |
+| 支払 | 〇〇円です | That will be XX yen | 一共XX日元 |
+| 温め | 温めますか？ | Would you like it heated? | 需要加热吗？ |
+| 箸 | お箸はいりますか？ | Do you need chopsticks? | 需要筷子吗？ |
+
+---
+
+### 3.7 AI-006: クレーム対応AI
+
+#### 3.7.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-006 |
+| 機能名 | クレーム対応AIアシスト |
+| 概要 | クレーム内容を分析し、適切な対応フローを提示する |
+| 主要ユーザー | 店舗スタッフ、店舗責任者 |
+| 優先度 | 中 |
+
+#### 3.7.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-006-FR-001 | クレーム内容から種別を自動分類できること | 必須 |
+| AI-006-FR-002 | 重大度を自動判定できること | 必須 |
+| AI-006-FR-003 | 対応フロー・スクリプトを提示できること | 必須 |
+| AI-006-FR-004 | 対応履歴を記録できること | 必須 |
+| AI-006-FR-005 | エスカレーション先を提示できること | 必須 |
+| AI-006-FR-006 | 過去の類似クレーム・対応例を検索できること | 推奨 |
+| AI-006-FR-007 | クレーム分析レポートを生成できること | 推奨 |
+
+#### 3.7.3 クレーム分類
+
+| 分類 | 重大度 | エスカレーション |
+|------|--------|------------------|
+| 異物混入 | 重大 | 店長必須、本部報告 |
+| 食中毒疑い | 重大 | 店長必須、本部・保健所 |
+| 品質不良 | 高 | 店長推奨 |
+| 接客態度 | 中 | 店舗対応 |
+| 価格・表示 | 中 | 店舗対応 |
+| 設備故障 | 低 | 店舗対応 |
+
+---
+
+### 3.8 AI-008: 売上分析AI
+
+#### 3.8.1 概要
+
+| 項目 | 内容 |
+|------|------|
+| 機能ID | AI-008 |
+| 機能名 | 売上分析・改善提案AI |
+| 概要 | 売上データを分析し、具体的な改善アクションを提案する |
+| 主要ユーザー | エリアマネージャー、経営層 |
+| 優先度 | 高 |
+
+#### 3.8.2 機能要件
+
+| 要件ID | 要件 | 優先度 |
+|--------|------|--------|
+| AI-008-FR-001 | 日次・週次・月次の売上分析レポートを生成できること | 必須 |
+| AI-008-FR-002 | 売上変動の要因を自動分析できること | 必須 |
+| AI-008-FR-003 | 具体的な改善アクションを提案できること | 必須 |
+| AI-008-FR-004 | 店舗比較分析ができること | 必須 |
+| AI-008-FR-005 | カテゴリ別・時間帯別の分析ができること | 必須 |
+| AI-008-FR-006 | 改善アクションの効果予測を表示できること | 推奨 |
+| AI-008-FR-007 | 自然言語での質問に回答できること | 推奨 |
+| AI-008-FR-008 | 定期レポートを自動配信できること | 推奨 |
+
+#### 3.8.3 分析出力例
+
+```
+📊 月次売上分析レポート - 渋谷センター店 2026年6月
+
+## サマリー
+売上: 1,250万円（前年比 +5.2%、目標比 -2.1%）
+客数: 42,000人（前年比 +3.8%）
+客単価: 298円（前年比 +1.3%）
+
+## AI分析: 目標未達の要因
+
+🔴 主要因（寄与度 60%）
+昼食時間帯（11-14時）の売上が前年比-8%
+→ 競合店Aの新規オープン（6/1）が影響
+
+🟡 副要因（寄与度 25%）
+ホット飲料の売上が前年比-15%
+→ 例年より早い猛暑で需要シフト
+
+🟢 好調要因
+デザート売上が前年比+22%
+→ 新商品「濃厚プリン」がSNSで話題
+
+## 改善アクション提案
+
+1️⃣ 昼食時間帯の競争力強化（優先度: 高）
+├─ 弁当の品揃え見直し
+├─ ランチセット割引（11:00-13:00限定）
+└─ 予測効果: 売上 +3%
+```
+
+---
+
+## 4. 非機能要件
+
+### 4.1 性能要件
+
+| 項目 | 要件 |
+|------|------|
+| 応答時間（AI推論） | 95%ile 10秒以内 |
+| 応答時間（データ表示） | 95%ile 2秒以内 |
+| 同時接続数 | 100店舗同時利用可能 |
+| API呼び出し制限 | 1000リクエスト/分/テナント |
+
+### 4.2 可用性要件
+
+| 項目 | 要件 |
+|------|------|
+| 稼働率 | 99.5%以上（月間） |
+| 計画停止 | 月1回、深夜帯（2:00-5:00）まで |
+| 障害復旧 | RTO 4時間、RPO 1時間 |
+
+### 4.3 セキュリティ要件
+
+| 項目 | 要件 |
+|------|------|
+| データ暗号化 | 転送中: TLS 1.3、保存時: AES-256 |
+| 認証 | JWT + リフレッシュトークン |
+| 認可 | RBAC（ロールベースアクセス制御） |
+| 監査ログ | 全AI操作を記録、1年間保持 |
+| PII保護 | 顧客個人情報のマスキング・匿名化 |
+
+### 4.4 AI固有要件
+
+| 項目 | 要件 |
+|------|------|
+| AIプロバイダー | Kimi（プライマリ）、Claude（フォールバック） |
+| フォールバック | Kimi障害時は自動でClaudeに切替 |
+| コンテキスト上限 | 200万トークン（Kimi） |
+| レート制限 | 60リクエスト/分/テナント |
+| 応答キャッシュ | 同一クエリは5分間キャッシュ |
+
+---
+
+## 5. 技術スタック
+
+### 5.1 推奨構成
 
 ```yaml
 AI Framework:
-  Backend: Spring AI (Java) or LangChain4j
-  Python: LangChain + FastAPI（機械学習モデル用）
+  Backend: Spring AI (Java)
+  Alternative: LangChain4j
 
 LLM Provider:
-  Primary: OpenAI API
-    - Chat: gpt-4o-mini ($0.15/1M tokens)
-    - Embedding: text-embedding-3-small ($0.02/1M tokens)
-  Alternative: Azure OpenAI（エンタープライズ向け）
+  Primary: Kimi API
+    - 長文コンテキスト: 200万トークン
+    - 中国語ネイティブ対応
+  Fallback: Claude API
+    - 高精度分析
+    - 日本語対応
 
 Vector Database:
-  Development: Chroma DB（軽量、Dockerで簡単起動）
-  Production: Qdrant or Pinecone（スケーラビリティ）
+  Development: Chroma DB（軽量、Docker起動）
+  Production: Qdrant or Milvus
 
 Machine Learning:
   Framework: scikit-learn, XGBoost
   Deployment: FastAPI + Docker
   Monitoring: MLflow
 
+Cache:
+  Redis（応答キャッシュ、セッション管理）
+
 Monitoring:
   LLM Observability: LangSmith or Helicone
-  Cost Tracking: OpenAI Dashboard
   Performance: Prometheus + Grafana
+```
+
+### 5.2 ディレクトリ構成（Backend）
+
+```
+apps/backend/src/main/java/com/youlai/boot/modules/ai/
+├── config/
+│   └── AIConfig.java              # AI設定
+├── controller/
+│   └── AIAssistantController.java # REST API
+├── service/
+│   ├── AIAssistantService.java    # RAGオーケストレーション
+│   ├── DemandForecastService.java # 需要予測
+│   ├── PricingOptimizationService.java # 価格最適化
+│   └── SalesAnalysisService.java  # 売上分析
+├── repository/
+│   └── VectorStoreRepository.java # Vector DB操作
+├── model/
+│   ├── dto/                       # リクエスト/レスポンスDTO
+│   └── entity/                    # エンティティ
+└── prompt/
+    └── templates/                 # プロンプトテンプレート
 ```
 
 ---
 
-## 実装工数見積もり
+## 6. 成功指標（KPI）
 
-### Phase 1: RAG運用アシスタント
+### 6.1 Phase 1 KPI
 
-| タスク                | 工数    | 内容                          |
-|----------------------|--------|------------------------------|
-| 環境構築              | 1日    | Docker, Spring AI, OpenAI API |
-| データ準備・Embedding | 2日    | Vector DB構築                 |
-| Backend API実装       | 3日    | RAG機能、プロンプト最適化        |
-| Frontend UI実装       | 2日    | Chat UI、Markdown表示          |
-| テスト・調整          | 2日    | 精度向上、ユーザビリティ改善      |
-| **合計**             | **10日** |                              |
+| 機能 | 指標 | 目標値 | 測定方法 |
+|------|------|--------|---------|
+| RAG運用アシスタント | 質問回答精度 | 85%以上 | ユーザー評価 |
+| RAG運用アシスタント | 応答時間 | 3秒以内 | システムログ |
+| RAG運用アシスタント | 利用率 | 60%以上 | DAU/登録ユーザー |
+| 需要予測AI | MAPE | 20%以内 | 予測値 vs 実績値 |
+| 自動発注AI | 欠品率 | -40% | 欠品SKU数/総SKU数 |
+| 多言語接客AI | 利用率 | 80% | AI利用回数/外国人客数 |
 
-### Phase 2: 在庫予測・異常検知
+### 6.2 Phase 2 KPI
 
-| タスク                | 工数    |
-|----------------------|--------|
-| データ分析・特徴量設計  | 3日    |
-| MLモデル開発・学習     | 3日    |
-| API統合              | 2日    |
-| UI実装               | 2日    |
-| **合計**             | **10日** |
-
-### Phase 3: 画像認識
-
-| タスク                | 工数    |
-|----------------------|--------|
-| Vision API統合       | 2日    |
-| モバイル撮影UI        | 3日    |
-| 精度検証             | 3日    |
-| **合計**             | **8日** |
+| 機能 | 指標 | 目標値 | 測定方法 |
+|------|------|--------|---------|
+| 価格最適化AI | 廃棄率 | -30% | 廃棄金額/仕入金額 |
+| 廃棄削減AI | 廃棄コスト | -25% | 月間廃棄金額 |
+| クレーム対応AI | 解決時間 | -50% | クレーム発生→解決時間 |
+| 売上分析AI | アクション実行率 | 70%以上 | 実行アクション数/提案数 |
 
 ---
 
-## デモ・アピールポイント
+## 7. 実装工数見積もり
 
-### 技術面談でのアピール内容
+### 7.1 Phase 1: RAG運用アシスタント + 基盤
 
-✅ **RAG実装経験**
-  - Vector DBを使った意味検索
-  - プロンプトエンジニアリング
-  - LLM API統合（OpenAI / Azure）
+| タスク | 工数 | 内容 |
+|--------|------|------|
+| 環境構築 | 1日 | Docker, Spring AI, Kimi API |
+| データ準備・Embedding | 2日 | Vector DB構築 |
+| Backend API実装 | 3日 | RAG機能、プロンプト最適化 |
+| Frontend UI実装 | 2日 | Chat UI、Markdown表示 |
+| テスト・調整 | 2日 | 精度向上、ユーザビリティ改善 |
+| **合計** | **10日** | |
 
-✅ **実務的なAI活用**
-  - 運用効率化の具体的ユースケース
-  - コスト最適化（gpt-4o-mini使用）
-  - 精度とレスポンス速度のバランス
+### 7.2 Phase 1: 需要予測 + 自動発注
 
-✅ **フルスタック開発**
-  - Backend: Spring Boot + Spring AI
-  - Frontend: Vue3 + TypeScript
-  - ML: Python + scikit-learn
-  - Infra: Docker, Vector DB
+| タスク | 工数 | 内容 |
+|--------|------|------|
+| データ分析・特徴量設計 | 3日 | 販売データ分析 |
+| MLモデル開発 | 3日 | 予測モデル構築 |
+| API統合 | 2日 | Backend連携 |
+| UI実装 | 2日 | 予測表示・発注画面 |
+| **合計** | **10日** | |
 
-✅ **プロダクト思考**
-  - ユーザー体験重視のUI設計
-  - 段階的な機能追加計画
-  - ROI測定可能なKPI設定
+### 7.3 Phase 2: 価格最適化 + 売上分析
 
----
-
-## 次のステップ
-
-### 1. 最小実装（1週間）
-- [ ] RAG環境構築
-- [ ] 簡単な質問応答（3-5パターン）
-- [ ] デモ動画撮影
-
-### 2. 機能拡張（2週間）
-- [ ] アラート自動サマリー
-- [ ] データ分析アシスタント
-- [ ] 需要予測プロトタイプ
-
-### 3. 本番準備（1週間）
-- [ ] セキュリティ対策
-- [ ] ログ・監査
-- [ ] ドキュメント整備
+| タスク | 工数 | 内容 |
+|--------|------|------|
+| 価格最適化ロジック | 5日 | アルゴリズム設計・実装 |
+| 売上分析AI | 5日 | 分析・レポート生成 |
+| UI実装 | 3日 | 分析画面 |
+| テスト | 2日 | 精度検証 |
+| **合計** | **15日** | |
 
 ---
 
-## 参考リソース
+## 8. リスクと対策
 
-### 公式ドキュメント
-- [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
-- [OpenAI API Reference](https://platform.openai.com/docs/)
-- [LangChain Documentation](https://python.langchain.com/)
-- [Chroma DB Guide](https://docs.trychroma.com/)
-
-### サンプルコード
-- [Spring AI Samples](https://github.com/spring-projects/spring-ai)
-- [RAG Tutorial](https://github.com/openai/openai-cookbook)
+| リスク | 対策 |
+|--------|------|
+| Kimi APIのレート制限 | キャッシュ、バッチ処理、Claudeフォールバック |
+| 機密情報の外部送信 | PII検出・マスキング、送信前チェック |
+| 生成コードの品質 | 必ず人間レビュー、CI/CDでのテスト必須 |
+| 予測精度不足 | 継続的学習、フィードバックループ構築 |
+| コスト増大 | 使用量監視、キャッシュ活用、モデル選択最適化 |
 
 ---
 
-**作成日**: 2026年1月25日  
-**バージョン**: 1.0  
-**想定読者**: 開発者、技術面接官、プロダクトオーナー
+## 9. 制約事項・前提条件
+
+### 9.1 制約事項
+
+| 項目 | 内容 |
+|------|------|
+| AI API依存 | Kimi/Claude APIの可用性に依存 |
+| データ品質 | AI精度はデータ品質に依存 |
+| コスト | AI API利用量に応じた従量課金 |
+| 法規制 | 個人情報保護法、景品表示法に準拠必要 |
+
+### 9.2 前提条件
+
+| 項目 | 内容 |
+|------|------|
+| POS連携 | POSシステムとのAPI連携が可能であること |
+| インターネット接続 | 店舗でのインターネット接続が安定していること |
+| ユーザー教育 | スタッフへのAI機能トレーニング実施 |
+| データ蓄積 | 最低6ヶ月分の販売データが蓄積されていること |
+
+---
+
+## 改善履歴
+
+| バージョン | 日付 | 変更内容 | 作成者 |
+|-----------|------|---------|--------|
+| 1.0.0 | 2026/06/19 | 初版作成（既存提案書を要件定義形式に再構成） | - |

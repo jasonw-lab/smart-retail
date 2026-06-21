@@ -1,3 +1,37 @@
+# プロジェクト共通ルール
+
+本ファイルは `CLAUDE.md` / `AGENTS.md` で共通して適用されるルールを集約したものです。
+各ガイドから参照・include してください。
+
+## 無視するフォルダ
+
+`ign_*` にマッチするフォルダはエージェント操作の対象外です。明示的な指示がない限り、内部のファイルを読み取り・変更・参照しないでください。
+
+## Git ワークフロー
+
+- 新しい issue に対応するとき、現在のブランチから対応用ブランチを新規作成する
+- Branch: `feature/issue-<number>-<description>`
+- PR target: `develop` branch
+- Commit format: `feat(scope): description (issue-XXX)`
+
+## Docker 接続先
+
+本プロジェクトの Docker コンテナから DB、Elasticsearch、Redis、MongoDB へ接続する際は、デプロイ先サーバー `${SERVER_IP}` を参照してください。
+
+- `.env` および `platform/docker/.env` で `SERVER_IP` を設定してください
+- SSH 接続情報: `SSH_USER=noah` / `SSH_PASSWORD=pass`
+- ローカル開発時は `${SERVER_IP:-localhost}` のデフォルト値により `localhost` が使用されます
+
+## デプロイ先
+
+特に指示がない場合、デフォルトのデプロイは `${SERVER_IP}` のサーバーで実施してください。
+
+- SSH: `ssh ${SSH_USER}@${SERVER_IP}`
+- パスワード: `${SSH_PASSWORD}`
+- Docker / ミドルウェア接続も `${SERVER_IP}` を参照
+
+---
+
 # backend
 
 ## API新規作成

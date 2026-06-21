@@ -1,0 +1,218 @@
+package handler
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"youlai-gin/internal/system/config/model"
+	"youlai-gin/internal/system/config/service"
+	appContext "youlai-gin/internal/common/context"
+	"youlai-gin/internal/common/auth"
+	"youlai-gin/pkg/enums"
+	"youlai-gin/pkg/errs"
+	"youlai-gin/internal/middleware"
+	response "youlai-gin/internal/common"
+	"youlai-gin/internal/common/validator"
+)
+
+// RegisterRoutes 注册配置管理路由
+func RegisterRoutes(r *gin.RouterGroup) {
+	// 使用复数形式
+	config := r.Group("/configs")
+	{
+		config.GET("", auth.RequirePermission("sys:config:list"), middleware.OperationLog(enums.LogModuleConfig, enums.ActionTypeList), GetConfigPage)
+		config.GET("/:id/form", GetConfigForm)
+		config.GET("/:id", GetConfigByID)
+		config.GET("/key/:key", GetConfigByKey)
+		config.POST("", auth.RequirePermission("sys:config:create"), middleware.OperationLog(enums.LogModuleConfig, enums.ActionTypeInsert), SaveConfig)
+		config.PUT("/:id", auth.RequirePermission("sys:config:update"), middleware.OperationLog(enums.LogModuleConfig, enums.ActionTypeUpdate), UpdateConfig)
+		config.DELETE("/:ids", auth.RequirePermission("sys:config:delete"), middleware.OperationLog(enums.LogModuleConfig, enums.ActionTypeDelete), DeleteConfigs)
+		config.POST("/refresh/:key", auth.RequirePermission("sys:config:refresh"), RefreshConfigCache)
+		config.POST("/refresh", auth.RequirePermission("sys:config:refresh"), RefreshAllConfigCache)
+	}
+}
+
+// GetConfigPage 获取配置分页列表
+// @Summary 配置分页
+// @Tags 07.系统配置
+// @Router /api/v1/configs [get]
+func GetConfigPage(c *gin.Context) {
+	var query model.ConfigQuery
+	if err := validator.BindQuery(c, &query); err != nil {
+		c.Error(err)
+		return
+	}
+
+	result, err := service.GetConfigPage(&query)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkPaged(c, result)
+}
+
+// GetConfigForm 获取配置表单数据
+// @Summary 配置表单
+// @Tags 07.系统配置
+// @Param id path int true "配置ID"
+// @Router /api/v1/configs/{id}/form [get]
+func GetConfigForm(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "配置")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	formData, err := service.GetConfigFormData(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, formData)
+}
+
+// GetConfigByID 根据ID获取配置
+// @Summary 配置详情
+// @Tags 07.系统配置
+// @Param id path int true "配置ID"
+// @Router /api/v1/configs/{id} [get]
+func GetConfigByID(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "配置")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	config, err := service.GetConfigByID(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, config)
+}
+
+// GetConfigByKey 根据Key获取配置
+// @Summary 根据键获取配置
+// @Tags 07.系统配置
+// @Param key path string true "配置键"
+// @Router /api/v1/configs/key/{key} [get]
+func GetConfigByKey(c *gin.Context) {
+	key := c.Param("key")
+	if key == "" {
+		c.Error(errs.BadRequest("配置Key不能为空"))
+		return
+	}
+
+	config, err := service.GetConfigByKey(key)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.Ok(c, config)
+}
+
+// SaveConfig 保存配置（新增）
+// @Summary 新增配置
+// @Tags 07.系统配置
+// @Router /api/v1/configs [post]
+func SaveConfig(c *gin.Context) {
+	var form model.ConfigForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := service.SaveConfig(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "保存成功")
+}
+
+// UpdateConfig 更新配置
+// @Summary 更新配置
+// @Tags 07.系统配置
+// @Param id path int true "配置ID"
+// @Router /api/v1/configs/{id} [put]
+func UpdateConfig(c *gin.Context) {
+	id, err := appContext.ParsePathParam(c, "id", "配置")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var form model.ConfigForm
+	if err := validator.BindJSON(c, &form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	form.ID = id
+	if err := service.SaveConfig(&form); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "更新成功")
+}
+
+// DeleteConfigs 删除配置（支持批量）
+// @Summary 删除配置
+// @Tags 07.系统配置
+// @Param ids path string true "配置ID列表"
+// @Router /api/v1/configs/{ids} [delete]
+func DeleteConfigs(c *gin.Context) {
+	idsStr := c.Param("ids")
+	ids, err := appContext.ParseIntList(idsStr, "配置")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if len(ids) == 1 {
+		if err := service.DeleteConfig(ids[0]); err != nil {
+			c.Error(err)
+			return
+		}
+	} else {
+		if err := service.BatchDeleteConfig(ids); err != nil {
+			c.Error(err)
+			return
+		}
+	}
+
+	response.OkMsg(c, "删除成功")
+}
+
+// RefreshConfigCache 刷新指定配置缓存
+// @Summary 刷新配置缓存
+// @Tags 07.系统配置
+// @Param key path string true "配置键"
+// @Router /api/v1/configs/refresh/{key} [post]
+func RefreshConfigCache(c *gin.Context) {
+	key := c.Param("key")
+	if key == "" {
+		c.Error(errs.BadRequest("配置Key不能为空"))
+		return
+	}
+
+	if err := service.RefreshConfigCache(key); err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.OkMsg(c, "刷新成功")
+}
+
+// RefreshAllConfigCache 刷新所有配置缓存
+// @Summary 刷新全部配置缓存
+// @Tags 07.系统配置
+// @Router /api/v1/configs/refresh [post]
+func RefreshAllConfigCache(c *gin.Context) {
+	service.ClearAllConfigCache()
+	response.OkMsg(c, "刷新成功")
+}

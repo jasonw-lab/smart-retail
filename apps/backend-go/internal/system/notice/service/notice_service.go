@@ -1,0 +1,211 @@
+package service
+
+import (
+	"encoding/json"
+	"strings"
+	"time"
+
+	"youlai-gin/internal/system/notice/model"
+	"youlai-gin/internal/system/notice/repository"
+	common "youlai-gin/pkg/model"
+	"youlai-gin/internal/common/database"
+	"youlai-gin/pkg/errs"
+	"youlai-gin/internal/message"
+	"youlai-gin/pkg/types"
+)
+
+// GetNoticePage 通知分页查询
+func GetNoticePage(query *model.NoticeQuery) (*common.PagedData, error) {
+	list, total, err := repository.GetNoticePage(query)
+	if err != nil {
+		return nil, errs.SystemError("查询通知列表失败")
+	}
+
+	return &common.PagedData{List: list, Total: total}, nil
+}
+
+// GetNoticeByID 根据ID获取通知
+func GetNoticeByID(id int64) (*model.Notice, error) {
+	return repository.GetNoticeByID(id)
+}
+
+// SaveNotice 保存通知（新增或更新）
+func SaveNotice(form *model.NoticeForm) error {
+	parsePublishTime := func(s string) (types.LocalTime, bool, error) {
+		if strings.TrimSpace(s) == "" {
+			return types.LocalTime{}, false, nil
+		}
+		parsed, err := time.ParseInLocation(types.TimeFormat, s, time.Local)
+		if err != nil {
+			return types.LocalTime{}, false, err
+		}
+		return types.LocalTime(parsed), true, nil
+	}
+
+	notice := &model.Notice{
+		ID:          form.ID,
+		Title:       form.Title,
+		Content:     form.Content,
+		Type:        form.Type,
+		Level:       form.Level,
+		Status:      form.Status,
+		TargetType:  form.TargetType,
+	}
+
+	if pt, ok, err := parsePublishTime(form.PublishTime); err != nil {
+		return errs.BadRequest("发布时间格式错误")
+	} else if ok {
+		notice.PublishTime = pt
+	}
+
+	if len(form.TargetUsers) > 0 {
+		targetUsersJSON, _ := json.Marshal(form.TargetUsers)
+		notice.TargetUsers = string(targetUsersJSON)
+	}
+
+	if (time.Time(notice.PublishTime)).IsZero() && notice.Status == 1 {
+		notice.PublishTime = types.Now()
+	}
+
+	var err error
+	if notice.ID > 0 {
+		err = repository.UpdateNotice(notice)
+	} else {
+		err = repository.CreateNotice(notice)
+	}
+
+	if err != nil {
+		return errs.SystemError("保存通知失败")
+	}
+
+	// 如果是发布状态，推送通知
+	if notice.Status == 1 {
+		go pushNotice(notice, form.TargetUsers)
+	}
+
+	return nil
+}
+
+// DeleteNotice 删除通知
+func DeleteNotice(id int64) error {
+	if err := repository.DeleteNotice(id); err != nil {
+		return errs.SystemError("删除通知失败")
+	}
+	return nil
+}
+
+// GetUserNoticePage 获取用户通知列表
+func GetUserNoticePage(userID int64, query *model.UserNoticeQuery) (*common.PagedData, error) {
+	list, total, err := repository.GetUserNoticePage(userID, query)
+	if err != nil {
+		return nil, errs.SystemError("查询用户通知列表失败")
+	}
+
+	return &common.PagedData{List: list, Total: total}, nil
+}
+
+// MarkNoticeAsRead 标记通知为已读
+func MarkNoticeAsRead(noticeID, userID int64) error {
+	if err := repository.MarkNoticeAsRead(noticeID, userID); err != nil {
+		return errs.SystemError("标记通知已读失败")
+	}
+	return nil
+}
+
+// GetUnreadCount 获取未读通知数量
+func GetUnreadCount(userID int64) (int64, error) {
+	return repository.GetUnreadCount(userID)
+}
+
+// pushNotice 推送通知（SSE）
+func pushNotice(notice *model.Notice, targetUsers []types.BigInt) {
+	sseService := message.GetSseService()
+	if sseService == nil {
+		return
+	}
+
+	noticeData := map[string]interface{}{
+		"id":          notice.ID,
+		"title":       notice.Title,
+		"type":        notice.Type,
+		"level":       notice.Level,
+		"publishTime": notice.PublishTime,
+	}
+
+	if notice.TargetType == 1 {
+		onlineUsers := sseService.GetOnlineUsers()
+		for _, u := range onlineUsers {
+			sseService.SendToUser(u.Username, "notice", noticeData)
+		}
+	} else if len(targetUsers) > 0 {
+		// TODO: 将用户ID转换为用户名后推送
+	}
+}
+
+// PublishNotice 发布通知
+func PublishNotice(id int64, publisherID int64) error {
+	notice, err := repository.GetNoticeByID(id)
+	if err != nil {
+		return errs.NotFound("通知不存在")
+	}
+
+	now := time.Now()
+	if err := repository.UpdateNoticeFields(int64(notice.ID), map[string]interface{}{
+		"publish_status": 1,
+		"publisher_id":   publisherID,
+		"publish_time":   now,
+		"revoke_time":    nil,
+	}); err != nil {
+		return errs.SystemError("发布通知失败")
+	}
+
+	// 发布时先删除该通知之前的用户通知数据（重新发布场景）
+	database.DB.Exec("DELETE FROM sys_user_notice WHERE notice_id = ?", id)
+
+	notice.Status = 1
+	notice.PublisherID = types.BigInt(publisherID)
+	notice.PublishTime = types.LocalTime(now)
+
+	// 推送通知
+	var targetUsers []types.BigInt
+	if notice.TargetUsers != "" {
+		json.Unmarshal([]byte(notice.TargetUsers), &targetUsers)
+	}
+	go pushNotice(notice, targetUsers)
+
+	return nil
+}
+
+// RevokeNotice 撤回通知
+func RevokeNotice(id int64) error {
+	notice, err := repository.GetNoticeByID(id)
+	if err != nil {
+		return errs.NotFound("通知不存在")
+	}
+
+	if notice.Status != 1 {
+		return errs.BadRequest("通知未发布或已撤回")
+	}
+
+	now := time.Now()
+	if err := repository.UpdateNoticeFields(int64(notice.ID), map[string]interface{}{
+		"publish_status": -1,
+		"revoke_time":   now,
+	}); err != nil {
+		return errs.SystemError("撤回通知失败")
+	}
+
+	// 撤回时删除用户通知状态记录
+	database.DB.Exec("DELETE FROM sys_user_notice WHERE notice_id = ?", id)
+
+	// 通知前端移除该通知
+	sseService := message.GetSseService()
+	if sseService != nil {
+		onlineUsers := sseService.GetOnlineUsers()
+		for _, u := range onlineUsers {
+			sseService.SendToUser(u.Username, "notice-revoke", map[string]interface{}{"id": id})
+		}
+	}
+
+	return nil
+}

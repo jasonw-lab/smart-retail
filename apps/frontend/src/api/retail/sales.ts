@@ -87,12 +87,7 @@ const SalesAPI = {
         s.orderNumber?.toLowerCase().includes(params.orderNumber!.toLowerCase())
       );
     }
-    if (params.startDate) {
-      filtered = filtered.filter((s) => s.saleTimestamp >= params.startDate!);
-    }
-    if (params.endDate) {
-      filtered = filtered.filter((s) => s.saleTimestamp <= params.endDate!);
-    }
+    filtered = filtered.filter((s) => isSaleDateInRange(s.saleTimestamp, params.startDate, params.endDate));
 
     // ページング
     const total = filtered.length;
@@ -124,12 +119,7 @@ const SalesAPI = {
     if (params?.paymentMethod) {
       filtered = filtered.filter((s) => s.paymentMethod === params.paymentMethod);
     }
-    if (params?.startDate) {
-      filtered = filtered.filter((s) => s.saleTimestamp >= params.startDate!);
-    }
-    if (params?.endDate) {
-      filtered = filtered.filter((s) => s.saleTimestamp <= params.endDate!);
-    }
+    filtered = filtered.filter((s) => isSaleDateInRange(s.saleTimestamp, params?.startDate, params?.endDate));
 
     // サマリ計算
     const totalAmount = filtered.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
@@ -152,6 +142,28 @@ const SalesAPI = {
       otherRatio: totalCount > 0 ? Math.round((otherCount / totalCount) * 100) : 0,
     };
   },
+};
+
+/**
+ * 決済日時が検索範囲内かを判定する
+ * saleTimestamp は `yyyy-MM-dd HH:mm:ss` 形式を想定
+ */
+const isSaleDateInRange = (
+  saleTimestamp: string,
+  startDate?: string,
+  endDate?: string
+): boolean => {
+  const saleDate = saleTimestamp?.slice(0, 10);
+  if (!saleDate) {
+    return false;
+  }
+  if (startDate && saleDate < startDate) {
+    return false;
+  }
+  if (endDate && saleDate > endDate) {
+    return false;
+  }
+  return true;
 };
 
 export default SalesAPI;

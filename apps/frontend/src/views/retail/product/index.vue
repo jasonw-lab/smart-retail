@@ -263,10 +263,10 @@ const getList = async () => {
         record.categoryName ||
         "その他",
       price: Number(record.unitPrice ?? 0),
-      stock: 0,
+      stock: record.stock ?? 0,
       description: record.description ?? "",
       imageUrl: record.imageUrl ?? "",
-      sales: 0,
+      sales: record.sales ?? 0,
     }));
     total.value = res.total ?? 0;
   } catch (error) {
@@ -339,7 +339,7 @@ const handleEdit = (row: Product) => {
   productForm.categoryId = row.categoryId;
   productForm.categoryName = row.categoryName || "";
   productForm.price = row.price;
-  productForm.stock = row.stock;
+  productForm.stock = row.stock ?? 0;
   productForm.description = row.description || "";
   productForm.imageUrl = row.imageUrl || "";
 };

@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 本ファイルの共通ルールは [`rule.md`](./rule.md) に集約しています。併せて参照してください。
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -106,6 +108,10 @@ Freely modifiable:
 - `platform/docker/` (Docker configuration)
 
 Changes outside these directories require justification.
+
+## Ignored Folders
+
+Folders matching `ign_*` are intentionally excluded from agent operations. Do not read, modify, or reference files inside them unless explicitly instructed.
 
 ## Development Conventions
 

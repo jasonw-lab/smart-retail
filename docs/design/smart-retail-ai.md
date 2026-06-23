@@ -152,6 +152,8 @@
 | 過去事例 | 「過去の類似アラートはどう対応した?」 |
 | 発注 | 「この商品の最適発注量は?」 |
 
+> **注記**: 「今日対応すべき優先アラートは?」のナロースコープ版設計は [smart-retail-ai-alert-assistant.md](./smart-retail-ai-alert-assistant.md) を参照。
+
 #### 3.1.5 RAG情報源
 
 | 情報源 | データ内容 | 更新頻度 |
@@ -256,6 +258,8 @@
 | Vector DB | Chroma DB（開発）/ Qdrant（本番） |
 | LLM | Kimi API / Claude API（フォールバック） |
 | Cache | Redis（応答キャッシュ） |
+
+> **注記**: ナロースコープ版「AI優先アラートアシスタント」（[smart-retail-ai-alert-assistant.md](./smart-retail-ai-alert-assistant.md)）では、軽量・低コスト・日本語対応を理由に Google Gemini Flash 系モデルを使用する。AI-007 本実装（RAG・長文コンテキスト）では引き続き Kimi / Claude を検討する。
 
 #### 3.1.10 非機能要件
 

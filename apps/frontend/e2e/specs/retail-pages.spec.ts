@@ -301,6 +301,7 @@ test.describe("Menu Navigation", () => {
         url: "product-inventory/inventory",
       },
       { parent: "アラート", child: "アラート一覧", url: "alert/list" },
+      { parent: "アラート", child: "AI優先アラート", url: "alert/assistant" },
     ];
 
     for (const item of menuItems) {

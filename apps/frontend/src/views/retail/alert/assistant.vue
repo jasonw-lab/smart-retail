@@ -9,7 +9,12 @@
           placeholder="AIに聞きたい内容を入力してください"
           resize="none"
         />
+        <el-select v-model="selectedLlm" class="llm-select" size="default">
+          <el-option label="Kimi" value="kimi" />
+          <el-option label="Gemini" value="gemini" />
+        </el-select>
         <el-button type="primary" :loading="loading" @click="handleAsk">AIに聞く</el-button>
+        <el-button v-if="response" type="default" @click="assistantStore.reset">クリア</el-button>
       </div>
     </el-card>
 
@@ -77,14 +82,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-import AIAPI, { type AlertAssistantResponse } from "@/api/retail/ai";
+import AIAPI from "@/api/retail/ai";
+import { useAlertAssistantStore } from "@/store";
 import type { AlertType, AlertPriority } from "@/api/retail/alert";
 
 const DEFAULT_QUESTION = "今日対応すべき優先アラートは？";
 
-const question = ref(DEFAULT_QUESTION);
+const assistantStore = useAlertAssistantStore();
+const question = assistantStore.question;
+const selectedLlm = assistantStore.selectedLlm;
+const response = assistantStore.response;
 const loading = ref(false);
-const response = ref<AlertAssistantResponse | null>(null);
 
 const ALERT_TYPE_OPTIONS = [
   { value: "LOW_STOCK", label: "在庫切れ" },
@@ -136,7 +144,7 @@ const handleAsk = async () => {
   response.value = null;
 
   try {
-    response.value = await AIAPI.getPriorityAlerts(question.value.trim());
+    response.value = await AIAPI.getPriorityAlerts(question.value.trim(), selectedLlm.value);
   } catch (error) {
     console.error("AI問い合わせエラー", error);
   } finally {
@@ -161,6 +169,11 @@ const handleAsk = async () => {
 
     .el-input {
       flex: 1;
+    }
+
+    .llm-select {
+      width: 140px;
+      flex-shrink: 0;
     }
 
     .el-button {

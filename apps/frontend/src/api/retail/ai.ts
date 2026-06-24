@@ -15,13 +15,14 @@ export const AIAPI = {
   /**
    * AIに優先アラートを問い合わせる
    * @param message 質問メッセージ
+   * @param llm 使用するLLMプロバイダー（kimi / gemini）
    * @returns AIの要約と優先アラート一覧
    */
-  async getPriorityAlerts(message: string): Promise<AlertAssistantResponse> {
+  async getPriorityAlerts(message: string, llm: string = "kimi"): Promise<AlertAssistantResponse> {
     return request<any, AlertAssistantResponse>({
       url: `${AI_BASE_URL}`,
       method: "post",
-      data: { message },
+      data: { message, llm },
     });
   },
 };

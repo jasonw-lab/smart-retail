@@ -617,35 +617,16 @@ const getList = async () => {
 
   loading.value = true;
   try {
-    // statusFilterをAPIパラメータに変換
-    let status: AlertStatus | undefined;
-    if (queryParams.statusFilter === "pending") {
-      // 未対応: NEW, ACK, IN_PROGRESS
-      status = undefined; // バックエンドで複数指定不可の場合は別途対応
-    } else if (queryParams.statusFilter === "completed") {
-      // 完了: RESOLVED, CLOSED
-      status = undefined;
-    }
-
     const res = await AlertAPI.getPage({
       pageNum: queryParams.pageNum,
       pageSize: queryParams.pageSize,
       priority: queryParams.priority,
-      status: status,
+      statusFilter: queryParams.statusFilter,
       alertType: queryParams.alertType,
       storeId: queryParams.storeId,
     });
 
-    let list = res.list || [];
-
-    // フロントエンドでstatusFilterを適用
-    if (queryParams.statusFilter === "pending") {
-      list = list.filter((a) => ["NEW", "ACK", "IN_PROGRESS"].includes(a.status));
-    } else if (queryParams.statusFilter === "completed") {
-      list = list.filter((a) => ["RESOLVED", "CLOSED"].includes(a.status));
-    }
-
-    alertList.value = list;
+    alertList.value = res.list || [];
     total.value = res.total || 0;
   } catch (error) {
     console.error("アラート一覧の取得に失敗しました:", error);

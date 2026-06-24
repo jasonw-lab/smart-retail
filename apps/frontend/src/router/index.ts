@@ -169,6 +169,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "AlertList",
         meta: { title: "アラート一覧", icon: "el-icon-Bell", keepAlive: true },
       },
+      {
+        path: "assistant",
+        component: () => import("@/views/retail/alert/assistant.vue"),
+        name: "AlertAssistant",
+        meta: { title: "AI優先アラート", icon: "el-icon-ChatDotRound", keepAlive: true },
+      },
     ],
   },
 ];

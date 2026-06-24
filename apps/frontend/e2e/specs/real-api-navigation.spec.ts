@@ -166,6 +166,45 @@ test.describe("Real API - Menu Navigation", () => {
     await expect(page.locator(".el-table")).toBeVisible({ timeout: 20000 });
   });
 
+  test("should navigate to AI alert assistant page", async ({ page, request }) => {
+    await loginViaAPI(page, request);
+
+    // AI優先アラートに移動
+    await page.goto("http://localhost:3001/#/retail/alert/assistant");
+    await page.waitForLoadState("networkidle");
+
+    // 入力エリアとボタンが表示されていることを確認
+    await expect(page.locator(".alert-assistant-container")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "AIに聞く" })).toBeVisible();
+  });
+
+  test("should get AI priority alerts from real backend", async ({ page, request }) => {
+    await loginViaAPI(page, request);
+
+    const aiRequest = page.waitForRequest("**/api/v1/retail/ai/alerts/priority**");
+
+    // AI優先アラートに移動
+    await page.goto("http://localhost:3001/#/retail/alert/assistant");
+    await page.waitForLoadState("networkidle");
+
+    // 「AIに聞く」ボタンをクリック
+    await page.getByRole("button", { name: "AIに聞く" }).click();
+
+    // API呼び出し確認（タイムアウトを長めに）
+    await aiRequest;
+
+    // 応答が返るまで待機
+    await expect(page.locator(".summary-card")).toBeVisible({ timeout: 60000 });
+
+    // 要約またはフォールバック警告のいずれかが表示されていることを確認
+    await expect(
+      page.locator(".summary-body, .fallback-alert").first()
+    ).toBeVisible();
+
+    // 優先アラート一覧テーブルが表示される
+    await expect(page.locator(".table-card .el-table")).toBeVisible({ timeout: 20000 });
+  });
+
   test("should navigate through all retail pages", async ({ page, request }) => {
     await loginViaAPI(page, request);
 
@@ -176,6 +215,7 @@ test.describe("Real API - Menu Navigation", () => {
       { name: "商品一覧", url: "http://localhost:3001/#/retail/product-inventory/product" },
       { name: "在庫一覧", url: "http://localhost:3001/#/retail/product-inventory/inventory" },
       { name: "アラート一覧", url: "http://localhost:3001/#/retail/alert/list" },
+      { name: "AI優先アラート", url: "http://localhost:3001/#/retail/alert/assistant" },
     ];
 
     for (const p of pages) {

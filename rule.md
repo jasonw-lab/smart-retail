@@ -14,6 +14,12 @@
 - PR target: `develop` branch
 - Commit format: `feat(scope): description (issue-XXX)`
 
+## AIレビュー
+
+- AIレビューを実施した場合、レビュー結果は必ず Markdown ファイル（`*.md`）へ出力する
+- 既存のレビュー依頼ファイルがある場合は、そのファイルへ `Codexレビュー結果` などの見出しで追記する
+- 新規作成する場合は `review/` 配下に `review_YYYYMMDD_<対象>.codex.md` の形式で保存する
+
 ## Docker 接続先
 
 本プロジェクトの Docker コンテナから DB、Elasticsearch、Redis、MongoDB へ接続する際は、デプロイ先サーバー `${SERVER_IP}` を参照してください。

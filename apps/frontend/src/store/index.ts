@@ -15,4 +15,5 @@ export * from "./modules/tags-view.store";
 export * from "./modules/user.store";
 export * from "./modules/dict.store";
 export * from "./modules/tenant.store";
+export * from "./modules/alert-assistant.store";
 export { store };

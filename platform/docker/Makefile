@@ -12,7 +12,7 @@ deploy:
 	@set -e; \
 	trap 'echo "==> Restoring Docker context to default ..."; docker context use default' EXIT; \
 	echo "==> Deploying to remote (platform: linux/amd64) ..."; \
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose-app.yml up -d --build
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose -f docker-compose-app.yml --profile backend up -d --build
 
 fe:
 	@echo "==> Building and deploying frontend on remote ..."

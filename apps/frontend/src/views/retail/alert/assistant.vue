@@ -187,6 +187,9 @@ const handleAsk = async () => {
   }
 
   .summary-body {
+    font-family: inherit;
+    font-size: 14px;
+    color: #303133;
     white-space: pre-wrap;
     line-height: 1.6;
   }

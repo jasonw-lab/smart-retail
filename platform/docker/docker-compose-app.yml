@@ -26,6 +26,9 @@ services:
       - SPRING_DATA_REDIS_HOST=${SPRING_DATA_REDIS_HOST:-ec-demo-redis}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-123456}
       - MINIO_ENDPOINT=${MINIO_ENDPOINT:-http://ec-demo-minio:9000}
+      - RETAIL_AI_LLM_PROVIDER=${RETAIL_AI_LLM_PROVIDER:-gemini}
+      - RETAIL_AI_LLM_MODEL=${RETAIL_AI_LLM_MODEL:-gemini-2.0-flash-001}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY:-}
     volumes:
       - ${BASEPATH}/app/backend/logs:/var/logs
       - /etc/localtime:/etc/localtime

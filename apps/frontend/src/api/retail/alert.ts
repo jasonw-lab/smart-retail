@@ -58,6 +58,9 @@ export interface AlertListData {
   total: number;
 }
 
+/** アラート状態フィルタ */
+export type AlertStatusFilter = "pending" | "completed" | "all";
+
 /** アラート一覧パラメータ */
 export interface AlertListParams {
   pageNum: number;
@@ -68,6 +71,7 @@ export interface AlertListParams {
   alertType?: AlertType;
   priority?: AlertPriority;
   status?: AlertStatus;
+  statusFilter?: AlertStatusFilter;
   detectedAtStart?: string;
   detectedAtEnd?: string;
 }
@@ -99,6 +103,13 @@ const AlertAPI = {
       filtered = filtered.filter((a) =>
         a.lotNumber?.toLowerCase().includes(params.lotNumber!.toLowerCase())
       );
+    }
+    if (params.statusFilter && params.statusFilter !== "all") {
+      const pendingStatuses: AlertStatus[] = ["NEW", "ACK", "IN_PROGRESS"];
+      const completedStatuses: AlertStatus[] = ["RESOLVED", "CLOSED"];
+      const allowed =
+        params.statusFilter === "pending" ? pendingStatuses : completedStatuses;
+      filtered = filtered.filter((a) => allowed.includes(a.status));
     }
 
     // ページング

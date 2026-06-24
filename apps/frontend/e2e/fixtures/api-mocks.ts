@@ -249,6 +249,25 @@ export const mockAlertsPage = {
   total: 2,
 };
 
+/** AI優先アラートレスポンスモックデータ（LLM使用時） */
+export const mockAlertAssistantLlmResponse = {
+  summary:
+    "本日は賞味期限が2日以内に迫した商品と、在庫が発注点を下回っている店舗が優先対応です。",
+  alerts: [mockAlertsPage.list[1], mockAlertsPage.list[0]],
+  llmUsed: true,
+  llmModel: "gemini-2.5-flash",
+  fallback: false,
+};
+
+/** AI優先アラートレスポンスモックデータ（フォールバック時） */
+export const mockAlertAssistantFallbackResponse = {
+  summary: "AIサービスが利用できないため、ルールベースで優先アラートを抽出しました。",
+  alerts: [mockAlertsPage.list[1], mockAlertsPage.list[0]],
+  llmUsed: false,
+  llmModel: "",
+  fallback: true,
+};
+
 /** ダッシュボードKPIモックデータ */
 export const mockDashboardKpi = {
   todaySales: 125000,
@@ -493,6 +512,19 @@ export async function setupAllApiMocks(page: Page) {
       contentType: "application/json",
       body: JSON.stringify(wrapResponse(mockAlertsPage)),
     });
+  });
+
+  // AI優先アラートAPI
+  await page.route("**/v1/retail/ai/alerts/priority**", (route) => {
+    if (route.request().method() === "POST") {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(wrapResponse(mockAlertAssistantLlmResponse)),
+      });
+    } else {
+      route.continue();
+    }
   });
 
   // ダッシュボードAPI

@@ -28,7 +28,7 @@ const DictAPI = {
    */
   getList() {
     return request<any, OptionType[]>({
-      url: `${DICT_BASE_URL}`,
+      url: `${DICT_BASE_URL}/options`,
       method: "get",
     });
   },

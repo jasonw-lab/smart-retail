@@ -178,7 +178,7 @@ export const mockDashboardSales = {
   ],
 };
 
-const dashboardAlertBaseTime = Date.now();
+const dashboardAlertBaseTime = new Date('2026-06-01T10:00:00+09:00').getTime();
 
 export const mockDashboardAlerts = [
   {

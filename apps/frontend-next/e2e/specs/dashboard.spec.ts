@@ -13,6 +13,8 @@ test.describe('ダッシュボードUI構造', () => {
   });
 
   test('ダッシュボードの VRT', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-06-01T10:00:00+09:00'));
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveScreenshot('dashboard.png', {
       fullPage: true,

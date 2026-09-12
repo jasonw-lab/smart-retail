@@ -12,6 +12,8 @@ export interface Product {
   unitPrice: number;
   description?: string;
   imageUrl?: string;
+  stockQuantity?: number;
+  salesCount?: number;
   status: number;
   createTime?: string;
   updateTime?: string;

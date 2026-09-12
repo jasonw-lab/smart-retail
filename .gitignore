@@ -84,7 +84,7 @@ plan*.md
 
 .backup
 target
-.env
+.env*
 load_db.py
 
 docs/interview.md

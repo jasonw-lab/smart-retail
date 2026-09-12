@@ -55,7 +55,12 @@ e2e/.auth/
 *.sln
 *.sw?
 blog
-_review
+_review/*
+!_review/
+!_review/review_0710_adr-architecture.claude.md
+!_review/review_0710_adr-architecture-response.html
 
 # personal learning notes
 _docs/*-roadmap.md
+*storybook.logstorybook-static
+test-results

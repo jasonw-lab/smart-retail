@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { InventoryTableClient } from '@/features/inventory/components/inventory-table-client';
 import { inventoryApiServer } from '@/features/inventory/lib/inventory-api.server';
-import { isRedirectError } from '@/lib/api/server';
 import type {
   InventoryQuery,
   InventoryPageResult,
@@ -15,18 +14,8 @@ interface SearchParams {
   status?: string;
 }
 
-async function getInventory(
-  params: InventoryQuery
-): Promise<InventoryPageResult> {
-  try {
-    return await inventoryApiServer.getPage(params);
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-    // API未実装時の空データフォールバック
-    return { list: [], total: 0 };
-  }
+async function getInventory(params: InventoryQuery): Promise<InventoryPageResult> {
+  return inventoryApiServer.getPage(params);
 }
 
 export default async function InventoryPage({
@@ -38,9 +27,7 @@ export default async function InventoryPage({
   const params: InventoryQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
     pageSize: 10,
-    storeId: resolvedSearchParams.storeId
-      ? parseInt(resolvedSearchParams.storeId, 10)
-      : undefined,
+    storeId: resolvedSearchParams.storeId ? parseInt(resolvedSearchParams.storeId, 10) : undefined,
     productName: resolvedSearchParams.product,
     status: resolvedSearchParams.status as InventoryStatusType | undefined,
   };

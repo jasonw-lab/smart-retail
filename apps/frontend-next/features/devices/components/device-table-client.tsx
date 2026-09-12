@@ -1,17 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import {
-  Edit,
-  Trash2,
-  Plus,
-  Monitor,
-  Wifi,
-  WifiOff,
-  AlertTriangle,
-  Wrench,
-} from 'lucide-react';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { Edit, Trash2, Plus, Monitor, Wifi, WifiOff, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,17 +10,12 @@ import { DataTable, type Column } from '@/components/ui/data-table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { formatRelativeTime, formatDateTime } from '@/lib/format';
+import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
 import { useDevices, useDeleteDevice } from '../hooks/use-devices';
 import {
-  DeviceType,
   DeviceTypeLabel,
   DeviceTypeIcon,
   DeviceStatus,
@@ -45,13 +31,9 @@ interface DeviceTableClientProps {
   initialParams: DeviceQuery;
 }
 
-export function DeviceTableClient({
-  initialData,
-  initialParams,
-}: DeviceTableClientProps) {
+export function DeviceTableClient({ initialData, initialParams }: DeviceTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const { data: stores = [] } = useStoreOptions();
 
@@ -82,12 +64,8 @@ export function DeviceTableClient({
     const list = displayData?.list || [];
     const total = displayData?.total || list.length;
     const online = list.filter((d) => d.status === DeviceStatus.ONLINE).length;
-    const offline = list.filter(
-      (d) => d.status === DeviceStatus.OFFLINE
-    ).length;
-    const maintenance = list.filter(
-      (d) => d.status === DeviceStatus.MAINTENANCE
-    ).length;
+    const offline = list.filter((d) => d.status === DeviceStatus.OFFLINE).length;
+    const maintenance = list.filter((d) => d.status === DeviceStatus.MAINTENANCE).length;
 
     // If we have paginated data, estimate based on page ratio
     if (displayData?.total && displayData.total > list.length) {
@@ -156,11 +134,8 @@ export function DeviceTableClient({
       ...params,
       pageNum: 1,
       deviceName: filterValues.deviceName || undefined,
-      storeId: filterValues.storeId
-        ? parseInt(filterValues.storeId, 10)
-        : undefined,
-      deviceType:
-        (filterValues.deviceType as DeviceQuery['deviceType']) || undefined,
+      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
+      deviceType: (filterValues.deviceType as DeviceQuery['deviceType']) || undefined,
       status: (filterValues.status as DeviceQuery['status']) || undefined,
     };
     setParams(newParams);
@@ -176,7 +151,7 @@ export function DeviceTableClient({
     });
     const newParams = { pageNum: 1, pageSize: params.pageSize };
     setParams(newParams);
-    router.push(pathname);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const handlePageChange = (page: number) => {
@@ -258,13 +233,9 @@ export function DeviceTableClient({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-help">
-                  {formatRelativeTime(row.lastHeartbeat)}
-                </span>
+                <span className="cursor-help">{formatRelativeTime(row.lastHeartbeat)}</span>
               </TooltipTrigger>
-              <TooltipContent>
-                {formatDateTime(row.lastHeartbeat)}
-              </TooltipContent>
+              <TooltipContent>{formatDateTime(row.lastHeartbeat)}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         );
@@ -275,9 +246,7 @@ export function DeviceTableClient({
       header: 'デバイスコード',
       width: '130px',
       render: (_, row) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          {row.deviceCode}
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">{row.deviceCode}</span>
       ),
     },
     {
@@ -288,6 +257,7 @@ export function DeviceTableClient({
       render: (_, row) => (
         <div className="flex items-center justify-center gap-1">
           <Button
+            data-testid={testId(TESTIDS.DEVICE_EDIT_BUTTON, row.id)}
             variant="ghost"
             size="icon"
             onClick={(e) => {
@@ -299,6 +269,7 @@ export function DeviceTableClient({
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            data-testid={testId(TESTIDS.DEVICE_DELETE_BUTTON, row.id)}
             variant="ghost"
             size="icon"
             onClick={(e) => {
@@ -315,7 +286,7 @@ export function DeviceTableClient({
   ];
 
   return (
-    <div className="space-y-6">
+    <div data-testid={TESTIDS.DEVICE_PAGE} className="space-y-6">
       {/* Filters */}
       <FilterBar
         fields={filterFields}
@@ -324,7 +295,10 @@ export function DeviceTableClient({
         onSearch={handleSearch}
         onReset={handleReset}
         actions={
-          <Button onClick={() => router.push('/devices/new')}>
+          <Button
+            data-testid={TESTIDS.DEVICE_NEW_BUTTON}
+            onClick={() => router.push('/devices/new')}
+          >
             <Plus className="mr-2 h-4 w-4" />
             新規登録
           </Button>
@@ -335,13 +309,22 @@ export function DeviceTableClient({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">登録デバイスリスト</h2>
         <span className="text-sm text-muted-foreground">
-          表示中の件数: {displayData?.list?.length || 0} /{' '}
-          {displayData?.total || 0}件
+          表示中の件数: {displayData?.list?.length || 0} / {displayData?.total || 0}件
         </span>
       </div>
 
+      {isError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+        </div>
+      )}
+
       {/* Data Table */}
       <DataTable
+        dataTestId={TESTIDS.DEVICE_TABLE}
         columns={columns}
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
@@ -357,7 +340,7 @@ export function DeviceTableClient({
 
       {/* Status Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-muted/30">
+        <Card data-testid={TESTIDS.DEVICE_SUMMARY_TOTAL} className="bg-muted/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-3">
@@ -371,7 +354,7 @@ export function DeviceTableClient({
           </CardContent>
         </Card>
 
-        <Card className="bg-success/5">
+        <Card data-testid={TESTIDS.DEVICE_SUMMARY_ONLINE} className="bg-success/5">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-success/10 p-3">
@@ -379,15 +362,13 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Online Now</p>
-                <p className="text-2xl font-bold text-success">
-                  {statusSummary.online}
-                </p>
+                <p className="text-2xl font-bold text-success">{statusSummary.online}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-destructive/5">
+        <Card data-testid={TESTIDS.DEVICE_SUMMARY_DISCONNECTED} className="bg-destructive/5">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-destructive/10 p-3">
@@ -395,15 +376,13 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Disconnected</p>
-                <p className="text-2xl font-bold text-destructive">
-                  {statusSummary.disconnected}
-                </p>
+                <p className="text-2xl font-bold text-destructive">{statusSummary.disconnected}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-warning/5">
+        <Card data-testid={TESTIDS.DEVICE_SUMMARY_MAINTENANCE} className="bg-warning/5">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-warning/10 p-3">
@@ -411,9 +390,7 @@ export function DeviceTableClient({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Maintenance</p>
-                <p className="text-2xl font-bold text-warning">
-                  {statusSummary.maintenance}
-                </p>
+                <p className="text-2xl font-bold text-warning">{statusSummary.maintenance}</p>
               </div>
             </div>
           </CardContent>
@@ -432,8 +409,7 @@ export function DeviceTableClient({
       >
         {deleteTarget && (
           <p className="text-sm">
-            デバイス名:{' '}
-            <span className="font-medium">{deleteTarget.deviceName}</span>
+            デバイス名: <span className="font-medium">{deleteTarget.deviceName}</span>
           </p>
         )}
       </ConfirmDialog>

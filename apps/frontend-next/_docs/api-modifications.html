@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI-first API 項目整合レポート</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --accent: #0d9488;
+      --accent-soft: #ccfbf1;
+      --frontend: #3b82f6;
+      --backend: #f59e0b;
+      --both: #8b5cf6;
+      --doc: #64748b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 { margin: 0 0 0.5rem; font-size: 1.75rem; }
+    .meta { color: var(--muted); font-size: 0.875rem; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .card strong {
+      display: block;
+      font-size: 1.75rem;
+      color: var(--accent);
+    }
+    .card span { color: var(--muted); font-size: 0.875rem; }
+    .legend {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.875rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .badge.frontend { background: #dbeafe; color: #1e40af; }
+    .badge.backend { background: #fef3c7; color: #92400e; }
+    .badge.both { background: #ede9fe; color: #5b21b6; }
+    .badge.doc { background: #f1f5f9; color: #475569; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      font-size: 0.875rem;
+    }
+    thead { background: var(--accent-soft); }
+    th, td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { font-weight: 700; color: #115e59; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody tr:last-child td { border-bottom: none; }
+    .domain { font-weight: 700; color: #115e59; white-space: nowrap; }
+    .field { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.8rem; }
+    .reason { color: var(--muted); }
+    footer {
+      margin-top: 2rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      text-align: center;
+    }
+    .note {
+      background: #fffbeb;
+      border-left: 4px solid var(--backend);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-size: 0.875rem;
+      color: #78350f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>UI-first API 項目整合レポート</h1>
+      <div class="meta">
+        生成日: 2026-07-14 &nbsp;|&nbsp;
+        対象ブランチ: feat/retail-api-integration &nbsp;|&nbsp;
+        分析対象: 19 ドメイン（products / stores / devices / inventory / transactions / alerts / dashboard / categories / payments / heartbeat / ai-alerts / system/*）
+      </div>
+    </header>
+
+    <div class="note">
+      <strong>スコープ方針:</strong>
+      今回の作業では UI の項目・フィルタ・フォームを正として、frontend 側の型/API クライアントを整合させます。
+      smart-dx-backend のコード自体は修正しませんが、Backend 側で対応が必要な項目は「Backend 要修正」として明記し、
+      別途 backend 改修タスクの入力資料として利用します。
+    </div>
+
+    <div class="summary">
+      <div class="card"><strong>28</strong><span>整合項目</span></div>
+      <div class="card"><strong>18</strong><span>Frontend 要修正</span></div>
+      <div class="card"><strong>7</strong><span>Backend 要修正</span></div>
+      <div class="card"><strong>3</strong><span>両方要修正</span></div>
+    </div>
+
+    <div class="legend">
+      <span class="badge frontend">Frontend</span> UI コンポーネント / 型 / API クライアントの修正のみ
+      <span class="badge backend">Backend</span> Backend API スキーマ・エンドポイントの追加が必要
+      <span class="badge both">両方</span> Frontend 型を先に整え、Backend 対応後に完全稼働
+      <span class="badge doc">Document</span> 現状のマッピングを文書化・監視
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>機能</th>
+          <th>UI 項目</th>
+          <th>現在の API 状況</th>
+          <th>提案する修正</th>
+          <th>対象側</th>
+          <th>理由</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- products -->
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">imageUrl</td>
+          <td>Product.imageUrl は存在するが、productFormSchema / ProductForm に存在しない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。productFormSchema / ProductForm に imageUrl 入力欄が存在</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">一覧でサムネイルを表示しているが、入力・編集 UI がなくデータが埋められない</td>
+        </tr>
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">status</td>
+          <td>ProductForm の defaultValues で status=1 を暗黙設定。入力欄なし</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。ProductForm にステータス切替（有効/無効）が存在</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">ユーザーが意図的に無効化できない。schema には既に定義済み</td>
+        </tr>
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">productCode (更新時)</td>
+          <td>編集時は disabled だが updateProduct.mutateAsync(values) で送信。UpdateProductDto には存在しない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。更新送信前に productCode を omit 済み</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">編集不可コードを誤って送信するとバックエンドで無視/エラーになりうる</td>
+        </tr>
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">categoryId フィルタ</td>
+          <td>フィルタは数値 ID 1〜5 のハードコード。Category API は存在する</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。useCategories() による動的選択肢を使用</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">カテゴリ追加時にフィルタが陳腐化する。API からの動的選択が正しい</td>
+        </tr>
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">productCode / status フィルタ</td>
+          <td>ProductQuery は productCode/status をサポートするが UI にない</td>
+          <td>現状維持（未使用 API フィルタを文書化）</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">現 UI では不要。将来必要になったら追加可能</td>
+        </tr>
+
+        <!-- stores -->
+        <tr>
+          <td class="domain">stores</td>
+          <td class="field">address フィルタ</td>
+          <td>UI では address 入力欄あり・URL も書き換えるが、page.tsx と API クライアントが受け渡していない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。UI → URL → page.tsx → StoreQuery → client/server getPage まで接続済み（実 Backend の address 受付は backend 側で要確認）</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">フィルタ UI が機能していない。SSR リロード時も値が落ちる</td>
+        </tr>
+        <tr>
+          <td class="domain">stores</td>
+          <td class="field">businessHours / manager / todaySales / alertCount / highestAlertPriority</td>
+          <td>Store 型に存在。テーブル表示のみ</td>
+          <td>現状維持（表示専用フィールド）</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">作成・更新フォームでは編集しないダッシュボード系計算値</td>
+        </tr>
+
+        <!-- devices -->
+        <tr>
+          <td class="domain">devices</td>
+          <td class="field">metadataJson</td>
+          <td>DeviceForm は文字列入力、API は metadata: Record&lt;string, unknown&gt;</td>
+          <td>現状の JSON.parse/stringify 変換を維持。mapper 切り出しを推奨</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">UI 上の中間表現と API 表現の違い。型を揃える必要なし</td>
+        </tr>
+        <tr>
+          <td class="domain">devices</td>
+          <td class="field">URL params name/type/page</td>
+          <td>URL 短縮形と API クエリ名が異なるが page.tsx でマッピング済み</td>
+          <td>現状維持。URL と API のマッピングをコメントで明記</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">ユーザー体験上短縮形は妥当。内部的に整合している</td>
+        </tr>
+
+        <!-- inventory -->
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">turnoverRate</td>
+          <td>在庫回転率サマリーカードは UI 上 null でハードコード</td>
+          <td>対応済み（ISSUE-001）。Backend は summaries の turnoverRate を null で返し、frontend 型は number | null、UI は `-` 表示を維持</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">計算式が業務上確定するまで null 固定（ADR-011 §2/§6）。実計算は別途 ADR で扱う</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">Dispose reason</td>
+          <td>廃棄ダイアログで reason 選択あり。DisposeDto / InventoryTransaction に reason フィールドがない</td>
+          <td>対応済み（ISSUE-001）。廃棄は POST /retail/inventories/{lotId}/discard の {quantity, reason, remarks} 契約へ切替。outbound への note 埋め込みは廃止</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">Backend が数量減算と reason 付き DISPOSAL 履歴を同一トランザクションで登録する（ADR-011 §2）</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">status enum</td>
+          <td>Frontend: OUT_OF_STOCK/EXPIRING/OVERSTOCK、Backend: LOW_STOCK/EXPIRY_SOON/HIGH_STOCK</td>
+          <td>frontendToBackendStatus/backendToFrontendStatus マッパーを維持</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">既存マッパーで動作。どちらを正とするかは別途調整検討</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">inventoryId (dispose)</td>
+          <td>dispose API で lotId を inventoryId として送信</td>
+          <td>対応済み（ISSUE-001）。inventoryId は一貫してロット単位の在庫レコード ID（lots[].id）と確定。集約行は数値 id を持たず summaryKey で識別</td>
+          <td><span class="badge backend">Backend</span></td>
+          <td class="reason">ADR-011 §2 で語義を固定。discard エンドポイントも {inventoryId}=ロット ID で実装済み</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">remarks vs note</td>
+          <td>在庫作成は remarks、補充/廃棄は note で同概念が別名</td>
+          <td>現状維持。ドメインごとに用語が分かれていることを文書化</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">各 DTO の責務が異なる。統一は任意</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">list response format</td>
+          <td>Backend 本来の契約はロット単位 raw 配列。UI・E2E は SKU 集約形式（lots プロパティ付き）を期待</td>
+          <td>
+            対応済み（ISSUE-001）。集約専用の GET /retail/inventory-summaries を追加し、/retail/inventories はロット単位契約を維持。<br />
+            frontend は summaries を利用しクライアント側でページング。E2E mock もロット正本＋summaries 導出に修正
+          </td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">ADR-011 §2 の追加型拡張で解決。集約行の識別は summaryKey、ロット操作は lots[].id を使用</td>
+        </tr>
+
+        <!-- transactions -->
+        <tr>
+          <td class="domain">transactions</td>
+          <td class="field">—</td>
+          <td>表示・フィルタ・詳細で使用する全フィールドが API 型に存在</td>
+          <td>現状維持</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">gap なし。売上作成フォーム UI が未実装であることのみ記録</td>
+        </tr>
+
+        <!-- alerts -->
+        <tr>
+          <td class="domain">alerts</td>
+          <td class="field">category</td>
+          <td>UI は category フィルタ・表示あり。BackendAlertVO / GET クエリに category がない</td>
+          <td>BackendAlertVO.category?: string と AlertQuery.category を追加。backend 対応後サーバフィルタ可能に</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">現状は alertType から derive。backend が category を返せば正確な分類が可能</td>
+        </tr>
+        <tr>
+          <td class="domain">alerts</td>
+          <td class="field">priority / category / status クエリ</td>
+          <td>alertApiClient.getList は storeId/status のみ送信。getPage はクライアント側フィルタ</td>
+          <td>getList/getPage で priority / category / storeId / status を backend へ送信</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">データ増加時にクライアント側フィルタはスケールしない</td>
+        </tr>
+        <tr>
+          <td class="domain">alerts</td>
+          <td class="field">read フラグ</td>
+          <td>UI は read 状態を管理。BackendAlertVO / API に read がない</td>
+          <td>BackendAlertVO.read?: boolean と PATCH /{id}/read エンドポイントを型として追加</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">現状は status=acknowledged で代替。read と acknowledge のワークフロー分離が理想</td>
+        </tr>
+        <tr>
+          <td class="domain">alerts</td>
+          <td class="field">value 型の不一致</td>
+          <td>id/ deviceId/ storeId/ priority / status / createdAt で型・値セットが異なる</td>
+          <td>normalizeBackendAlert マッパーを維持し、backend 統一時に削除予定で文書化</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">現状マッパーで動作。backend 改修時に統一候補</td>
+        </tr>
+
+        <!-- dashboard -->
+        <tr>
+          <td class="domain">dashboard</td>
+          <td class="field">weather</td>
+          <td>WelcomeMessage に weather オブジェクトがあるがハードコード</td>
+          <td>/retail/dashboard/weather エンドポイントを検討、または外部天気 API 連携</td>
+          <td><span class="badge backend">Backend</span></td>
+          <td class="reason">現状は静的値。今後動的にする場合 backend または外部 API が必要</td>
+        </tr>
+        <tr>
+          <td class="domain">dashboard</td>
+          <td class="field">userName / avatarUrl</td>
+          <td>Dashboard API ではなく /users/me から取得</td>
+          <td>現状維持（アーキテクチャ上妥当）</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">ダッシュボードドメイン外の認証情報。依存関係を明記</td>
+        </tr>
+
+        <!-- categories / payments / heartbeat -->
+        <tr>
+          <td class="domain">categories</td>
+          <td class="field">—</td>
+          <td>専用 UI が未実装。product から categoryId/categoryName を参照</td>
+          <td>categories 管理ページ追加時は既存 API 型でカバー可能</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">API 型は整備済み。product の categoryId 入力をセレクト化する価値あり</td>
+        </tr>
+        <tr>
+          <td class="domain">payments</td>
+          <td class="field">totalAmount / details.subtotal / details.id</td>
+          <td>payments 専用 UI がなく、PaymentPayload は amount / details（id/subtotal なし）</td>
+          <td>payments 管理 UI 追加時に PaymentPayload を CreateSalesDto と整合させる</td>
+          <td><span class="badge backend">Backend</span></td>
+          <td class="reason">現状 payments API は利用箇所なし。将来 UI 実装時に backend 契約調整が必要</td>
+        </tr>
+        <tr>
+          <td class="domain">heartbeat</td>
+          <td class="field">lastHeartbeat / errorCode</td>
+          <td>Device 型/UpdateDeviceDto に存在。heartbeat 送信 UI は未実装</td>
+          <td>現状維持</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">device 管理 UI で表示・編集可能。heartbeat POST は自動化向け</td>
+        </tr>
+
+        <!-- system/user -->
+        <tr>
+          <td class="domain">system/user</td>
+          <td class="field">exportUsers で startTime/endTime</td>
+          <td>UserQuery は日付範囲をサポートするが exportUsers では転送しない</td>
+          <td>対応済み（ISSUE-006）。exportUsers の startTime/endTime 転送に加え、Export ボタンへ exportUsers + Blob ダウンロードを接続</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">日付フィルタがエクスポートに反映されない</td>
+        </tr>
+        <tr>
+          <td class="domain">system/user</td>
+          <td class="field">UserForm.password</td>
+          <td>UserForm 型には password? があるが schema/UI にはない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。UserForm 型から password は削除済み</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">作成時もパスワード入力がない。backend が自動生成する前提なら型から除外</td>
+        </tr>
+        <tr>
+          <td class="domain">system/user</td>
+          <td class="field">ステータス列ラベル</td>
+          <td>user-table-client のヘッダーが "En"、セルが "ye"/"no"</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。ヘッダー Status、セル Active/Disabled に修正済み</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">明らかな表示崩れ</td>
+        </tr>
+
+        <!-- system/role -->
+        <tr>
+          <td class="domain">system/role</td>
+          <td class="field">status フィルタ</td>
+          <td>role-table-client に Status ドロップダウンあり。RoleQuery / API 送信にない</td>
+          <td>対応済み（ISSUE-007）。client 側は接続済みのため、server getPage への status 付与・page.tsx の SearchParams 受け渡し・MSW mock のフィルタを追加</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">フィルタ UI が未接続</td>
+        </tr>
+
+        <!-- system/menu -->
+        <tr>
+          <td class="domain">system/menu</td>
+          <td class="field">visible フィルタ</td>
+          <td>menu-table-client に Status ドロップダウン（Visible/Hidden）あり。MenuQuery / API 送信にない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。MenuQuery・client・table・E2E mock まで接続済み</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">フィルタ UI が未接続</td>
+        </tr>
+        <tr>
+          <td class="domain">system/menu</td>
+          <td class="field">params</td>
+          <td>Menu/MenuForm に params 配列あり。UI 上入力欄なし</td>
+          <td>現状維持。backend がサポートする場合は dialog に追加</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">使用実態が不明なため保留</td>
+        </tr>
+
+        <!-- system/dict -->
+        <tr>
+          <td class="domain">system/dict</td>
+          <td class="field">status フィルタ</td>
+          <td>dict-table-client に Status ドロップダウンあり。handleSearch で status を params に入れていない</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。handleSearch で status を DictQuery に接続済み</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">dictApiClient.getPage は status を既に送信可能。UI 接続のみ不足</td>
+        </tr>
+        <tr>
+          <td class="domain">system/dict</td>
+          <td class="field">Go to ページ入力</td>
+          <td>ページネーションの Go to 入力欄が onChange/Enter 未実装</td>
+          <td>対応済み（ISSUE-008）。Go to 入力を handlePageChange に接続（1〜totalPages にクランプ）。Next ボタンの onClick/disabled、ページ番号表示もあわせて修正</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">UI 部品はあるが機能していない</td>
+        </tr>
+
+        <!-- system/notice -->
+        <tr>
+          <td class="domain">system/notice</td>
+          <td class="field">priority / level</td>
+          <td>フォームは level（L/M/H）、一覧は priority（0/1/2）。NoticeForm に priority がない</td>
+          <td>対応済み（ISSUE-003 / ADR-011 §4）。Backend/Vue 版の level 契約に統一。数値 priority を廃止し作成・更新は level のみ送信、一覧も level ベースのラベル/badge に変更</td>
+          <td><span class="badge both">両方</span></td>
+          <td class="reason">保存と表示で別フィールドを使うとデータ不整合の原因になる</td>
+        </tr>
+        <tr>
+          <td class="domain">system/notice</td>
+          <td class="field">type / targetType</td>
+          <td>schema が z.number() 任意値を許容</td>
+          <td>schema を z.union([z.literal(1), z.literal(2)]) / literal(0/1) に絞る</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">UI の選択肢と一致しない値を防ぐ</td>
+        </tr>
+
+        <!-- system/log / system/config -->
+        <tr>
+          <td class="domain">system/log</td>
+          <td class="field">module 円グラフ</td>
+          <td>円グラフが固定ラベル。table/badge は API 値（DICTIONARY/DEPT/MENU 等）</td>
+          <td>対応済み（2026-07-19 コード確認で実装済み）。moduleStats から円グラフ・凡例を動的生成済み。なお Avg. Response Time の固定モックは ISSUE-009 で除去</td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td class="reason">固定データは実データと矛盾する可能性がある</td>
+        </tr>
+        <tr>
+          <td class="domain">system/config</td>
+          <td class="field">—</td>
+          <td>UI 項目と API 型が一致</td>
+          <td>現状維持</td>
+          <td><span class="badge doc">Document</span></td>
+          <td class="reason">gap なし</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <footer>
+      本レポートは <code>features/</code> および <code>app/[locale]/(dashboard)/</code> 下の UI コードと、
+      対応する API 型/クライアントを比較して生成しました。<br />
+      Backend 要修正項目は smart-dx-backend 側の実装計画に利用してください。
+    </footer>
+  </div>
+</body>
+</html>

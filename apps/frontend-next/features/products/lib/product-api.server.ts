@@ -1,15 +1,18 @@
 import { fetchFromBackend } from '@/lib/api/server';
-import type {
-  Product,
-  ProductQuery,
-  ProductPageResult,
-} from '../types/product';
+import type { Product, ProductQuery, ProductPageResult } from '../types/product';
 
 /**
  * Server Component専用のProduct API
  * Backend直接fetch（Route Handler経由しない）
  */
 export const productApiServer = {
+  /**
+   * 商品全件一覧取得
+   */
+  getAll: (): Promise<Product[]> => {
+    return fetchFromBackend<Product[]>('retail/products');
+  },
+
   /**
    * 商品一覧取得（ページネーション）
    */
@@ -27,9 +30,7 @@ export const productApiServer = {
     if (params.status !== undefined) {
       searchParams.set('status', String(params.status));
     }
-    return fetchFromBackend<ProductPageResult>(
-      `retail/products/page?${searchParams.toString()}`
-    );
+    return fetchFromBackend<ProductPageResult>(`retail/products/page?${searchParams.toString()}`);
   },
 
   /**

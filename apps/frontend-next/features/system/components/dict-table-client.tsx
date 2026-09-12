@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import {
   Plus,
   Trash2,
@@ -45,14 +45,13 @@ interface DictTableClientProps {
   initialParams: DictQuery;
 }
 
-export function DictTableClient({
-  initialData,
-  initialParams,
-}: DictTableClientProps) {
+export function DictTableClient({ initialData, initialParams }: DictTableClientProps) {
   const router = useRouter();
   const [params, setParams] = useState<DictQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<string>(
+    initialParams.status !== undefined ? String(initialParams.status) : ''
+  );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editTarget, setEditTarget] = useState<Dict | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -63,7 +62,12 @@ export function DictTableClient({
   const deleteMutation = useDeleteDicts();
 
   const handleSearch = () => {
-    setParams({ ...params, pageNum: 1, keywords: keywords || undefined });
+    setParams({
+      ...params,
+      pageNum: 1,
+      keywords: keywords || undefined,
+      status: status ? parseInt(status, 10) : undefined,
+    });
   };
 
   const handleReset = () => {
@@ -100,9 +104,7 @@ export function DictTableClient({
   };
 
   const handleOpenDictItems = (dict: Dict) => {
-    router.push(
-      `/system/dict/${dict.dictCode}?title=${encodeURIComponent(dict.name)}`
-    );
+    router.push(`/system/dict/${dict.dictCode}?title=${encodeURIComponent(dict.name)}`);
   };
 
   const totalPages = Math.ceil((displayData.total || 0) / params.pageSize);
@@ -126,9 +128,7 @@ export function DictTableClient({
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Status
-              </span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
               <Select
                 value={status || 'all'}
                 onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
@@ -144,10 +144,7 @@ export function DictTableClient({
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handleSearch}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -201,8 +198,7 @@ export function DictTableClient({
                 <TableHead className="w-12">
                   <Checkbox
                     checked={
-                      displayData.list.length > 0 &&
-                      selectedIds.length === displayData.list.length
+                      displayData.list.length > 0 && selectedIds.length === displayData.list.length
                     }
                     onCheckedChange={handleSelectAll}
                   />
@@ -216,20 +212,14 @@ export function DictTableClient({
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                     No dictionaries found
                   </TableCell>
                 </TableRow>
@@ -240,9 +230,7 @@ export function DictTableClient({
                     <TableCell>
                       <Checkbox
                         checked={selectedIds.includes(dict.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectOne(dict.id, !!checked)
-                        }
+                        onCheckedChange={(checked) => handleSelectOne(dict.id, !!checked)}
                       />
                     </TableCell>
                     <TableCell>
@@ -257,15 +245,12 @@ export function DictTableClient({
                       </code>
                     </TableCell>
                     <TableCell>
-                      <StatusBadge
-                        variant={dict.status === 1 ? 'success' : 'muted'}
-                      >
+                      <StatusBadge variant={dict.status === 1 ? 'success' : 'muted'}>
                         {dict.status === 1 ? 'Enabled' : 'Disabled'}
                       </StatusBadge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {/* TODO: 辞書項目ページ実装後に有効化
                         <Button
                           variant="link"
                           size="sm"
@@ -275,7 +260,6 @@ export function DictTableClient({
                           <List className="mr-1 h-3 w-3" />
                           Items
                         </Button>
-                        */}
                         <Button
                           variant="link"
                           size="sm"
@@ -310,19 +294,15 @@ export function DictTableClient({
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing 1-{Math.min(params.pageSize, displayData.total)} of{' '}
-            {displayData.total} dictionaries
+            Showing 1-{Math.min(params.pageSize, displayData.total)} of {displayData.total}{' '}
+            dictionaries
           </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Lines per page
-              </span>
+              <span className="text-sm text-muted-foreground">Lines per page</span>
               <Select
                 value={String(params.pageSize)}
-                onValueChange={(v) =>
-                  setParams({ ...params, pageSize: Number(v) })
-                }
+                onValueChange={(v) => setParams({ ...params, pageSize: Number(v) })}
               >
                 <SelectTrigger className="w-16">
                   <SelectValue />
@@ -371,9 +351,8 @@ export function DictTableClient({
           </CardHeader>
           <CardContent>
             <p className="text-sm opacity-90">
-              System dictionaries help standardize dropdown menus across the
-              entire platform. Use clear, descriptive names for better admin
-              clarity.
+              System dictionaries help standardize dropdown menus across the entire platform. Use
+              clear, descriptive names for better admin clarity.
             </p>
           </CardContent>
         </Card>
@@ -381,9 +360,7 @@ export function DictTableClient({
         {/* Recent Change */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">
-              RECENT CHANGE
-            </CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">RECENT CHANGE</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -401,20 +378,14 @@ export function DictTableClient({
         {/* Platform Status */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">
-              PLATFORM STATUS
-            </CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">PLATFORM STATUS</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-8 w-8 text-green-500" />
               <div>
-                <div className="text-lg font-bold text-green-600">
-                  Synchronized
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Last sync: 2 mins ago
-                </div>
+                <div className="text-lg font-bold text-green-600">Synchronized</div>
+                <div className="text-sm text-muted-foreground">Last sync: 2 mins ago</div>
               </div>
             </div>
           </CardContent>

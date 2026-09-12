@@ -1,15 +1,17 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  getMenus,
-  getMenu,
-  getMenuOptions,
-  createMenu,
-  updateMenu,
-  deleteMenu,
-} from '../lib/menu-api.client';
+import { menuApiClient } from '../lib/menu-api.client';
 import type { MenuQuery, MenuForm } from '../types/menu';
+
+const {
+  getList: getMenus,
+  getFormData: getMenu,
+  getOptions: getMenuOptions,
+  create: createMenu,
+  update: updateMenu,
+  delete: deleteMenu,
+} = menuApiClient;
 
 export function useMenus(params?: MenuQuery) {
   return useQuery({
@@ -33,6 +35,13 @@ export function useMenuOptionsQuery(onlyParent?: boolean) {
   });
 }
 
+export function useMenuRoutes() {
+  return useQuery({
+    queryKey: ['menu-routes'],
+    queryFn: () => menuApiClient.getRoutes(),
+  });
+}
+
 export function useCreateMenu() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -47,8 +56,7 @@ export function useCreateMenu() {
 export function useUpdateMenu() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: MenuForm }) =>
-      updateMenu(id, data),
+    mutationFn: ({ id, data }: { id: number; data: MenuForm }) => updateMenu(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menus'] });
       queryClient.invalidateQueries({ queryKey: ['menu-options'] });

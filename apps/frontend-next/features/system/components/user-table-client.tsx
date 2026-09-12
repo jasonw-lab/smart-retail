@@ -1,16 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Plus,
-  Trash2,
-  Edit,
-  KeyRound,
-  Upload,
-  Download,
-  Search,
-  RotateCcw,
-} from 'lucide-react';
+import { Plus, Trash2, Edit, KeyRound, Upload, Download, Search, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -36,30 +27,20 @@ import { useUsers, useDeleteUsers } from '../hooks/use-user';
 import { UserDialog } from './user-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
 import { DeptTree } from './dept-tree';
-import {
-  GenderLabel,
-  type User,
-  type UserQuery,
-  type UserPageResult,
-} from '../types/user';
+import { GenderLabel, type User, type UserQuery, type UserPageResult } from '../types/user';
 
 interface UserTableClientProps {
   initialData: UserPageResult;
   initialParams: UserQuery;
 }
 
-export function UserTableClient({
-  initialData,
-  initialParams,
-}: UserTableClientProps) {
+export function UserTableClient({ initialData, initialParams }: UserTableClientProps) {
   const [params, setParams] = useState<UserQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [status, setStatus] = useState<string>(
     initialParams.status !== undefined ? String(initialParams.status) : ''
   );
-  const [deptId, setDeptId] = useState<number | undefined>(
-    initialParams.deptId
-  );
+  const [deptId, setDeptId] = useState<number | undefined>(initialParams.deptId);
   const [startTime, setStartTime] = useState(initialParams.startTime || '');
   const [endTime, setEndTime] = useState(initialParams.endTime || '');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -149,9 +130,7 @@ export function UserTableClient({
           <CardContent className="py-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Keyword
-                </span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
                 <Input
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
@@ -161,9 +140,7 @@ export function UserTableClient({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Status
-                </span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
                 <Select
                   value={status || 'all'}
                   onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
@@ -199,10 +176,7 @@ export function UserTableClient({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleSearch}
-                  className="bg-teal-600 hover:bg-teal-700"
-                >
+                <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                   <Search className="mr-1 h-4 w-4" />
                   Search
                 </Button>
@@ -271,27 +245,21 @@ export function UserTableClient({
                   <TableHead className="w-20">Gender</TableHead>
                   <TableHead className="w-[120px]">Department</TableHead>
                   <TableHead className="w-[130px]">Mobile Number</TableHead>
-                  <TableHead className="w-20">En</TableHead>
+                  <TableHead className="w-20">Status</TableHead>
                   <TableHead className="w-[180px]">Operations</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="h-24 text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                       Loading...
                     </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && displayData.list.length === 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="h-24 text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -302,31 +270,21 @@ export function UserTableClient({
                       <TableCell>
                         <Checkbox
                           checked={selectedIds.includes(user.id)}
-                          onCheckedChange={(checked) =>
-                            handleSelectOne(user.id, !!checked)
-                          }
+                          onCheckedChange={(checked) => handleSelectOne(user.id, !!checked)}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {user.username}
-                      </TableCell>
+                      <TableCell className="font-medium">{user.username}</TableCell>
                       <TableCell>{user.nickname}</TableCell>
                       <TableCell>
-                        <StatusBadge
-                          variant={user.gender === 1 ? 'info' : 'warning'}
-                        >
+                        <StatusBadge variant={user.gender === 1 ? 'info' : 'warning'}>
                           {GenderLabel[user.gender] || '-'}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>{user.deptName || '-'}</TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {user.mobile || '-'}
-                      </TableCell>
+                      <TableCell className="font-mono text-sm">{user.mobile || '-'}</TableCell>
                       <TableCell>
-                        <StatusBadge
-                          variant={user.status === 1 ? 'success' : 'muted'}
-                        >
-                          {user.status === 1 ? 'ye' : 'no'}
+                        <StatusBadge variant={user.status === 1 ? 'success' : 'muted'}>
+                          {user.status === 1 ? 'Active' : 'Disabled'}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>
@@ -372,8 +330,8 @@ export function UserTableClient({
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {(params.pageNum - 1) * params.pageSize + 1} to{' '}
-              {Math.min(params.pageNum * params.pageSize, displayData.total)} of{' '}
-              {displayData.total} entries
+              {Math.min(params.pageNum * params.pageSize, displayData.total)} of {displayData.total}{' '}
+              entries
             </p>
             <div className="flex items-center gap-2">
               <Button

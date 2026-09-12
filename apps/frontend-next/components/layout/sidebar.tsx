@@ -20,15 +20,13 @@ import {
   FileText,
   ChevronDown,
   LogOut,
+  Cog,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useAppStore } from '@/store/app-store';
+import { TESTIDS, testId } from '@/lib/testing/testids';
 
 interface NavItem {
   titleKey: string;
@@ -61,6 +59,8 @@ const navSections: NavSection[] = [
       { titleKey: 'dept', href: '/system/dept', icon: Building2 },
       { titleKey: 'dict', href: '/system/dict', icon: Book },
       { titleKey: 'log', href: '/system/log', icon: FileText },
+      { titleKey: 'config', href: '/system/config', icon: Cog },
+      { titleKey: 'notice', href: '/system/notice', icon: Megaphone },
     ],
   },
 ];
@@ -78,11 +78,11 @@ function NavItemComponent({
   isSubItem?: boolean;
   t: (key: string) => string;
 }) {
-  const isActive =
-    pathname === item.href ||
-    (item.href !== '/' && pathname.startsWith(item.href));
+  const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
   const Icon = item.icon;
   const title = t(item.titleKey);
+
+  const navLinkTestId = testId(TESTIDS.SIDEBAR_NAV_LINK, item.href);
 
   if (collapsed) {
     return (
@@ -90,6 +90,7 @@ function NavItemComponent({
         <TooltipTrigger asChild>
           <Link
             href={item.href}
+            data-testid={navLinkTestId}
             className={cn(
               'flex h-10 w-full items-center justify-center rounded-md transition-all duration-200',
               isActive
@@ -108,11 +109,12 @@ function NavItemComponent({
   return (
     <Link
       href={item.href}
+      data-testid={navLinkTestId}
       className={cn(
         'flex h-10 items-center gap-3 rounded-md px-4 transition-all duration-200',
         isActive
           ? 'bg-primary-container text-on-primary-container border-l-4 border-primary font-medium'
-          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white',
+          : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-white',
         isSubItem && 'text-sm'
       )}
     >
@@ -148,24 +150,18 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
       <aside
+        data-testid={TESTIDS.LAYOUT_SIDEBAR}
         className={cn(
           'fixed left-0 top-0 h-full flex flex-col bg-sidebar z-50 shadow-lg transition-all duration-300',
           sidebarCollapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo Header */}
-        <div
-          className={cn(
-            'py-6 mb-2',
-            sidebarCollapsed ? 'px-3 flex justify-center' : 'px-6'
-          )}
-        >
+        <div className={cn('py-6 mb-2', sidebarCollapsed ? 'px-3 flex justify-center' : 'px-6')}>
           {!sidebarCollapsed ? (
             <>
-              <h1 className="text-lg font-bold text-sidebar-primary">
-                {tCommon('appName')}
-              </h1>
-              <p className="text-xs text-sidebar-muted/70">Admin Console</p>
+              <h1 className="text-lg font-bold text-sidebar-primary">{tCommon('appName')}</h1>
+              <p className="text-xs text-sidebar-muted">Admin Console</p>
             </>
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-accent">
@@ -175,7 +171,7 @@ export function Sidebar() {
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 space-y-1" data-testid={TESTIDS.SIDEBAR_NAV}>
           {/* Main menu items */}
           {navSections[0].items.map((item) => (
             <NavItemComponent
@@ -193,11 +189,10 @@ export function Sidebar() {
               <>
                 <button
                   onClick={() => setSystemExpanded(!systemExpanded)}
+                  data-testid={TESTIDS.SIDEBAR_MENU_ITEM}
                   className={cn(
                     'flex w-full items-center gap-3 px-4 py-2 transition-colors',
-                    isSystemActive
-                      ? 'text-sidebar-primary'
-                      : 'text-sidebar-primary/80'
+                    isSystemActive ? 'text-sidebar-primary' : 'text-sidebar-primary/80'
                   )}
                 >
                   <Settings className="h-5 w-5" />
@@ -233,7 +228,7 @@ export function Sidebar() {
                       'flex h-10 w-full items-center justify-center rounded-md transition-all duration-200',
                       isSystemActive
                         ? 'bg-primary-container text-on-primary-container'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-white'
                     )}
                   >
                     <Settings className="h-5 w-5" />
@@ -250,8 +245,9 @@ export function Sidebar() {
           {/* Logout */}
           {!sidebarCollapsed ? (
             <button
+              data-testid={TESTIDS.SIDEBAR_LOGOUT}
               onClick={handleLogout}
-              className="flex h-10 w-full items-center gap-3 rounded-md px-4 text-sidebar-foreground/80 hover:text-white transition-all"
+              className="flex h-10 w-full items-center gap-3 rounded-md px-4 text-sidebar-foreground hover:text-white transition-all"
             >
               <LogOut className="h-5 w-5" />
               <span className="text-sm">{tAuth('logout')}</span>
@@ -260,7 +256,9 @@ export function Sidebar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  data-testid={TESTIDS.SIDEBAR_LOGOUT}
                   onClick={handleLogout}
+                  aria-label={tAuth('logout')}
                   className="flex h-10 w-full items-center justify-center rounded-md text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white transition-all"
                 >
                   <LogOut className="h-5 w-5" />
@@ -272,8 +270,10 @@ export function Sidebar() {
 
           {/* Collapse Toggle */}
           <button
+            data-testid={TESTIDS.SIDEBAR_TOGGLE}
             onClick={toggleSidebarCollapse}
-            className="flex h-10 w-full items-center justify-center rounded-md text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-white transition-all mt-2"
+            aria-label="サイドバーを折りたたむ"
+            className="flex h-10 w-full items-center justify-center rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-white transition-all mt-2"
           >
             {sidebarCollapsed ? (
               <ChevronRight className="h-5 w-5" />

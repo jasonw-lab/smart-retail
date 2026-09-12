@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-05-27T00:00:00.000Z" agent="Claude" version="21.0.0" type="device">
+  <diagram id="frontend-next-architecture" name="Frontend Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="SmartRetail Pro - Frontend Next.js Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Browser Layer -->
+        <mxCell id="browser-group" value="Browser" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1080" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- Client Components -->
+        <mxCell id="client-components" value="Client Components&#xa;(use client)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12" vertex="1" parent="browser-group">
+          <mxGeometry x="40" y="30" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="login-form" value="LoginForm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" vertex="1" parent="browser-group">
+          <mxGeometry x="40" y="100" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="product-form" value="ProductForm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" vertex="1" parent="browser-group">
+          <mxGeometry x="110" y="100" width="70" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="alert-panel" value="AlertPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" vertex="1" parent="browser-group">
+          <mxGeometry x="40" y="140" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sidebar" value="Sidebar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" vertex="1" parent="browser-group">
+          <mxGeometry x="110" y="140" width="70" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- State Management -->
+        <mxCell id="state-mgmt" value="State Management" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;startSize=20" vertex="1" parent="browser-group">
+          <mxGeometry x="200" y="30" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tanstack-query" value="TanStack Query&#xa;(Server State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="state-mgmt">
+          <mxGeometry x="10" y="30" width="80" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="zustand" value="Zustand&#xa;(Client State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="state-mgmt">
+          <mxGeometry x="95" y="30" width="75" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="react-hook-form" value="React Hook Form&#xa;+ Zod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="state-mgmt">
+          <mxGeometry x="10" y="85" width="80" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user-store" value="useUserStore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="state-mgmt">
+          <mxGeometry x="95" y="85" width="75" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- UI Components -->
+        <mxCell id="ui-components" value="UI Components" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;startSize=20" vertex="1" parent="browser-group">
+          <mxGeometry x="400" y="30" width="150" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="shadcn" value="shadcn/ui" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="ui-components">
+          <mxGeometry x="10" y="30" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="radix" value="Radix UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="ui-components">
+          <mxGeometry x="80" y="30" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tailwind" value="Tailwind v4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="ui-components">
+          <mxGeometry x="10" y="70" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lucide" value="Lucide Icons" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="ui-components">
+          <mxGeometry x="80" y="70" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="recharts" value="Recharts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="ui-components">
+          <mxGeometry x="45" y="105" width="60" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- WebSocket -->
+        <mxCell id="websocket" value="STOMP WebSocket" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;startSize=20" vertex="1" parent="browser-group">
+          <mxGeometry x="570" y="30" width="130" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stomp-client" value="@stomp/stompjs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=10" vertex="1" parent="websocket">
+          <mxGeometry x="10" y="30" width="110" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- API Client -->
+        <mxCell id="api-client" value="API Client&#xa;(lib/api/client.ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11" vertex="1" parent="browser-group">
+          <mxGeometry x="570" y="120" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Fetch Calls -->
+        <mxCell id="fetch-calls" value="fetch()&#xa;/api/proxy/*&#xa;/api/auth/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="browser-group">
+          <mxGeometry x="720" y="70" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Cookie -->
+        <mxCell id="cookie-storage" value="httpOnly Cookie&#xa;(access_token)&#xa;(refresh_token)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9" vertex="1" parent="browser-group">
+          <mxGeometry x="850" y="50" width="90" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows in Browser -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666" edge="1" parent="browser-group" source="client-components" target="state-mgmt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666" edge="1" parent="browser-group" source="tanstack-query" target="api-client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666" edge="1" parent="browser-group" source="api-client" target="fetch-calls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Next.js Server Layer -->
+        <mxCell id="nextjs-group" value="Next.js Server (Node.js)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="1080" height="220" as="geometry" />
+        </mxCell>
+
+        <!-- Server Components -->
+        <mxCell id="server-components" value="Server Components&#xa;(RSC)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b9e0a5;strokeColor=#82b366;fontSize=12" vertex="1" parent="nextjs-group">
+          <mxGeometry x="40" y="30" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dashboard-page" value="Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#82b366;fontSize=10" vertex="1" parent="nextjs-group">
+          <mxGeometry x="40" y="100" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="products-page" value="Products" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#82b366;fontSize=10" vertex="1" parent="nextjs-group">
+          <mxGeometry x="110" y="100" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layout" value="Layout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#82b366;fontSize=10" vertex="1" parent="nextjs-group">
+          <mxGeometry x="40" y="140" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Route Handlers -->
+        <mxCell id="route-handlers" value="Route Handlers&#xa;(app/api/*)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;startSize=30" vertex="1" parent="nextjs-group">
+          <mxGeometry x="200" y="20" width="240" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-login" value="/api/auth/login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="10" y="40" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-logout" value="/api/auth/logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="120" y="40" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-me" value="/api/auth/me" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="10" y="70" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-refresh" value="/api/auth/refresh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="120" y="70" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-ws-ticket" value="/api/auth/ws-ticket" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="10" y="100" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="proxy-handler" value="/api/proxy/[...path]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#b85450;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="120" y="100" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ws-connect" value="/api/ws/connect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="route-handlers">
+          <mxGeometry x="65" y="135" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Server API -->
+        <mxCell id="server-api" value="Server API&#xa;(lib/api/server.ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b9e0a5;strokeColor=#82b366;fontSize=11" vertex="1" parent="nextjs-group">
+          <mxGeometry x="460" y="30" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fetch-backend" value="fetchFromBackend()&#xa;Direct fetch with JWT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b9e0a5;strokeColor=#82b366;fontSize=9" vertex="1" parent="nextjs-group">
+          <mxGeometry x="460" y="90" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware -->
+        <mxCell id="middleware" value="Middleware&#xa;(middleware.ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" vertex="1" parent="nextjs-group">
+          <mxGeometry x="610" y="30" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="middleware-desc" value="・Auth check&#xa;・Protected routes&#xa;・Redirect to /login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;align=left" vertex="1" parent="nextjs-group">
+          <mxGeometry x="610" y="90" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Providers -->
+        <mxCell id="providers" value="Providers" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;startSize=20" vertex="1" parent="nextjs-group">
+          <mxGeometry x="750" y="20" width="140" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="query-provider" value="QueryProvider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=9" vertex="1" parent="providers">
+          <mxGeometry x="10" y="30" width="55" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="theme-provider" value="ThemeProvider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=9" vertex="1" parent="providers">
+          <mxGeometry x="75" y="30" width="55" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="toaster" value="Toaster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=9" vertex="1" parent="providers">
+          <mxGeometry x="40" y="65" width="60" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Ticket Store -->
+        <mxCell id="ticket-store" value="Ticket Store&#xa;(lib/ws/ticket-store.ts)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9" vertex="1" parent="nextjs-group">
+          <mxGeometry x="910" y="30" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows in Next.js -->
+        <mxCell id="arrow-server1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666" edge="1" parent="nextjs-group" source="server-components" target="server-api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend Layer -->
+        <mxCell id="backend-group" value="Backend API (Java Spring Boot)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="550" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend-url" value="BACKEND_URL&#xa;http://localhost:8080/api/v1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="backend-group">
+          <mxGeometry x="40" y="30" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend-auth" value="/auth/login&#xa;/auth/refresh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="backend-group">
+          <mxGeometry x="210" y="20" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend-users" value="/users/me" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="backend-group">
+          <mxGeometry x="210" y="65" width="90" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend-retail" value="/retail/products/*&#xa;/retail/dashboard/*&#xa;/retail/alerts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="backend-group">
+          <mxGeometry x="320" y="20" width="120" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="backend-ws" value="WebSocket&#xa;/ws" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10" vertex="1" parent="backend-group">
+          <mxGeometry x="460" y="30" width="70" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Mock Server Layer -->
+        <mxCell id="mock-group" value="Mock Server (E2E Testing)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="610" y="530" width="510" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mock-server" value="mock-server.ts&#xa;http://localhost:8080/api/v1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;dashed=1" vertex="1" parent="mock-group">
+          <mxGeometry x="40" y="30" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mock-handlers" value="handlers.ts&#xa;(Mock Data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;dashed=1" vertex="1" parent="mock-group">
+          <mxGeometry x="210" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="playwright" value="Playwright&#xa;E2E Tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;dashed=1" vertex="1" parent="mock-group">
+          <mxGeometry x="330" y="30" width="80" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-fixture" value="auth.ts&#xa;(Login Helper)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;dashed=1" vertex="1" parent="mock-group">
+          <mxGeometry x="420" y="30" width="70" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Main Flow Arrows -->
+        <mxCell id="flow1" value="1. fetch()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0066CC;strokeWidth=2;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="830" y="270" as="sourcePoint" />
+            <mxPoint x="830" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow2" value="2. Route Handler" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0066CC;strokeWidth=2" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="510" as="sourcePoint" />
+            <mxPoint x="440" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow3" value="3. Backend API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0066CC;strokeWidth=2" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="560" y="400" as="sourcePoint" />
+            <mxPoint x="250" y="530" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="560" y="465" />
+              <mxPoint x="250" y="465" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;startSize=20" vertex="1" parent="1">
+          <mxGeometry x="40" y="670" width="400" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-client" value="Client Component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="legend">
+          <mxGeometry x="10" y="30" width="85" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-server" value="Server Component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b9e0a5;strokeColor=#82b366;fontSize=9" vertex="1" parent="legend">
+          <mxGeometry x="105" y="30" width="85" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-route" value="Route Handler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="legend">
+          <mxGeometry x="200" y="30" width="85" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-mock" value="Mock (E2E)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;dashed=1" vertex="1" parent="legend">
+          <mxGeometry x="295" y="30" width="85" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-flow" value="Request Flow" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#0066CC;strokeWidth=2;fontSize=9" vertex="1" parent="legend">
+          <mxGeometry x="105" y="55" width="85" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Tech Stack -->
+        <mxCell id="tech-stack" value="Tech Stack: Next.js 15 (App Router) + React 19 + TypeScript + TanStack Query v5 + Zustand v5" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="460" y="680" width="500" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -7,21 +7,13 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Loader2,
-  User,
-  Lock,
-  ShieldCheck,
-  RefreshCw,
-  Eye,
-  EyeOff,
-  ArrowRight,
-} from 'lucide-react';
+import { Loader2, User, Lock, ShieldCheck, RefreshCw, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
+import { TESTIDS } from '@/lib/testing/testids';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -113,19 +105,23 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="space-y-6"
+      data-testid={TESTIDS.LOGIN_FORM}
+    >
       {error && (
-        <div className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">
+        <div
+          className="rounded-lg bg-error-container p-3 text-sm text-on-error-container"
+          data-testid={TESTIDS.LOGIN_ERROR}
+        >
           {error}
         </div>
       )}
 
       {/* Username Field */}
       <div className="space-y-2">
-        <Label
-          htmlFor="username"
-          className="text-xs font-medium text-on-surface-variant ml-1"
-        >
+        <Label htmlFor="username" className="text-xs font-medium text-on-surface-variant ml-1">
           {t('username')}
         </Label>
         <div className="relative group">
@@ -139,6 +135,7 @@ export function LoginForm() {
             autoComplete="username"
             disabled={isLoading}
             className="pl-10 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            data-testid={TESTIDS.LOGIN_USERNAME}
             {...form.register('username')}
           />
         </div>
@@ -149,10 +146,7 @@ export function LoginForm() {
 
       {/* Password Field */}
       <div className="space-y-2">
-        <Label
-          htmlFor="password"
-          className="text-xs font-medium text-on-surface-variant ml-1"
-        >
+        <Label htmlFor="password" className="text-xs font-medium text-on-surface-variant ml-1">
           {t('password')}
         </Label>
         <div className="relative group">
@@ -166,18 +160,16 @@ export function LoginForm() {
             autoComplete="current-password"
             disabled={isLoading}
             className="pl-10 pr-12 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            data-testid={TESTIDS.LOGIN_PASSWORD}
             {...form.register('password')}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline-variant hover:text-on-surface transition-colors"
           >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
         {form.formState.errors.password && (
@@ -187,10 +179,7 @@ export function LoginForm() {
 
       {/* Verification Code (Captcha) */}
       <div className="space-y-2">
-        <Label
-          htmlFor="captchaCode"
-          className="text-xs font-medium text-on-surface-variant ml-1"
-        >
+        <Label htmlFor="captchaCode" className="text-xs font-medium text-on-surface-variant ml-1">
           {t('captcha')}
         </Label>
         <div className="flex gap-4">
@@ -204,6 +193,7 @@ export function LoginForm() {
               placeholder="A1B2"
               disabled={isLoading}
               className="pl-10 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              data-testid={TESTIDS.LOGIN_CAPTCHA}
               {...form.register('captchaCode')}
             />
           </div>
@@ -233,11 +223,10 @@ export function LoginForm() {
             size="icon"
             onClick={fetchCaptcha}
             disabled={captchaLoading}
+            aria-label="キャプチャを更新"
             className="shrink-0"
           >
-            <RefreshCw
-              className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
         {form.formState.errors.captchaCode && (
@@ -251,15 +240,10 @@ export function LoginForm() {
           <Checkbox
             id="rememberMe"
             checked={form.watch('rememberMe')}
-            onCheckedChange={(checked) =>
-              form.setValue('rememberMe', checked as boolean)
-            }
+            onCheckedChange={(checked) => form.setValue('rememberMe', checked as boolean)}
             className="border-outline-variant"
           />
-          <Label
-            htmlFor="rememberMe"
-            className="text-sm text-on-surface-variant cursor-pointer"
-          >
+          <Label htmlFor="rememberMe" className="text-sm text-on-surface-variant cursor-pointer">
             {t('rememberMe')}
           </Label>
         </div>
@@ -276,6 +260,7 @@ export function LoginForm() {
         type="submit"
         className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-lg shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         disabled={isLoading}
+        data-testid={TESTIDS.LOGIN_SUBMIT}
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />

@@ -3,11 +3,7 @@ import { StoreForm } from '@/features/stores/components/store-form';
 import { storeApiServer } from '@/features/stores/lib/store-api.server';
 import { isRedirectError } from '@/lib/api/server';
 
-export default async function EditStorePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditStorePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id, 10);
 

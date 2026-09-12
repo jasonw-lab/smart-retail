@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatDateShort } from '@/lib/format';
+import { TESTIDS } from '@/lib/testing/testids';
 import { useInventoryHistory } from '../hooks/use-inventory';
 import { StockHistoryTypeLabel, type Inventory } from '../types/inventory';
 
@@ -26,11 +27,7 @@ interface HistoryDialogProps {
   onClose: () => void;
 }
 
-export function HistoryDialog({
-  inventory,
-  open,
-  onClose,
-}: HistoryDialogProps) {
+export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) {
   const { data: history = [], isLoading } = useInventoryHistory(
     inventory?.storeId || 0,
     inventory?.productId || 0
@@ -40,22 +37,18 @@ export function HistoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent data-testid={TESTIDS.INVENTORY_HISTORY_DIALOG} className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
             📋 入出庫履歴 - {inventory.storeName} / {inventory.productName}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="max-h-80 overflow-y-auto">
+        <div data-testid={TESTIDS.INVENTORY_HISTORY_TABLE} className="max-h-80 overflow-y-auto">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              読み込み中...
-            </div>
+            <div className="text-center py-8 text-muted-foreground">読み込み中...</div>
           ) : history.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              履歴がありません
-            </div>
+            <div className="text-center py-8 text-muted-foreground">履歴がありません</div>
           ) : (
             <Table>
               <TableHeader>
@@ -70,9 +63,7 @@ export function HistoryDialog({
               <TableBody>
                 {history.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="text-sm">
-                      {formatDateShort(item.createdAt)}
-                    </TableCell>
+                    <TableCell className="text-sm">{formatDateShort(item.createdAt)}</TableCell>
                     <TableCell>{StockHistoryTypeLabel[item.type]}</TableCell>
                     <TableCell className="text-right font-mono">
                       {item.type === 'IN' ? '+' : '-'}
@@ -92,7 +83,7 @@ export function HistoryDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button data-testid={TESTIDS.INVENTORY_HISTORY_CLOSE} variant="outline" onClick={onClose}>
             閉じる
           </Button>
         </DialogFooter>

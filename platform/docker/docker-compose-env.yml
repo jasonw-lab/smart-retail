@@ -1,7 +1,7 @@
 networks:
   jason-lab-net:
+    external: true
     name: jason-lab-net
-    driver: bridge
 
 services:
 
@@ -35,9 +35,9 @@ services:
     command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_general_ci"]
     volumes:
       - ./sql/mysql-init:/docker-entrypoint-initdb.d
-      - ${BASEPATH}/mysql_3306/conf/my.cnf:/etc/my.cnf
-      - ${BASEPATH}/mysql_3306/data:/var/lib/mysql
-      - ${BASEPATH}/mysql_3306/log:/var/log/mysql
+      - ${BASEPATH:-/mydata}/mysql_3306/conf/my.cnf:/etc/my.cnf
+      - ${BASEPATH:-/mydata}/mysql_3306/data:/var/lib/mysql
+      - ${BASEPATH:-/mydata}/mysql_3306/log:/var/log/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
       interval: 10s
@@ -48,6 +48,7 @@ services:
       jason-lab-net:
         aliases:
           - powerjob-mysql
+          - smart-retail-mysql
 
   # PowerJob Server
   smart-retail-powerjob-server:
@@ -67,19 +68,26 @@ services:
       smart-retail-mysql:
         condition: service_healthy
 
-  # redis - use ec-demo's redis instead
-#  smart-retail-redis:
-#    image: redis:7.2-alpine
-#    container_name: smart-retail-redis
-#    ports:
-#      - "6379:6379"
-#    command: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-123456}"]
-#    volumes:
-#      - ${BASEPATH}/redis/conf/redis.conf:/etc/redis/redis.conf:ro
-#      - ${BASEPATH}/redis/data:/data
-#    restart: unless-stopped
-#    networks:
-#      - jason-lab-net
+  # Redis for smart-retail (Stable 7.2-alpine)
+  smart-retail-redis:
+    image: redis:7.2-alpine
+    container_name: smart-retail-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-123456}"]
+    volumes:
+      - ${BASEPATH:-/mydata}/redis/conf/redis.conf:/etc/redis/redis.conf:ro
+      - ${BASEPATH:-/mydata}/redis/data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-123456}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      jason-lab-net:
+        aliases:
+          - redis
 
   # MinIO - use ec-demo's minio instead
 #  smart-retail-minio:

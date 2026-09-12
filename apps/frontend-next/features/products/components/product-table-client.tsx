@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { Plus, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,10 @@ import { DataTable, type Column } from '@/components/ui/data-table';
 import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { formatCurrency } from '@/lib/format';
+import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useProducts, useDeleteProduct } from '../hooks/use-products';
-import type {
-  Product,
-  ProductQuery,
-  ProductPageResult,
-} from '../types/product';
+import { useCategories } from '@/features/categories/hooks/use-categories';
+import type { Product, ProductQuery, ProductPageResult } from '../types/product';
 
 interface ProductTableClientProps {
   initialData: ProductPageResult;
@@ -32,22 +30,18 @@ const categoryColors: Record<string, string> = {
   default: 'bg-gray-100 text-gray-800',
 };
 
-export function ProductTableClient({
-  initialData,
-  initialParams,
-}: ProductTableClientProps) {
+export function ProductTableClient({ initialData, initialParams }: ProductTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const [params, setParams] = useState<ProductQuery>(initialParams);
   const [filterValues, setFilterValues] = useState({
     productName: initialParams.productName || '',
-    categoryId: initialParams.categoryId
-      ? String(initialParams.categoryId)
-      : '',
+    categoryId: initialParams.categoryId ? String(initialParams.categoryId) : '',
   });
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+
+  const { data: categories = [] } = useCategories();
 
   const {
     data = initialData,
@@ -62,6 +56,11 @@ export function ProductTableClient({
 
   const deleteProduct = useDeleteProduct();
 
+  const categoryOptions = [
+    { value: '', label: 'カテゴリを選択' },
+    ...categories.map((c) => ({ value: String(c.id), label: c.categoryName })),
+  ];
+
   const filterFields: FilterField[] = [
     {
       key: 'productName',
@@ -74,14 +73,7 @@ export function ProductTableClient({
       key: 'categoryId',
       label: 'カテゴリ',
       type: 'select',
-      options: [
-        { value: '', label: 'カテゴリを選択' },
-        { value: '1', label: '飲料' },
-        { value: '2', label: '食品' },
-        { value: '3', label: '日用品' },
-        { value: '4', label: 'お菓子' },
-        { value: '5', label: '酒類' },
-      ],
+      options: categoryOptions,
     },
   ];
 
@@ -90,9 +82,7 @@ export function ProductTableClient({
       ...params,
       pageNum: 1,
       productName: filterValues.productName || undefined,
-      categoryId: filterValues.categoryId
-        ? parseInt(filterValues.categoryId, 10)
-        : undefined,
+      categoryId: filterValues.categoryId ? parseInt(filterValues.categoryId, 10) : undefined,
     };
     setParams(newParams);
     updateURL(newParams);
@@ -102,7 +92,7 @@ export function ProductTableClient({
     setFilterValues({ productName: '', categoryId: '' });
     const newParams = { pageNum: 1, pageSize: params.pageSize };
     setParams(newParams);
-    router.push(pathname);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const updateURL = (params: ProductQuery) => {
@@ -125,7 +115,7 @@ export function ProductTableClient({
       await deleteProduct.mutateAsync(deleteTarget.id);
       toast.success('商品を削除しました');
       setDeleteTarget(null);
-    } catch (error) {
+    } catch {
       toast.error('削除に失敗しました');
     }
   };
@@ -143,11 +133,7 @@ export function ProductTableClient({
       render: (_, row) => (
         <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
           {row.imageUrl ? (
-            <img
-              src={row.imageUrl}
-              alt={row.productName}
-              className="w-full h-full object-cover"
-            />
+            <img src={row.imageUrl} alt={row.productName} className="w-full h-full object-cover" />
           ) : (
             <ImageIcon className="h-5 w-5 text-muted-foreground" />
           )}
@@ -178,36 +164,31 @@ export function ProductTableClient({
       width: '100px',
       align: 'right',
       sortable: true,
-      render: (_, row) => (
-        <span className="font-mono">{formatCurrency(row.unitPrice)}</span>
-      ),
+      render: (_, row) => <span className="font-mono">{formatCurrency(row.unitPrice)}</span>,
     },
     {
       key: 'stockQuantity',
       header: '在庫数',
       width: '80px',
       align: 'right',
-      render: (_, row) => {
-        // Mock stock quantity (would come from API in real app)
-        const stockQty = Math.floor(Math.random() * 200);
-        const isLowStock = stockQty < 20;
-        return (
-          <span className={isLowStock ? 'text-destructive font-medium' : ''}>
-            {stockQty}
-          </span>
-        );
-      },
+      render: (_, row) => (
+        <span
+          className={
+            typeof row.stockQuantity === 'number' && row.stockQuantity < 20
+              ? 'text-destructive font-medium'
+              : undefined
+          }
+        >
+          {typeof row.stockQuantity === 'number' ? row.stockQuantity : '-'}
+        </span>
+      ),
     },
     {
       key: 'salesCount',
       header: '売上数',
       width: '80px',
       align: 'right',
-      render: (_, row) => {
-        // Mock sales count (would come from API in real app)
-        const salesCount = Math.floor(Math.random() * 500) + 50;
-        return <span>{salesCount}</span>;
-      },
+      render: (_, row) => <span>{typeof row.salesCount === 'number' ? row.salesCount : '-'}</span>,
     },
     {
       key: 'status',
@@ -228,6 +209,7 @@ export function ProductTableClient({
       render: (_, row) => (
         <div className="flex items-center justify-center gap-1">
           <Button
+            data-testid={testId(TESTIDS.PRODUCT_EDIT_BUTTON, row.id)}
             variant="outline"
             size="sm"
             onClick={() => router.push(`/products/${row.id}/edit`)}
@@ -235,6 +217,7 @@ export function ProductTableClient({
             編集
           </Button>
           <Button
+            data-testid={testId(TESTIDS.PRODUCT_DELETE_BUTTON, row.id)}
             variant="ghost"
             size="sm"
             className="text-destructive hover:text-destructive"
@@ -248,7 +231,7 @@ export function ProductTableClient({
   ];
 
   return (
-    <div className="space-y-6">
+    <div data-testid={TESTIDS.PRODUCT_PAGE} className="space-y-6">
       {/* Filters */}
       <FilterBar
         fields={filterFields}
@@ -257,7 +240,10 @@ export function ProductTableClient({
         onSearch={handleSearch}
         onReset={handleReset}
         actions={
-          <Button onClick={() => router.push('/products/new')}>
+          <Button
+            data-testid={TESTIDS.PRODUCT_NEW_BUTTON}
+            onClick={() => router.push('/products/new')}
+          >
             <Plus className="mr-2 h-4 w-4" />
             新規登録
           </Button>
@@ -269,8 +255,18 @@ export function ProductTableClient({
         <h2 className="text-lg font-semibold">商品一覧</h2>
       </div>
 
+      {isError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+        </div>
+      )}
+
       {/* Data Table */}
       <DataTable
+        dataTestId={TESTIDS.PRODUCT_TABLE}
         columns={columns}
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
@@ -298,12 +294,9 @@ export function ProductTableClient({
         {deleteTarget && (
           <div className="space-y-2">
             <p className="text-sm">
-              商品名:{' '}
-              <span className="font-medium">{deleteTarget.productName}</span>
+              商品名: <span className="font-medium">{deleteTarget.productName}</span>
             </p>
-            <p className="text-sm text-muted-foreground">
-              商品コード: {deleteTarget.productCode}
-            </p>
+            <p className="text-sm text-muted-foreground">商品コード: {deleteTarget.productCode}</p>
           </div>
         )}
       </ConfirmDialog>

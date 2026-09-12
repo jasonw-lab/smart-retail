@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { serverEnv } from '@/lib/env/server';
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = serverEnv.BACKEND_URL;
 
 export async function POST() {
   try {
@@ -9,7 +10,7 @@ export async function POST() {
     const accessToken = cookieStore.get('access_token')?.value;
 
     // Backend logout API呼び出し（オプション）
-    if (accessToken && BACKEND_URL) {
+    if (accessToken) {
       try {
         await fetch(`${BACKEND_URL}/auth/logout`, {
           method: 'DELETE',
@@ -29,9 +30,6 @@ export async function POST() {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Logout error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

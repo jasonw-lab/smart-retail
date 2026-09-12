@@ -42,19 +42,19 @@ interface LogTableClientProps {
 }
 
 const MODULE_COLORS: Record<string, string> = {
-  'Login Events': '#2dd4bf',
-  'Inventory Updates': '#f97316',
-  'System Config': '#ef4444',
-  User: '#3b82f6',
-  Product: '#22c55e',
-  Role: '#8b5cf6',
-  Alert: '#ec4899',
+  LOGIN: '#2dd4bf',
+  USER: '#3b82f6',
+  ROLE: '#8b5cf6',
+  MENU: '#f97316',
+  DEPT: '#22c55e',
+  DICTIONARY: '#ef4444',
+  NOTICE: '#ec4899',
+  CONFIG: '#06b6d4',
+  認証: '#2dd4bf',
+  商品: '#22c55e',
 };
 
-export function LogTableClient({
-  initialData,
-  initialParams,
-}: LogTableClientProps) {
+export function LogTableClient({ initialData, initialParams }: LogTableClientProps) {
   const [params, setParams] = useState<LogQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [startTime, setStartTime] = useState(initialParams.startTime || '');
@@ -68,8 +68,8 @@ export function LogTableClient({
   const moduleStats = useMemo(() => {
     const stats: Record<string, number> = {};
     displayData.list.forEach((log) => {
-      const module = log.module;
-      stats[module] = (stats[module] || 0) + 1;
+      const moduleName = log.module;
+      stats[moduleName] = (stats[moduleName] || 0) + 1;
     });
     return Object.entries(stats).map(([name, value]) => ({
       name,
@@ -113,9 +113,7 @@ export function LogTableClient({
 
   const totalPages = Math.ceil((displayData.total || 0) / params.pageSize);
 
-  const getModuleBadgeVariant = (
-    module: string
-  ): 'warning' | 'success' | 'error' | 'info' => {
+  const getModuleBadgeVariant = (module: string): 'warning' | 'success' | 'error' | 'info' => {
     switch (module) {
       case 'DICTIONARY':
         return 'warning';
@@ -141,9 +139,7 @@ export function LogTableClient({
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Keyword
-              </span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -173,10 +169,7 @@ export function LogTableClient({
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handleSearch}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -192,9 +185,7 @@ export function LogTableClient({
       {/* Table Header */}
       <Card>
         <CardHeader className="py-3 px-4 border-b">
-          <CardTitle className="text-base flex items-center gap-2">
-            System Log Records
-          </CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">System Log Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -212,20 +203,14 @@ export function LogTableClient({
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                     No logs found
                   </TableCell>
                 </TableRow>
@@ -233,9 +218,7 @@ export function LogTableClient({
               {!isLoading &&
                 displayData.list.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-sm font-mono">
-                      {log.createTime}
-                    </TableCell>
+                    <TableCell className="text-sm font-mono">{log.createTime}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <span className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs">
@@ -249,18 +232,11 @@ export function LogTableClient({
                         {log.module}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell
-                      className="max-w-[300px] truncate text-sm"
-                      title={log.content}
-                    >
+                    <TableCell className="max-w-[300px] truncate text-sm" title={log.content}>
                       {log.content}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {log.ip}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {log.region || '0.0'}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">{log.ip}</TableCell>
+                    <TableCell className="text-sm">{log.region || '0.0'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <Globe className="h-4 w-4 text-muted-foreground" />
@@ -276,9 +252,7 @@ export function LogTableClient({
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Total {displayData.total} records
-        </p>
+        <p className="text-sm text-muted-foreground">Total {displayData.total} records</p>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Page size</span>
@@ -318,11 +292,7 @@ export function LogTableClient({
             })}
             {totalPages > 5 && <span className="px-2">...</span>}
             {totalPages > 5 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(totalPages)}
-              >
+              <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)}>
                 {totalPages}
               </Button>
             )}
@@ -359,9 +329,7 @@ export function LogTableClient({
         {/* Module Activity Pie Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              Module Activity
-            </CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">Module Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
@@ -369,27 +337,7 @@ export function LogTableClient({
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={
-                        moduleStats.length > 0
-                          ? moduleStats
-                          : [
-                              {
-                                name: 'Login Events',
-                                value: 24,
-                                color: '#2dd4bf',
-                              },
-                              {
-                                name: 'Inventory Updates',
-                                value: 47,
-                                color: '#f97316',
-                              },
-                              {
-                                name: 'System Config',
-                                value: 12,
-                                color: '#ef4444',
-                              },
-                            ]
-                      }
+                      data={moduleStats}
                       cx="50%"
                       cy="50%"
                       innerRadius={30}
@@ -397,26 +345,7 @@ export function LogTableClient({
                       paddingAngle={2}
                       dataKey="value"
                     >
-                      {(moduleStats.length > 0
-                        ? moduleStats
-                        : [
-                            {
-                              name: 'Login Events',
-                              value: 24,
-                              color: '#2dd4bf',
-                            },
-                            {
-                              name: 'Inventory Updates',
-                              value: 47,
-                              color: '#f97316',
-                            },
-                            {
-                              name: 'System Config',
-                              value: 12,
-                              color: '#ef4444',
-                            },
-                          ]
-                      ).map((entry, index) => (
+                      {moduleStats.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -424,22 +353,20 @@ export function LogTableClient({
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-teal-500" />
-                  <span className="text-sm">Login Events</span>
-                  <span className="text-sm font-medium ml-auto">24%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-orange-500" />
-                  <span className="text-sm">Inventory Updates</span>
-                  <span className="text-sm font-medium ml-auto">47%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-red-500" />
-                  <span className="text-sm">System Config</span>
-                  <span className="text-sm font-medium ml-auto">12%</span>
-                </div>
+              <div className="space-y-2 flex-1">
+                {moduleStats.length === 0 && (
+                  <div className="text-sm text-muted-foreground">No data</div>
+                )}
+                {moduleStats.map((entry) => (
+                  <div key={entry.name} className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="text-sm">{entry.name}</span>
+                    <span className="text-sm font-medium ml-auto">{entry.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
@@ -448,20 +375,13 @@ export function LogTableClient({
         {/* Avg Response Time Bar Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              Avg. Response Time
-            </CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">Avg. Response Time</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={responseTimeData}>
-                  <XAxis
-                    dataKey="time"
-                    tick={{ fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
+                  <XAxis dataKey="time" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis
                     tick={{ fontSize: 10 }}
                     axisLine={false}
@@ -469,12 +389,7 @@ export function LogTableClient({
                     domain={[0, 150]}
                   />
                   <Tooltip />
-                  <Bar
-                    dataKey="value"
-                    fill="#2dd4bf"
-                    radius={[4, 4, 0, 0]}
-                    barSize={40}
-                  />
+                  <Bar dataKey="value" fill="#2dd4bf" radius={[4, 4, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

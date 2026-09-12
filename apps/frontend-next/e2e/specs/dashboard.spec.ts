@@ -7,9 +7,17 @@ test.describe('ダッシュボードUI構造', () => {
   });
 
   test('ダッシュボードページが表示される', async ({ page }) => {
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL(/\/(ja|en)?$/);
     // メインコンテンツエリアが表示される
     await expect(page.getByRole('main')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('ダッシュボードの VRT', async ({ page }) => {
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveScreenshot('dashboard.png', {
+      fullPage: true,
+      threshold: 0.2,
+    });
   });
 
   test('KPIカードが表示される', async ({ page }) => {

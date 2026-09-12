@@ -15,6 +15,13 @@ const BASE_URL = '/api/proxy/api/v1/retail/products';
  */
 export const productApiClient = {
   /**
+   * 商品全件一覧取得
+   */
+  getAll: async (): Promise<Product[]> => {
+    return fetchApi<Product[]>(BASE_URL);
+  },
+
+  /**
    * 商品一覧取得（ページネーション）
    */
   getPage: async (params: ProductQuery): Promise<ProductPageResult> => {
@@ -31,9 +38,7 @@ export const productApiClient = {
     if (params.status !== undefined) {
       searchParams.set('status', String(params.status));
     }
-    return fetchApi<ProductPageResult>(
-      `${BASE_URL}/page?${searchParams.toString()}`
-    );
+    return fetchApi<ProductPageResult>(`${BASE_URL}/page?${searchParams.toString()}`);
   },
 
   /**

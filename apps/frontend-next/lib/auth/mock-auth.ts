@@ -1,3 +1,5 @@
+import 'server-only';
+
 interface MockUser {
   userId: number;
   username: string;
@@ -66,14 +68,7 @@ function toUserInfo(user: MockUser): MockUserInfo {
 }
 
 export function isLocalMockAuthEnabled(): boolean {
-  const backendUrl = process.env.BACKEND_URL;
-
-  return (
-    process.env.ENABLE_LOCAL_AUTH_MOCK === 'true' ||
-    !backendUrl ||
-    backendUrl.includes('localhost') ||
-    backendUrl.includes('127.0.0.1')
-  );
+  return process.env.NODE_ENV !== 'production' && process.env.ENABLE_LOCAL_AUTH_MOCK === 'true';
 }
 
 export function authenticateLocalMockUser(
@@ -112,9 +107,7 @@ export function getLocalMockUserFromToken(token: string): MockUserInfo | null {
   return user ? toUserInfo(user) : null;
 }
 
-export function refreshLocalMockToken(
-  refreshToken: string
-): MockAuthToken | null {
+export function refreshLocalMockToken(refreshToken: string): MockAuthToken | null {
   if (!isLocalMockAuthEnabled() || !refreshToken.startsWith('mock_refresh_')) {
     return null;
   }

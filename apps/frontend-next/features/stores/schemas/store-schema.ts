@@ -11,26 +11,10 @@ export const storeFormSchema = z.object({
     .string()
     .min(1, '店舗名を入力してください')
     .max(100, '店舗名は100文字以内で入力してください'),
-  address: z
-    .string()
-    .max(200, '住所は200文字以内で入力してください')
-    .optional()
-    .or(z.literal('')),
-  phone: z
-    .string()
-    .max(20, '電話番号は20文字以内で入力してください')
-    .optional()
-    .or(z.literal('')),
-  email: z
-    .string()
-    .email('有効なメールアドレスを入力してください')
-    .optional()
-    .or(z.literal('')),
-  status: z.enum([
-    StoreStatus.ACTIVE,
-    StoreStatus.MAINTENANCE,
-    StoreStatus.INACTIVE,
-  ]),
+  address: z.string().max(200, '住所は200文字以内で入力してください').optional().or(z.literal('')),
+  phone: z.string().max(20, '電話番号は20文字以内で入力してください').optional().or(z.literal('')),
+  email: z.string().email('有効なメールアドレスを入力してください').optional().or(z.literal('')),
+  status: z.enum([StoreStatus.ACTIVE, StoreStatus.MAINTENANCE, StoreStatus.INACTIVE]),
 });
 
 export type StoreFormValues = z.infer<typeof storeFormSchema>;

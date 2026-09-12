@@ -1,0 +1,2411 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ADR Architecture Review Response - SmartRetail Pro</title>
+    <style>
+      :root {
+        --bg: #f6f8f8;
+        --panel: #ffffff;
+        --ink: #17201f;
+        --muted: #60706d;
+        --line: #d9e2e0;
+        --primary: #00897b;
+        --primary-weak: #e0f3f0;
+        --warn: #a65f00;
+        --warn-bg: #fff4df;
+        --ok: #087443;
+        --ok-bg: #e5f6ed;
+        --todo: #6750a4;
+        --todo-bg: #eee8ff;
+        --code: #263238;
+        --shadow: 0 10px 30px rgba(28, 45, 43, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--bg);
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.65;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 310px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: auto;
+        padding: 24px 18px;
+        color: #eaf7f5;
+        background: #243331;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .brand {
+        margin-bottom: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      .brand span {
+        display: block;
+        margin-top: 4px;
+        color: #b7cbc8;
+        font-size: 12px;
+      }
+
+      .side-section {
+        margin: 18px 0 8px;
+        color: #93aaa6;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        display: grid;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .nav-group {
+        margin: 6px 0;
+      }
+
+      .nav-group summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 4px 0;
+        padding: 8px 10px;
+        color: #b7cbc8;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+      }
+
+      .nav-group summary:hover,
+      .nav-group summary:focus {
+        background: rgba(255, 255, 255, 0.08);
+        outline: none;
+      }
+
+      .nav-group summary::marker {
+        color: #8ee8dd;
+      }
+
+      .nav-group .nav {
+        margin-left: 10px;
+        padding-left: 10px;
+        border-left: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .nav a {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 10px;
+        color: #dce9e7;
+        text-decoration: none;
+        border-radius: 8px;
+      }
+
+      .nav a:hover,
+      .nav a:focus,
+      .nav a.active {
+        background: rgba(255, 255, 255, 0.08);
+        outline: none;
+      }
+
+      .nav a.active {
+        color: #ffffff;
+        box-shadow: inset 3px 0 0 #8ee8dd;
+      }
+
+      .nav .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 24px;
+        color: #243331;
+        background: #8ee8dd;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .nav .label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+
+      .status-dot.done {
+        background: #4ade80;
+      }
+
+      .status-dot.partial {
+        background: #fbbf24;
+      }
+
+      .status-dot.pending {
+        background: #c4b5fd;
+      }
+
+      main {
+        min-width: 0;
+        padding: 36px clamp(20px, 5vw, 72px) 72px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .hero {
+        max-width: 1180px;
+        margin: 0 auto 24px;
+        padding: 28px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.15;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 920px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 4px 10px;
+        color: var(--primary);
+        background: var(--primary-weak);
+        border: 1px solid #b9dfda;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        max-width: 1180px;
+        margin: 0 auto 24px;
+      }
+
+      .metric {
+        padding: 18px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 26px;
+        line-height: 1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .section {
+        max-width: 1180px;
+        margin: 0 auto 18px;
+        padding: 22px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      .page-toc {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 20;
+        width: 240px;
+        max-height: 70vh;
+        overflow: auto;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+
+      .page-toc strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #41514e;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .page-toc ol {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .page-toc a {
+        display: block;
+        padding: 7px 8px;
+        color: #354541;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .page-toc a:hover,
+      .page-toc a:focus {
+        color: var(--primary);
+        background: var(--primary-weak);
+        outline: none;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 22px;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+
+      .summary-table th,
+      .summary-table td {
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+
+      .summary-table th {
+        color: #41514e;
+        background: #eef4f3;
+        font-weight: 800;
+      }
+
+      .summary-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .issue {
+        max-width: 1180px;
+        margin: 0 auto 16px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        scroll-margin-top: 18px;
+      }
+
+      .issue-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: start;
+        padding: 20px 22px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .issue-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        color: #ffffff;
+        background: var(--primary);
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .tag {
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .tag.high {
+        color: #8f1d1d;
+        background: #ffe6e6;
+      }
+
+      .tag.medium {
+        color: #7c4d00;
+        background: #fff0cf;
+      }
+
+      .tag.low {
+        color: #2d527c;
+        background: #e5f0ff;
+      }
+
+      .tag.done {
+        color: var(--ok);
+        background: var(--ok-bg);
+      }
+
+      .tag.partial {
+        color: var(--warn);
+        background: var(--warn-bg);
+      }
+
+      .tag.pending {
+        color: var(--todo);
+        background: var(--todo-bg);
+      }
+
+      .issue-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+        gap: 22px;
+        padding: 18px 22px 22px;
+      }
+
+      .issue-context {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+        padding: 18px 22px 0;
+      }
+
+      .issue-context p:last-child {
+        margin: 0;
+        color: #354541;
+        font-size: 14px;
+      }
+
+      .block-title {
+        margin: 0 0 8px;
+        color: #41514e;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      code {
+        color: var(--code);
+        background: #edf2f1;
+        border: 1px solid #dce6e4;
+        border-radius: 5px;
+        padding: 1px 5px;
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        font-size: 12px;
+      }
+
+      .file-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .file-list code {
+        display: inline-flex;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .inline-code-sample {
+        margin-top: 14px;
+      }
+
+      .inline-code-sample .code-grid {
+        grid-template-columns: minmax(0, 1fr);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .inline-code-sample .code-pane {
+        padding: 12px;
+        background: #fbfdfc;
+      }
+
+      .inline-code-sample .code-pane + .code-pane {
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+
+      .inline-code-sample pre {
+        max-height: 280px;
+      }
+
+      .note {
+        margin-top: 14px;
+        padding: 12px 14px;
+        color: #455451;
+        background: #f3f7f6;
+        border: 1px solid #dce6e4;
+        border-radius: 8px;
+        font-size: 13px;
+      }
+
+      .code-samples {
+        display: grid;
+        gap: 18px;
+      }
+
+      .code-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fbfdfc;
+      }
+
+      .code-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 16px;
+        background: #eef4f3;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .code-card-header h3 {
+        font-size: 15px;
+      }
+
+      .code-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+      }
+
+      .code-pane {
+        min-width: 0;
+        padding: 14px;
+      }
+
+      .code-pane + .code-pane {
+        border-left: 1px solid var(--line);
+      }
+
+      .code-label {
+        display: inline-flex;
+        margin-bottom: 8px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .code-label.before {
+        color: #8f1d1d;
+        background: #ffe6e6;
+      }
+
+      .code-label.after {
+        color: var(--ok);
+        background: var(--ok-bg);
+      }
+
+      pre {
+        margin: 0;
+        max-height: 360px;
+        overflow: auto;
+        padding: 14px;
+        color: #dce9e7;
+        background: #182321;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      pre code {
+        display: block;
+        padding: 0;
+        color: inherit;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        font-size: inherit;
+        white-space: pre;
+      }
+
+      .footer {
+        max-width: 1180px;
+        margin: 24px auto 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          display: block;
+        }
+
+        .sidebar {
+          position: static;
+          height: auto;
+          max-height: 50vh;
+        }
+
+        .page-toc {
+          position: sticky;
+          top: 0;
+          width: auto;
+          max-height: 160px;
+          margin: 0 0 14px;
+          border-radius: 0 0 12px 12px;
+        }
+
+        .grid,
+        .issue-body,
+        .issue-context,
+        .code-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .code-pane + .code-pane {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media print {
+        .layout {
+          display: block;
+        }
+
+        .sidebar,
+        .page-toc {
+          display: none;
+        }
+
+        main {
+          padding: 0;
+        }
+
+        .hero,
+        .section,
+        .issue {
+          box-shadow: none;
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" aria-label="指摘一覧">
+        <div class="brand">
+          <strong>ADR Review Response</strong>
+          <span>SmartRetail Pro / 2026-07-10</span>
+        </div>
+        <div class="side-section">Pages</div>
+        <ul class="nav">
+          <li><a href="#overview"><span class="num">00</span><span class="label">概要</span><span class="status-dot done"></span></a></li>
+          <li><a href="#summary"><span class="num">Σ</span><span class="label">対応状況一覧</span><span class="status-dot done"></span></a></li>
+          <li><a href="#code-diff"><span class="num">&lt;/&gt;</span><span class="label">変更前後Code</span><span class="status-dot done"></span></a></li>
+          <li><a href="#validation"><span class="num">✓</span><span class="label">検証結果</span><span class="status-dot done"></span></a></li>
+        </ul>
+        <div class="side-section">Issue Categories</div>
+        <details class="nav-group" open>
+          <summary>Architecture / ADR</summary>
+          <ul class="nav">
+            <li><a href="#issue-01"><span class="num">01</span><span class="label">ADRライフサイクル</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-02"><span class="num">02</span><span class="label">i18n ADR不在</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-08"><span class="num">08</span><span class="label">route.ts export</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-10"><span class="num">10</span><span class="label">一覧パターン矛盾</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-16"><span class="num">16</span><span class="label">命名不整合</span><span class="status-dot partial"></span></a></li>
+            <li><a href="#issue-17"><span class="num">17</span><span class="label">バージョン表記</span><span class="status-dot done"></span></a></li>
+          </ul>
+        </details>
+        <details class="nav-group" open>
+          <summary>Auth / Security</summary>
+          <ul class="nav">
+            <li><a href="#issue-03"><span class="num">03</span><span class="label">SSR refresh</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-05"><span class="num">05</span><span class="label">STOMP token露出</span><span class="status-dot partial"></span></a></li>
+            <li><a href="#issue-06"><span class="num">06</span><span class="label">401 refresh競合</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-07"><span class="num">07</span><span class="label">CSRF設計乖離</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-09"><span class="num">09</span><span class="label">useStomp再接続</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-11"><span class="num">11</span><span class="label">fetch cache戦略</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-19"><span class="num">19</span><span class="label">認証API cache</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-20"><span class="num">20</span><span class="label">事前refresh未実装</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-22"><span class="num">22</span><span class="label">mock auth本番有効</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-29"><span class="num">29</span><span class="label">Abort/CSRF</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-30"><span class="num">30</span><span class="label">in-memory store</span><span class="status-dot partial"></span></a></li>
+          </ul>
+        </details>
+        <details class="nav-group" open>
+          <summary>API / Boundaries</summary>
+          <ul class="nav">
+            <li><a href="#issue-04"><span class="num">04</span><span class="label">proxy body二重読取</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-12"><span class="num">12</span><span class="label">ESLint境界</span><span class="status-dot partial"></span></a></li>
+            <li><a href="#issue-23"><span class="num">23</span><span class="label">境界ルール未実装</span><span class="status-dot partial"></span></a></li>
+            <li><a href="#issue-27"><span class="num">27</span><span class="label">proxy/unwrap重複</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-28"><span class="num">28</span><span class="label">e2e/testids依存</span><span class="status-dot done"></span></a></li>
+          </ul>
+        </details>
+        <details class="nav-group" open>
+          <summary>E2E / Test Policy</summary>
+          <ul class="nav">
+            <li><a href="#issue-13"><span class="num">13</span><span class="label">E2E正本不明</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-14"><span class="num">14</span><span class="label">RSC fetch mock</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-15"><span class="num">15</span><span class="label">自律修正ガード</span><span class="status-dot done"></span></a></li>
+          </ul>
+        </details>
+        <details class="nav-group" open>
+          <summary>UI / Data Integrity</summary>
+          <ul class="nav">
+            <li><a href="#issue-18"><span class="num">18</span><span class="label">unreadCountドリフト</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-21"><span class="num">21</span><span class="label">本番UI偽データ</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-24"><span class="num">24</span><span class="label">locale navigation</span><span class="status-dot done"></span></a></li>
+            <li><a href="#issue-25"><span class="num">25</span><span class="label">文言i18n未完</span><span class="status-dot pending"></span></a></li>
+            <li><a href="#issue-26"><span class="num">26</span><span class="label">API障害0件化</span><span class="status-dot partial"></span></a></li>
+          </ul>
+        </details>
+      </aside>
+
+      <main>
+        <nav class="page-toc" aria-label="ページ内目次" hidden>
+          <strong>TOC</strong>
+          <ol id="page-toc-list"></ol>
+        </nav>
+        <section id="overview" class="hero" data-page="overview">
+          <h1>レビュー指摘対応方法まとめ</h1>
+          <p class="lead">
+            <code>review_0710_adr-architecture.claude.md</code> の30件の指摘について、対応方針と主なコード修正を1つのHTMLに整理したものです。完了済み、部分対応、別タスク化の判断が追えるようにしています。
+          </p>
+          <div class="meta">
+            <span class="pill">対象: ADR / 認証 / API / E2E / UI</span>
+            <span class="pill">検証: lint / typecheck / build / E2E 88 passed</span>
+            <span class="pill">作成日: 2026-07-10</span>
+          </div>
+        </section>
+
+        <section class="grid" aria-label="対応状況メトリクス" data-page="overview">
+          <div class="metric"><strong>30</strong><span>レビュー指摘総数</span></div>
+          <div class="metric"><strong>22</strong><span>完了または実装確認済み</span></div>
+          <div class="metric"><strong>7</strong><span>部分対応・設計リスク明記</span></div>
+          <div class="metric"><strong>1</strong><span>別タスク化が必要</span></div>
+        </section>
+
+        <section id="summary" class="section" data-page="summary">
+          <h2>対応状況一覧</h2>
+          <table class="summary-table">
+            <thead>
+              <tr><th>#</th><th>指摘</th><th>対応</th><th>主な修正領域</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>ADRライフサイクル不全</td><td>完了</td><td>ADR-000追加、ADR-001〜008 Accepted化</td></tr>
+              <tr><td>2</td><td>i18n ADR不在</td><td>完了</td><td>ADR-009、locale-aware navigation</td></tr>
+              <tr><td>3</td><td>SSR refresh不備</td><td>完了</td><td>middleware refresh flow</td></tr>
+              <tr><td>4</td><td>proxy body二重読取</td><td>完了</td><td>proxy body read once</td></tr>
+              <tr><td>5</td><td>STOMP token露出</td><td>部分</td><td>ADR-005リスク明記、Backend改修待ち</td></tr>
+              <tr><td>6</td><td>並行401 refresh競合</td><td>完了</td><td>client single-flight確認、ADR反映</td></tr>
+              <tr><td>7</td><td>CSRF設計乖離</td><td>完了</td><td>CSRF token / timingSafeEqual</td></tr>
+              <tr><td>8</td><td>route.ts export</td><td>完了</td><td>実装確認、ADR修正</td></tr>
+              <tr><td>9</td><td>useStomp再接続</td><td>完了</td><td>実装確認、ADR修正</td></tr>
+              <tr><td>10</td><td>一覧パターン矛盾</td><td>完了</td><td>ADR-003/007整合</td></tr>
+              <tr><td>11</td><td>fetch cache未定義</td><td>完了</td><td>ADR-010、server fetch no-store</td></tr>
+              <tr><td>12</td><td>ESLint境界不足</td><td>部分</td><td>server-only / restricted imports</td></tr>
+              <tr><td>13</td><td>E2E正本不明</td><td>完了</td><td>ADR-008、E2E policy更新</td></tr>
+              <tr><td>14</td><td>Browser MSW限界</td><td>完了</td><td>Standalone Mock Server正本化</td></tr>
+              <tr><td>15</td><td>自律修正ガード不足</td><td>完了</td><td>E2E policy guardrails</td></tr>
+              <tr><td>16</td><td>命名不整合</td><td>部分</td><td>主要ADR・README修正</td></tr>
+              <tr><td>17</td><td>バージョン表記</td><td>完了</td><td>README/ADR更新</td></tr>
+              <tr><td>18</td><td>unreadCountドリフト</td><td>完了</td><td>alert-store dedupe/recompute</td></tr>
+              <tr><td>19</td><td>認証API cache</td><td>完了</td><td>fetchFromBackend no-store</td></tr>
+              <tr><td>20</td><td>事前refresh未実装</td><td>完了</td><td>middleware refresh-token</td></tr>
+              <tr><td>21</td><td>本番UI偽データ</td><td>完了</td><td>dashboard/alerts/products/inventory/transactions</td></tr>
+              <tr><td>22</td><td>mock auth本番有効</td><td>完了</td><td>mock-auth/env validation</td></tr>
+              <tr><td>23</td><td>境界ルール未実装</td><td>部分</td><td>restricted imports</td></tr>
+              <tr><td>24</td><td>locale非対応navigation</td><td>完了</td><td>i18n navigationへ統一</td></tr>
+              <tr><td>25</td><td>文言i18n未完</td><td>未対応</td><td>別タスク化</td></tr>
+              <tr><td>26</td><td>API障害0件化</td><td>部分</td><td>主要一覧・dashboardで改善</td></tr>
+              <tr><td>27</td><td>proxy/unwrap重複</td><td>完了</td><td>lib/api/result.ts</td></tr>
+              <tr><td>28</td><td>e2e/testids依存</td><td>完了</td><td>lib/testing/testids.ts</td></tr>
+              <tr><td>29</td><td>Abort/CSRF cache</td><td>完了</td><td>client fetch retry cleanup</td></tr>
+              <tr><td>30</td><td>in-memory実装</td><td>部分</td><td>rate-limit cleanup / CSRF比較</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <article id="issue-01" class="issue" data-page="issue-01">
+          <div class="issue-header"><span class="issue-num">01</span><div><h3>全ADRが承認待ち/検討中のまま実装済み</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>全ADRが承認待ち/検討中のまま実装済みとなっており、設計判断の状態が実態と一致していない。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>ADRが意思決定記録として機能しないと、新規参加者やレビュー担当が未承認設計と誤読し、実装判断の根拠が追えなくなるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>ADRを意思決定記録として使える状態に戻すため、ADRライフサイクルを定義。</li><li>既存ADRを実装済み状態へ合わせ、Accepted化。</li></ul></div><div><h2 class="block-title">主なCode/Doc修正</h2><div class="file-list"><code>_docs/adr/ADR-000-adr-governance.md</code><code>_docs/adr/ADR-001〜008*.md</code><code>README.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>---
+status: 承認待ち (2025-05)
+---
+
+# ADR-001: Next.js App Router...</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>---
+status: Accepted (2026-07-10)
+---
+
+# ADR-000: ADR Governance
+- Proposed - 提案中
+- Accepted - 採用済み
+- Superseded - 後続ADRで置換</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-02" class="issue" data-page="issue-02">
+          <div class="issue-header"><span class="issue-num">02</span><div><h3>i18nルーティングのADR不在とADR-001/006の乖離</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>next-intlとapp/[locale]を採用しているのに、i18nルーティングのADRがなく、既存ADRの構成例とも乖離していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>localeセグメントはmiddleware、Link、E2E、URL設計へ横断的に影響するため、設計判断として明文化する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li><code>next-intl</code> と <code>app/[locale]</code> を正式な設計判断としてADR化。</li><li>リンク・ルーター利用の標準を locale-aware navigation に統一。</li></ul></div><div><h2 class="block-title">主なCode/Doc修正</h2><div class="file-list"><code>_docs/adr/ADR-009-i18n-routing.md</code><code>_docs/adr/ADR-001-app-router-directory.md</code><code>_docs/adr/ADR-006-app-folder-structure.md</code><code>eslint.config.mjs</code><code>features/*/*-table-client.tsx</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>app/
+├── (auth)/login
+└── (dashboard)/products
+
+// i18n routing decision: not documented</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>app/
+└── [locale]/
+    ├── (auth)/login
+    └── (dashboard)/products
+
+// ADR-009
+Decision: Use next-intl with app/[locale].
+Navigation: import from "@/i18n/navigation".</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-03" class="issue" data-page="issue-03">
+          <div class="issue-header"><span class="issue-num">03</span><div><h3>access_token失効後にrefresh_tokenが使われず再ログインになる</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>access_token Cookieが消えるとrefresh_tokenが有効でもSSR経路で再ログインになっていた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>業務画面で短時間離席後にセッション断になるとUXが大きく悪化し、refresh tokenを保持している設計意図とも矛盾するため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>middlewareで <code>access_token</code> が無く <code>refresh_token</code> がある場合、Backend refresh-token APIを呼ぶ。</li><li>Cookie再発行後、同一URLへredirectしてSSRが新tokenを参照できるようにした。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>middleware.ts</code><code>app/api/auth/refresh/route.ts</code><code>_docs/adr/ADR-002-jwt-authentication.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>if (!request.cookies.get('access_token')) {
+  return NextResponse.redirect(loginUrl);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const accessToken = request.cookies.get('access_token')?.value;
+const refreshToken = request.cookies.get('refresh_token')?.value;
+
+if (!accessToken && refreshToken) {
+  const refreshed = await refreshAuthTokens(refreshToken);
+  if (refreshed) {
+    const response = NextResponse.redirect(request.nextUrl);
+    setAuthCookies(response, refreshed);
+    return response;
+  }
+}
+
+if (!accessToken) {
+  return NextResponse.redirect(loginUrl);
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-04" class="issue" data-page="issue-04">
+          <div class="issue-header"><span class="issue-num">04</span><div><h3>proxy Route Handlerの401リトライでbody二重読取</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>proxy Route Handlerの401リトライ設計では同じRequest bodyを複数回読む可能性があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>Request bodyは一度しか読めず、POST/PUT/PATCHのリトライやmultipart対応で破綻するため、転送前に一度だけ読む形へ寄せる必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>proxy側のbodyは <code>arrayBuffer()</code> で一度だけ読み、Backendへ透過。</li><li>Content-Type固定をやめ、元リクエストの <code>Content-Type</code> / <code>Accept</code> を転送。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>app/api/proxy/[...path]/route.ts</code><code>lib/api/result.ts</code><code>_docs/adr/ADR-002-jwt-authentication.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>async function fetchWithAuth(request: NextRequest) {
+  const body = await request.text();
+  return fetch(url, { method, body });
+}
+
+if (response.status === 401) {
+  // Same request body is read again here.
+  response = await fetchWithAuth(request);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const body =
+  request.method === 'GET' || request.method === 'HEAD'
+    ? undefined
+    : await request.arrayBuffer();
+
+const headers = new Headers();
+copyHeader(request.headers, headers, 'content-type');
+copyHeader(request.headers, headers, 'accept');
+
+const response = await fetch(backendUrl, {
+  method: request.method,
+  headers,
+  body,
+  cache: 'no-store',
+});</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-05" class="issue" data-page="issue-05">
+          <div class="issue-header"><span class="issue-num">05</span><div><h3>STOMPチケット方式が最終的にaccessTokenをJSへ返す</h3><div class="tags"><span class="tag high">High</span><span class="tag partial">設計リスク明記</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>STOMPチケット方式が最終的に生のaccessTokenをJavaScriptへ返しており、採用理由と矛盾していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>完全な解消にはBackend/Broker側のチケット検証が必要で、フロントだけではtoken非露出を保証できないため、現行リスクを正直に設計へ残す必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>完全解決にはBackendがチケットを直接検証する方式への変更が必要。</li><li>今回は現行方式の限界をADRに明記し、セキュリティ上のリスク受容/将来課題として残した。</li></ul><div class="note">Backend改修なしに「accessTokenをブラウザへ一切返さない」方式へは移行できないため、実装変更ではなく設計リスクの明文化まで。</div></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/adr/ADR-005-stomp-realtime.md</code><code>_review/review_0710_adr-architecture.claude.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// /api/ws/connect
+const accessToken = validateAndConsumeTicket(ticket);
+return NextResponse.json({ token: accessToken });
+
+// Browser sets STOMP CONNECT Authorization header.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-005 revision
+Risk:
+  Current ticket exchange still exposes accessToken to JS memory.
+
+Future backend-required design:
+  Browser sends ws-ticket to STOMP broker.
+  Backend validates ticket server-side.
+  Browser never receives raw accessToken.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-06" class="issue" data-page="issue-06">
+          <div class="issue-header"><span class="issue-num">06</span><div><h3>並行401時のトークンリフレッシュ競合</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応済み確認</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>複数リクエストが同時に401になった場合のrefresh競合が設計上明確でなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>refresh token rotationがある環境では多重refreshがセッション断を引き起こすため、single-flight前提を明確にする必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>Client fetch wrapperの <code>refreshPromise</code> / <code>isRefreshing</code> によるsingle-flightを確認。</li><li>ADR上の責務を「Route Handler refresh」ではなく「client側 single-flight」へ合わせて更新。</li></ul></div><div><h2 class="block-title">主なCode/Doc修正</h2><div class="file-list"><code>lib/api/client.ts</code><code>_docs/adr/ADR-002-jwt-authentication.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>if (response.status === 401) {
+  await fetch('/api/auth/refresh', { method: 'POST' });
+  return fetchApi(path, options, true);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>let isRefreshing = false;
+let refreshPromise: Promise&lt;boolean&gt; | null = null;
+
+if (response.status === 401 && !isRetry) {
+  if (isRefreshing && refreshPromise) {
+    const refreshed = await refreshPromise;
+    if (refreshed) return fetchApi&lt;T&gt;(path, options, true);
+  } else {
+    isRefreshing = true;
+    refreshPromise = refreshToken();
+    try {
+      const refreshed = await refreshPromise;
+      if (refreshed) return fetchApi&lt;T&gt;(path, options, true);
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  }
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-07" class="issue" data-page="issue-07">
+          <div class="issue-header"><span class="issue-num">07</span><div><h3>CSRF Origin検証と実装済みcsrf routeの乖離</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>CSRFのOrigin検証記述と実装済みのDouble Submit Cookie方式がADR上で整合していなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>セキュリティ設計は実装と文書のズレが運用ミスに直結するため、実装済み方式と検証方法を一致させる必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>Double Submit Cookie方式をADRへ反映。</li><li>CSRF比較は文字列比較から <code>crypto.timingSafeEqual</code> に変更。</li><li>Client側は403時にCSRF tokenを破棄して一度だけ再取得・再試行。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/security/csrf.ts</code><code>lib/api/client.ts</code><code>app/api/auth/csrf/route.ts</code><code>_docs/adr/ADR-002-jwt-authentication.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const cookieHash = createHash('sha256').update(cookieToken).digest('hex');
+const headerHash = createHash('sha256').update(headerToken).digest('hex');
+
+return cookieHash === headerHash;</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const cookieHash = createHash('sha256').update(cookieToken).digest();
+const headerHash = createHash('sha256').update(headerToken).digest();
+
+return (
+  cookieHash.length === headerHash.length &&
+  timingSafeEqual(cookieHash, headerHash)
+);</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-08" class="issue" data-page="issue-08">
+          <div class="issue-header"><span class="issue-num">08</span><div><h3>route.tsから非HTTPハンドラ関数をexportする設計例</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">実装確認済み</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ADR例でroute.tsからHTTPメソッド以外の関数をexportしており、Next.js Route Handlerの制約に反していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>ADRのサンプルはAI/開発者が参照するため、そのまま実装するとbuild errorになる例を残すべきではないため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>現行実装ではRoute Handlerから不正なnamed exportを出していないことを確認。</li><li>ADRサンプルを実装に合わせ、共有処理はroute外モジュールへ置く方針を明記。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/adr/ADR-005-stomp-realtime.md</code><code>lib/ws/ticket-store.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// app/api/auth/ws-ticket/route.ts
+export async function POST() {}
+export function validateAndConsumeTicket(ticket: string) {
+  // Next.js Route Handlerでは不正なexport
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// lib/ws/ticket-store.ts
+export function validateAndConsumeTicket(ticket: string) {
+  // shared implementation
+}
+
+// app/api/auth/ws-ticket/route.ts
+export async function POST() {}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-09" class="issue" data-page="issue-09">
+          <div class="issue-header"><span class="issue-num">09</span><div><h3>useStompの依存配列とStrictMode再接続チャーン</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">実装確認済み</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>useStompの依存配列設計により、コールバック再生成で再接続チャーンが起きるリスクがあった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>リアルタイム接続はStrictModeや再レンダーの影響を受けやすく、設計上の安定パターンを明記して事故を防ぐ必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>現行実装の接続管理とADRの記述を照合。</li><li>StrictModeやlatest refパターンなど、今後の実装時に守るべき観点をADRへ反映。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/adr/ADR-005-stomp-realtime.md</code><code>features/alerts/hooks/use-alert-subscription.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>useEffect(() =&gt; {
+  connect({
+    onConnect: () =&gt; console.log('connected'),
+  });
+  return disconnect;
+}, [options.onConnect, options.onDisconnect]);</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR implementation guidance
+const callbacksRef = useRef(callbacks);
+callbacksRef.current = callbacks;
+
+// connect effect depends on stable connection parameters only.
+// latest callbacks are read from callbacksRef.current.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-10" class="issue" data-page="issue-10">
+          <div class="issue-header"><span class="issue-num">10</span><div><h3>ADR-003とADR-007の商品一覧パターン矛盾</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ADR-003とADR-007で一覧ページの初期データ渡しとURL状態管理の正パターンが矛盾していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>検索・ページネーション状態はURL共有、リロード、戻る操作に影響するため、チーム標準を明確化する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>URL状態をsingle source of truthとする方針をADR間で整合。</li><li>軽量ページのprops初期データ方式とHydrationBoundary方式の位置づけを整理。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/adr/ADR-003-server-client-boundary.md</code><code>_docs/adr/ADR-007-state-management.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const [params, setParams] = useState(initialParams);
+
+// URL and UI state can diverge after back/reload/share.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-003 / ADR-007
+Search and pagination conditions:
+  URL is the single source of truth.
+
+Server initial data:
+  lightweight props or HydrationBoundary are both allowed,
+  but URL state remains canonical.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-11" class="issue" data-page="issue-11">
+          <div class="issue-header"><span class="issue-num">11</span><div><h3>fetch cache / revalidate戦略が未定義</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>認証付きfetchのcache/revalidate戦略が未定義で、Next.jsのバージョン挙動に依存していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>認証付きデータの意図しないキャッシュはユーザー横断のデータ漏れや古い表示につながるため、no-storeを原則にする必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>認証付きBackend fetchは原則 <code>cache: 'no-store'</code> と定義。</li><li>キャッシュが必要なものだけ明示的にopt-inするADRを追加。</li></ul></div><div><h2 class="block-title">主なCode/Doc修正</h2><div class="file-list"><code>lib/api/server.ts</code><code>_docs/adr/ADR-010-authenticated-fetch-cache.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>return fetch(url, {
+  ...options,
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>import 'server-only';
+
+const hasExplicitCache =
+  options.cache !== undefined || options.next !== undefined;
+
+return fetch(url, {
+  cache: hasExplicitCache ? options.cache : 'no-store',
+  ...options,
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-12" class="issue" data-page="issue-12">
+          <div class="issue-header"><span class="issue-num">12</span><div><h3>ESLint境界ルールが手動列挙でスケールしない</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag partial">部分対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ESLint境界ルールが手動列挙前提で、Server/Client境界や本番コード依存の検出に穴があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>完全なfeature境界導入には追加設計が必要だが、重大な依存方向の誤りはまず機械的に防ぐ必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>完全なfeature間境界自動生成は別タスク化。</li><li>今回の実装では事故が大きい依存だけを機械的に禁止し、Server専用APIは <code>server-only</code> で保護。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>eslint.config.mjs</code><code>lib/api/server.ts</code><code>package.json</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>rules: {
+  '@typescript-eslint/no-explicit-any': 'warn',
+}
+
+// Production code could import from e2e/ or next/navigation directly.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>'no-restricted-imports': [
+  'error',
+  {
+    paths: [
+      { name: '@/e2e/testids', message: 'Use "@/lib/testing/testids".' },
+      { name: 'next/link', message: 'Use "@/i18n/navigation".' },
+      {
+        name: 'next/navigation',
+        importNames: ['useRouter', 'usePathname'],
+        message: 'Use locale-aware navigation hooks.',
+      },
+    ],
+  },
+],</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-13" class="issue" data-page="issue-13">
+          <div class="issue-header"><span class="issue-num">13</span><div><h3>ADR-008とE2E方針書v2の矛盾</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ADR-008とE2E方針書でE2E方式の正本が異なっていた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>テスト戦略の意思決定と運用手順が分かれていないと、今後の修正時にmock方式や設定が分裂するため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>意思決定の正本をADR-008、運用手順の正本をE2E方針書として整理。</li><li>採用方式をPlaywright + Standalone Mock Serverへ更新。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/adr/ADR-008-e2e-testing.md</code><code>_docs/e2e-test-policy.md</code><code>README.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>Status: 検討中
+Candidate: Playwright + Browser MSW
+
+Problem:
+  Browser MSW cannot intercept Server Component backend fetch.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Status: Accepted (2026-07-10)
+Decision:
+  Playwright + Standalone Mock Server
+
+webServer:
+  pnpm mock:server
+  pnpm start:test</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-14" class="issue" data-page="issue-14">
+          <div class="issue-header"><span class="issue-num">14</span><div><h3>Browser MSWではServer Component直接fetchをモックできない</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>Browser MSWではServer ComponentのBackend直接fetchをモックできない点がADRに反映されていなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>RSCを含むNext.js App Routerではサーバー側fetchをE2Eで安定して制御する必要があり、Standalone Mock Serverを正本にする必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>RSCのBackend直接fetchを捕捉できるStandalone Mock ServerをE2Eの前提として明文化。</li><li>dashboardやalertsの不足APIをmock serverへ追加。</li></ul></div><div><h2 class="block-title">主なCode/Doc修正</h2><div class="file-list"><code>e2e/mocks/mock-server.ts</code><code>e2e/mocks/handlers.ts</code><code>_docs/adr/ADR-008-e2e-testing.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// Browser MSW handler
+http.get('/retail/dashboard/kpi', () =&gt; ...)
+
+// Server Component fetchFromBackend() runs on the server,
+// so browser-side MSW does not intercept it.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// e2e/mocks/mock-server.ts
+if (path === '/retail/dashboard/kpi' && method === 'GET') {
+  res.writeHead(200);
+  res.end(apiResponse(mockDashboardKpi));
+  return;
+}
+
+// BACKEND_URL points to this standalone server in E2E.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-15" class="issue" data-page="issue-15">
+          <div class="issue-header"><span class="issue-num">15</span><div><h3>自律修正ループのプロンプトにガードレールがない</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>自律修正ループに、期待値変更・skip・snapshot更新を抑止するガードレールがなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>テストを通すために仕様や期待値を緩める修正を防ぎ、アプリ側の不具合修正へ誘導する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>期待値・snapshot・skip・mock仕様を安易に変えないルールをE2E方針へ追加。</li><li>APIレスポンス不一致は実装判断ではなく設計確認へ上げる方針にした。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>_docs/e2e-test-policy.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>When E2E fails:
+  Ask agent to fix failing test.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Autonomous repair guardrails:
+- Do not change expected assertions just to pass.
+- Do not update snapshots without UI-owner approval.
+- Do not add skip/fixme.
+- Do not change mock API contract unless production contract changed.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-16" class="issue" data-page="issue-16">
+          <div class="issue-header"><span class="issue-num">16</span><div><h3>ADR間の命名・コード不整合</h3><div class="tags"><span class="tag low">Low</span><span class="tag partial">部分対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>fetchFromProxy、ws-token、MSWなど、ADR間で古い命名や実装と違う表記が残っていた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>用語の不一致は設計理解と実装検索のコストを上げるため、主要な横断用語を現行実装へ揃える必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>主要な認証、STOMP、E2E、i18n、cacheの用語を現行実装へ合わせた。</li><li>全ドキュメント横断の用語棚卸しは継続課題。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>README.md</code><code>_docs/adr/ADR-002*.md</code><code>_docs/adr/ADR-005*.md</code><code>_docs/adr/ADR-008*.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>fetchFromProxy(...)
+ws-token
+Playwright + MSW
+ADR count: 8</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>fetchApi(...)
+ws-ticket
+Playwright + Standalone Mock Server
+ADR count: 11</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-17" class="issue" data-page="issue-17">
+          <div class="issue-header"><span class="issue-num">17</span><div><h3>ライブラリバージョン表記の陳腐化とZustand hydration</h3><div class="tags"><span class="tag low">Low</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ライブラリバージョン表記が古く、Zustand persist/hydrationの注意点も明記されていなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>依存バージョンは設計判断やトラブルシュートの前提になるため、現行スタックと注意点を明確にする必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>READMEとADRの技術スタック・前提を現状へ合わせた。</li><li>Zustand利用の注意点をADR-007へ反映。</li></ul></div><div><h2 class="block-title">主なDoc修正</h2><div class="file-list"><code>README.md</code><code>_docs/adr/ADR-007-state-management.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>Next.js App Router
+React
+Zustand persist: not documented</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Next.js 15 App Router
+React 19
+Zustand v5
+
+ADR-007:
+  hydration and persist usage notes are documented.</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-18" class="issue" data-page="issue-18">
+          <div class="issue-header"><span class="issue-num">18</span><div><h3>alert-storeのunreadCountが重複受信でドリフト</h3><div class="tags"><span class="tag low">Low</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>alert-storeのunreadCountが重複アラート受信で実データからドリフトする可能性があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>リアルタイム通知は重複配信が起こり得るため、カウンタを加算管理ではなく保持配列から再計算する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>alert IDで重複排除。</li><li><code>unreadCount</code> は保持配列から再計算する方式に変更。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>features/alerts/store/alert-store.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>addAlert: (alert) =&gt;
+  set((state) =&gt; ({
+    alerts: [alert, ...state.alerts],
+    unreadCount: state.unreadCount + 1,
+  })),</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>addAlert: (alert) =&gt;
+  set((state) =&gt; {
+    const alerts = [alert, ...state.alerts.filter((a) =&gt; a.id !== alert.id)];
+    const retained = alerts.slice(0, 100);
+    return {
+      alerts: retained,
+      unreadCount: retained.filter((a) =&gt; !a.read).length,
+    };
+  }),</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-19" class="issue" data-page="issue-19">
+          <div class="issue-header"><span class="issue-num">19</span><div><h3>認証付きAPIをrevalidate:60でキャッシュする危険</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>認証付きAPIをrevalidate付きでキャッシュするリスクがあった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>認証付きレスポンスはユーザーや権限で内容が変わるため、デフォルトキャッシュを避ける設計をコードで強制する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li><code>fetchFromBackend</code> で明示指定がない限り <code>cache: 'no-store'</code>。</li><li>認証付きData Cache利用をADR-010で禁止寄りのopt-in設計にした。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/api/server.ts</code><code>_docs/adr/ADR-010-authenticated-fetch-cache.md</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// authenticated dashboard fetch
+await fetchFromBackend('retail/dashboard/kpi', {
+  next: { revalidate: 60 },
+});
+
+// User-specific data may be cached accidentally.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-010
+Authenticated backend API:
+  default: cache: 'no-store'
+  revalidate/tags: opt-in only after data classification review
+
+// implementation default is enforced in lib/api/server.ts</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-20" class="issue" data-page="issue-20">
+          <div class="issue-header"><span class="issue-num">20</span><div><h3>事前refresh未実装でSSRセッション断</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>SSR経路で事前refreshが未実装のため、refresh_tokenがあってもセッション継続できなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>Server ComponentはClient側の401 refreshより前に実行されるため、middlewareでSSR前にtokenを更新する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>middlewareでrefresh可能な場合にaccess tokenを再発行。</li><li>SSR経路のセッション継続性を改善。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>middleware.ts</code><code>app/api/auth/refresh/route.ts</code><code>app/api/auth/login/route.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// Server Component path
+if (!accessToken) {
+  redirect('/login');
+}
+
+// refresh_token remained valid but was not used.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// middleware path
+if (!accessToken && refreshToken) {
+  const refreshed = await refreshAuthTokens(refreshToken);
+  if (refreshed) {
+    const response = NextResponse.redirect(request.nextUrl);
+    setAuthCookies(response, refreshed);
+    return response;
+  }
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-21" class="issue" data-page="issue-21">
+          <div class="issue-header"><span class="issue-num">21</span><div><h3>本番UIの偽データ・固定fallback</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>本番UIに疑似データ生成や固定fallbackが残り、障害や未連携が正常データのように見える箇所があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>業務判断に使う画面で偽データを表示すると、実データと誤認されるリスクが高いため、API値または明示的な空状態へ寄せる必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>アプリ内疑似データ生成・固定fallbackを削除。</li><li>必要なE2EデータはBackend contractとしてmock serverへ移動。</li><li>データ未提供時は空状態または <code>-</code> を表示。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>features/dashboard/components/sales-chart.tsx</code><code>features/alerts/components/alert-list-client.tsx</code><code>features/products/components/product-table-client.tsx</code><code>features/inventory/components/inventory-table-client.tsx</code><code>features/transactions/components/transaction-table-client.tsx</code><code>e2e/mocks/mock-server.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>function generateMockData() {
+  return {
+    '7d': generate7Days(),
+    '30d': generate30Days(),
+    '1y': generate1Year(),
+  };
+}
+
+export function SalesChart({ data = defaultData }) { ... }</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>async function getDashboardSales(): Promise&lt;SalesChartData | undefined&gt; {
+  try {
+    return await fetchFromBackend&lt;SalesChartData&gt;('retail/dashboard/sales');
+  } catch {
+    return undefined;
+  }
+}
+
+&lt;SalesChart data={salesChartData || kpiData.salesChart} /&gt;</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-22" class="issue" data-page="issue-22">
+          <div class="issue-header"><span class="issue-num">22</span><div><h3>モック認証が本番コードパスで有効化可能</h3><div class="tags"><span class="tag high">High</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>ローカルモック認証がlocalhost判定で暗黙に有効化され、本番コードパスにも残り得る状態だった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>認証バイパス系の仕組みは本番混入時の影響が大きいため、明示フラグかつ非production限定にする必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>localhost判定による暗黙有効化を削除。</li><li>productionで <code>ENABLE_LOCAL_AUTH_MOCK=true</code> の場合はfail-fast。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/auth/mock-auth.ts</code><code>lib/env/server.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>export function isLocalAuthMockEnabled() {
+  return (
+    process.env.ENABLE_LOCAL_AUTH_MOCK === 'true' ||
+    process.env.BACKEND_URL?.includes('localhost')
+  );
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>export function isLocalAuthMockEnabled() {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ENABLE_LOCAL_AUTH_MOCK === 'true'
+  );
+}
+
+if (env.NODE_ENV === 'production' && env.ENABLE_LOCAL_AUTH_MOCK) {
+  throw new Error('ENABLE_LOCAL_AUTH_MOCK must be false in production');
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-23" class="issue" data-page="issue-23">
+          <div class="issue-header"><span class="issue-num">23</span><div><h3>ESLint境界ルール未実装</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag partial">部分対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>本番コードからe2e/testidsやnext/navigationを直接importできる状態だった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>依存方向の逆転やlocale漏れをレビューだけに頼らず、lintで早期検出する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>本番コードから <code>@/e2e/testids</code> を禁止。</li><li><code>next/link</code> と <code>next/navigation</code> の一部hooksを禁止し、locale-aware APIへ誘導。</li><li>feature間の完全境界ルールは別途導入対象。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>eslint.config.mjs</code><code>lib/testing/testids.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// allowed by lint
+import { TESTIDS } from '@/e2e/testids';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// eslint.config.mjs
+{
+  name: '@/e2e/testids',
+  message: 'Use "@/lib/testing/testids"; production code must not import from e2e/.',
+},
+{
+  name: 'next/link',
+  message: 'Use the locale-aware Link from "@/i18n/navigation".',
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-24" class="issue" data-page="issue-24">
+          <div class="issue-header"><span class="issue-num">24</span><div><h3>ロケール非対応ナビゲーション混在</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>next/linkやnext/navigationの直接利用が混在し、locale prefixを壊す可能性があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>i18nルーティングではリンク生成とURL更新の一貫性が重要で、locale-aware APIへ統一する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li><code>useRouter</code> / <code>usePathname</code> / <code>Link</code> を <code>@/i18n/navigation</code> へ統一。</li><li>検索条件reset時のURL query除去はHistory APIで同期化し、E2E flakyも解消。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>app/[locale]/(auth)/login/page.tsx</code><code>features/*/components/*-table-client.tsx</code><code>features/dashboard/components/alert-panel.tsx</code><code>components/language-switcher.tsx</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>import { useRouter, usePathname } from 'next/navigation';
+
+const router = useRouter();
+router.push('/products/new');</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>import { usePathname, useRouter } from '@/i18n/navigation';
+
+const router = useRouter();
+router.push('/products/new');
+
+// reset query synchronously
+window.history.replaceState(null, '', window.location.pathname);</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-25" class="issue" data-page="issue-25">
+          <div class="issue-header"><span class="issue-num">25</span><div><h3>features配下のユーザー可視文言が未i18n</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag pending">未対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>features配下にユーザー可視文言のハードコードが多数残っていた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>全面i18n化は影響範囲が大きく、今回のアーキテクチャレビュー対応とは別に画面単位で計画的に進める必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>対象範囲が大きく、今回のレビュー修正とは別タスク化。</li><li>ADR-009でi18n方針は定義済み。以後、画面単位でmessagesへ移行する。</li></ul></div><div><h2 class="block-title">関連Doc</h2><div class="file-list"><code>_docs/adr/ADR-009-i18n-routing.md</code><code>messages/ja.json</code><code>messages/en.json</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Current</span><pre><code>&lt;Button&gt;新規登録&lt;/Button&gt;
+&lt;h1&gt;商品一覧&lt;/h1&gt;
+toast.success('商品を削除しました');</code></pre></div>
+                <div class="code-pane"><span class="code-label after">Planned</span><pre><code>const t = useTranslations('products');
+
+&lt;Button&gt;{t('actions.create')}&lt;/Button&gt;
+&lt;h1&gt;{t('title')}&lt;/h1&gt;
+toast.success(t('messages.deleted'));</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-26" class="issue" data-page="issue-26">
+          <div class="issue-header"><span class="issue-num">26</span><div><h3>API障害が「0件」表示に化ける</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag partial">部分対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>API障害が空配列や0件表示に変換され、正常な空状態と区別できない箇所があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>障害を正常表示に見せると運用判断を誤るため、エラー状態を明示し、少なくとも主要画面から改善する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>主要一覧ページのServer ComponentではAPIエラーを空配列へ変換せずthrow。</li><li>Client再取得失敗時はインラインエラーを出し、最後のデータであることを明示。</li><li>system系を含む全画面統一は残課題。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>app/[locale]/(dashboard)/*/page.tsx</code><code>features/products/components/product-table-client.tsx</code><code>features/inventory/components/inventory-table-client.tsx</code><code>features/transactions/components/transaction-table-client.tsx</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>let initialData = { list: [], total: 0 };
+try {
+  initialData = await fetchProducts(params);
+} catch {
+  // API error is shown as empty list.
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const initialData = await fetchProducts(params);
+
+{isError && (
+  &lt;div role="alert"&gt;
+    データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+  &lt;/div&gt;
+)}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-27" class="issue" data-page="issue-27">
+          <div class="issue-header"><span class="issue-num">27</span><div><h3>proxyのContent-Type固定・エラー正規化・Result unwrap重複</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>proxy、server fetch、dashboard layoutでBackend Result unwrapやエラーstatus変換が重複していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>APIレスポンス仕様変更時の修正漏れを防ぎ、HTTP statusを一貫して扱うため、共通関数へ集約する必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>Backend <code>Result&lt;T&gt;</code> のunwrapとbusiness code mappingを共通化。</li><li>proxyはContent-Type/Acceptを透過し、HTTP statusを共通mapperで返す。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/api/result.ts</code><code>lib/api/server.ts</code><code>app/api/proxy/[...path]/route.ts</code><code>app/api/auth/me/route.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const result = await response.json();
+
+if (result.code !== '00000') {
+  return NextResponse.json(
+    { message: result.msg },
+    { status: 400 }
+  );
+}
+
+return result.data;</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>export const API_SUCCESS_CODE = '00000';
+
+export function unwrapApiResponse&lt;T&gt;(payload: ApiResponse&lt;T&gt;): T {
+  if (payload.code !== API_SUCCESS_CODE) {
+    throw new BackendApiError(payload.msg, statusFromApiCode(payload.code), payload.code);
+  }
+  return payload.data;
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-28" class="issue" data-page="issue-28">
+          <div class="issue-header"><span class="issue-num">28</span><div><h3>本番コードがe2e/testidsに依存</h3><div class="tags"><span class="tag medium">Medium</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>本番コンポーネントが@/e2e/testidsへ依存しており、テストコードへの依存方向が逆転していた。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>本番コードがe2e配下へ依存するとlint対象やビルド境界が曖昧になるため、共有領域へ移す必要があるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>testid定数の正本を <code>lib/testing/testids.ts</code> へ移動。</li><li><code>e2e/testids.ts</code> は互換re-exportにし、本番コードからe2e配下への依存を削除。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/testing/testids.ts</code><code>e2e/testids.ts</code><code>eslint.config.mjs</code><code>components/*</code><code>features/*</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// production component
+import { TESTIDS } from '@/e2e/testids';</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// production component
+import { TESTIDS } from '@/lib/testing/testids';
+
+// e2e/testids.ts
+export { TESTIDS, testId } from '../lib/testing/testids';</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-29" class="issue" data-page="issue-29">
+          <div class="issue-header"><span class="issue-num">29</span><div><h3>client.tsのAbortSignal再利用とCSRF token永続キャッシュ</h3><div class="tags"><span class="tag low">Low</span><span class="tag done">対応完了</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>Client fetchでAbortSignalをretry間で再利用し、CSRF tokenのnull/期限切れもキャッシュし続ける可能性があった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>タイムアウト後のretryや長時間セッション中のmutation回復性を確保するため、attempt単位のcleanupとCSRF再取得が必要なため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>retry attemptごとにAbortControllerを作成し、成功/失敗時にtimerをcleanup。</li><li>CSRF取得失敗時はnullを永続キャッシュしない。</li><li>mutationで403になった場合、CSRFを破棄して一度だけ再取得・再送。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/api/client.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const signal = createAbortSignal(timeoutMs);
+
+for (let attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {
+  await fetch(path, { signal });
+}
+
+// csrfPromise may cache null forever.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>for (let attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {
+  const { signal, cleanup } = createAbortSignal(timeoutMs, options?.signal);
+  try {
+    const response = await fetch(path, { signal });
+    cleanup();
+
+    if (response.status === 403 && needsCsrf && !csrfRetried) {
+      csrfPromise = null;
+      csrfToken = await fetchCsrfToken();
+      csrfRetried = true;
+      continue;
+    }
+  } catch (error) {
+    cleanup();
+  }
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <article id="issue-30" class="issue" data-page="issue-30">
+          <div class="issue-header"><span class="issue-num">30</span><div><h3>rate-limit / ticket-storeがin-memory、CSRF比較コメント不一致</h3><div class="tags"><span class="tag low">Low</span><span class="tag partial">部分対応</span></div></div></div>
+          <div class="issue-context">
+            <div><h2 class="block-title">指摘内容</h2><p>rate-limit/ticket-storeがin-memoryで、CSRF比較の実装もコメントと厳密には一致していなかった。</p></div>
+            <div><h2 class="block-title">対応理由</h2><p>マルチインスタンス対応は別途Redis設計が必要だが、メモリ増加と比較処理の不一致は現行コードで改善できるため。</p></div>
+          </div>
+          <div class="issue-body"><div><h2 class="block-title">対応方法</h2><ul><li>rate-limitの期限切れbucketを定期掃除。</li><li>CSRF比較は <code>timingSafeEqual</code> へ変更。</li><li>rate-limit / ticket-store のRedis化はデプロイ構成確認が必要なため残課題。</li></ul></div><div><h2 class="block-title">主なCode修正</h2><div class="file-list"><code>lib/security/rate-limit.ts</code><code>lib/security/csrf.ts</code><code>lib/ws/ticket-store.ts</code><code>lib/env/server.ts</code></div>
+              <div class="inline-code-sample">
+                <h2 class="block-title">主要なコード一部（修正前/修正後）</h2>
+<div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const buckets = new Map&lt;string, Bucket&gt;();
+
+// Entries were never removed unless same key was checked again.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const buckets = new Map&lt;string, Bucket&gt;();
+let lastCleanupAt = 0;
+
+function cleanupExpiredBuckets(now: number) {
+  if (now - lastCleanupAt &lt; CLEANUP_INTERVAL_MS) return;
+  lastCleanupAt = now;
+
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt &lt;= now) buckets.delete(key);
+  }
+}</code></pre></div>
+              </div>
+              </div></div></div>
+        </article>
+
+        <section id="code-diff" class="section" data-page="code-diff">
+          <h2>指摘別 変更前後Code</h2>
+          <p class="lead">
+            各指摘の主な変更点を、レビュー説明用に短いBefore/Afterスニペットとして整理しています。文書のみの指摘はMarkdown/ADRの差分として記載しています。
+          </p>
+          <div class="code-samples">
+            <div class="code-card">
+              <div class="code-card-header"><h3>#01 ADRライフサイクル</h3><span class="tag done">Doc</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>---
+status: 承認待ち (2025-05)
+---
+
+# ADR-001: Next.js App Router...</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>---
+status: Accepted (2026-07-10)
+---
+
+# ADR-000: ADR Governance
+- Proposed - 提案中
+- Accepted - 採用済み
+- Superseded - 後続ADRで置換</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#02 i18nルーティングADR</h3><span class="tag done">Doc/Route</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>app/
+├── (auth)/login
+└── (dashboard)/products
+
+// i18n routing decision: not documented</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>app/
+└── [locale]/
+    ├── (auth)/login
+    └── (dashboard)/products
+
+// ADR-009
+Decision: Use next-intl with app/[locale].
+Navigation: import from "@/i18n/navigation".</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#03 / #20 SSR refresh</h3><span class="tag done">middleware.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>if (!request.cookies.get('access_token')) {
+  return NextResponse.redirect(loginUrl);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const accessToken = request.cookies.get('access_token')?.value;
+const refreshToken = request.cookies.get('refresh_token')?.value;
+
+if (!accessToken && refreshToken) {
+  const refreshed = await refreshAuthTokens(refreshToken);
+  if (refreshed) {
+    const response = NextResponse.redirect(request.nextUrl);
+    setAuthCookies(response, refreshed);
+    return response;
+  }
+}
+
+if (!accessToken) {
+  return NextResponse.redirect(loginUrl);
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#04 proxy body二重読取</h3><span class="tag done">Route Handler</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>async function fetchWithAuth(request: NextRequest) {
+  const body = await request.text();
+  return fetch(url, { method, body });
+}
+
+if (response.status === 401) {
+  // Same request body is read again here.
+  response = await fetchWithAuth(request);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const body =
+  request.method === 'GET' || request.method === 'HEAD'
+    ? undefined
+    : await request.arrayBuffer();
+
+const headers = new Headers();
+copyHeader(request.headers, headers, 'content-type');
+copyHeader(request.headers, headers, 'accept');
+
+const response = await fetch(backendUrl, {
+  method: request.method,
+  headers,
+  body,
+  cache: 'no-store',
+});</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#05 STOMP token露出</h3><span class="tag partial">ADR Risk</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// /api/ws/connect
+const accessToken = validateAndConsumeTicket(ticket);
+return NextResponse.json({ token: accessToken });
+
+// Browser sets STOMP CONNECT Authorization header.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-005 revision
+Risk:
+  Current ticket exchange still exposes accessToken to JS memory.
+
+Future backend-required design:
+  Browser sends ws-ticket to STOMP broker.
+  Backend validates ticket server-side.
+  Browser never receives raw accessToken.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#06 並行401 refresh競合</h3><span class="tag done">lib/api/client.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>if (response.status === 401) {
+  await fetch('/api/auth/refresh', { method: 'POST' });
+  return fetchApi(path, options, true);
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>let isRefreshing = false;
+let refreshPromise: Promise&lt;boolean&gt; | null = null;
+
+if (response.status === 401 && !isRetry) {
+  if (isRefreshing && refreshPromise) {
+    const refreshed = await refreshPromise;
+    if (refreshed) return fetchApi&lt;T&gt;(path, options, true);
+  } else {
+    isRefreshing = true;
+    refreshPromise = refreshToken();
+    try {
+      const refreshed = await refreshPromise;
+      if (refreshed) return fetchApi&lt;T&gt;(path, options, true);
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  }
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#07 CSRF検証</h3><span class="tag done">lib/security/csrf.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const cookieHash = createHash('sha256').update(cookieToken).digest('hex');
+const headerHash = createHash('sha256').update(headerToken).digest('hex');
+
+return cookieHash === headerHash;</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const cookieHash = createHash('sha256').update(cookieToken).digest();
+const headerHash = createHash('sha256').update(headerToken).digest();
+
+return (
+  cookieHash.length === headerHash.length &&
+  timingSafeEqual(cookieHash, headerHash)
+);</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#08 route.ts named export</h3><span class="tag done">ADR修正</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// app/api/auth/ws-ticket/route.ts
+export async function POST() {}
+export function validateAndConsumeTicket(ticket: string) {
+  // Next.js Route Handlerでは不正なexport
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// lib/ws/ticket-store.ts
+export function validateAndConsumeTicket(ticket: string) {
+  // shared implementation
+}
+
+// app/api/auth/ws-ticket/route.ts
+export async function POST() {}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#09 useStomp再接続チャーン</h3><span class="tag done">ADR修正</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>useEffect(() =&gt; {
+  connect({
+    onConnect: () =&gt; console.log('connected'),
+  });
+  return disconnect;
+}, [options.onConnect, options.onDisconnect]);</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR implementation guidance
+const callbacksRef = useRef(callbacks);
+callbacksRef.current = callbacks;
+
+// connect effect depends on stable connection parameters only.
+// latest callbacks are read from callbacksRef.current.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#10 一覧ページの状態管理パターン</h3><span class="tag done">ADR修正</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const [params, setParams] = useState(initialParams);
+
+// URL and UI state can diverge after back/reload/share.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-003 / ADR-007
+Search and pagination conditions:
+  URL is the single source of truth.
+
+Server initial data:
+  lightweight props or HydrationBoundary are both allowed,
+  but URL state remains canonical.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#11 / #19 認証付きfetch cache</h3><span class="tag done">lib/api/server.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>return fetch(url, {
+  ...options,
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>import 'server-only';
+
+const hasExplicitCache =
+  options.cache !== undefined || options.next !== undefined;
+
+return fetch(url, {
+  cache: hasExplicitCache ? options.cache : 'no-store',
+  ...options,
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#19 認証付きAPIのrevalidate禁止</h3><span class="tag done">ADR-010</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// authenticated dashboard fetch
+await fetchFromBackend('retail/dashboard/kpi', {
+  next: { revalidate: 60 },
+});
+
+// User-specific data may be cached accidentally.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// ADR-010
+Authenticated backend API:
+  default: cache: 'no-store'
+  revalidate/tags: opt-in only after data classification review
+
+// implementation default is enforced in lib/api/server.ts</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#12 / #23 ESLint境界</h3><span class="tag partial">eslint.config.mjs</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>rules: {
+  '@typescript-eslint/no-explicit-any': 'warn',
+}
+
+// Production code could import from e2e/ or next/navigation directly.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>'no-restricted-imports': [
+  'error',
+  {
+    paths: [
+      { name: '@/e2e/testids', message: 'Use "@/lib/testing/testids".' },
+      { name: 'next/link', message: 'Use "@/i18n/navigation".' },
+      {
+        name: 'next/navigation',
+        importNames: ['useRouter', 'usePathname'],
+        message: 'Use locale-aware navigation hooks.',
+      },
+    ],
+  },
+],</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#13 / #14 E2E方式の正本化</h3><span class="tag done">ADR/E2E</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>Status: 検討中
+Candidate: Playwright + Browser MSW
+
+Problem:
+  Browser MSW cannot intercept Server Component backend fetch.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Status: Accepted (2026-07-10)
+Decision:
+  Playwright + Standalone Mock Server
+
+webServer:
+  pnpm mock:server
+  pnpm start:test</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#14 RSC fetchをモックできるE2E backend</h3><span class="tag done">mock-server.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// Browser MSW handler
+http.get('/retail/dashboard/kpi', () =&gt; ...)
+
+// Server Component fetchFromBackend() runs on the server,
+// so browser-side MSW does not intercept it.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// e2e/mocks/mock-server.ts
+if (path === '/retail/dashboard/kpi' && method === 'GET') {
+  res.writeHead(200);
+  res.end(apiResponse(mockDashboardKpi));
+  return;
+}
+
+// BACKEND_URL points to this standalone server in E2E.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#15 自律修正ガードレール</h3><span class="tag done">e2e-test-policy.md</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>When E2E fails:
+  Ask agent to fix failing test.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Autonomous repair guardrails:
+- Do not change expected assertions just to pass.
+- Do not update snapshots without UI-owner approval.
+- Do not add skip/fixme.
+- Do not change mock API contract unless production contract changed.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#16 命名・コード不整合</h3><span class="tag partial">ADR/README</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>fetchFromProxy(...)
+ws-token
+Playwright + MSW
+ADR count: 8</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>fetchApi(...)
+ws-ticket
+Playwright + Standalone Mock Server
+ADR count: 11</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#17 バージョン表記</h3><span class="tag done">README/ADR</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>Next.js App Router
+React
+Zustand persist: not documented</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>Next.js 15 App Router
+React 19
+Zustand v5
+
+ADR-007:
+  hydration and persist usage notes are documented.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#18 alert-store unreadCount</h3><span class="tag done">alert-store.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>addAlert: (alert) =&gt;
+  set((state) =&gt; ({
+    alerts: [alert, ...state.alerts],
+    unreadCount: state.unreadCount + 1,
+  })),</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>addAlert: (alert) =&gt;
+  set((state) =&gt; {
+    const alerts = [alert, ...state.alerts.filter((a) =&gt; a.id !== alert.id)];
+    const retained = alerts.slice(0, 100);
+    return {
+      alerts: retained,
+      unreadCount: retained.filter((a) =&gt; !a.read).length,
+    };
+  }),</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#21 本番UIの偽データ削除</h3><span class="tag done">UI/API</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>function generateMockData() {
+  return {
+    '7d': generate7Days(),
+    '30d': generate30Days(),
+    '1y': generate1Year(),
+  };
+}
+
+export function SalesChart({ data = defaultData }) { ... }</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>async function getDashboardSales(): Promise&lt;SalesChartData | undefined&gt; {
+  try {
+    return await fetchFromBackend&lt;SalesChartData&gt;('retail/dashboard/sales');
+  } catch {
+    return undefined;
+  }
+}
+
+&lt;SalesChart data={salesChartData || kpiData.salesChart} /&gt;</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#20 SSRセッション継続</h3><span class="tag done">middleware.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// Server Component path
+if (!accessToken) {
+  redirect('/login');
+}
+
+// refresh_token remained valid but was not used.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// middleware path
+if (!accessToken && refreshToken) {
+  const refreshed = await refreshAuthTokens(refreshToken);
+  if (refreshed) {
+    const response = NextResponse.redirect(request.nextUrl);
+    setAuthCookies(response, refreshed);
+    return response;
+  }
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#21 商品一覧の疑似在庫/売上</h3><span class="tag done">Product UI</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const stockQty = deterministicInt(row.id, 200);
+const salesCount = deterministicInt(row.id + 1000, 500) + 50;
+
+return &lt;span&gt;{stockQty}&lt;/span&gt;;</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>return (
+  &lt;span&gt;
+    {typeof row.stockQuantity === 'number' ? row.stockQuantity : '-'}
+  &lt;/span&gt;
+);
+
+// E2E values are provided by e2e/mocks/mock-server.ts.</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#22 mock auth本番有効化防止</h3><span class="tag done">mock-auth/env</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>export function isLocalAuthMockEnabled() {
+  return (
+    process.env.ENABLE_LOCAL_AUTH_MOCK === 'true' ||
+    process.env.BACKEND_URL?.includes('localhost')
+  );
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>export function isLocalAuthMockEnabled() {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ENABLE_LOCAL_AUTH_MOCK === 'true'
+  );
+}
+
+if (env.NODE_ENV === 'production' && env.ENABLE_LOCAL_AUTH_MOCK) {
+  throw new Error('ENABLE_LOCAL_AUTH_MOCK must be false in production');
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#24 locale-aware navigation</h3><span class="tag done">table-client.tsx</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>import { useRouter, usePathname } from 'next/navigation';
+
+const router = useRouter();
+router.push('/products/new');</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>import { usePathname, useRouter } from '@/i18n/navigation';
+
+const router = useRouter();
+router.push('/products/new');
+
+// reset query synchronously
+window.history.replaceState(null, '', window.location.pathname);</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#23 本番コードの禁止import</h3><span class="tag partial">ESLint</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// allowed by lint
+import { TESTIDS } from '@/e2e/testids';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// eslint.config.mjs
+{
+  name: '@/e2e/testids',
+  message: 'Use "@/lib/testing/testids"; production code must not import from e2e/.',
+},
+{
+  name: 'next/link',
+  message: 'Use the locale-aware Link from "@/i18n/navigation".',
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#25 文言i18n</h3><span class="tag pending">未対応</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Current</span><pre><code>&lt;Button&gt;新規登録&lt;/Button&gt;
+&lt;h1&gt;商品一覧&lt;/h1&gt;
+toast.success('商品を削除しました');</code></pre></div>
+                <div class="code-pane"><span class="code-label after">Planned</span><pre><code>const t = useTranslations('products');
+
+&lt;Button&gt;{t('actions.create')}&lt;/Button&gt;
+&lt;h1&gt;{t('title')}&lt;/h1&gt;
+toast.success(t('messages.deleted'));</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#26 API障害が0件表示に化ける</h3><span class="tag partial">Page/Client</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>let initialData = { list: [], total: 0 };
+try {
+  initialData = await fetchProducts(params);
+} catch {
+  // API error is shown as empty list.
+}</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const initialData = await fetchProducts(params);
+
+{isError && (
+  &lt;div role="alert"&gt;
+    データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+  &lt;/div&gt;
+)}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#27 Result unwrap共通化</h3><span class="tag done">lib/api/result.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const result = await response.json();
+
+if (result.code !== '00000') {
+  return NextResponse.json(
+    { message: result.msg },
+    { status: 400 }
+  );
+}
+
+return result.data;</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>export const API_SUCCESS_CODE = '00000';
+
+export function unwrapApiResponse&lt;T&gt;(payload: ApiResponse&lt;T&gt;): T {
+  if (payload.code !== API_SUCCESS_CODE) {
+    throw new BackendApiError(payload.msg, statusFromApiCode(payload.code), payload.code);
+  }
+  return payload.data;
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#28 testids依存方向</h3><span class="tag done">lib/testing</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// production component
+import { TESTIDS } from '@/e2e/testids';</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>// production component
+import { TESTIDS } from '@/lib/testing/testids';
+
+// e2e/testids.ts
+export { TESTIDS, testId } from '../lib/testing/testids';</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#29 AbortSignal / CSRF cache</h3><span class="tag done">lib/api/client.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const signal = createAbortSignal(timeoutMs);
+
+for (let attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {
+  await fetch(path, { signal });
+}
+
+// csrfPromise may cache null forever.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>for (let attempt = 0; attempt &lt;= MAX_RETRIES; attempt++) {
+  const { signal, cleanup } = createAbortSignal(timeoutMs, options?.signal);
+  try {
+    const response = await fetch(path, { signal });
+    cleanup();
+
+    if (response.status === 403 && needsCsrf && !csrfRetried) {
+      csrfPromise = null;
+      csrfToken = await fetchCsrfToken();
+      csrfRetried = true;
+      continue;
+    }
+  } catch (error) {
+    cleanup();
+  }
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>#30 rate-limit cleanup</h3><span class="tag partial">lib/security/rate-limit.ts</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>const buckets = new Map&lt;string, Bucket&gt;();
+
+// Entries were never removed unless same key was checked again.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code>const buckets = new Map&lt;string, Bucket&gt;();
+let lastCleanupAt = 0;
+
+function cleanupExpiredBuckets(now: number) {
+  if (now - lastCleanupAt &lt; CLEANUP_INTERVAL_MS) return;
+  lastCleanupAt = now;
+
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt &lt;= now) buckets.delete(key);
+  }
+}</code></pre></div>
+              </div>
+            </div>
+
+            <div class="code-card">
+              <div class="code-card-header"><h3>pnpm v11検証環境</h3><span class="tag done">pnpm-workspace.yaml</span></div>
+              <div class="code-grid">
+                <div class="code-pane"><span class="code-label before">Before</span><pre><code>// package.json
+"pnpm": {
+  "overrides": {
+    "postcss@&lt;8.5.10": "&gt;=8.5.10"
+  }
+}
+
+// pnpm v11 no longer reads this field.</code></pre></div>
+                <div class="code-pane"><span class="code-label after">After</span><pre><code># pnpm-workspace.yaml
+packages:
+  - .
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  sharp: true
+
+overrides:
+  postcss@&lt;8.5.10: '&gt;=8.5.10'</code></pre></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="validation" class="section" data-page="validation">
+          <h2>検証結果</h2>
+          <table class="summary-table">
+            <thead><tr><th>コマンド</th><th>結果</th><th>備考</th></tr></thead>
+            <tbody>
+              <tr><td><code>CI=true pnpm install --frozen-lockfile</code></td><td>成功</td><td>pnpm v11.7.0で依存復旧確認</td></tr>
+              <tr><td><code>./node_modules/.bin/eslint .</code></td><td>成功</td><td>0 errors / 25 warnings</td></tr>
+              <tr><td><code>./node_modules/.bin/tsc --noEmit</code></td><td>成功</td><td>型チェック通過</td></tr>
+              <tr><td><code>./node_modules/.bin/next build</code></td><td>成功</td><td>production build通過</td></tr>
+              <tr><td><code>pnpm test:e2e</code></td><td>成功</td><td>88 passed</td></tr>
+              <tr><td><code>git diff --check</code></td><td>成功</td><td>whitespace errorなし</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <p class="footer">
+          Source review: <code>_review/review_0710_adr-architecture.claude.md</code>. This HTML is intentionally standalone and has no external runtime dependency.
+        </p>
+      </main>
+    </div>
+    <script>
+      (() => {
+        const pages = Array.from(document.querySelectorAll('[data-page]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar a[href^="#"]'));
+        const toc = document.querySelector('.page-toc');
+        const tocList = document.getElementById('page-toc-list');
+        const defaultPage = 'overview';
+
+        function normalizePageId(hash) {
+          const id = (hash || '').replace(/^#/, '');
+          return pages.some((page) => page.dataset.page === id) ? id : defaultPage;
+        }
+
+        function buildToc(pageId) {
+          const visiblePages = pages.filter((page) => page.dataset.page === pageId);
+          const headings = visiblePages.flatMap((page) => Array.from(page.querySelectorAll('h2')));
+          tocList.innerHTML = '';
+
+          if (headings.length === 0) {
+            toc.hidden = true;
+            return;
+          }
+
+          headings.forEach((heading, index) => {
+            if (!heading.id) {
+              heading.id = pageId + '-section-' + (index + 1);
+            }
+            const item = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = '#' + heading.id;
+            link.textContent = heading.textContent.trim();
+            link.addEventListener('click', (event) => {
+              event.preventDefault();
+              heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              history.replaceState(null, '', '#' + pageId);
+            });
+            item.appendChild(link);
+            tocList.appendChild(item);
+          });
+
+          toc.hidden = false;
+        }
+
+        function showPage(hash) {
+          const pageId = normalizePageId(hash);
+          pages.forEach((page) => {
+            page.hidden = page.dataset.page !== pageId;
+          });
+          navLinks.forEach((link) => {
+            const isActive = link.getAttribute('href') === '#' + pageId;
+            link.classList.toggle('active', isActive);
+            if (isActive) {
+              const group = link.closest('details');
+              if (group) group.open = true;
+            }
+          });
+          buildToc(pageId);
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        window.addEventListener('hashchange', () => showPage(location.hash));
+        showPage(location.hash);
+      })();
+    </script>
+  </body>
+</html>

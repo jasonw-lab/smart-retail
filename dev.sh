@@ -82,13 +82,25 @@ else
   fi
 fi
 
-# サブコマンド対応 (status / stop)
+# サブコマンド対応 (status / stop / down)
+if [ "$1" = "down" ] || [ "$1" = "stop-all" ]; then
+  echo "🛑 Stopping SmartRetail Pro (Frontend, Backend, and Docker Infrastructure)..."
+  pkill -f "next-server" 2>/dev/null || true
+  pkill -f "pnpm dev" 2>/dev/null || true
+  pkill -f "smart-dx-app" 2>/dev/null || true
+  echo "   ==> Stopping Docker containers (MySQL, Redis, OpenSearch, PowerJob)..."
+  docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" down
+  echo "✨ All processes and Docker containers stopped cleanly. お疲れ様でした！"
+  exit 0
+fi
+
 if [ "$1" = "stop" ]; then
   echo "🛑 Stopping SmartRetail Pro local development processes..."
   pkill -f "next-server" 2>/dev/null || true
   pkill -f "pnpm dev" 2>/dev/null || true
   pkill -f "smart-dx-app" 2>/dev/null || true
   echo "   ==> Backend & Frontend processes stopped. (Infra containers kept running)"
+  echo "   💡 To also stop Docker containers, run: ./dev.sh down"
   exit 0
 fi
 

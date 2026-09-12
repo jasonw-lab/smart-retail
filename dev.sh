@@ -82,6 +82,46 @@ else
   fi
 fi
 
+# サブコマンド対応 (status / stop)
+if [ "$1" = "stop" ]; then
+  echo "🛑 Stopping SmartRetail Pro local development processes..."
+  pkill -f "next-server" 2>/dev/null || true
+  pkill -f "pnpm dev" 2>/dev/null || true
+  pkill -f "smart-dx-app" 2>/dev/null || true
+  echo "   ==> Backend & Frontend processes stopped. (Infra containers kept running)"
+  exit 0
+fi
+
+if [ "$1" = "status" ]; then
+  echo "📊 Service Status:"
+  echo -n "   - Infrastructure (MySQL): "
+  if docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" ps smart-retail-mysql 2>/dev/null | grep -q "healthy"; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Stopped or Unhealthy ❌"
+  fi
+  echo -n "   - Backend (Spring Boot 8080): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - Frontend (Next.js 3001): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - End-to-End Connectivity: "
+  HEALTH_JSON=$(curl -sf --connect-timeout 2 --max-time 2 http://localhost:3001/api/health 2>/dev/null || true)
+  if echo "$HEALTH_JSON" | grep -q '"backend":{"status":"ok"'; then
+    echo "Connected (FE -> BE: OK) ✅"
+  else
+    echo "Disconnected ❌"
+  fi
+  exit 0
+fi
+
 # クリーンアップ用トラップハンドラー
 cleanup() {
   echo ""
@@ -94,7 +134,20 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # 3. フロントエンド起動 (Next.js 15 Turbopack / Port 3001)
-echo "⚡ [3/3] Starting Next.js 15 Frontend on http://localhost:3001..."
+echo "⚡ [3/3] Checking Next.js 15 Frontend on http://localhost:3001..."
+if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
+  echo "   ==> Frontend already running on http://localhost:3001. ✅"
+  echo "--------------------------------------------------------------------------------"
+  echo "✨ 全サービス（インフラ、バックエンド、フロントエンド）が正常に稼働中です！"
+  echo "   - Frontend: http://localhost:3001"
+  echo "   - Backend:  http://localhost:8080"
+  echo "   - API Docs: http://localhost:8080/doc.html"
+  echo "   AI がコード修正・コミット後、ブラウザ画面は自動的にリフレッシュされます。"
+  echo "--------------------------------------------------------------------------------"
+  exit 0
+fi
+
+echo "   ==> Starting Next.js 15 Frontend..."
 echo "--------------------------------------------------------------------------------"
 echo "💡 AI がコード修正・コミット後、ブラウザ画面は自動的にリフレッシュされます。"
 echo "   終了時は Ctrl+C を押してください。"
@@ -102,3 +155,4 @@ echo "--------------------------------------------------------------------------
 
 cd "$PROJECT_ROOT/apps/frontend-next"
 pnpm dev
+

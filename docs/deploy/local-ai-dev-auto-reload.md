@@ -500,6 +500,46 @@ else
   fi
 fi
 
+# サブコマンド対応 (status / stop)
+if [ "$1" = "stop" ]; then
+  echo "🛑 Stopping SmartRetail Pro local development processes..."
+  pkill -f "next-server" 2>/dev/null || true
+  pkill -f "pnpm dev" 2>/dev/null || true
+  pkill -f "smart-dx-app" 2>/dev/null || true
+  echo "   ==> Backend & Frontend processes stopped. (Infra containers kept running)"
+  exit 0
+fi
+
+if [ "$1" = "status" ]; then
+  echo "📊 Service Status:"
+  echo -n "   - Infrastructure (MySQL): "
+  if docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" ps smart-retail-mysql 2>/dev/null | grep -q "healthy"; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Stopped or Unhealthy ❌"
+  fi
+  echo -n "   - Backend (Spring Boot 8080): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - Frontend (Next.js 3001): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - End-to-End Connectivity: "
+  HEALTH_JSON=$(curl -sf --connect-timeout 2 --max-time 2 http://localhost:3001/api/health 2>/dev/null || true)
+  if echo "$HEALTH_JSON" | grep -q '"backend":{"status":"ok"'; then
+    echo "Connected (FE -> BE: OK) ✅"
+  else
+    echo "Disconnected ❌"
+  fi
+  exit 0
+fi
+
 cleanup() {
   echo ""
   echo "🛑 Stopping local development processes..."
@@ -511,7 +551,20 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # 3. フロントエンド起動 (Next.js 15 Turbopack / Port 3001)
-echo "⚡ [3/3] Starting Next.js 15 Frontend on http://localhost:3001..."
+echo "⚡ [3/3] Checking Next.js 15 Frontend on http://localhost:3001..."
+if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
+  echo "   ==> Frontend already running on http://localhost:3001. ✅"
+  echo "--------------------------------------------------------------------------------"
+  echo "✨ 全サービス（インフラ、バックエンド、フロントエンド）が正常に稼働中です！"
+  echo "   - Frontend: http://localhost:3001"
+  echo "   - Backend:  http://localhost:8080"
+  echo "   - API Docs: http://localhost:8080/doc.html"
+  echo "   AI がコード修正・コミット後、ブラウザ画面は自動的にリフレッシュされます。"
+  echo "--------------------------------------------------------------------------------"
+  exit 0
+fi
+
+echo "   ==> Starting Next.js 15 Frontend..."
 echo "--------------------------------------------------------------------------------"
 echo "💡 AI がコード修正・コミット後、ブラウザ画面は自動的にリフレッシュされます。"
 echo "   終了時は Ctrl+C を押してください。"
@@ -521,6 +574,12 @@ cd "$PROJECT_ROOT/apps/frontend-next"
 pnpm dev
 ```
 
+### `./dev.sh` コマンド一覧
+```bash
+./dev.sh         # 通常起動（インフラ・BE・FEを一括確認＆起動）
+./dev.sh status  # インフラ・BE・FEの死活および疎通状態（Connected）を確認
+./dev.sh stop    # ホスト上で起動中の BE・FE プロセスを停止（インフラコンテナは維持）
+```
 
 ---
 
@@ -543,10 +602,8 @@ pnpm dev
 5. 自動反映パイプライン起動（手動操作ゼロ）
    - post-commit フックがバックエンドを差分コンパイル（1.5秒）
    - DevTools が Spring Boot をホットリスタート
-   - フロントエンド経由でブラウザへ SSE シグナル送信
-   - ブラウザ上の TanStack Query がキャッシュを再検証し、最新データで UI 再描画
-
-6. 開発者はブラウザを見ているだけで最新状態を確認完了
+   - フックが SSE 通知エンドポイント（/api/dev/reload）を叩く
+   - Next.js 画面が自動リフレッシュされ、最新データ・UI が表示される！
 ```
 
 ---
@@ -559,13 +616,14 @@ pnpm dev
 - ❌ **`apps/frontend`（旧 Vue 版）を編集しない**
 
 ### 6.2. トラブルシューティング
-- **ブラウザに最新データが反映されない場合**:
-  - `curl http://localhost:8080/actuator/health` でバックエンドの稼働を確認。
-  - ブラウザの開発者ツール Console で `[DevAutoReload]` の接続ログを確認。
+- **ブラウザが自動リロードされない場合**:
+  - `http://localhost:3001` がブラウザで開かれており、開発者ツールの Console に `[DevAutoReload] Connected to dev-reload SSE stream` と出力されているか確認。
 - **Spring Boot がホットリロードしない場合**:
   - `cd apps/backend && mvn compile -pl services/retail-be,app` を実行し、コンパイルエラーがないか確認。
 - **インフラコンテナが停止している場合**:
   - `cd platform/docker && make local-env-up` で一括再起動。
+- **環境全体の疎通確認**:
+  - `./dev.sh status` を実行し、End-to-End Connectivity が `Connected (FE -> BE: OK) ✅` になっているか確認。
 
 ---
 
@@ -576,5 +634,7 @@ pnpm dev
 | 2026/09/12 | codex | 初版作成。M5 Mac 64GB ローカル AI 駆動開発 UI 自動反映アーキテクチャの正本仕様策定。 |
 | 2026/09/12 | codex | HTML版の配置先を `kb/react/10-cicd-deploy/` へ移動し、md/HTML同期ルールを追記。 |
 | 2026/09/12 | codex | Codex再レビュー指摘対応完了（NextResponse import修正、Providers内マウント、foldersクラスパス追加、uptime判定・エラー分岐強化、両リポジトリフック配備、dev.sh改善）。実装および動作検証完了。 |
+| 2026/09/12 | codex | FE/BE 正常疎通対応完了（`BACKEND_URL` 設定、Actuator フォールバック、`application.yml` 認証例外追加、`dev.sh status/stop` 追加）。E2E 疎通動作確認完了。 |
+
 
 

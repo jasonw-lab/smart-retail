@@ -149,4 +149,43 @@ test.describe('システム管理', () => {
     await expect(page.getByText('Module Activity')).toBeVisible();
     await expect(page.getByText('Avg. Response Time')).toBeVisible();
   });
+
+  test('辞書項目管理', async ({ page }) => {
+    // 辞書一覧から Items ボタンで辞書項目画面へ遷移
+    await page.goto('/system/dict');
+    await expect(page.getByRole('main')).toBeVisible();
+    await page.getByRole('button', { name: 'Items' }).first().click();
+    await expect(page).toHaveURL(/\/system\/dict\/status/);
+    await expect(page.getByRole('main')).toBeVisible();
+
+    // 辞書項目の初期一覧確認
+    await expect(page.getByText('有効').first()).toBeVisible();
+    await expect(page.getByText('無効').first()).toBeVisible();
+
+    // 検索・リセット操作
+    await page.getByRole('button', { name: 'Search' }).click();
+    await page.getByRole('button', { name: 'Reset' }).first().click();
+
+    // 辞書項目の追加
+    await page.getByRole('button', { name: 'Add New Item' }).click();
+    await expect(page.getByText('辞書項目の追加')).toBeVisible();
+    await page.fill('#label', 'テスト項目');
+    await page.fill('#value', 'test');
+    await page.getByRole('button', { name: '保存' }).click();
+    await expect(page.getByText('辞書項目の追加')).not.toBeVisible();
+    await expect(page.getByText('テスト項目').first()).toBeVisible();
+
+    // 辞書項目の編集
+    await page.locator('table').getByRole('button', { name: 'Edit' }).first().click();
+    await expect(page.getByText('辞書項目の編集')).toBeVisible();
+    await page.getByRole('button', { name: 'キャンセル' }).click();
+    await expect(page.getByText('辞書項目の編集')).not.toBeVisible();
+
+    // 辞書項目の削除（確認ダイアログキャンセル）
+    await page.locator('table').getByRole('button', { name: /^Delete$/ }).first().click();
+    await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
+    await page.click(`[data-testid="${TESTIDS.CONFIRM_DIALOG_CANCEL}"]`);
+    await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).not.toBeVisible();
+  });
 });
+

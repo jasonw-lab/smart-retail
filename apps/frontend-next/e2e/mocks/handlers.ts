@@ -527,6 +527,7 @@ export const mockDicts = [
     id: 1,
     name: 'ステータス',
     code: 'status',
+    dictCode: 'status',
     status: 1,
     remark: '有効/無効ステータス',
   },
@@ -534,10 +535,54 @@ export const mockDicts = [
     id: 2,
     name: '性別',
     code: 'gender',
+    dictCode: 'gender',
     status: 1,
     remark: '性別',
   },
 ];
+
+// System: Dictionary Items
+export const mockDictItems = [
+  {
+    id: 1,
+    dictId: 1,
+    dictCode: 'status',
+    label: '有効',
+    value: '1',
+    sort: 1,
+    status: 1,
+    remark: '有効状態',
+  },
+  {
+    id: 2,
+    dictId: 1,
+    dictCode: 'status',
+    label: '無効',
+    value: '0',
+    sort: 2,
+    status: 1,
+    remark: '無効状態',
+  },
+  {
+    id: 3,
+    dictId: 2,
+    dictCode: 'gender',
+    label: '男性',
+    value: '1',
+    sort: 1,
+    status: 1,
+  },
+  {
+    id: 4,
+    dictId: 2,
+    dictCode: 'gender',
+    label: '女性',
+    value: '2',
+    sort: 2,
+    status: 1,
+  },
+];
+
 
 // System: Logs
 export const mockLogs = [
@@ -889,6 +934,82 @@ export const handlers = [
     const list = mockDicts.slice(start, start + pageSize);
 
     return apiResponse({ list, total: mockDicts.length });
+  }),
+
+  // System: Dictionary Items
+  http.get(`${BACKEND_URL}/dicts/:dictCode/items`, ({ request, params }) => {
+    const { dictCode } = params;
+    const url = new URL(request.url);
+    const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+    const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+    const keywords = url.searchParams.get('keywords') || '';
+
+    let filtered = mockDictItems.filter((d) => d.dictCode === dictCode);
+    if (keywords) {
+      const kw = keywords.toLowerCase();
+      filtered = filtered.filter(
+        (d) => d.label.toLowerCase().includes(kw) || d.value.toLowerCase().includes(kw)
+      );
+    }
+    const start = (pageNum - 1) * pageSize;
+    const list = filtered.slice(start, start + pageSize);
+
+    return apiResponse({ list, total: filtered.length });
+  }),
+
+  // System: Dictionary Item Form Data
+  http.get(`${BACKEND_URL}/dicts/:dictCode/items/:itemId/form`, ({ params }) => {
+    const { dictCode, itemId } = params;
+    const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === Number(itemId));
+    if (!item) {
+      return HttpResponse.json(
+        { code: 'B0001', msg: 'Dict item not found', data: null },
+        { status: 404 }
+      );
+    }
+    return apiResponse(item);
+  }),
+
+  // System: Create Dictionary Item
+  http.post(`${BACKEND_URL}/dicts/:dictCode/items`, async ({ request, params }) => {
+    const { dictCode } = params;
+    const body = (await request.json()) as Record<string, unknown>;
+    const dict = mockDicts.find((d) => d.code === dictCode);
+    const newItem = {
+      id: mockDictItems.length + 1,
+      dictId: dict?.id || 1,
+      dictCode: String(dictCode),
+      label: String(body.label || ''),
+      value: String(body.value || ''),
+      sort: Number(body.sort) || 1,
+      status: Number(body.status) ?? 1,
+      remark: body.remark ? String(body.remark) : undefined,
+    };
+    mockDictItems.push(newItem);
+    return apiResponse(null);
+  }),
+
+  // System: Update Dictionary Item
+  http.put(`${BACKEND_URL}/dicts/:dictCode/items/:itemId`, async ({ request, params }) => {
+    const { dictCode, itemId } = params;
+    const body = (await request.json()) as Record<string, unknown>;
+    const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === Number(itemId));
+    if (item) {
+      Object.assign(item, body);
+    }
+    return apiResponse(null);
+  }),
+
+  // System: Delete Dictionary Items
+  http.delete(`${BACKEND_URL}/dicts/:dictCode/items/:ids`, ({ params }) => {
+    const { dictCode, ids } = params;
+    const idList = String(ids).split(',').map(Number);
+    const remaining = mockDictItems.filter(
+      (d) => !(d.dictCode === dictCode && idList.includes(d.id))
+    );
+    mockDictItems.length = 0;
+    mockDictItems.push(...remaining);
+    return apiResponse(null);
   }),
 
   // System: Logs

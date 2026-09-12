@@ -63,5 +63,6 @@ _review/*
 
 # personal learning notes
 _docs/*-roadmap.md
-*storybook.logstorybook-static
+*storybook.log
+storybook-static
 test-results

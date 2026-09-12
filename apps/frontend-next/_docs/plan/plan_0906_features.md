@@ -126,7 +126,7 @@ app/[locale]/(dashboard)/<domain>/page.tsx   ← Server Component
 | U0  | 完了   | 2/2  | 2026-09-12 | gitignore是正・planおよびレビュー文書追跡開始 |
 | U1  | 完了   | -    | 2026-09-12 | fetchApi化・E2Eパス |
 | U2  | 完了   | -    | 2026-09-12 | mockハンドラ・E2E追加・7テストパス |
-| U3  | 未着手 | -    | -      |      |
+| U3  | 着手中 | -    | 2026-09-12 | sidebar導線追加・E2E更新に着手 |
 | U4  | 未着手 | -    | -      |      |
 | U5  | 未着手 | -    | -      |      |
 | U6  | 未着手 | -    | -      |      |

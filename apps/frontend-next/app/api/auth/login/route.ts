@@ -59,6 +59,19 @@ export async function POST(request: NextRequest) {
     const body: LoginRequest = await request.json();
     let result: ApiResponse<AuthToken> | null = null;
 
+    // If captchaCode is empty, omit captchaId & captchaCode so backend can bypass optional captcha
+    const loginPayload: Record<string, unknown> = {
+      username: body.username,
+      password: body.password,
+    };
+    if (body.tenantId !== undefined) {
+      loginPayload.tenantId = body.tenantId;
+    }
+    if (body.captchaCode && body.captchaCode.trim() !== '') {
+      loginPayload.captchaId = body.captchaId;
+      loginPayload.captchaCode = body.captchaCode.trim();
+    }
+
     // Backend認証API呼び出し
     // BACKEND_URL already includes /api/v1 prefix
     try {
@@ -67,11 +80,18 @@ export async function POST(request: NextRequest) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(loginPayload),
       });
 
       if (!response.ok) {
-        return NextResponse.json({ error: 'Authentication failed' }, { status: response.status });
+        let errorMsg = 'Authentication failed';
+        try {
+          const errData = await response.json();
+          errorMsg = errData?.msg || errData?.message || errorMsg;
+        } catch {
+          // ignore
+        }
+        return NextResponse.json({ error: errorMsg }, { status: response.status });
       }
 
       result = await response.json();

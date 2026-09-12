@@ -302,9 +302,10 @@ def normalize(fragment):
     タグ内の改行・タグ間の空白をすべて畳んでから比較する。
     """
     s = re.sub(r'\s+', ' ', fragment)
-    s = re.sub(r'\s+>', '>', s)
-    s = re.sub(r'>\s+<', '><', s)
+    s = re.sub(r'\s*>\s*', '>', s)
+    s = re.sub(r'\s*<\s*', '<', s)
     return s.strip()
+
 
 
 def blocks_for(plan, doc):

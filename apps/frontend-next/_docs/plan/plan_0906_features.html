@@ -6,7 +6,7 @@
     <title>機能単位実装計画 U0〜U15 | SmartRetail Pro (demo2)</title>
     <meta
       name="description"
-      content="SmartRetail Pro (demo2) フロントエンドの残作業を機能単位に割り直したタスク一覧（2026-09-06 / feat/retail-api-integration）"
+      content="SmartRetail Pro (demo2) フロントエンドの残作業を機能単位に割り直したタスク一覧（2026-09-06 / feature/front-next-base）"
     />
     <style>
       /* ==================================================================
@@ -534,7 +534,7 @@
         color: hsl(var(--muted-foreground));
       }
 
-      .accent-list li {
+      .accent-list > li {
         border-left: 2px solid hsl(var(--primary) / 0.4);
         padding-left: 12px;
       }
@@ -547,7 +547,7 @@
         list-style: none;
       }
 
-      .step-list li {
+      .step-list > li {
         display: flex;
         gap: 12px;
         font-size: 0.875rem;
@@ -567,6 +567,22 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.75rem;
         font-weight: 600;
+      }
+      /* step-list li は flex。テキストと入れ子リストを1つの子にまとめて縦積みにする */
+      .step-body {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .step-body > ul {
+        margin-top: 8px;
+      }
+      .accent-list ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        list-style: disc;
+      }
+      .accent-list ul li {
+        margin-bottom: 4px;
       }
 
       /* ==================== tables ==================== */
@@ -833,7 +849,7 @@
       <article class="article">
         <header class="hero">
           <div>
-            <span class="badge badge-default">2026-09-06 / feat/retail-api-integration</span>
+            <span class="badge badge-default">2026-09-06 / feature/front-next-base</span>
             <h1>機能単位実装計画 U0〜U15</h1>
             <p class="lead">
               姉妹リポジトリ（learning/tech-lead-react-demo）の元版計画を、本リポジトリのコードと
@@ -855,7 +871,7 @@
               <dt>残り</dt>
               <dd>16</dd>
             </div>
-            <!-- /PLAN:STATS -->
+<!-- /PLAN:STATS -->
           </dl>
         </header>
 
@@ -872,15 +888,15 @@
           <!-- PLAN:CURRENT -->
           <div class="callout callout-primary">
             <h4>いま着手中のユニットはありません</h4>
-            <p>次に着手するのは <strong>U0 作業ツリー確定と plan 入れ替え</strong>（整理）。</p>
+            <p>次に着手するのは <strong>U0 plan / レビューの Git 追跡開始</strong>（整理）。</p>
           </div>
-          <!-- /PLAN:CURRENT -->
+<!-- /PLAN:CURRENT -->
 
           <h2 class="issue-title" id="cat-1-issue-1">背景: 元版との突き合わせ</h2>
 
           <p class="block-label">現状と課題</p>
           <p>
-            本リポジトリは <code>feat/retail-api-integration</code> ブランチで小売 API 統合（config
+            本リポジトリは <code>feature/front-next-base</code> ブランチで小売 API 統合（config
             / notice / profile / files / categories / payments 等）を進めており、
             元版とはコード状態が大きく異なる。元版ユニットの適用可否を突き合わせた結果が下表。
           </p>
@@ -900,8 +916,8 @@
                   <td>U0</td>
                   <td>作業ツリーの確定</td>
                   <td>
-                    <strong>縮小</strong>: 未コミットは <code>.gitignore</code>
-                    1件のみ。旧 plan 4件の削除と入れ替えが主題
+                    <strong>再定義</strong>: 旧 plan 4件は Git 未追跡のため削除不要。ルート
+                    <code>.gitignore</code> の是正と plan / レビューの Git 追跡開始が主題
                   </td>
                 </tr>
                 <tr>
@@ -983,7 +999,7 @@
                   <td>作業ツリー確定と plan 入れ替え</td>
                   <td>整理</td>
                   <td>U0</td>
-                  <td><code>.gitignore</code>、旧 plan 4件</td>
+                  <td>ルート <code>.gitignore</code>、<code>apps/frontend-next/.gitignore</code></td>
                   <td>-</td>
                 </tr>
                 <tr>
@@ -1133,7 +1149,7 @@
                 <!-- PLAN:TABLE -->
                 <tr>
                   <td>U0</td>
-                  <td>作業ツリー確定と plan 入れ替え</td>
+                  <td>plan / レビューの Git 追跡開始</td>
                   <td>整理</td>
                   <td>-</td>
                   <td><span class="badge badge-outline">未着手</span></td>
@@ -1257,7 +1273,7 @@
                   <td>i18n</td>
                   <td>U1, U5</td>
                   <td><span class="badge badge-outline">未着手</span></td>
-                  <td>0/6</td>
+                  <td>0/8</td>
                   <td>-</td>
                   <td></td>
                 </tr>
@@ -1291,7 +1307,7 @@
                   <td>-</td>
                   <td></td>
                 </tr>
-                <!-- /PLAN:TABLE -->
+<!-- /PLAN:TABLE -->
               </tbody>
             </table>
           </div>
@@ -1333,7 +1349,7 @@
           <ul class="accent-list">
             <li>同時に「着手中」にするユニットは<strong>1つまで</strong></li>
             <li>
-              進捗はサブタスクがあるユニットのみ <code>済/全</code>（U0 は2コミット、U12 は6機能）
+              進捗はサブタスクがあるユニットのみ <code>済/全</code>（U0 は2コミット、U12 は8機能）
             </li>
             <li>更新日は <code>YYYY-MM-DD</code></li>
           </ul>
@@ -1345,7 +1361,7 @@
 
           <p class="block-label">実装内容</p>
           <ul class="accent-list">
-            <li>ブランチは <code>feat/retail-api-integration</code> で継続する</li>
+            <li>ブランチは <code>feature/front-next-base</code> で継続する</li>
             <li>
               1ユニット＝1コミット。Conventional Commits 形式。AI 生成を示す文言・
               <code>Co-Authored-By</code> は書かない。author / committer は人間の値のまま
@@ -1425,8 +1441,25 @@ CI=true pnpm exec playwright test e2e/specs/system.spec.ts
 pnpm exec playwright test --update-snapshots
 
 # 手動確認（2ターミナルで起動）
+# lib/env/server.ts:5 は BACKEND_URL を必須として起動時に検証する。初回のみ環境ファイルを用意すること
+cp .env.example .env.local   # 初回のみ。BACKEND_URL=http://localhost:8091/api/v1 が入る
+
 pnpm mock:server   # ターミナル1 (port 8091)
-pnpm dev           # ターミナル2 (port 3001)</code></pre>
+pnpm dev           # ターミナル2 (port 3001)
+
+# .env.local を作らない場合は環境変数を直接渡す（package.json の start:test と同じ形）
+BACKEND_URL=http://localhost:8091/api/v1 pnpm dev</code></pre>
+          </div>
+          <div class="callout callout-danger">
+            <h4>BACKEND_URL が無いと <code>pnpm dev</code> は起動時に落ちる</h4>
+            <p>
+              <code>lib/env/server.ts:5</code> は <code>BACKEND_URL</code>
+              を<strong>必須</strong>（<code>z.string().url()</code>）として検証し、欠けていると
+              <code>Invalid server environment variables</code>
+              の例外で終了する。リポジトリには <code>.env.example</code> しか無く
+              <code>.env</code> / <code>.env.local</code> は未作成なので、そのまま
+              <code>pnpm dev</code> を叩くと必ず失敗する。
+            </p>
           </div>
         </section>
 
@@ -1437,24 +1470,64 @@ pnpm dev           # ターミナル2 (port 3001)</code></pre>
             <h2>U0 準備</h2>
           </div>
           <p class="category-lead">
-            新規実装を始める前に必ず終わらせる。作業ツリーを確定し、新旧 plan を入れ替える。
+            新規実装を始める前に必ず終わらせる。plan とレビュー報告書を Git の追跡対象に入れる。
           </p>
 
-          <h2 class="issue-title" id="cat-2-issue-1">U0 作業ツリーの確定と plan 入れ替え</h2>
+          <h2 class="issue-title" id="cat-2-issue-1">U0 plan / レビュー文書の Git 追跡開始</h2>
 
           <div class="week-head">
             <div class="week-meta">
               <span class="week-id">U0</span>
               <!-- PLAN:BADGE:U0 -->
-              <span class="badge badge-outline">未着手 0/2</span>
-              <!-- /PLAN:BADGE:U0 -->
+<span class="badge badge-outline">未着手 0/2</span>
+<!-- /PLAN:BADGE:U0 -->
               <span class="badge badge-outline">整理</span>
               <span class="week-time">依存なし / 2コミット</span>
             </div>
             <p>
-              未コミット差分は <code>.gitignore</code> の1件のみ（<code>test-results</code>
-              の追加）。新旧 plan の入れ替えと合わせて2コミットで確定する。
+              ルート <code>.gitignore</code> の <code>plan*.md</code> / <code>p*.md</code>
+              により、本計画の正本である md が <strong>ignored</strong> になっている（生成物の HTML
+              だけが追跡済みという捻れた状態）。これを解消するのが U0 の主題。
             </p>
+          </div>
+
+          <p class="block-label">前提の訂正（2026-09-12 実測）</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>当初の想定</th>
+                  <th>実態</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>未コミット差分が <code>.gitignore</code> の1件ある</td>
+                  <td>
+                    <code>git status</code> はクリーン。<code>apps/frontend-next/.gitignore</code>
+                    はコミット済みで <code>test-results</code> も記載済み
+                  </td>
+                </tr>
+                <tr>
+                  <td>旧 plan 4件を削除する必要がある</td>
+                  <td>
+                    <code>plan_0619.md</code> / <code>impl.md</code> /
+                    <code>tech-leader-todo.md</code> /
+                    <code>TODO-feature-todo.md</code>
+                    は<strong>一度も Git に追跡されていない</strong>（<code>git log --all</code>
+                    で0件）。削除コミットは不要
+                  </td>
+                </tr>
+                <tr>
+                  <td>本 plan を追加するだけでよい</td>
+                  <td>
+                    ルート <code>.gitignore:83</code> <code>plan*.md</code> / <code>:91</code>
+                    <code>p*.md</code> により本 md が <strong>ignored</strong>。<code>git add</code>
+                    が拒否される（<strong>真のブロッカー</strong>）
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <p class="block-label">実装内容</p>
@@ -1471,11 +1544,15 @@ pnpm dev           # ターミナル2 (port 3001)</code></pre>
                 <tr>
                   <td>1</td>
                   <td>
-                    <code>chore(gitignore): ignore test-results and fix storybook entries</code>
+                    <code>chore(gitignore): track frontend-next plan and review docs</code>
                   </td>
                   <td>
-                    <code>.gitignore</code>: <code>test-results</code>
-                    追加（未コミット分）。ついでに末尾の
+                    ルート <code>.gitignore</code> 末尾に
+                    <code>!apps/frontend-next/_docs/plan/*.md</code> と
+                    <code>!apps/frontend-next/_review/*.md</code> を追加（既存の ignore
+                    行より<strong>後ろ</strong>に置く）。<code>apps/frontend-next/.gitignore</code> の
+                    <code>_review/*</code>
+                    許可リストに本レビュー報告書を追加。ついでに同ファイル末尾の
                     <code>*storybook.logstorybook-static</code
                     >（改行欠落で2エントリが連結）を2行に分割し、 EOF に改行を入れる
                   </td>
@@ -1484,37 +1561,60 @@ pnpm dev           # ターミナル2 (port 3001)</code></pre>
                   <td>2</td>
                   <td>
                     <code
-                      >docs(plan): replace stale plans with feature-unit implementation plan</code
+                      >docs(plan): add feature-unit implementation plan and review report</code
                     >
                   </td>
                   <td>
-                    旧 plan の削除（<code>plan_0619.md</code> / <code>impl.md</code> /
-                    <code>tech-leader-todo.md</code> /
-                    <code>TODO-feature-todo.md</code>）と本ファイルの追加
+                    <code>_docs/plan/plan_0906_features.md</code> と
+                    <code>_review/review_0912_plan-0906-features.md</code> の追加
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <div class="callout callout-primary">
+            <p>
+              ネストした <code>.gitignore</code>
+              の否定規則は親の規則より優先される。ルート側の <code>review_*.md</code> は
+              <code>apps/frontend-next/.gitignore</code> の <code>!_review/...</code>
+              で上書きされるため、両方に手を入れる必要がある。
+            </p>
+            <p>
+              <strong>適用状況（2026-09-12 時点）</strong>: コミット1のうち
+              <code>.gitignore</code> 2ファイルの否定規則追加は、本 plan
+              を追跡可能にするため<strong>ワークツリーに適用済み</strong>（未コミット）。残りは
+              <code>*storybook.logstorybook-static</code> の2行分割と EOF 改行、およびコミット作業。
+            </p>
+          </div>
+
           <p class="block-label">受入条件</p>
           <div class="deliverable">
             <ul>
               <li>
-                <span class="check">1</span><span><code>git status</code> がクリーン</span>
+                <span class="check">1</span
+                ><span
+                  ><code>git check-ignore -v _docs/plan/plan_0906_features.md</code>
+                  が<strong>否定規則</strong>（<code>!</code>付き）を返す、または該当なしで終了する</span
+                >
               </li>
               <li>
                 <span class="check">2</span
+                ><span
+                  ><code>git status --short</code> に両ファイルが <code>??</code>
+                  として現れ、<code>git add</code> できる</span
+                >
+              </li>
+              <li>
+                <span class="check">3</span><span><code>git status</code> がクリーン（コミット後）</span>
+              </li>
+              <li>
+                <span class="check">4</span
                 ><span><code>pnpm lint</code> / <code>pnpm typecheck</code> が通る</span>
               </li>
               <li>
-                <span class="check">3</span
-                ><span
-                  >旧 plan 4件（<code>plan_0619.md</code> / <code>impl.md</code> /
-                  <code>tech-leader-todo.md</code> /
-                  <code>TODO-feature-todo.md</code>）が削除され、<code>_docs/plan/</code> に本 md と
-                  HTML が各1本だけ存在する</span
-                >
+                <span class="check">5</span
+                ><span><code>_docs/plan/</code> に本 md と HTML が各1本だけ存在する</span>
               </li>
             </ul>
           </div>
@@ -1525,7 +1625,8 @@ pnpm dev           # ターミナル2 (port 3001)</code></pre>
               <span>確定前後で確認する</span>
               <span class="badge badge-outline">shell</span>
             </div>
-            <pre><code class="language-bash">git status --porcelain
+            <pre><code class="language-bash">git check-ignore -v _docs/plan/plan_0906_features.md
+git status --short
 pnpm lint &amp;&amp; pnpm typecheck</code></pre>
           </div>
         </section>
@@ -1546,8 +1647,8 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U1</span>
               <!-- PLAN:BADGE:U1 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U1 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U1 -->
               <span class="badge badge-default">不具合修正</span>
               <span class="week-time">元版 U3 ／ 依存: U0</span>
             </div>
@@ -1633,8 +1734,8 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U2</span>
               <!-- PLAN:BADGE:U2 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U2 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U2 -->
               <span class="badge badge-outline">機能補完</span>
               <span class="week-time">元版 U4 の残り ／ 依存: U0</span>
             </div>
@@ -1716,8 +1817,8 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U3</span>
               <!-- PLAN:BADGE:U3 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U3 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U3 -->
               <span class="badge badge-outline">機能追加</span>
               <span class="week-time">元版 U5 ／ 依存: U0</span>
             </div>
@@ -1794,8 +1895,8 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U4</span>
               <!-- PLAN:BADGE:U4 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U4 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U4 -->
               <span class="badge badge-outline">品質</span>
               <span class="week-time">元版 U2 を再定義 ／ 依存: U0</span>
             </div>
@@ -1817,8 +1918,26 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
           <ul class="accent-list">
             <li>
               <code>features/dashboard/components/welcome-message.tsx:14</code> の
-              <code>getGreeting()</code> が実行時刻で挨拶文を切り替える。VRT は
-              <code>dashboard.spec.ts:17</code> と <code>products.spec.ts:25</code> の2件
+              <code>getGreeting()</code> が実行時刻で挨拶文を切り替える。<strong
+                >ただし <code>WelcomeMessage</code> の利用箇所は
+                <code>app/[locale]/(dashboard)/page.tsx:61</code> の1つだけ</strong
+              >なので、時刻依存の影響を受ける VRT は <code>dashboard.spec.ts:17</code> のみ
+            </li>
+            <li>
+              <code>products.spec.ts:25</code> の VRT（<code>products-list.png</code>）に
+              <code>welcome-message</code> は含まれない。<strong>時刻固定では直らない</strong
+              >ため、揺れるなら別の非決定性要因を疑う
+              <ul>
+                <li>
+                  疑う順: ① <code>waitForLoadState('networkidle')</code>
+                  だけで一覧データの描画完了を待てていない（<code>table</code> の行数や
+                  <code>TESTIDS</code> を明示的に待つ）／② mock
+                  データのソート順が不定／③ 画像・フォントの読み込み遅延
+                </li>
+                <li>
+                  <strong>まず3回連続実行して再現を確認する。再現しなければ触らない</strong>
+                </li>
+              </ul>
             </li>
             <li>
               <code>page.clock.setFixedTime()</code> で時刻を固定する（<code>page.clock</code> は
@@ -1889,8 +2008,8 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U5-U13</span>
               <!-- PLAN:BADGE:U5-U13 -->
-              <span class="badge badge-outline">0/9 完了</span>
-              <!-- /PLAN:BADGE:U5-U13 -->
+<span class="badge badge-outline">0/9 完了</span>
+<!-- /PLAN:BADGE:U5-U13 -->
               <span class="badge badge-outline">i18n / 0710 指摘25</span>
               <span class="week-time">9ユニット</span>
             </div>
@@ -1929,25 +2048,64 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             </li>
             <li>
               <span class="step-num">5</span
-              ><span
+              >
+              <div class="step-body"><span
                 >Zod スキーマのエラーメッセージは <code>validation</code> namespace
                 に寄せる。方式（a: キー名を返して component 側で <code>t()</code> / b:
                 <code>t</code> を渡すスキーマ生成関数）は U5 で確定し、以降踏襲する</span
               >
               <ul class="accent-list">
                 <li>
-                  判断基準: <strong>(a) を推奨</strong>する。スキーマ定義をモジュールスコープの pure
-                  な定数のまま保て、翻訳への依存が component 側に閉じるため。(b) はスキーマが
-                  <code>t</code>
-                  に依存し、ユニットテストや他 component
-                  からの再利用が煩雑になる。既存スキーマの構造上 (b) が必要な場合のみ (b)
-                  を選び、理由を U5 のコミットメッセージに書く
+                  判断基準:
+                  <strong>(b)（スキーマ生成関数）を採用する。</strong>
+                  現行実装の実測（2026-09-12）に基づく:
+                  <ul>
+                    <li>
+                      スキーマは13ファイル（<code>features/{products,stores,devices,inventory}/schemas/</code>、<code>features/system/schemas/</code>
+                      8件、<code>features/auth/components/login-form.tsx</code> 内に1件）
+                    </li>
+                    <li>
+                      エラー表示は
+                      <code>{form.formState.errors.&lt;field&gt;.message}</code> を
+                      <code>&lt;p&gt;</code> に直接流す形が <strong>44箇所</strong>（例:
+                      <code>features/products/components/product-form.tsx:43,56</code>、<code
+                        >app/[locale]/(dashboard)/profile/page.tsx</code
+                      >）
+                    </li>
+                    <li>
+                      (a) を採ると<strong>この44箇所すべての JSX を
+                      <code>t(errors.&lt;field&gt;.message)</code> に書き換える</strong
+                      >必要があり、U5〜U13 のスコープが大きく膨らむ
+                    </li>
+                    <li>
+                      <code>max(100, '100文字以内で入力してください')</code>
+                      のように<strong>引数を含むメッセージ</strong>があり、キー名だけを返す (a) では
+                      <code>{max: 100}</code> の補間ができない
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  (b) の欠点（スキーマが <code>t</code>
+                  に依存する）は、本リポジトリに<strong>ユニットテストが無く</strong>（<code
+                    >*.test.ts</code
+                  >
+                  ゼロ、テストは Playwright E2E のみ）、スキーマの他 component
+                  再利用も現状ゼロのため実害が無い
+                </li>
+                <li>
+                  <strong><code>validation</code> namespace の共通キーは U5 で確定させる</strong>（<code
+                    >required</code
+                  >
+                  / <code>maxLength</code> / <code>minValue</code> /
+                  <code>invalidFormat</code> 等）。U6
+                  以降は原則このキーを再利用し、機能固有の文言のみ追加する
                 </li>
                 <li>
                   確定した方式は <code>CONTRIBUTING.md</code> の「i18n の書き方」節に記録し、U6
                   以降の担当者はそこを参照する
                 </li>
               </ul>
+              </div>
             </li>
             <li>
               <span class="step-num">6</span
@@ -1960,6 +2118,147 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
               >
             </li>
           </ol>
+
+          <p class="block-label">Zod 方式 (b) の実装形（U5 で型を作る）</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span><code>features/products/schemas/product-schema.ts</code></span>
+              <span class="badge badge-outline">ts</span>
+            </div>
+            <pre><code class="language-ts">import type { useTranslations } from 'next-intl';
+type T = ReturnType&lt;typeof useTranslations&lt;'validation'&gt;&gt;;
+
+export const createProductFormSchema = (t: T) =&gt;
+  z.object({
+    productCode: z.string().min(1, t('required')),
+    productName: z.string().min(1, t('required')).max(100, t('maxLength', { max: 100 })),
+  });
+export type ProductFormValues = z.infer&lt;ReturnType&lt;typeof createProductFormSchema&gt;&gt;;</code></pre>
+          </div>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>component 側。JSX（<code>errors.&lt;field&gt;.message</code> の表示）は一切変更しない</span>
+              <span class="badge badge-outline">tsx</span>
+            </div>
+            <pre><code class="language-tsx">const t = useTranslations('validation');
+const schema = useMemo(() =&gt; createProductFormSchema(t), [t]);
+const form = useForm({ resolver: zodResolver(schema) });</code></pre>
+          </div>
+          <ul class="accent-list">
+            <li>
+              <code>useMemo</code> を省くと毎レンダーで resolver
+              が作り直されるので<strong>必須</strong>
+            </li>
+            <li>
+              <code>ProductFormValues</code> の export 名・型は据え置き、既存の import
+              側に影響を出さない
+            </li>
+          </ul>
+
+          <p class="block-label">着手時に洗い出す: 既存 spec の文言照合</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>対象機能の spec が何を文言照合しているか</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">grep -rn "getByText('\|getByRole('button', { name: '\|getByLabel('\|getByPlaceholder('" e2e/specs/&lt;domain&gt;*.spec.ts</code></pre>
+          </div>
+          <p>照合文言は2種類ある。<strong>扱いが違うので分けて判断する</strong>。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>種別</th>
+                  <th>例</th>
+                  <th>i18n 化の影響</th>
+                  <th>対応</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>mock データ由来</td>
+                  <td>
+                    <code>getByText('テスト商品1')</code> / <code>東京本店</code> /
+                    <code>レジ端末1</code>
+                  </td>
+                  <td><strong>無し</strong>（<code>e2e/mocks/</code> のデータ）</td>
+                  <td>触らない</td>
+                </tr>
+                <tr>
+                  <td>UI 文言由来</td>
+                  <td>
+                    <code>getByText('店舗を登録しました')</code> /
+                    <code>getByRole('button', { name: 'キャンセル' })</code>
+                  </td>
+                  <td><strong>あり</strong>（1文字変えれば落ちる）</td>
+                  <td>
+                    ja の値を現行文字列と完全一致で移す。変える場合は同じコミットで spec も直す
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="block-label">実測済みの UI 文言照合（2026-09-12）— 着手前チェックリスト</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ユニット</th>
+                  <th>spec:行</th>
+                  <th>照合文言</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>U5 products</td>
+                  <td><code>products-crud.spec.ts:44</code></td>
+                  <td><code>商品を作成しました</code></td>
+                </tr>
+                <tr>
+                  <td>U6 stores</td>
+                  <td><code>stores.spec.ts:36</code></td>
+                  <td><code>店舗を登録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U7 devices</td>
+                  <td><code>devices.spec.ts:62</code></td>
+                  <td><code>デバイスを登録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U8 inventory</td>
+                  <td><code>inventory.spec.ts:95</code></td>
+                  <td><code>廃棄を記録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U11 dashboard</td>
+                  <td><code>navigation.spec.ts:102</code></td>
+                  <td><code>再試行</code></td>
+                </tr>
+                <tr>
+                  <td>U12 system</td>
+                  <td><code>system.spec.ts:20,21,23,49,53,75,78</code></td>
+                  <td>
+                    <code>Search</code> / <code>Reset</code> / <code>Add User</code> /
+                    <code>Add New Role</code> / <code>Permissions</code> / <code>Create Menu</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>U12 system</td>
+                  <td><code>system.spec.ts:24,25,28,50,54,58,79</code></td>
+                  <td>
+                    <code>ユーザーの追加</code> / <code>ユーザーの編集</code> /
+                    <code>役割の追加</code> / <code>役割の編集</code> / <code>権限設定</code> /
+                    <code>メニューの追加</code> / <code>キャンセル</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <code>products.spec.ts:79-81</code> のバリデーションエラー確認は
+            <code>.text-destructive</code> のクラス照合で、<strong>文言に依存しない</strong>。U5 の
+            Zod i18n 化で壊れない。
+          </p>
 
           <div class="callout callout-danger">
             <h4>demo2 固有の注意: system.spec.ts の英日混在照合</h4>
@@ -1996,8 +2295,43 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
                 <span class="check">5</span
                 ><span><code>/en/...</code> で画面を開いて英語表示になることを目視確認する</span>
               </li>
+              <li>
+                <span class="check">6</span
+                ><span
+                  ><strong><code>/en</code> の自動回帰</strong>: 現在 <code>e2e/specs/</code> に
+                  <code>/en</code> ルートを開く spec は<strong>1件も無い</strong>ため、目視確認は CI
+                  に残らない。U5 で <code>e2e/specs/i18n.spec.ts</code>
+                  を新規作成し、以降のユニットでケースを1件ずつ追加する</span
+                >
+              </li>
             </ul>
           </div>
+
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>U5 で作る雛形。ja の文言が en に混入していたら落ちる</span>
+              <span class="badge badge-outline">ts</span>
+            </div>
+            <pre><code class="language-ts">test('商品一覧が英語で表示される', async ({ page }) =&gt; {
+  await login(page);
+  await page.goto('/en/products');
+  await expect(page.getByRole('main')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('main')).not.toHaveText(/[ぁ-んァ-ヶ一-龥]/);
+});</code></pre>
+          </div>
+          <ul class="accent-list">
+            <li>
+              mock データ（<code>テスト商品1</code> 等）が <code>main</code> 内に出る画面では
+              <code>not.toHaveText</code>
+              が使えない。その場合は見出し・ボタン等の<strong>特定要素</strong>に絞って英語文言を照合する
+            </li>
+            <li>
+              VRT スナップショットは ja / en で別ファイルになり維持コストが増えるため、<code
+                >/en</code
+              >
+              では<strong>撮らない</strong>
+            </li>
+          </ul>
 
           <p class="block-label">検証コマンド</p>
           <div class="file-card">
@@ -2054,8 +2388,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U5 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U5 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U5 -->
                   </td>
                 </tr>
                 <tr>
@@ -2065,8 +2399,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td></td>
                   <td>
                     <!-- PLAN:BADGE:U6 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U6 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U6 -->
                   </td>
                 </tr>
                 <tr>
@@ -2076,8 +2410,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td>U3 でサイドバーに載るので表記の整合を取る</td>
                   <td>
                     <!-- PLAN:BADGE:U7 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U7 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U7 -->
                   </td>
                 </tr>
                 <tr>
@@ -2087,8 +2421,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td><code>inventory-form.tsx</code> / 各ダイアログを含む</td>
                   <td>
                     <!-- PLAN:BADGE:U8 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U8 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U8 -->
                   </td>
                 </tr>
                 <tr>
@@ -2098,8 +2432,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td>CSV エクスポートのヘッダ文言も対象</td>
                   <td>
                     <!-- PLAN:BADGE:U9 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U9 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U9 -->
                   </td>
                 </tr>
                 <tr>
@@ -2112,8 +2446,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U10 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U10 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U10 -->
                   </td>
                 </tr>
                 <tr>
@@ -2125,8 +2459,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U11 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U11 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U11 -->
                   </td>
                 </tr>
                 <tr>
@@ -2135,12 +2469,12 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td>45</td>
                   <td>
                     最大。user / role / menu / dept / dict / log / config / notice
-                    で分割コミット可（進捗は6機能＋ dict item 系）
+                    の<strong>8機能</strong>で分割コミット可（進捗 0/8。dict item は dict に含める）
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U12 -->
-                    <span class="badge badge-outline">未着手 0/6</span>
-                    <!-- /PLAN:BADGE:U12 -->
+<span class="badge badge-outline">未着手 0/8</span>
+<!-- /PLAN:BADGE:U12 -->
                   </td>
                 </tr>
                 <tr>
@@ -2153,8 +2487,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U13 -->
-                    <span class="badge badge-outline">未着手</span>
-                    <!-- /PLAN:BADGE:U13 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U13 -->
                   </td>
                 </tr>
               </tbody>
@@ -2187,8 +2521,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
             <div class="week-meta">
               <span class="week-id">U14</span>
               <!-- PLAN:BADGE:U14 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U14 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U14 -->
               <span class="badge badge-outline">品質 / 0710 指摘12</span>
               <span class="week-time">依存: U5〜U13</span>
             </div>
@@ -2199,12 +2533,34 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
           <ol class="step-list">
             <li>
               <span class="step-num">1</span
-              ><span
+              >
+              <div class="step-body"><span
                 ><code>eslint.config.mjs</code> の <code>no-restricted-imports</code>
                 に、他 feature の深い階層への import を禁止するパターンを追加する。公開 API（
                 <code>@/features/&lt;domain&gt;</code> の
-                <code>index.ts</code>）経由のみ許可する</span
+                <code>index.ts</code>）経由のみ許可する。<strong
+                  >必ず <code>files</code>
+                  でスコープを限定した独立ブロックとして追加する。既存ブロックに混ぜない</strong
+                ></span
               >
+              <ul class="accent-list">
+                <li>
+                  現行 <code>eslint.config.mjs:14-46</code> の
+                  <code>no-restricted-imports</code> は <code>files</code>
+                  の無いルートレベル設定で、<strong>全ファイルに適用される</strong>。ここに feature
+                  深掘り禁止パターンを足すと
+                  <code>app/[locale]/(dashboard)/**/page.tsx</code> や
+                  <code>components/layout/</code> からの import まで巻き込み、<code>pnpm lint</code>
+                  / <code>pnpm build</code> が大量に落ちる
+                </li>
+                <li>
+                  禁止するのは <strong>feature 間（横方向）</strong> のみ。<code>app/</code> や
+                  <code>components/</code> から feature への import（<strong>縦方向</strong>）は<strong
+                    >許可</strong
+                  >する
+                </li>
+              </ul>
+              </div>
             </li>
             <li>
               <span class="step-num">2</span
@@ -2217,11 +2573,35 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
             </li>
             <li>
               <span class="step-num">3</span
-              ><span
-                ><code>useStoreOptions</code>
-                のように横断利用されているフックは、利用側5箇所の実態を見て「stores の公開 API
-                にする」か「<code>lib/hooks/</code> 等の共有層へ移す」かを判断する</span
               >
+              <div class="step-body"><span
+                ><code>useStoreOptions</code>（<code>features/stores/hooks/use-stores.ts:40</code>）は
+                <strong>transactions / inventory / devices の3 feature・5箇所</strong>から参照されている（<code
+                  >transaction-table-client.tsx:14</code
+                >
+                / <code>inventory-form.tsx:21</code> / <code>inventory-table-client.tsx:32</code> /
+                <code>device-table-client.tsx:16</code> / <code>device-form.tsx:20</code>）</span
+              >
+              <ul class="accent-list">
+                <li>
+                  <strong
+                    >方針は先に確定させる: <code>features/stores/index.ts</code> から re-export
+                    し、利用側の import を <code>@/features/stores</code> に付け替える</strong
+                  >（<code>lib/hooks/</code> へは移さない）
+                </li>
+                <li>
+                  判断理由: このフックは store ドメインの API（<code>store-api.client</code>）と
+                  TanStack Query のキーに依存しており、stores feature の所有物である。<code
+                    >lib/hooks/</code
+                  >
+                  へ出すと共有層が features の API に逆依存し、U14 が消そうとしている結合方向の問題がそのまま残る
+                </li>
+                <li>
+                  <code>lib/hooks/</code>
+                  へ出すのは「どの feature にも属さない純粋なユーティリティフック」に限る。今回の対象には無い
+                </li>
+              </ul>
+              </div>
             </li>
             <li>
               <span class="step-num">4</span
@@ -2231,6 +2611,49 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
               >
             </li>
           </ol>
+
+          <p class="block-label">追加するルールブロック</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span
+                >既存のルートレベルブロックとは<strong>別に</strong>、<code>eslint.config.mjs</code>
+                の配列の後ろへ追加する</span
+              >
+              <span class="badge badge-outline">js</span>
+            </div>
+            <pre><code class="language-js">{
+  files: ['features/**/*.{ts,tsx}'],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@/features/*/*'],
+            message: '他 feature へは公開 API（@/features/&lt;domain&gt;）経由で import すること。',
+          },
+        ],
+      },
+    ],
+  },
+},</code></pre>
+          </div>
+          <div class="callout callout-danger">
+            <h4>Flat Config の上書きに注意</h4>
+            <p>
+              同じルール名を後段ブロックが再指定すると<strong>上書き</strong>になる。上記ブロックは
+              <code>features/**</code> にのみ効くため、<code>features/</code> 配下では既存の
+              <code>paths</code> 指定（<code>@/e2e/testids</code> / <code>next/link</code> /
+              <code>next/navigation</code> の禁止）が消える。<strong
+                >既存の <code>paths</code> 3件を上記ブロックにも書き写して両立させること</strong
+              >（<code>features/</code> 配下こそ <code>next/link</code> 禁止が効いてほしい箇所）。
+            </p>
+            <p>
+              <code>group: ['@/features/*/*']</code> は自 feature
+              内の深掘りも巻き込むが、自 feature 内は相対 import（<code>../hooks/use-products</code>）が既存の書き方なので実害は出ない。着手時に
+              <code>grep -rn "from '@/features/" features</code> で確認する。
+            </p>
+          </div>
 
           <p class="block-label">判明している違反（2026-09-06 実測。着手前に再検証すること）</p>
           <div class="file-card">
@@ -2320,8 +2743,8 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
             <div class="week-meta">
               <span class="week-id">U15</span>
               <!-- PLAN:BADGE:U15 -->
-              <span class="badge badge-outline">未着手</span>
-              <!-- /PLAN:BADGE:U15 -->
+<span class="badge badge-outline">未着手</span>
+<!-- /PLAN:BADGE:U15 -->
               <span class="badge badge-outline">設計 / 0710 指摘5</span>
               <span class="week-time">依存なし</span>
             </div>

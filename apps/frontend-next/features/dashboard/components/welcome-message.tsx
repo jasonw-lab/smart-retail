@@ -43,6 +43,7 @@ export function WelcomeMessage({ userName, avatarUrl }: WelcomeMessageProps) {
                   alt={userName}
                   width={56}
                   height={56}
+                  unoptimized
                   className="object-cover"
                 />
               ) : (

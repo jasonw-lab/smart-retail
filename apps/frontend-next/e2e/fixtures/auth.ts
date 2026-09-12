@@ -21,8 +21,8 @@ export { expect };
 export async function login(
   page: import('@playwright/test').Page,
   username = 'admin',
-  password = 'password',
-  captchaCode = 'A1B2' // ダミーキャプチャのコード
+  password = '123456',
+  captchaCode = ''
 ) {
   const maxAttempts = 3;
   let lastError: Error | null = null;

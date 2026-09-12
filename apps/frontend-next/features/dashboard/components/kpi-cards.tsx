@@ -32,6 +32,16 @@ function formatPercent(value: number): string {
 
 // 上段4カード
 export function KPICards({ data }: KPICardsProps) {
+  const salesValue = data?.sales?.value ?? 0;
+  const salesChange = data?.sales?.change ?? 0;
+  const salesChangeType = data?.sales?.changeType ?? 'increase';
+  const outOfStockValue = data?.outOfStockSKU?.value ?? 0;
+  const outOfStockLabel = data?.outOfStockSKU?.label ?? 'SKU';
+  const activeStores = data?.activeStores?.active ?? 0;
+  const totalStores = data?.activeStores?.total ?? 1;
+  const suspendedAlerts = data?.suspendedAlerts?.value ?? 0;
+  const requiresAction = Boolean(data?.suspendedAlerts?.requiresAction);
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {/* 売上高 */}
@@ -43,19 +53,19 @@ export function KPICards({ data }: KPICardsProps) {
           </Badge>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(data.sales.value)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(salesValue)}</div>
           <div
             className={cn(
               'flex items-center text-xs mt-1',
-              data.sales.changeType === 'increase' ? 'text-emerald-800' : 'text-red-700'
+              salesChangeType === 'increase' ? 'text-emerald-800' : 'text-red-700'
             )}
           >
-            {data.sales.changeType === 'increase' ? (
+            {salesChangeType === 'increase' ? (
               <TrendingUp className="h-3 w-3 mr-1" />
             ) : (
               <TrendingDown className="h-3 w-3 mr-1" />
             )}
-            {formatPercent(data.sales.change)}
+            {formatPercent(salesChange)}
           </div>
         </CardContent>
       </Card>
@@ -68,8 +78,8 @@ export function KPICards({ data }: KPICardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {data.outOfStockSKU.value}{' '}
-            <span className="text-sm font-normal text-gray-500">{data.outOfStockSKU.label}</span>
+            {outOfStockValue}{' '}
+            <span className="text-sm font-normal text-gray-500">{outOfStockLabel}</span>
           </div>
         </CardContent>
       </Card>
@@ -84,9 +94,9 @@ export function KPICards({ data }: KPICardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {data.activeStores.active}
+            {activeStores}
             <span className="text-sm font-normal text-gray-500">
-              /{data.activeStores.total}店舗
+              /{totalStores}店舗
             </span>
           </div>
         </CardContent>
@@ -96,7 +106,7 @@ export function KPICards({ data }: KPICardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-500">休業中アラート</CardTitle>
-          {data.suspendedAlerts.requiresAction && (
+          {requiresAction && (
             <Badge variant="warning" className="text-xs">
               要対応
             </Badge>
@@ -104,8 +114,8 @@ export function KPICards({ data }: KPICardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
-            {data.suspendedAlerts.value}
-            {data.suspendedAlerts.requiresAction && (
+            {suspendedAlerts}
+            {requiresAction && (
               <AlertTriangle className="h-5 w-5 text-amber-500" />
             )}
           </div>
@@ -117,6 +127,10 @@ export function KPICards({ data }: KPICardsProps) {
 
 // 下段3カード (グラフ下に配置)
 export function KPICardsBottom({ data }: KPICardsProps) {
+  const uptime = data?.systemUptime?.value ?? 99.98;
+  const newCust = data?.newCustomers?.value ?? 0;
+  const avgOrder = data?.averageOrderValue?.value ?? 0;
+
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {/* システム稼働率 */}
@@ -127,7 +141,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-emerald-800">
-            {data.systemUptime.value.toFixed(2)}%
+            {uptime.toFixed(2)}%
           </div>
         </CardContent>
       </Card>
@@ -139,7 +153,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
           <Users className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">+{data.newCustomers.value.toLocaleString()}</div>
+          <div className="text-2xl font-bold">+{newCust.toLocaleString()}</div>
         </CardContent>
       </Card>
 
@@ -150,7 +164,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
           <ShoppingCart className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(data.averageOrderValue.value)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(avgOrder)}</div>
         </CardContent>
       </Card>
     </div>

@@ -20,6 +20,20 @@ export default defineConfig({
     ['html', { outputFolder: 'e2e/playwright-report' }],
     ['json', { outputFile: 'e2e/results.json' }],
     ['list'],
+    [
+      'monocart-coverage-reports',
+      {
+        name: 'SmartRetail Pro E2E Coverage',
+        outputDir: './coverage',
+        reports: ['v8', 'console-summary'],
+        thresholds: {
+          statements: 50,
+          branches: 40,
+          functions: 40,
+          lines: 50,
+        },
+      },
+    ],
   ],
   use: {
     baseURL: BASE_URL,
@@ -43,7 +57,7 @@ export default defineConfig({
     },
     // Next.js production server (build first if needed)
     {
-      command: `pnpm build && BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
+      command: `pnpm build && DISABLE_RATE_LIMIT=true BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 180 * 1000, // Build can take time

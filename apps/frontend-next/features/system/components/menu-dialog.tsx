@@ -3,18 +3,13 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -22,35 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  useCreateMenu,
-  useUpdateMenu,
-  useMenuOptionsQuery,
-} from '../hooks/use-menu';
-import {
-  MenuType,
-  type Menu,
-  type MenuForm,
-  type MenuOption,
-} from '../types/menu';
+import { useCreateMenu, useUpdateMenu, useMenuOptionsQuery } from '../hooks/use-menu';
+import { menuFormSchema, type MenuFormValues } from '../schemas/menu-schema';
+import { MenuType, type Menu, type MenuForm, type MenuOption } from '../types/menu';
 
-const menuSchema = z.object({
-  parentId: z.number(),
-  name: z.string().min(1, 'メニュー名は必須です'),
-  type: z.number(),
-  routeName: z.string().optional(),
-  routePath: z.string().optional(),
-  component: z.string().optional(),
-  perm: z.string().optional(),
-  icon: z.string().optional(),
-  sort: z.number().min(0),
-  visible: z.number(),
-  redirect: z.string().optional(),
-  alwaysShow: z.number().optional(),
-  keepAlive: z.number().optional(),
-});
+const menuSchema = menuFormSchema;
 
-type MenuFormData = z.infer<typeof menuSchema>;
+type MenuFormData = MenuFormValues;
 
 interface MenuDialogProps {
   open: boolean;
@@ -60,6 +33,7 @@ interface MenuDialogProps {
 }
 
 export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
+  const t = useTranslations('system.menu');
   const createMutation = useCreateMenu();
   const updateMutation = useUpdateMenu();
   const { data: menuOptions = [] } = useMenuOptionsQuery(true);
@@ -126,20 +100,23 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
   const onSubmit = async (data: MenuFormData) => {
     const formData = data as MenuForm;
-    if (isEditing) {
-      await updateMutation.mutateAsync({ id: menu.id, data: formData });
-    } else {
-      await createMutation.mutateAsync(formData);
+    try {
+      if (isEditing) {
+        await updateMutation.mutateAsync({ id: menu.id, data: formData });
+        toast.success(t('updateSuccess'));
+      } else {
+        await createMutation.mutateAsync(formData);
+        toast.success(t('createSuccess'));
+      }
+      onClose();
+    } catch {
+      toast.error(isEditing ? t('updateFailed') : t('createFailed'));
     }
-    onClose();
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const flattenOptions = (
-    options: MenuOption[],
-    level = 0
-  ): { value: number; label: string }[] => {
+  const flattenOptions = (options: MenuOption[], level = 0): { value: number; label: string }[] => {
     const result: { value: number; label: string }[] = [];
     for (const opt of options) {
       result.push({ value: opt.value, label: '　'.repeat(level) + opt.label });
@@ -150,18 +127,13 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
     return result;
   };
 
-  const flatOptions = [
-    { value: 0, label: 'トップメニュー' },
-    ...flattenOptions(menuOptions),
-  ];
+  const flatOptions = [{ value: 0, label: 'トップメニュー' }, ...flattenOptions(menuOptions)];
 
   return (
     <Sheet open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>
-            {isEditing ? 'メニューの編集' : 'メニューの追加'}
-          </SheetTitle>
+          <SheetTitle>{isEditing ? 'メニューの編集' : 'メニューの追加'}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -169,9 +141,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
             <Label>親メニュー</Label>
             <Select
               value={String(form.watch('parentId'))}
-              onValueChange={(v: string) =>
-                form.setValue('parentId', parseInt(v))
-              }
+              onValueChange={(v: string) => form.setValue('parentId', parseInt(v))}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -188,15 +158,9 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="name">メニュー名 *</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="メニュー名を入力"
-            />
+            <Input id="name" {...form.register('name')} placeholder="メニュー名を入力" />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -208,10 +172,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
               className="flex gap-4"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={String(MenuType.CATALOG)}
-                  id="type-catalog"
-                />
+                <RadioGroupItem value={String(MenuType.CATALOG)} id="type-catalog" />
                 <Label htmlFor="type-catalog">カタログ</Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -219,17 +180,11 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
                 <Label htmlFor="type-menu">メニュー</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={String(MenuType.BUTTON)}
-                  id="type-button"
-                />
+                <RadioGroupItem value={String(MenuType.BUTTON)} id="type-button" />
                 <Label htmlFor="type-button">ボタン</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value={String(MenuType.EXTLINK)}
-                  id="type-extlink"
-                />
+                <RadioGroupItem value={String(MenuType.EXTLINK)} id="type-extlink" />
                 <Label htmlFor="type-extlink">外部リンク</Label>
               </div>
             </RadioGroup>
@@ -238,11 +193,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
           {menuType === MenuType.MENU && (
             <div className="space-y-2">
               <Label htmlFor="routeName">ルート名</Label>
-              <Input
-                id="routeName"
-                {...form.register('routeName')}
-                placeholder="例: ProductList"
-              />
+              <Input id="routeName" {...form.register('routeName')} placeholder="例: ProductList" />
             </div>
           )}
 
@@ -252,9 +203,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
               <Input
                 id="routePath"
                 {...form.register('routePath')}
-                placeholder={
-                  menuType === MenuType.CATALOG ? '例: /system' : '例: list'
-                }
+                placeholder={menuType === MenuType.CATALOG ? '例: /system' : '例: list'}
               />
             </div>
           )}
@@ -274,9 +223,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
             <div className="space-y-2">
               <Label htmlFor="component">コンポーネント</Label>
               <div className="flex items-center gap-1">
-                <span className="text-sm text-muted-foreground">
-                  src/views/
-                </span>
+                <span className="text-sm text-muted-foreground">src/views/</span>
                 <Input
                   id="component"
                   {...form.register('component')}
@@ -291,22 +238,14 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
           {menuType === MenuType.BUTTON && (
             <div className="space-y-2">
               <Label htmlFor="perm">権限標識</Label>
-              <Input
-                id="perm"
-                {...form.register('perm')}
-                placeholder="例: sys:user:add"
-              />
+              <Input id="perm" {...form.register('perm')} placeholder="例: sys:user:add" />
             </div>
           )}
 
           {menuType !== MenuType.BUTTON && (
             <div className="space-y-2">
               <Label htmlFor="icon">アイコン</Label>
-              <Input
-                id="icon"
-                {...form.register('icon')}
-                placeholder="例: Settings, Users"
-              />
+              <Input id="icon" {...form.register('icon')} placeholder="例: Settings, Users" />
             </div>
           )}
 
@@ -325,9 +264,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
                 <Label>表示状態</Label>
                 <Select
                   value={String(form.watch('visible'))}
-                  onValueChange={(v: string) =>
-                    form.setValue('visible', parseInt(v))
-                  }
+                  onValueChange={(v: string) => form.setValue('visible', parseInt(v))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -344,11 +281,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
           {menuType === MenuType.CATALOG && (
             <div className="space-y-2">
               <Label htmlFor="redirect">リダイレクト</Label>
-              <Input
-                id="redirect"
-                {...form.register('redirect')}
-                placeholder="例: /system/user"
-              />
+              <Input id="redirect" {...form.register('redirect')} placeholder="例: /system/user" />
             </div>
           )}
 

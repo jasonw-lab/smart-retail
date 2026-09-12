@@ -13,9 +13,7 @@ interface EditProductPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditProductPage({
-  params,
-}: EditProductPageProps) {
+export default async function EditProductPage({ params }: EditProductPageProps) {
   const { id } = await params;
   const productId = Number(id);
 

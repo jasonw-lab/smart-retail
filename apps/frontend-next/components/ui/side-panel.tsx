@@ -16,14 +16,7 @@ export interface SidePanelProps {
   footer?: React.ReactNode;
 }
 
-export function SidePanel({
-  open,
-  onClose,
-  title,
-  children,
-  width = 400,
-  footer,
-}: SidePanelProps) {
+export function SidePanel({ open, onClose, title, children, width = 400, footer }: SidePanelProps) {
   // ESCキーでクローズ
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -52,11 +45,7 @@ export function SidePanel({
   return (
     <>
       {/* オーバーレイ */}
-      <div
-        className="fixed inset-0 z-40 bg-black/20"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} aria-hidden="true" />
       {/* パネル */}
       <aside
         className={cn(
@@ -70,12 +59,7 @@ export function SidePanel({
         {/* ヘッダー */}
         <div className="flex h-14 items-center justify-between border-b px-4">
           {title && <h2 className="text-lg font-semibold">{title}</h2>}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="ml-auto"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="ml-auto">
             <X className="h-4 w-4" />
             <span className="sr-only">閉じる</span>
           </Button>
@@ -112,13 +96,7 @@ export function SidePanelSection({
 /**
  * 詳細リスト
  */
-export function SidePanelDetail({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+export function SidePanelDetail({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between py-1">
       <span className="text-sm text-muted-foreground">{label}</span>

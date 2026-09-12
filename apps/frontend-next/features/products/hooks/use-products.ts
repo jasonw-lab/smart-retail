@@ -37,6 +37,17 @@ export function useProducts(
 }
 
 /**
+ * 商品全件取得フック（セレクトボックス等用）
+ */
+export function useAllProducts() {
+  return useQuery({
+    queryKey: [...productKeys.all, 'all'] as const,
+    queryFn: () => productApiClient.getAll(),
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+/**
  * 商品詳細取得フック
  */
 export function useProduct(id: number) {

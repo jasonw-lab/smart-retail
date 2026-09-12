@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { login } from '../fixtures/auth';
+import { TESTIDS } from '../testids';
 
 /**
  * Navigation E2E Tests
@@ -7,84 +8,126 @@ import { login } from '../fixtures/auth';
  *
  * Current sidebar structure (sidebar.tsx):
  * - Dashboard → /
- * - Store Management → /stores
- * - Product/Inventory → /inventory
- * - Alert Information → /alerts
- * - System Management (expandable):
- *   - User Management → /system/user
- *   - Role Management → /system/role
- *   - Menu Management → /system/menu
- *   - Dept Management → /system/dept
- *   - Dict Management → /system/dict
+ * - Products → /products
+ * - Stores → /stores
+ * - Inventory → /inventory
+ * - Devices → /devices
+ * - Transactions → /transactions
+ * - Alerts → /alerts
+ * - System (expandable):
+ *   - Users → /system/user
+ *   - Roles → /system/role
+ *   - Menus → /system/menu
+ *   - Departments → /system/dept
+ *   - Dictionary → /system/dict
  *   - Logs → /system/log
  */
 test.describe('サイドバーナビゲーション', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('aside')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test.describe('メインメニュー', () => {
     test('Dashboard (/) が表示されている', async ({ page }) => {
-      await expect(page).toHaveURL('/');
+      await expect(page).toHaveURL(/\/(ja|en)?$/);
       // ダッシュボードコンテンツが表示される
       await expect(page.getByRole('main')).toBeVisible({ timeout: 10000 });
     });
 
-    test('Store Management (/stores) にアクセスできる', async ({ page }) => {
+    test('Products (/products) にアクセスできる', async ({ page }) => {
+      const productsLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Products' });
+      await expect(productsLink).toBeVisible({ timeout: 5000 });
+      await productsLink.click();
+
+      await expect(page).toHaveURL(/\/products$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
+    test('Stores (/stores) にアクセスできる', async ({ page }) => {
       const storeLink = page
-        .locator('aside')
-        .getByRole('link', { name: 'Store Management' });
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Stores' });
       await expect(storeLink).toBeVisible({ timeout: 5000 });
       await storeLink.click();
 
-      await expect(page).toHaveURL('/stores', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/stores$/, { timeout: 15000 });
       await expect(page.getByRole('main').locator('h1')).toBeVisible({
         timeout: 10000,
       });
     });
 
-    test('Product/Inventory (/inventory) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Inventory (/inventory) にアクセスできる', async ({ page }) => {
       const inventoryLink = page
-        .locator('aside')
-        .getByRole('link', { name: 'Product/Inventory' });
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Inventory' });
       await expect(inventoryLink).toBeVisible({ timeout: 5000 });
       await inventoryLink.click();
 
-      await expect(page).toHaveURL('/inventory', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/inventory$/, { timeout: 15000 });
       await expect(page.getByRole('main').locator('h1')).toBeVisible({
         timeout: 10000,
       });
     });
 
-    test('Alert Information (/alerts) にアクセスできる', async ({ page }) => {
+    test('Devices (/devices) にアクセスできる', async ({ page }) => {
+      const devicesLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Devices' });
+      await expect(devicesLink).toBeVisible({ timeout: 5000 });
+      await devicesLink.click();
+
+      await expect(page).toHaveURL(/\/devices$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
+    test('Transactions (/transactions) にアクセスできる', async ({ page }) => {
+      const transactionsLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Transactions' });
+      await expect(transactionsLink).toBeVisible({ timeout: 5000 });
+      await transactionsLink.click();
+
+      await expect(page).toHaveURL(/\/transactions$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
+    test('Alerts (/alerts) にアクセスできる', async ({ page }) => {
       const alertsLink = page
-        .locator('aside')
-        .getByRole('link', { name: 'Alert Information' });
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Alerts' });
       await expect(alertsLink).toBeVisible({ timeout: 5000 });
       await alertsLink.click();
 
-      await expect(page).toHaveURL('/alerts', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/alerts$/, { timeout: 15000 });
       await expect(page.getByRole('main').locator('h1')).toBeVisible({
         timeout: 10000,
       });
     });
   });
 
-  test.describe('System Management (展開式メニュー)', () => {
+  test.describe('System (展開式メニュー)', () => {
     async function expandSystemMenu(page: import('@playwright/test').Page) {
       const systemMenuButton = page
-        .locator('aside')
-        .getByRole('button', { name: /System Management/i });
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('button', { name: /System/i });
       await expect(systemMenuButton).toBeVisible({ timeout: 5000 });
 
       // Check if already expanded by looking for a submenu link
       const userMgmtLink = page
-        .locator('aside')
-        .getByRole('link', { name: 'User Management' });
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Users' });
       const isExpanded = await userMgmtLink.isVisible().catch(() => false);
 
       if (!isExpanded) {
@@ -102,91 +145,77 @@ test.describe('サイドバーナビゲーション', () => {
       await expect(mainContent.or(errorButton)).toBeVisible({ timeout: 10000 });
     }
 
-    test('User Management (/system/user) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Users (/system/user) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
       await page
-        .locator('aside')
-        .getByRole('link', { name: 'User Management' })
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Users' })
         .click();
 
-      await expect(page).toHaveURL('/system/user', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/user$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
 
-    test('Role Management (/system/role) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Roles (/system/role) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
       await page
-        .locator('aside')
-        .getByRole('link', { name: 'Role Management' })
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Roles' })
         .click();
 
-      await expect(page).toHaveURL('/system/role', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/role$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
 
-    test('Menu Management (/system/menu) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Menus (/system/menu) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
       await page
-        .locator('aside')
-        .getByRole('link', { name: 'Menu Management' })
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Menus' })
         .click();
 
-      await expect(page).toHaveURL('/system/menu', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/menu$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
 
-    test('Dept Management (/system/dept) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Departments (/system/dept) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
       await page
-        .locator('aside')
-        .getByRole('link', { name: 'Dept Management' })
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Departments' })
         .click();
 
-      await expect(page).toHaveURL('/system/dept', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/dept$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
 
-    test('Dict Management (/system/dict) にアクセスできる', async ({
-      page,
-    }) => {
+    test('Dictionary (/system/dict) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
       await page
-        .locator('aside')
-        .getByRole('link', { name: 'Dict Management' })
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Dictionary' })
         .click();
 
-      await expect(page).toHaveURL('/system/dict', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/dict$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
 
     test('Logs (/system/log) にアクセスできる', async ({ page }) => {
       await expandSystemMenu(page);
-      await page.locator('aside').getByRole('link', { name: 'Logs' }).click();
+      await page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Logs' })
+        .click();
 
-      await expect(page).toHaveURL('/system/log', { timeout: 15000 });
+      await expect(page).toHaveURL(/\/system\/log$/, { timeout: 15000 });
       await expectPageLoaded(page);
     });
   });
 
   test.describe('フッターセクション', () => {
-    test('Help Center リンクが表示される', async ({ page }) => {
-      const helpLink = page
-        .locator('aside')
-        .getByRole('link', { name: /Help Center/i });
-      await expect(helpLink).toBeVisible({ timeout: 5000 });
-    });
-
     test('Logout ボタンが表示される', async ({ page }) => {
       const logoutButton = page
-        .locator('aside')
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
         .getByRole('button', { name: /Logout/i });
       await expect(logoutButton).toBeVisible({ timeout: 5000 });
     });
@@ -197,20 +226,16 @@ test.describe('基本ナビゲーション', () => {
   test('ログインページにアクセスできる', async ({ page }) => {
     const response = await page.goto('/login');
     expect(response?.status()).toBe(200);
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('未認証でダッシュボードにアクセスするとログインにリダイレクト', async ({
-    page,
-  }) => {
+  test('未認証でダッシュボードにアクセスするとログインにリダイレクト', async ({ page }) => {
     await page.context().clearCookies();
     await page.goto('/');
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('未認証で存在しないページにアクセスするとログインにリダイレクト', async ({
-    page,
-  }) => {
+  test('未認証で存在しないページにアクセスするとログインにリダイレクト', async ({ page }) => {
     await page.context().clearCookies();
     await page.goto('/nonexistent-page');
     await expect(page).toHaveURL(/\/login/);
@@ -222,17 +247,17 @@ test.describe('レスポンシブデザイン', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/login');
 
-    await expect(page.locator('input[id="username"]')).toBeVisible();
-    await expect(page.locator('input[id="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_USERNAME}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_PASSWORD}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_SUBMIT}"]`)).toBeVisible();
   });
 
   test('ログインページがデスクトップで表示される', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/login');
 
-    await expect(page.locator('input[id="username"]')).toBeVisible();
-    await expect(page.locator('input[id="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_USERNAME}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_PASSWORD}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_SUBMIT}"]`)).toBeVisible();
   });
 });

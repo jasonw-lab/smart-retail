@@ -13,3 +13,5 @@ export {
   type MenuOption as MenuTreeOption,
 } from './menu';
 export * from './user';
+export * from './config';
+export * from './notice';

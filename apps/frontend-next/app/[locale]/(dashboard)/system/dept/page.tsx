@@ -15,9 +15,7 @@ export default async function DeptPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Department Management</h1>
-        <p className="text-muted-foreground">
-          Manage organizational department structure
-        </p>
+        <p className="text-muted-foreground">Manage organizational department structure</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

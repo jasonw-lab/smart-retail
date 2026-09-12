@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { TESTIDS } from '@/lib/testing/testids';
 import { useReplenish } from '../hooks/use-inventory';
 import type { Inventory } from '../types/inventory';
 
@@ -22,11 +23,7 @@ interface ReplenishDialogProps {
   onClose: () => void;
 }
 
-export function ReplenishDialog({
-  inventory,
-  open,
-  onClose,
-}: ReplenishDialogProps) {
+export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogProps) {
   const replenish = useReplenish();
   const [form, setForm] = useState({
     quantity: '',
@@ -47,6 +44,7 @@ export function ReplenishDialog({
 
     try {
       await replenish.mutateAsync({
+        inventoryId: inventory.id,
         storeId: inventory.storeId,
         productId: inventory.productId,
         quantity,
@@ -66,7 +64,7 @@ export function ReplenishDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent data-testid={TESTIDS.INVENTORY_REPLENISH_DIALOG}>
         <DialogHeader>
           <DialogTitle>📦 補充記録</DialogTitle>
         </DialogHeader>
@@ -95,6 +93,7 @@ export function ReplenishDialog({
             </Label>
             <Input
               id="quantity"
+              data-testid={TESTIDS.INVENTORY_REPLENISH_QUANTITY}
               type="number"
               min="1"
               value={form.quantity}
@@ -107,6 +106,7 @@ export function ReplenishDialog({
             <Label htmlFor="lotNumber">ロット番号</Label>
             <Input
               id="lotNumber"
+              data-testid={TESTIDS.INVENTORY_REPLENISH_LOT}
               value={form.lotNumber}
               onChange={(e) => setForm({ ...form, lotNumber: e.target.value })}
               placeholder="LOT-2026-0128"
@@ -117,6 +117,7 @@ export function ReplenishDialog({
             <Label htmlFor="expiryDate">賞味期限</Label>
             <Input
               id="expiryDate"
+              data-testid={TESTIDS.INVENTORY_REPLENISH_EXPIRY}
               type="date"
               value={form.expiryDate}
               onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
@@ -127,6 +128,7 @@ export function ReplenishDialog({
             <Label htmlFor="note">備考</Label>
             <Textarea
               id="note"
+              data-testid={TESTIDS.INVENTORY_REPLENISH_NOTE}
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
               placeholder="定期補充"
@@ -135,10 +137,19 @@ export function ReplenishDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              data-testid={TESTIDS.INVENTORY_REPLENISH_CANCEL}
+              type="button"
+              variant="outline"
+              onClick={onClose}
+            >
               キャンセル
             </Button>
-            <Button type="submit" disabled={replenish.isPending}>
+            <Button
+              data-testid={TESTIDS.INVENTORY_REPLENISH_SUBMIT}
+              type="submit"
+              disabled={replenish.isPending}
+            >
               {replenish.isPending ? '登録中...' : '登録'}
             </Button>
           </DialogFooter>

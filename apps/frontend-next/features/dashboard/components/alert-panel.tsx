@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, AlertCircle, Package, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { AlertItem, AlertType } from '../lib/mock-data';
+import type { AlertItem, AlertType } from '../types/dashboard';
 
 interface AlertPanelProps {
   alerts: AlertItem[];
@@ -71,14 +71,11 @@ export function AlertPanel({ alerts, className }: AlertPanelProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         {alerts.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">
-            アラートはありません
-          </p>
+          <p className="text-sm text-gray-500 text-center py-4">アラートはありません</p>
         ) : (
           <>
             {alerts.map((alert) => {
               const config = alertTypeConfig[alert.type];
-              const Icon = config.icon;
 
               return (
                 <div
@@ -90,14 +87,12 @@ export function AlertPanel({ alerts, className }: AlertPanelProps) {
                       {config.label}
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      {formatRelativeTime(alert.timestamp)}
+                      {formatRelativeTime(new Date(alert.timestamp))}
                     </span>
                   </div>
                   <p className="text-sm font-medium">{alert.title}</p>
                   {alert.lotNumber && (
-                    <p className="text-xs text-gray-500">
-                      ロット番号: {alert.lotNumber}
-                    </p>
+                    <p className="text-xs text-gray-500">ロット番号: {alert.lotNumber}</p>
                   )}
                   {alert.actionLabel && (
                     <Link
@@ -125,4 +120,4 @@ export function AlertPanel({ alerts, className }: AlertPanelProps) {
 }
 
 // Re-export types for convenience
-export type { AlertItem, AlertType } from '../lib/mock-data';
+export type { AlertItem, AlertType } from '../types/dashboard';

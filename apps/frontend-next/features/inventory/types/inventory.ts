@@ -11,8 +11,7 @@ export const InventoryStatus = {
   NORMAL: 'NORMAL',
 } as const;
 
-export type InventoryStatusType =
-  (typeof InventoryStatus)[keyof typeof InventoryStatus];
+export type InventoryStatusType = (typeof InventoryStatus)[keyof typeof InventoryStatus];
 
 export const InventoryStatusLabel: Record<InventoryStatusType, string> = {
   EXPIRED: '期限切れ',
@@ -65,6 +64,8 @@ export interface Inventory {
   status: InventoryStatusType;
   /** ロット別明細 */
   lots?: InventoryLot[];
+  /** 在庫回転率 */
+  turnoverRate?: number;
   createTime?: string;
   updateTime?: string;
 }
@@ -79,9 +80,61 @@ export interface InventoryQuery extends PageQuery {
 }
 
 /**
+ * 在庫リスト取得クエリ（ページングなし）
+ */
+export interface InventoryListQuery {
+  storeId?: number;
+  productId?: number;
+}
+
+/**
+ * Backendから返却される在庫ページ項目（ロット単位）
+ */
+export interface InventoryPageItem {
+  id: number;
+  storeId: number;
+  storeName: string;
+  productId: number;
+  productName: string;
+  productCode: string;
+  lotNumber: string;
+  quantity: number;
+  minStock: number;
+  maxStock: number;
+  expiryDate?: string;
+  location?: string;
+  status: string;
+  remarks?: string;
+  /** 在庫回転率 */
+  turnoverRate?: number;
+  createTime?: string;
+  updateTime?: string;
+}
+
+/**
+ * 在庫作成DTO
+ */
+export interface CreateInventoryDto {
+  storeId: number;
+  productId: number;
+  lotNumber: string;
+  quantity: number;
+  expiryDate?: string;
+  location?: string;
+  status?: string;
+  remarks?: string;
+}
+
+/**
+ * 在庫更新DTO
+ */
+export type UpdateInventoryDto = Partial<CreateInventoryDto>;
+
+/**
  * 補充DTO
  */
 export interface ReplenishDto {
+  inventoryId?: number;
   storeId: number;
   productId: number;
   quantity: number;
@@ -95,8 +148,57 @@ export interface ReplenishDto {
  */
 export interface DisposeDto {
   lotId: number;
+  storeId: number;
+  productId: number;
+  lotNumber: string;
   quantity: number;
   reason: string;
+  note?: string;
+}
+
+/**
+ * 在庫トランザクションクエリ
+ */
+export interface InventoryTransactionQuery extends PageQuery {
+  storeId?: number;
+  productId?: number;
+  lotNumber?: string;
+  txnType?: string;
+  sourceType?: string;
+  referenceNo?: string;
+}
+
+/**
+ * 在庫トランザクション（Backendレスポンス）
+ */
+export interface InventoryTransaction {
+  id: number;
+  inventoryId?: number;
+  storeId: number;
+  productId: number;
+  lotNumber: string;
+  txnType: string;
+  quantityDelta: number;
+  sourceType?: string;
+  referenceNo?: string;
+  reason?: string;
+  note?: string;
+  createTime?: string;
+}
+
+/**
+ * 在庫トランザクション作成・更新DTO
+ */
+export interface InventoryTransactionForm {
+  inventoryId?: number;
+  storeId: number;
+  productId: number;
+  lotNumber: string;
+  txnType: string;
+  quantityDelta: number;
+  sourceType?: string;
+  referenceNo?: string;
+  reason?: string;
   note?: string;
 }
 
@@ -110,8 +212,7 @@ export const StockHistoryType = {
   SALE: 'SALE',
 } as const;
 
-export type StockHistoryTypeType =
-  (typeof StockHistoryType)[keyof typeof StockHistoryType];
+export type StockHistoryTypeType = (typeof StockHistoryType)[keyof typeof StockHistoryType];
 
 export const StockHistoryTypeLabel: Record<StockHistoryTypeType, string> = {
   IN: '入庫',

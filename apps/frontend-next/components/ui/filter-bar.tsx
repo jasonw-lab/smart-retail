@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { TESTIDS } from '@/lib/testing/testids';
 
 const EMPTY_VALUE_PLACEHOLDER = '__all__';
 
@@ -60,6 +61,7 @@ export function FilterBar<T extends Record<string, string>>({
 
   return (
     <div
+      data-testid={TESTIDS.FILTER_BAR}
       className={cn(
         'bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-6',
         className
@@ -68,9 +70,7 @@ export function FilterBar<T extends Record<string, string>>({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         {fields.map((field) => (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-medium text-on-surface-variant">
-              {field.label}
-            </label>
+            <label className="text-xs font-medium text-on-surface-variant">{field.label}</label>
             {field.type === 'text' ? (
               <Input
                 placeholder={field.placeholder}
@@ -83,10 +83,7 @@ export function FilterBar<T extends Record<string, string>>({
               <Select
                 value={values[field.key] || EMPTY_VALUE_PLACEHOLDER}
                 onValueChange={(v) =>
-                  handleChange(
-                    field.key,
-                    v === EMPTY_VALUE_PLACEHOLDER ? '' : v
-                  )
+                  handleChange(field.key, v === EMPTY_VALUE_PLACEHOLDER ? '' : v)
                 }
               >
                 <SelectTrigger className="w-full bg-surface border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
@@ -108,6 +105,8 @@ export function FilterBar<T extends Record<string, string>>({
         ))}
         <div className="flex gap-3">
           <Button
+            data-testid={TESTIDS.FILTER_BAR_SEARCH}
+            aria-label="Search"
             variant="default"
             onClick={onSearch}
             className="flex-1 bg-primary text-primary-foreground font-semibold py-2 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all"
@@ -116,6 +115,8 @@ export function FilterBar<T extends Record<string, string>>({
             Search
           </Button>
           <Button
+            data-testid={TESTIDS.FILTER_BAR_RESET}
+            aria-label="Reset filters"
             variant="outline"
             onClick={onReset}
             className="flex-1 bg-surface-container-low text-on-surface font-semibold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container-high active:scale-95 transition-all border-outline-variant"

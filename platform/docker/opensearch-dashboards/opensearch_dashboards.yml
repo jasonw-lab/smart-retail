@@ -1,0 +1,12 @@
+server.host: "0.0.0.0"
+server.name: "smart-dx-opensearch-dashboards"
+
+opensearch.hosts:
+  - "http://smart-dx-opensearch:9200"
+
+opensearch.ssl.verificationMode: none
+opensearch.requestHeadersAllowlist:
+  - authorization
+  - securitytenant
+
+logging.root.level: "info"

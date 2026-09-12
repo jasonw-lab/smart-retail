@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { Edit, Trash2, Plus, Boxes, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { formatCurrency } from '@/lib/format';
+import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useStores, useDeleteStore } from '../hooks/use-stores';
 import {
   StoreStatus,
@@ -53,13 +54,9 @@ const filterFields: FilterField[] = [
   },
 ];
 
-export function StoreTableClient({
-  initialData,
-  initialParams,
-}: StoreTableClientProps) {
+export function StoreTableClient({ initialData, initialParams }: StoreTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const [params, setParams] = useState<StoreQuery>(initialParams);
   const [filterValues, setFilterValues] = useState({
@@ -98,7 +95,7 @@ export function StoreTableClient({
     setFilterValues({ storeName: '', address: '', status: '' });
     const newParams = { pageNum: 1, pageSize: params.pageSize };
     setParams(newParams);
-    router.push(pathname);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const handlePageChange = (page: number) => {
@@ -152,9 +149,7 @@ export function StoreTableClient({
       key: 'phone',
       header: '電話番号',
       width: '120px',
-      render: (_, row) => (
-        <span className="text-muted-foreground">{row.phone || '-'}</span>
-      ),
+      render: (_, row) => <span className="text-muted-foreground">{row.phone || '-'}</span>,
     },
     {
       key: 'status',
@@ -171,9 +166,7 @@ export function StoreTableClient({
       key: 'businessHours',
       header: '営業時間',
       width: '100px',
-      render: (_, row) => (
-        <span className="text-sm">{row.businessHours || '09:00-22:00'}</span>
-      ),
+      render: (_, row) => <span className="text-sm">{row.businessHours || '09:00-22:00'}</span>,
     },
     {
       key: 'manager',
@@ -188,11 +181,7 @@ export function StoreTableClient({
       align: 'right',
       sortable: true,
       render: (_, row) => (
-        <span
-          className={
-            row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'
-          }
-        >
+        <span className={row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'}>
           {row.status === StoreStatus.ACTIVE && row.todaySales != null
             ? formatCurrency(row.todaySales)
             : '-'}
@@ -205,8 +194,7 @@ export function StoreTableClient({
       width: '100px',
       align: 'center',
       render: (_, row) => {
-        if (!row.alertCount)
-          return <span className="text-muted-foreground">-</span>;
+        if (!row.alertCount) return <span className="text-muted-foreground">-</span>;
         const variant =
           row.highestAlertPriority === 1
             ? 'error'
@@ -229,6 +217,7 @@ export function StoreTableClient({
       render: (_, row) => (
         <div className="flex items-center justify-center gap-1">
           <Button
+            data-testid={testId(TESTIDS.STORE_EDIT_BUTTON, row.id)}
             variant="ghost"
             size="icon"
             onClick={(e) => {
@@ -240,6 +229,7 @@ export function StoreTableClient({
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            data-testid={testId(TESTIDS.STORE_INVENTORY_BUTTON, row.id)}
             variant="ghost"
             size="icon"
             onClick={(e) => {
@@ -251,6 +241,7 @@ export function StoreTableClient({
             <Boxes className="h-4 w-4" />
           </Button>
           <Button
+            data-testid={testId(TESTIDS.STORE_DELETE_BUTTON, row.id)}
             variant="ghost"
             size="icon"
             onClick={(e) => {
@@ -267,7 +258,7 @@ export function StoreTableClient({
   ];
 
   return (
-    <div className="space-y-4">
+    <div data-testid={TESTIDS.STORE_PAGE} className="space-y-4">
       <FilterBar
         fields={filterFields}
         values={filterValues}
@@ -275,7 +266,7 @@ export function StoreTableClient({
         onSearch={handleSearch}
         onReset={handleReset}
         actions={
-          <Button onClick={() => router.push('/stores/new')}>
+          <Button data-testid={TESTIDS.STORE_NEW_BUTTON} onClick={() => router.push('/stores/new')}>
             <Plus className="mr-2 h-4 w-4" />
             新規登録
           </Button>
@@ -283,6 +274,7 @@ export function StoreTableClient({
       />
 
       <DataTable
+        dataTestId={TESTIDS.STORE_TABLE}
         columns={columns}
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
@@ -308,11 +300,19 @@ export function StoreTableClient({
       >
         {deleteTarget && (
           <p className="text-sm">
-            店舗名:{' '}
-            <span className="font-medium">{deleteTarget.storeName}</span>
+            店舗名: <span className="font-medium">{deleteTarget.storeName}</span>
           </p>
         )}
       </ConfirmDialog>
+
+      {isError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+        </div>
+      )}
     </div>
   );
 }

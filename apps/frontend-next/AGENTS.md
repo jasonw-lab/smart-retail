@@ -1,384 +1,371 @@
-# SmartRetail Pro - Frontend Next.js 開発ガイド
+# SmartRetail Pro - Frontend Agent Guide
 
-> 本ファイルの共通ルールは [`../../rule.md`](../../rule.md) に集約しています。併せて参照してください。
+このファイルは、AIコーディングエージェントが本プロジェクトを安全かつ効率的に作業するためのガイドです。人間の開発者が既知とする前提で記載しています。
 
-このドキュメントは、本プロジェクトのAIコーディングエージェント向けガイドです。プロジェクトの構成、技術スタック、ビルド・テスト手順、コーディング規約、セキュリティ上の注意点をまとめています。
+## 共通ルール
+
+- `~/ai-rules/ai-common.md`: 全プロジェクト共通の AI 運用ルール（言語・記述方針、設計変更時の修正履歴、レビュー記録、テスト・品質確認、コミット・PR 等）。本ファイルと衝突する場合は本ファイルを優先します。
 
 ## プロジェクト概要
 
-**SmartRetail Pro** の Next.js 15 App Router フロントエンドです。既存の Vue 3 版フロントエンドの移行版として構築されています。
+SmartRetail Pro は小売店舗向けDXソリューションの管理画面フロントエンドです。既存の Vue3 + Vite 版から Next.js 15 App Router への移行版として開発されています。
 
-- **アプリケーション名**: SmartRetail Pro
-- **フレームワーク**: Next.js 15 (App Router) + React 19
-- **言語**: TypeScript 5.8 (strict mode)
+- **対象ユーザー**: 店舗管理者、本部スタッフ、システム管理者
 - **主要機能**: ダッシュボード、商品管理、店舗管理、端末管理、在庫管理、取引履歴、アラート（WebSocket）、システム管理（ユーザー/ロール/メニュー/部門/辞書/ログ）
-- **バックエンド**: Spring Boot API（`BACKEND_URL` で指定）
-- **国際化**: 日本語（`ja`）/ 英語（`en`）、デフォルトは `ja`
+- **設計方針**: Feature-based Vertical Slice、Server/Client の明確な境界分離、httpOnly Cookie による認証
 
 ## 技術スタック
 
-| 層 | 技術 |
-|---|---|
-| Framework | Next.js 15, React 19 |
-| 言語 | TypeScript 5.8 |
-| スタイル | Tailwind CSS v4 (`@theme` による CSS 変数) |
-| UI コンポーネント | shadcn/ui (new-york) + Radix UI |
-| アイコン | lucide-react |
-| サーバー状態 | TanStack Query v5 |
-| クライアント状態 | Zustand v5 |
-| フォーム | React Hook Form + Zod + `@hookform/resolvers` |
-| i18n | next-intl v4 |
-| テーマ | next-themes |
-| 日付 | date-fns |
-| チャート | Recharts |
-| 通知 | Sonner |
-| WebSocket | @stomp/stompjs |
-| E2E テスト | Playwright |
-| E2E モック | カスタム Node HTTP サーバー (`e2e/mocks/mock-server.ts`) |
+| カテゴリ          | 技術                                           |
+| ----------------- | ---------------------------------------------- |
+| フレームワーク    | Next.js 15 (App Router), React 19              |
+| 言語              | TypeScript 5 (strict mode)                     |
+| スタイル          | Tailwind CSS v4 (`@import 'tailwindcss'` 方式) |
+| UI コンポーネント | shadcn/ui + Radix UI + lucide-react            |
+| フォーム          | React Hook Form + Zod                          |
+| サーバー状態      | TanStack Query v5                              |
+| クライアント状態  | Zustand v5                                     |
+| 国際化            | next-intl (ja/en)                              |
+| リアルタイム通信  | @stomp/stompjs (STOMP over WebSocket)          |
+| E2E テスト        | Playwright + MSW (Standalone Mock Server)      |
+| 品質              | ESLint + Prettier + husky + commitlint         |
+| 監視              | Sentry + /api/health                           |
+| ビルドツール      | Next.js 内蔵 (Turbopack/dev)                   |
 
-## 主要設定ファイル
+## ディレクトリ構成
 
-| ファイル | 内容 |
-|---|---|
-| `package.json` | スクリプト、依存関係。`pnpm` が推奨。 |
-| `next.config.ts` | next-intl プラグイン、CSP・セキュリティヘッダー、`NEXT_PUBLIC_APP_NAME` |
-| `tsconfig.json` | `strict: true`, パスエイリアス `@/*`, `e2e` を `exclude` |
-| `eslint.config.mjs` | Next.js 推奨 + `@typescript-eslint/no-unused-vars` / `no-explicit-any` |
-| `postcss.config.mjs` | Tailwind CSS v4 (`@tailwindcss/postcss`) |
-| `components.json` | shadcn/ui 設定（new-york, RSC, Tailwind v4, baseColor neutral） |
-| `middleware.ts` | next-intl ミドルウェア + `access_token` Cookie による認証保護 |
-| `playwright.config.ts` | E2E 設定。Chromium のみ、`workers: 1`、モックサーバー・本番ビルドを自動起動 |
-| `.env.example` | 環境変数のテンプレート |
+```
+app/
+├── [locale]/                  # 国際化ルート
+│   ├── (auth)/                # 認証不要グループ (login)
+│   └── (dashboard)/           # 認証必須グループ
+│       ├── page.tsx           # ダッシュボード
+│       ├── products/
+│       ├── stores/
+│       ├── devices/
+│       ├── inventory/
+│       ├── transactions/
+│       ├── alerts/
+│       └── system/            # user, role, menu, dept, dict, log
+└── api/                       # Route Handlers
+    ├── auth/                  # login, logout, refresh, me, captcha, ws-ticket, csrf
+    ├── proxy/[...path]/       # Client Component 用 Backend Proxy
+    ├── ws/connect/            # WebSocket チケット交換
+    ├── health/                # ヘルスチェック
+    └── report/                # CSP 違反レポート受信
 
-## 開発・ビルド・テストコマンド
+features/                      # 機能モジュール (Vertical Slice)
+├── auth/                      # ログインフォーム
+├── products/
+├── stores/
+├── devices/
+├── inventory/
+├── transactions/
+├── alerts/                    # WebSocket アラート
+└── system/                    # システム管理全般
+    ├── components/
+    ├── hooks/
+    ├── lib/*-api.client.ts
+    ├── lib/*-api.server.ts
+    ├── schemas/
+    └── types/
 
-`pnpm` を使用してください（Playwright 設定も `pnpm` を呼び出します）。
+components/
+├── ui/                        # shadcn/ui プリミティブ
+├── layout/                    # Header, Sidebar, MainContent
+├── providers/                 # QueryProvider, ThemeProvider など
+└── language-switcher.tsx
+
+lib/
+├── api/client.ts              # Client Component 用 fetch ラッパー（timeout / retry / 401 リフレッシュ / locale 対応リダイレクト）
+├── api/server.ts              # Server Component 用 Backend 直接 fetch
+├── auth/mock-auth.ts          # ローカルモック認証フォールバック
+├── env/server.ts              # サーバー環境変数検証（Zod）
+├── env/client.ts              # クライアント環境変数検証（Zod）
+├── security/                  # レート制限・CSRF 等のセキュリティユーティリティ
+├── ws/ticket-store.ts         # WebSocket 短寿命チケットストア
+├── format.ts                  # 共通フォーマット関数
+└── utils.ts                   # cn などのユーティリティ
+
+store/
+└── app-store.ts               # Zustand: サイドバー状態など
+
+messages/
+├── ja.json
+└── en.json
+
+e2e/
+├── specs/                     # Playwright テスト（件数は e2e/specs/ を参照）
+├── mocks/                     # MSW Standalone Mock Server
+│   ├── mock-server.ts
+│   └── handlers/
+├── fixtures/auth.ts           # ログインヘルパー
+├── testids.ts                 # data-testid 定数
+└── playwright.config.ts       # 注意: ルートの playwright.config.ts が実際に使用される
+
+_docs/
+├── adr/                       # Architecture Decision Records (8件)
+├── e2e-test-policy.md         # E2E テスト方針書
+├── architecture.drawio
+└── security.drawio
+
+_review/                       # レビュー指摘・レビュー対応結果（Markdown / HTML レポート）
+
+_scripts/                      # ソースドキュメント編集・生成用スクリプト（型生成・進捗同期等）
+```
+
+## ビルド・テスト・開発コマンド
+
+パッケージマネージャは `pnpm` を使用します（Playwright 設定内でも pnpm コマンドを呼び出します）。
 
 ```bash
-# 依存関係インストール
-pnpm install
-
-# 開発サーバー（port 3001）
+# 開発サーバー (port 3001)
 pnpm dev
 
 # 本番ビルド
 pnpm build
 
-# 本番サーバー起動（port 3001）
+# 本番サーバー起動 (port 3001)
 pnpm start
+
+# テスト用本番サーバー (mock backend 向け)
+pnpm start:test
 
 # ESLint
 pnpm lint
 pnpm lint:fix
 
-# E2E 用モックサーバー（port 8091）
+# E2E 用モックサーバー (port 8091)
 pnpm mock:server
 
 # E2E テスト
-pnpm test:e2e
-pnpm test:e2e:ui
-pnpm test:e2e:headed
-
-# モックバックエンド向けに本番サーバーを起動
-pnpm start:test
+pnpm test:e2e          # ヘッドレス
+pnpm test:e2e:ui       # UI モード
+pnpm test:e2e:headed   #  headed モード
 ```
 
-### 環境変数のセットアップ
+**注意**:
 
-```bash
-cp .env.example .env.local
-```
+- `pnpm test:e2e` はルートの `playwright.config.ts` を使用します。`e2e/playwright.config.ts` も存在しますが、現在有効ではありません。
+- E2E 実行時は `webServer` によりモックサーバー（`MOCK_PORT`、既定 8091）と Next.js 本番サーバー（`E2E_PORT`、既定 3002）が自動起動されます。
+- `workers: 1` に設定されており、ログイン状態の競合を避けるため逐次実行されます。
 
-`.env.local` で最低限以下を設定してください。
-
-```env
-BACKEND_URL=http://localhost:8080/api/v1
-NEXT_PUBLIC_WS_ENDPOINT=ws://localhost:8080/ws
-```
-
-- `BACKEND_URL` はサーバーサイド専用です。末尾に `/api/v1` を含めてください。
-- `NEXT_PUBLIC_WS_ENDPOINT` はブラウザから WebSocket 接続に使用されます。
-- `NEXT_PUBLIC_MOCK_API=true` でモック API モードを有効化できます。
-- `ENABLE_LOCAL_AUTH_MOCK=true` でローカルモック認証を強制できます。
-
-## アーキテクチャとランタイム
-
-### Next.js App Router 構成
+## 実行時アーキテクチャとデータフロー
 
 ```
-app/
-├── layout.tsx                    # ルートレイアウト（next-intl 用の最小構成）
-├── globals.css                   # Tailwind v4 テーマ + カスタムスタイル
-├── [locale]/                     # 国際化ルート
-│   ├── layout.tsx                # フォント・プロバイダー
-│   ├── loading.tsx / error.tsx / not-found.tsx
-│   ├── (auth)/                   # 認証不要ルートグループ
-│   │   ├── layout.tsx            # ログイン画面用レイアウト
-│   │   └── login/page.tsx
-│   └── (dashboard)/              # 認証必須ルートグループ
-│       ├── layout.tsx            # サイドバー + 認証チェック
-│       ├── page.tsx              # ダッシュボード
-│       ├── products/             # 商品管理
-│       ├── stores/               # 店舗管理
-│       ├── devices/              # 端末管理
-│       ├── inventory/            # 在庫管理
-│       ├── transactions/         # 取引履歴
-│       ├── alerts/               # アラート
-│       └── system/               # システム管理
-└── api/                          # Route Handlers
-    ├── auth/                     # ログイン/ログアウト/リフレッシュ/Me/Captcha/WS ticket
-    ├── proxy/[...path]/          # クライアント向けバックエンドプロキシ
-    └── ws/connect                # WebSocket チケット交換
+Browser (React 19)
+    │
+    ├─ Server Component ──► lib/api/server.ts ──► Spring Boot Backend API
+    │                         (httpOnly Cookie から access_token を取得)
+    │
+    ├─ Client Component ──► lib/api/client.ts ──► /api/proxy/[...path] ──► Backend API
+    │                         (401時に /api/auth/refresh で自動リフレッシュ)
+    │
+    └─ WebSocket (STOMP) ──► /api/auth/ws-ticket ──► /api/ws/connect ──► STOMP Broker
+                              (短寿命チケットで accessToken を隠蔽)
 ```
 
-### 認証・セッション管理
+### Server/Client 境界
 
-- JWT は `access_token` / `refresh_token` の httpOnly Cookie に保存されます。
-- `middleware.ts` で保護対象パスに `access_token` がない場合は `/{locale}/login?redirect=...` へリダイレクトします。
-- 公開パス: `/login`, `/api/auth/login`
-- ローカル開発時は `lib/auth/mock-auth.ts` によるモック認証が自動有効化されます（`BACKEND_URL` が `localhost` / `127.0.0.1` の場合、または `ENABLE_LOCAL_AUTH_MOCK=true`）。
+| 場所                    | 種別             | データ取得                                    |
+| ----------------------- | ---------------- | --------------------------------------------- |
+| `page.tsx`              | Server Component | `fetchFromBackend` で Backend 直接 fetch      |
+| `*TableClient`, `*Form` | Client Component | TanStack Query + `/api/proxy/*` Route Handler |
+| `AlertListClient`       | Client Component | `useStomp` + WebSocket                        |
 
-### Server Component / Client Component の境界
+### 可観測性
 
-| 用途 | 種別 | データ取得先 |
-|---|---|---|
-| `page.tsx`, `layout.tsx` | Server Component | バックエンド直接 `fetch` (`lib/api/server.ts`) |
-| `*TableClient`, `*Form`, `*Dialog` | Client Component | Route Handler 経由 (`lib/api/client.ts`) + TanStack Query |
-| アラート | Client Component | STOMP WebSocket |
+- **ヘルスチェック**: `GET /api/health` でバックエンド接続状態と応答時間を返却します。
+- **エラー監視**: Sentry で React レンダリングエラーと API エラーを収集します。
+- **Web Vitals**: `useReportWebVitals` で開発時に Core Web Vitals をログ出力します。
 
-原則として `page.tsx` / `layout.tsx` は Server Component のままにし、state/effect/form/ブラウザ API/TanStack Query を使う場合のみ `'use client'` を付けてください。
+### 認証フロー
 
-### API アクセスパターン
+1. ログイン: `POST /api/auth/login` → `access_token` / `refresh_token` を httpOnly Cookie に設定
+2. Server Component: `cookies().get('access_token')` → Backend 直接 fetch
+3. Client Component: `/api/proxy/*` → Route Handler 経由で Backend へ転送（自動リフレッシュ付き）
+4. WebSocket: 短寿命チケット方式でトークンを隠蔽
 
-#### Server Component 用: `lib/api/server.ts`
+### ミドルウェア
 
-```typescript
-import { fetchFromBackend } from '@/lib/api/server';
+`middleware.ts` で以下を処理します:
 
-const data = await fetchFromBackend<ProductVO[]>('retail/products');
-```
-
-- パスには `BACKEND_URL` および `/api/v1` のプレフィックスを含めません。
-- `access_token` Cookie から JWT を取得し、`Authorization: Bearer` ヘッダーで送信します。
-- バックエンドのレスポンス `{ code, msg, data }` を unwrap し、`code === '00000'` 以外はエラーとします。
-- トークンなし / 401 の場合は `redirect('/login')` します。async 関数内で `redirect()` を呼んだ場合、呼び出し側では `isRedirectError()` を使って NEXT_REDIRECT エラーを再 throw してください。
-
-#### Client Component 用: `lib/api/client.ts`
-
-```typescript
-import { fetchApi } from '@/lib/api/client';
-
-const data = await fetchApi<ProductVO[]>('/api/proxy/api/v1/retail/products');
-```
-
-- パスは `/api/proxy/api/v1/...` から始めます。Route Handler が重複する `api/v1` を取り除いてバックエンドへ転送します。
-- 401 時に `/api/auth/refresh` で自動リフレッシュを試行し、成功すればリトライします。
-- リフレッシュ失敗時は `/login` へ遷移します。
-
-### WebSocket 認証フロー
-
-1. クライアントが `/api/auth/ws-ticket` を GET → サーバーが 30 秒 TTL・1 回限りの UUID チケットを発行し、`lib/ws/ticket-store.ts` にアクセストークンを紐付けて保存。
-2. クライアントが `/api/ws/connect` にチケットを POST → サーバーがチケットを消費し、短期間有効な WS 用トークンを返却。
-3. クライアントが STOMP 接続時に `Authorization: Bearer <token>` を付与。
-
-これにより、長期有効なアクセストークンをブラウザの WebSocket に露出させることを防ぎます。
-
-## コード構成
-
-### `features/<ドメイン>/` - Vertical Slice 構成
-
-各機能は以下のディレクトリを持ちます。
-
-```
-features/products/
-├── components/           # 機能固有の React コンポーネント
-├── hooks/                # TanStack Query フック等
-├── lib/                  # API クライアント、ユーティリティ
-│   ├── product-api.client.ts
-│   └── product-api.server.ts
-├── schemas/              # Zod スキーマ
-├── types/                # 機能固有の型
-└── index.ts              # 公開 API の再エクスポート
-```
-
-主要機能:
-
-- `features/auth/` - ログインフォーム
-- `features/dashboard/` - KPI、売上チャート、アラートパネル
-- `features/products/` - 商品 CRUD
-- `features/stores/` - 店舗 CRUD
-- `features/devices/` - 端末 CRUD
-- `features/inventory/` - 在庫照会、補充/廃棄/履歴
-- `features/transactions/` - 取引履歴
-- `features/alerts/` - WebSocket アラート、接続管理
-- `features/system/` - ユーザー/ロール/メニュー/部門/辞書/ログ
-
-### 共有ディレクトリ
-
-- `components/ui/` - shadcn/ui コンポーネントと `data-table`, `filter-bar`, `confirm-dialog`, `status-badge` などのカスタム共有 UI
-- `components/layout/` - `sidebar.tsx`, `header.tsx`, `main-content.tsx`
-- `components/providers/` - `query-provider.tsx`, `theme-provider.tsx`
-- `lib/api/client.ts`, `lib/api/server.ts` - 前述の API ラッパー
-- `lib/utils.ts` - `cn()` (clsx + tailwind-merge)
-- `lib/format.ts` - 通貨、日時、パーセントのフォーマッター
-- `lib/ws/ticket-store.ts` - WS チケットのインメモリストア
-- `store/app-store.ts` - Zustand サイドバー状態
-- `types/api.ts` - 共有型 (`PageResult`, `PageQuery`, `ApiResult`, `AuthToken`, `UserInfo`)
-- `messages/ja.json`, `messages/en.json` - next-intl 翻訳
-- `e2e/` - Playwright テスト、モックサーバー、fixture、testids
-
-### `src/` ディレクトリ
-
-`src/` は空です。ソースコードは `app/`, `features/`, `components/`, `lib/` などのプロジェクトルート直下に配置されます。
-
-## 無視するフォルダ
-
-`ign_*` にマッチするフォルダはエージェント操作の対象外です。明示的な指示がない限り、内部のファイルを読み取り・変更・参照しないでください。
+- `next-intl` による locale ルーティング（`ja` / `en`、default: `ja`、prefix: `as-needed`）
+- 静的アセット・API Route のスキップ
+- `access_token` Cookie の存在チェック。未認証時は `/{locale}/login?redirect=...` へリダイレクト
 
 ## コーディング規約
 
-### 命名規則
-
-- ファイル名: **kebab-case**（例: `product-form.tsx`, `use-products.ts`, `product-api.client.ts`）
-- React コンポーネント名 / 型名: **PascalCase**（例: `ProductForm`, `ProductTableClient`）
-- コンポーネントは **named export** でエクスポート
-- hooks は `use*` プレフィックス
-
-### TypeScript / スタイル
-
-- 2 スペースインデント、シングルクォート、セミコロン付き
-- strict TypeScript
-- パスエイリアス `@/*` を使用
-- `any` の使用は警告対象（可能な限り避ける）
-- 未使用変数は警告（`_` 始まりは許可）
-
-### Server / Client の境界
-
-- Server Component をデフォルトとする
-- `'use client'` は以下の場合のみ使用:
-  - React state / effect
-  - フォーム入力
-  - ブラウザ API
-  - TanStack Query
-  - Radix UI 等のクライアント専用インタラクティブコンポーネント
-
-### フォーム・バリデーション
-
-- Zod スキーマは `features/<domain>/schemas/` に配置
-- React Hook Form と `@hookform/resolvers` で連携
-- エラーメッセージは `messages/ja.json` / `messages/en.json` 経由で国際化
-
-### UI / スタイル
-
-- Tailwind CSS v4 は `app/globals.css` 内の `@theme` で設定
-- shadcn/ui コンポーネントは `npx shadcn add <component>` で追加
-- 独自デザインシステム "Stitch Design System" のカラーパレットが定義済み
-
-### リンク・リダイレクト
-
-- next-intl の `localePrefix: 'as-needed'` を使用
-- リンクや `redirect()` には `@/i18n/navigation` の `Link` / `redirect` / `useRouter` を使用し、ロケールを正しく扱ってください
+- **TypeScript**: `strict: true`。`any` の使用は警告対象（`@typescript-eslint/no-explicit-any: warn`）。未使用変数は警告（アンダースコア始まりは許可）。
+- **パスエイリアス**: `@/*` を使用します。
+- **インデント・引用符**: 2 スペース、シングルクォート、セミコロン付き。
+- **コンポーネント**: 名前付き function export。ファイル名はケバブケース（例: `device-form.tsx`）、コンポーネント名は PascalCase。
+- **Server/Client**: `page.tsx` は原則 Server Component。`'use client'` は state/effects/forms/ブラウザ API/TanStack Query 使用時のみ付与します。
+- **API クライアント**: Server 用と Client 用を分離します。
+  - Server: `features/<domain>/lib/*-api.server.ts` → `fetchFromBackend`
+  - Client: `features/<domain>/lib/*-api.client.ts` → `fetchApi`
+- **バリデーション**: Zod スキーマは `features/<domain>/schemas/` に配置します。
+- **スクリプト配置**: プロジェクトのソースコードと区別するため、ソースドキュメント編集・生成・同期用スクリプトは `_scripts/` に配置します。
+- **フォーマット**: Prettier 導入済み。`pnpm format:check` で全体を確認し、必要なファイルだけ整形します。
 
 ## テスト戦略
 
-### E2E テスト (Playwright)
+- **E2E のみ**: ユニットテスト・コンポーネントテストは未導入です。
+- **テストファイル**: `e2e/specs/*.spec.ts`（対象一覧はディレクトリを参照）。
+- **モック**: `e2e/mocks/mock-server.ts` で Standalone HTTP Server を起動し、Backend API を模倣します。
+- **ログイン**: `e2e/fixtures/auth.ts` の `login(page)` ヘルパーを使用します。
+- **セレクタ方針**: `lib/testing/testids.ts` に data-testid 定数を一元管理し、コンポーネントとテストで共有します。
+- **VRT**: ダッシュボード・商品一覧ページでスクリーンショット比較を実施しています。モックデータは決定論的に生成し、快照の安定性を保っています。
+- **アクセシビリティ**: `e2e/specs/accessibility.spec.ts` で `@axe-core/playwright` により WCAG 2 AA 違反を検証しています。
+- **カバレッジ**: Playwright 実行時に V8 カバレッジを収集し、閾値を設定しています。
+- **レポート**: `e2e/playwright-report/`、`e2e/results.json`、`coverage/`、`test-results/`（トレース・スクリーンショット）が生成されます。これらは `.gitignore` 対象です。
 
-- 設定: `playwright.config.ts`（`e2e/playwright.config.ts` も同内容を手動同期）
-- テストディレクトリ: `e2e/specs/`
-- ブラウザ: Chromium のみ
-- ワーカー: `workers: 1`（ログイン競合を避けるため）
-- リトライ: CI で 2 回、ローカルで 1 回
-- レポーター: HTML (`e2e/playwright-report/`), JSON (`e2e/results.json`), list
+## セキュリティ考慮事項
 
-### モックサーバー
+- **Cookie**: `access_token` / `refresh_token` は `httpOnly`、`sameSite: 'lax'`、本番のみ `secure`。localhost では `secure` を無効化しています。
+- **CSP/セキュリティヘッダー**: `next.config.ts` で `Content-Security-Policy`（`report-to` / `report-uri` 付き）、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`、`Referrer-Policy`、`Permissions-Policy`、`Strict-Transport-Security` を設定しています。
+- **API Proxy**: ブラウザ JavaScript から Backend トークンを隠蔽するため、Client 向け API は `/api/proxy/*` 経由とします。
+- **CSRF 対策**: `/api/auth/csrf` による Double Submit Cookie 方式。状態変更リクエストは `x-csrf-token` ヘッダーで検証します。
+- **レート制限**: `/api/auth/login` 等に簡易的な IP ベースのレート制限を適用しています（本番スケールでは Redis 等への置き換えを検討）。
+- **WebSocket 認証**: `accessToken` を直接ブラウザに返さず、30 秒 TTL の短寿命チケットを介して交換します。
+- **入力検証**: Zod スキーマでクライアント・サーバー双方を検証します。
+- **機密情報**: 秘密情報は `.env.local` に保持し、コミットしないでください。
 
-- `pnpm mock:server` で `e2e/mocks/mock-server.ts` を起動（port 8091、環境変数 `MOCK_PORT` で変更可）
-- 認証、ダッシュボード、商品、店舗、端末、在庫、取引、アラート、システムモジュールのモックレスポンスを提供
-- Playwright の `webServer` と `pnpm start:test` で使用
-- `msw` パッケージはインストールされ、`e2e/mocks/handlers/` にハンドラファイルがありますが、現時点ではカスタム Node HTTP サーバーが主に使用されています
+## 環境変数
 
-### テスト作成の指針
+`.env.example` をコピーして `.env.local` を作成します。アプリケーション起動時に `lib/env/server.ts` / `lib/env/client.ts` で Zod スキーマにより検証されます。必須項目が欠けている場合は起動失敗します。
 
-- スペック: `e2e/specs/*.spec.ts`
-- 共通処理: `e2e/fixtures/auth.ts` の `login(page)` ヘルパーを使用
-- セレクタ: `e2e/testids.ts` の `TESTIDS` 定数 / `testId()` ヘルパーを使用
-- ユーザーに見えるアサーションとルート単位のフローを優先
-- 単体テスト・カバレッジ閾値は未設定のため、変更後は `pnpm lint` と `pnpm test:e2e` で検証してください
+```env
+# Backend API URL (Server-side only)
+BACKEND_URL=http://localhost:8080/api/v1
 
-### 既存の E2E スペック
+# WebSocket エンドポイント (ブラウザに公開)
+NEXT_PUBLIC_WS_ENDPOINT=ws://localhost:8091/ws
 
-- `auth.spec.ts` - ログイン、バリデーション、未認証リダイレクト
-- `dashboard.spec.ts` - 認証後ダッシュボードの表示
-- `navigation.spec.ts` - サイドバー遷移、システムメニュー展開、レスポンシブ
-- `products.spec.ts` - 商品一覧/フォームの構造とバリデーション
-- `security-headers.spec.ts` - CSP, X-Frame-Options, HSTS 等
+# モック API モード (true で有効化)
+NEXT_PUBLIC_MOCK_API=false
 
-## セキュリティ
+# ローカルモック認証を強制 (任意)
+ENABLE_LOCAL_AUTH_MOCK=true
 
-### 認証・Cookie
+# 本番チケットストア用 Redis URL (任意)
+REDIS_URL=redis://localhost:6379
+```
 
-- JWT は httpOnly Cookie に保存
-- 本番環境では `Secure` 属性、ローカル開発時は無効
-- `SameSite: 'lax'`
-- クライアントコードはトークンに直接触れず、Server Component では `cookies()`、Client Component では `/api/proxy/*` 経由でアクセス
+E2E 実行時は `E2E_PORT` / `MOCK_PORT` でポートを上書き可能です（既定: 3002 / 8091）。
 
-### セキュリティヘッダー
+## レビュー運用ルール
 
-`next.config.ts` で以下を設定しています。
+AI および開発者による設計・計画・コードのレビュー結果および指摘対応レポートは、プロジェクトルート直下の `_review/` フォルダへ格納します（`~/ai-rules/ai-common.md` 第3章・第8章に規定されるレビュー格納先 `docs/.review/` は、本プロジェクトでは `_review/` に読み替えて適用します）。
 
-- `Content-Security-Policy`
-- `X-Frame-Options: DENY`
-- `X-Content-Type-Options: nosniff`
-- `X-XSS-Protection: 1; mode=block`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy`
-- `Strict-Transport-Security`
+- **格納場所**: `_review/`
+- **対象ドキュメント**:
+  - 設計・計画・コードに対するレビュー指摘（Markdown）
+  - レビュー指摘への対応レポート（HTML / Markdown）
+- **命名規則**:
+  - レビュー指摘（Markdown）: `review_<MMDD>_<対象>.<agent>.md` または `review_<MMDD>_<対象>.md`
+    - 例: `review_0908_plan_0906_features.claude.md`、`review_0719_adr-011.kimi.md`
+  - レビュー対応レポート（HTML）: `review_<MMDD>_<対象>-response.html`（または指摘ファイルと同名で拡張子 `.html`）
+    - 例: `review_0710_adr-architecture-response.html`
+- **レビュー指摘ファイルの必須項目**:
+  - レビュー対象ファイル・行番号/機能
+  - レビュー日、レビュアー（エージェント名または開発者名）
+  - 全体評価
+  - 指摘事項（重要度/重大度、対象箇所、指摘内容、推奨対応）
+- **レビュー対応HTMLレポートの作成**:
+  - `~/ai-rules/ai-common.md` 第3章のルールに準拠し、自己完結型HTMLとして生成・格納します。
 
-### 入力・出力
+## スクリプト運用ルール（\_scripts）
 
-- フォームは Zod でクライアント側バリデーション
-- バックエンドでも再バリデーション
-- React JSX による自動エスケープ
+プロジェクトのソースコード（`app/`, `features/`, `components/`, `lib/` 等）と明確に区別するため、ソースドキュメントの編集・変換・生成・同期などを行う補助スクリプトは、すべて `_scripts/` フォルダへ配置します（`scripts/` ではなく `_scripts/` を使用します）。
 
-### WebSocket
-
-前述の通り、短期間・1 回限りのチケット方式を採用し、長期トークンの露出を防ぎます。
-
-### 環境変数・シークレット
-
-- シークレットは `.env.local` に保存（gitignore 済み）
-- クライアントに露出すべきでない値には `NEXT_PUBLIC_` プレフィックスを付けない
-- `next.config.ts` の `env` で公開する値は `NEXT_PUBLIC_APP_NAME` のみ
-
-## デプロイ
-
-### ビルド成果物
-
-- Next.js 標準出力: `.next/`
-- 静的エクスポート (`out/`) は未設定
-- 本番実行: `next start -p 3001`
-
-### Docker
-
-- プロジェクト単体の Dockerfile は `platform/docker/frontend/Dockerfile` に存在しますが、**非推奨**です。現在はフロントエンドを VPS 上で直接ビルドし、メイン nginx コンテナで配信しています。
-- インフラ（MySQL, Redis, MinIO 等）はモノレポルートの `platform/docker/docker-compose-env.yml` で起動します。
-- バックエンドは `../smart-dx-backend/` 配下で管理されています。
-
-### CI/CD
-
-- 現時点では GitHub Actions 等の CI パイプラインは未導入です。
-
-## 関連ドキュメント
-
-- `README.md` - 人間向けプロジェクト概要（日本語）
-- `CLAUDE.md` - AI 開発ルール（日本語）
-- `_docs/adr/` - Architecture Decision Records
-- `_docs/e2e-test-policy.md` - E2E テスト方針
-- `_docs/architecture.drawio` - アーキテクチャ図
+- **格納場所**: `_scripts/`
+- **対象スクリプト**:
+  - ソースドキュメントの編集・同期用スクリプト（例: 進捗 HTML 同期 `_scripts/build_plan_html.py`）
+  - API 型定義生成等の補助スクリプト（例: `_scripts/generate-api-types.ts`）
+- **運用原則**:
+  - アプリケーションの実行時ソースコードは配置せず、ドキュメント編集および開発支援目的のスクリプトに限定します。
+  - スクリプト追加・更新時は、`package.json` の npm scripts や関連ドキュメント内のパス表記も `_scripts/` に統一します。
 
 ## コミット・PR ガイドライン
 
-- Conventional Commit スタイルを推奨: `feat:`, `refactor:`, `docs:`, `chore:` 等
-- コミットは焦点を絞り、命令形で記述
-- PR には変更内容、影響範囲、関連 Issue/ADR、UI 変更のスクリーンショットを記載
-- テスト結果（特に `pnpm lint` と関連する Playwright 実行）を明記
+- **コミットメッセージ**: Conventional Commits スタイルを推奨（例: `feat:`, `refactor:`, `docs:`, `chore:`）。
+- **コミット内容**: 1 コミット 1 関心事。命令形で記述します。
+- **PR**: 変更内容、影響するルート・機能、関連する Issue/ADR を記載。UI 変更はスクリーンショットを添付。
+- **必須確認**: `pnpm lint`・`pnpm format:check`・`pnpm typecheck`・`pnpm build` はパスさせてください。E2E に影響する変更は `pnpm test:e2e` も確認してください。
+
+## 既知の課題と注意点
+
+- **Prettier / Husky**: Prettier・husky・commitlint は導入済みです。pre-commit 時に `eslint --fix` と `prettier --write` が実行されます。
+- **data-testid**: `lib/testing/testids.ts` に定義し、ログイン・サイドバー等の主要コンポーネントに実装済みです。今後の画面追加時も継続的に付与してください。
+- **Playwright 設定**: ルートの `playwright.config.ts` が有効です。`e2e/playwright.config.ts` は現在使用されていません。
+- **CI/CD**: `.github/workflows/ci.yml` と `pr-check.yml` を使用します。PR は全 base が対象です。必須チェックの保護設定と本番デプロイの有無は別途確認してください。
+- **脆弱性スキャン**: `npm audit` / Snyk 等の自動化は未導入です。
+- **next.config.ts**: `reactCompiler: false` を明示設定しています（Next.js 16 移行時は `next lint` の廃止に注意）。
+
+## UI-first API 項目整合フロー
+
+本プロジェクトは Next.js フロントエンドへの移行版であり、Backend API は既存 Vue 版からの継続または新規整備が進行中です。そのため、**UI レイアウト・フォーム・テーブルに表示/入力されている項目を正として**、Backend API と frontend 型定義を整合させる作業を継続的に実施します。
+
+### 基本方針
+
+1. **UI を正とする**
+   - フォーム入力項目、テーブル列、フィルター条件、詳細ダイアログに含まれる項目を収集します。
+   - これらを API レスポンス/リクエストの必須項目と見なします。
+
+2. **API 項目の照合**
+   - 各機能の `features/<domain>/types/*.ts`、`lib/*-api.client.ts`、`lib/*-api.server.ts` と比較します。
+   - 必要に応じて `smart-dx-backend/docs/api-interface-design.html` または Backend ソースを参照します。
+
+3. **frontend 側の先行追加**
+   - API 項目が不足している場合、まず frontend 側の TypeScript 型・API クライアント・Zod スキーマに追加します。
+   - Backend 未修正時でも、frontend 型を整合状態に保ち、後続の Backend 改修に備えます。
+
+4. **Backend 修正の記録（docs/html 出力）**
+   - Backend 改修が必要な項目は `_docs/api-modifications.html` に一覧化します。
+   - 各項目に対して「何を追加/変更するか」「なぜ必要か」を明記します。
+   - Backend 修正後、設計書 `api-interface-design.html` を同じ変更で更新します。
+
+5. **E2E mock server の更新**
+   - 追加項目があれば `e2e/mocks/mock-server.ts` および `e2e/mocks/handlers.ts` の mock データも更新します。
+   - ただし既存 E2E テストを壊さないよう、既存フィールドは維持します。
+
+### 作業手順
+
+```
+1. UI 項目収集（forms / tables / dialogs / filters）
+2. 現状の API 型・Backend 設計書と照合
+3. 差分（不足項目・型不一致・名称不一致）をリスト化
+4. frontend 型/API クライアントを更新
+5. _docs/api-modifications.html を生成・更新
+6. E2E mock server を更新
+7. pnpm typecheck / lint / build で検証
+```
+
+実装の進め方（機能単位・backend e2e → frontend e2e の逐次フロー）は `_docs/workflow.md` を参照してください。機能別 issue の内容と対応状態は `_docs/issues.html` が正本であり、機能完了後に issues.html をメンテナンスします。
+
+### 注意点
+
+- Backend コード（`smart-dx-backend` プロジェクト）を修正する場合は、別途明示的な指示または PR 作成を行います。
+- UI 項目を正としますが、明らかにフロントエンド側の未実装や誤りと思われる場合は `_docs/api-modifications.html` に「Frontend 要修正」として明記します。
+- 新規機能追加時は、必ず上記フローを適用し、API 項目の抜け漏れを防ぎます。
+
+## 関連ドキュメント
+
+- `README.md`: プロジェクト概要、技術スタック比較（Vue 版との差分）
+- `CLAUDE.md`: 関連リソース（Backend パス等）
+- `_docs/adr/ADR-*.md`: アーキテクチャ決定記録
+- `_docs/e2e-test-policy.md`: E2E テスト方針書
+- `_docs/api-modifications.html`: UI-first 整合で判明した Backend API 修正一覧
+- `_docs/workflow.md`: 機能単位の段階的実装ワークフロー
+- `_docs/issues.html`: 機能単位 issue の内容と対応状態（正本）
+- `_review/`: レビュー指摘・対応結果の格納ディレクトリ
+- `_scripts/`: ソースドキュメント編集・生成用スクリプト
+
+## 修正履歴
+
+| 日付       | 改訂者      | 内容                                                                                                                |
+| ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------- |
+| 2026/09/10 | antigravity | レビュー結果の格納先を `_review/` とする運用ルール、ディレクトリ構成、関連ドキュメントを追記                        |
+| 2026/09/10 | antigravity | scripts フォルダをソースと区別するため `_scripts/` へリネームし、ソースドキュメント編集スクリプトの配置ルールを追記 |
+| 2026/09/10 | codex       | workflow レビュー指摘に対応し、spec 件数の固定表記、Prettier・CI の前提と必須確認コマンドを更新                     |

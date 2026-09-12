@@ -24,10 +24,7 @@ export const deviceKeys = {
 /**
  * デバイス一覧取得フック
  */
-export function useDevices(
-  params: DeviceQuery,
-  options?: { placeholderData?: DevicePageResult }
-) {
+export function useDevices(params: DeviceQuery, options?: { placeholderData?: DevicePageResult }) {
   return useQuery({
     queryKey: deviceKeys.list(params),
     queryFn: () => deviceApiClient.getPage(params),

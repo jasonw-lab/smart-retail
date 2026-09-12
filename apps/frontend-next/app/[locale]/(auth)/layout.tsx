@@ -6,10 +6,7 @@ interface AuthLayoutProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function AuthLayout({
-  children,
-  params,
-}: AuthLayoutProps) {
+export default async function AuthLayout({ children, params }: AuthLayoutProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -35,17 +32,13 @@ export default async function AuthLayout({
                 <h1 className="text-lg font-semibold text-on-surface tracking-tight">
                   {tCommon('appName')}
                 </h1>
-                <p className="text-xs text-on-surface-variant">
-                  Retail Management
-                </p>
+                <p className="text-xs text-on-surface-variant">Retail Management</p>
               </div>
             </div>
 
             {/* Tagline */}
             <div className="space-y-4">
-              <h2 className="text-3xl font-bold text-on-surface tracking-tight">
-                {t('tagline')}
-              </h2>
+              <h2 className="text-3xl font-bold text-on-surface tracking-tight">{t('tagline')}</h2>
               <p className="text-base text-on-surface-variant leading-relaxed">
                 {t('description')}
               </p>

@@ -3,6 +3,7 @@
 import { Header } from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/store/app-store';
+import { TESTIDS } from '@/lib/testing/testids';
 
 interface MainContentProps {
   user?: {
@@ -24,7 +25,9 @@ export function MainContent({ user, children }: MainContentProps) {
       )}
     >
       <Header user={user} />
-      <main className="flex-1 overflow-auto p-4 space-y-4">{children}</main>
+      <main data-testid={TESTIDS.LAYOUT_MAIN} className="flex-1 overflow-auto p-4 space-y-4">
+        {children}
+      </main>
     </div>
   );
 }

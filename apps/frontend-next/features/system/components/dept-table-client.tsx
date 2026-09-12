@@ -16,6 +16,8 @@ import {
   FileText,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -74,6 +76,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
   const { data = initialData, isLoading, isError } = useDepts(params);
   const displayData = isError ? initialData : data;
   const deleteMutation = useDeleteDepts();
+  const t = useTranslations('system.dept');
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -144,7 +147,12 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await deleteMutation.mutateAsync(deleteTarget.join(','));
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.join(','));
+      toast.success(t('deleteSuccess'));
+    } catch {
+      toast.error(t('deleteFailed'));
+    }
     setDeleteTarget(null);
     setSelectedIds([]);
   };
@@ -179,10 +187,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             />
           </TableCell>
           <TableCell>
-            <div
-              className="flex items-center"
-              style={{ paddingLeft: level * 24 }}
-            >
+            <div className="flex items-center" style={{ paddingLeft: level * 24 }}>
               {hasChildren && (
                 <Button
                   variant="ghost"
@@ -202,9 +207,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             </div>
           </TableCell>
           <TableCell>
-            <code className="text-sm px-2 py-0.5 bg-muted rounded">
-              {dept.code}
-            </code>
+            <code className="text-sm px-2 py-0.5 bg-muted rounded">{dept.code}</code>
           </TableCell>
           <TableCell>
             <StatusBadge variant={dept.status === 1 ? 'success' : 'error'}>
@@ -287,9 +290,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Keyword
-              </span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
@@ -317,10 +318,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={handleSearch}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
                 Search
               </Button>
@@ -375,20 +373,14 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.length === 0 && (
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                     No departments found
                   </TableCell>
                 </TableRow>
@@ -401,9 +393,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Total {totalItems} items
-        </p>
+        <p className="text-sm text-muted-foreground">Total {totalItems} items</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled>
             Previous
@@ -411,7 +401,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
           <Button variant="default" size="sm" className="bg-teal-600">
             1
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled>
             Next
           </Button>
         </div>
@@ -429,21 +419,15 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm opacity-90 mb-4">
-              Manage your organizational hierarchy with precision. Drag and drop
-              functionality for departments is coming in the next update.
+              Manage your organizational hierarchy with precision. Drag and drop functionality for
+              departments is coming in the next update.
             </p>
             <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                className="text-white border-white hover:bg-white/20"
-              >
+              <Button variant="outline" className="text-white border-white hover:bg-white/20">
                 <BarChart3 className="mr-1 h-4 w-4" />
                 View Org Chart
               </Button>
-              <Button
-                variant="outline"
-                className="text-white border-white hover:bg-white/20"
-              >
+              <Button variant="outline" className="text-white border-white hover:bg-white/20">
                 <FileText className="mr-1 h-4 w-4" />
                 Audit Logs
               </Button>
@@ -490,9 +474,9 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete Department"
-        description="Are you sure you want to delete the selected department(s)? Child departments will also be deleted."
-        confirmLabel="Delete"
+        title={t('deleteConfirm')}
+        description={t('deleteConfirmMessage')}
+        confirmLabel={t('delete')}
         variant="destructive"
         isLoading={deleteMutation.isPending}
       />

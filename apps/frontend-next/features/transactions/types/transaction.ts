@@ -10,8 +10,7 @@ export const PaymentMethod = {
   OTHER: 'OTHER',
 } as const;
 
-export type PaymentMethodType =
-  (typeof PaymentMethod)[keyof typeof PaymentMethod];
+export type PaymentMethodType = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
 export const PaymentMethodLabel: Record<PaymentMethodType, string> = {
   CARD: 'カード',
@@ -74,6 +73,20 @@ export interface TransactionQuery extends PageQuery {
   period?: string;
   startDate?: string;
   endDate?: string;
+}
+
+/**
+ * 売上作成DTO
+ */
+export interface CreateSalesDto {
+  storeId: number;
+  orderNumber?: string;
+  totalAmount: number;
+  paymentMethod: PaymentMethodType;
+  paymentProvider?: string;
+  referenceId?: string;
+  transactionTime?: string;
+  details?: TransactionDetail[];
 }
 
 /**

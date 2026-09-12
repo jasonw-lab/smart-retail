@@ -1,11 +1,35 @@
-# Load environment variables from .env (optional, mostly for setup-remote.sh)
-include .env
+# Load environment variables from .env if present
+-include .env
 export
 
 CONTEXT := ubuntu-stag
 
-.PHONY: deploy logs ps down local fe
+.PHONY: deploy logs ps down local fe local-setup local-env-up local-env-down local-env-ps local-env-logs
 
+# ==========================================
+# Local Development (OrbStack / Mac)
+# ==========================================
+local-setup:
+	@echo "==> Setting up local directories in $(BASEPATH) ..."
+	@./setup-local-env.sh
+
+local-env-up:
+	@echo "==> Starting local infrastructure (MySQL, Redis, PowerJob, OpenSearch) ..."
+	@docker compose -f docker-compose-env.yml up -d
+
+local-env-down:
+	@echo "==> Stopping local infrastructure ..."
+	@docker compose -f docker-compose-env.yml down
+
+local-env-ps:
+	@docker compose -f docker-compose-env.yml ps
+
+local-env-logs:
+	@docker compose -f docker-compose-env.yml logs -f
+
+# ==========================================
+# Remote Deployment (VPS)
+# ==========================================
 deploy:
 	@echo "==> Switching Docker context to $(CONTEXT) ..."
 	@docker context use $(CONTEXT)
@@ -36,3 +60,4 @@ down:
 local:
 	@echo "==> Switching Docker context to default (local) ..."
 	@docker context use default
+

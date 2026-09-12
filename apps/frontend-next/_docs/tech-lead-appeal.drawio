@@ -1,0 +1,148 @@
+<mxfile host="65bd71144e">
+    <diagram id="tech-lead-appeal" name="Tech Lead Appeal">
+        <mxGraphModel dx="560" dy="497" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Next.js Server はどこで実行される？ &amp;amp; Tech Lead 導入ポイント&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 14px; color: #666;&quot;&gt;結論: Browser ではなく、サーバー環境で実行される&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="180" y="20" width="800" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#3b82f6;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="240" height="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser_title" value="&lt;b style=&quot;font-size: 18px; color: #1e3a8a;&quot;&gt;🌐 Browser&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="130" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser_cc" value="&lt;b&gt;Client Components&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;(React が Browser で実行)&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="170" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser_user" value="&lt;b&gt;👤 ユーザー操作&lt;/b&gt;&lt;br&gt;&lt;ul style=&quot;margin-top: 5px; margin-bottom: 0px;&quot;&gt;&lt;li&gt;HTML表示&lt;/li&gt;&lt;li&gt;クリック&lt;/li&gt;&lt;li&gt;入力&lt;/li&gt;&lt;li&gt;画面遷移&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="240" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="browser_warn" value="&lt;b style=&quot;color: #dc2626;&quot;&gt;🚫 ここでは&lt;br&gt;Next.js Server は&lt;br&gt;動かない&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#ef4444;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="360" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="nextjs_box" target="browser_box">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="120" width="260" height="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_title" value="&lt;b style=&quot;font-size: 18px;&quot;&gt;N Next.js Server&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="130" width="260" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_exec" value="&lt;b style=&quot;color: white;&quot;&gt;実行場所&lt;/b&gt;&lt;br&gt;Node.js サーバー / Vercel /&lt;br&gt;Docker / Linuxサーバー など" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2563eb;strokeColor=none;fontColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="170" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_ar" value="&lt;b&gt;App Router&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="240" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_sc" value="&lt;b&gt;Server Components&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="280" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_rh" value="&lt;b&gt;Route Handlers (BFF)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="320" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_auth" value="&lt;b&gt;認証チェック / Cookie処理&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="360" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nextjs_footer" value="&lt;b style=&quot;color: #d97706;&quot;&gt;⭐ Browser の外で実行&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#f59e0b;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="410" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="java_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#16a34a;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="210" width="220" height="250" as="geometry"/>
+                </mxCell>
+                <mxCell id="java_title" value="&lt;b style=&quot;font-size: 16px; color: #16a34a;&quot;&gt;Java Backend&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;(Spring Boot)&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="220" width="220" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="java_api" value="&lt;b&gt;Spring Boot API&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#bbf7d0;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="280" width="180" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="java_logic" value="&lt;b&gt;業務ロジック&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#bbf7d0;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="330" width="180" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="java_auth" value="&lt;b&gt;認証 / 認可&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#bbf7d0;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="380" width="180" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="db_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#16a34a;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1000" y="210" width="120" height="250" as="geometry"/>
+                </mxCell>
+                <mxCell id="db_icon" value="&lt;b style=&quot;font-size: 16px; color: #16a34a;&quot;&gt;DB&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f0fdf4;strokeColor=#16a34a;" parent="1" vertex="1">
+                    <mxGeometry x="1030" y="230" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="db_text" value="MySQL /&lt;br&gt;PostgreSQL" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="330" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" value="① ページ要求" style="endArrow=classic;html=1;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;strokeColor=#2563eb;strokeWidth=2;fontColor=#2563eb;fontStyle=1" parent="1" source="browser_box" target="nextjs_box" edge="1">
+                    <mxGeometry y="-10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4" value="④ HTML +&lt;br&gt;初期データを返す" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#2563eb;strokeWidth=2;fontColor=#2563eb;fontStyle=1" parent="1" source="nextjs_box" target="browser_box" edge="1">
+                    <mxGeometry y="-10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge5" value="⑤ 画面操作後の&lt;br&gt;API呼び出し" style="endArrow=classic;html=1;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.8;entryDx=0;entryDy=0;strokeColor=#16a34a;strokeWidth=2;fontColor=#16a34a;fontStyle=1" parent="1" source="browser_box" target="nextjs_box" edge="1">
+                    <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge6" value="⑥ JSONレスポンス" style="endArrow=classic;html=1;exitX=0;exitY=0.9;exitDx=0;exitDy=0;entryX=1;entryY=0.9;entryDx=0;entryDy=0;strokeColor=#16a34a;strokeWidth=2;fontColor=#16a34a;fontStyle=1" parent="1" source="nextjs_box" target="browser_box" edge="1">
+                    <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2" value="② 初期データ取得 /&lt;br&gt;API呼び出し" style="endArrow=classic;html=1;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;strokeColor=#2563eb;strokeWidth=2;fontColor=#2563eb;fontStyle=1" parent="1" source="nextjs_box" target="java_box" edge="1">
+                    <mxGeometry y="-10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3" value="③ DBアクセス" style="endArrow=classic;html=1;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;strokeColor=#2563eb;strokeWidth=2;fontColor=#2563eb;fontStyle=1" parent="1" source="java_box" target="db_box" edge="1">
+                    <mxGeometry y="-10" width="50" height="50" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="appeal_title" value="&lt;b style=&quot;font-size: 20px; color: #1e293b;&quot;&gt;💡 Tech Lead としての設計・導入アピールポイント&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="520" width="600" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="card1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;shadow=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="570" width="260" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="card1_title" value="&lt;b style=&quot;font-size: 16px; color: #0f172a;&quot;&gt;🏗️ アーキテクチャ設計&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="580" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="card1_list" value="&lt;ul style=&quot;margin-left: -15px;&quot;&gt;&lt;li&gt;Next.js App Router (RSC)&lt;/li&gt;&lt;li&gt;Feature-based 凝集度向上&lt;/li&gt;&lt;li&gt;Route Groups 認証分離&lt;/li&gt;&lt;li&gt;Server/Client 明確な境界&lt;/li&gt;&lt;li&gt;ADRの運用・意思決定記録&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontColor=#334155;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="610" width="240" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="card2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;shadow=1;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="570" width="260" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="card2_title" value="&lt;b style=&quot;font-size: 16px; color: #0f172a;&quot;&gt;🔐 認証・セキュリティ&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="580" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="card2_list" value="&lt;ul style=&quot;margin-left: -15px;&quot;&gt;&lt;li&gt;JWT + httpOnly Cookie&lt;/li&gt;&lt;li&gt;API Proxyでのトークン隠蔽&lt;/li&gt;&lt;li&gt;WebSocket 短TTL認証&lt;/li&gt;&lt;li&gt;Zod スキーマバリデーション&lt;/li&gt;&lt;li&gt;環境変数による機密情報分離&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontColor=#334155;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="610" width="240" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="card3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;shadow=1;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="570" width="260" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="card3_title" value="&lt;b style=&quot;font-size: 16px; color: #0f172a;&quot;&gt;🧪 品質・テスト戦略&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="580" width="240" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="card3_list" value="&lt;ul style=&quot;margin-left: -15px;&quot;&gt;&lt;li&gt;TypeScript Strict Mode&lt;/li&gt;&lt;li&gt;ESLint / Prettier 統合&lt;/li&gt;&lt;li&gt;husky + lint-staged&lt;/li&gt;&lt;li&gt;Playwright E2Eテスト網羅&lt;/li&gt;&lt;li&gt;MSWによる堅牢なAPIモック&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontColor=#334155;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="610" width="240" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="card4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;shadow=1;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="570" width="240" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="card4_title" value="&lt;b style=&quot;font-size: 16px; color: #0f172a;&quot;&gt;🚀 CI/CD &amp;amp; UX向上&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="580" width="220" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="card4_list" value="&lt;ul style=&quot;margin-left: -15px;&quot;&gt;&lt;li&gt;GitHub Actions CI構築&lt;/li&gt;&lt;li&gt;PR自動チェック (lint/test)&lt;/li&gt;&lt;li&gt;エラー・ローディング標準化&lt;/li&gt;&lt;li&gt;next-intl での国際化対応&lt;/li&gt;&lt;li&gt;Web Vitals 計測基盤(予定)&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontColor=#334155;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="610" width="220" height="130" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

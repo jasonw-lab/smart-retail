@@ -1,52 +1,83 @@
+import { fetchApi } from '@/lib/api/client';
 import type { Menu, MenuQuery, MenuForm, MenuOption } from '../types/menu';
 
 const BASE_URL = '/api/proxy/api/v1/menus';
 
-export async function getMenus(params?: MenuQuery): Promise<Menu[]> {
-  const searchParams = new URLSearchParams();
-  if (params?.keywords) searchParams.set('keywords', params.keywords);
+/**
+ * Client Component専用のMenu API
+ * Route Handler経由でBackendにアクセス
+ */
+export const menuApiClient = {
+  /**
+   * メニュー一覧取得（ツリー）
+   */
+  getList: async (params?: MenuQuery): Promise<Menu[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.keywords) {
+      searchParams.set('keywords', params.keywords);
+    }
+    if (params?.visible !== undefined) {
+      searchParams.set('visible', String(params.visible));
+    }
+    const query = searchParams.toString();
+    return fetchApi<Menu[]>(`${BASE_URL}${query ? `?${query}` : ''}`);
+  },
 
-  const res = await fetch(`${BASE_URL}?${searchParams.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch menus');
-  return res.json();
-}
+  /**
+   * メニュードロップダウン取得
+   */
+  getOptions: async (onlyParent?: boolean): Promise<MenuOption[]> => {
+    const url = onlyParent ? `${BASE_URL}/options?onlyParent=true` : `${BASE_URL}/options`;
+    return fetchApi<MenuOption[]>(url);
+  },
 
-export async function getMenu(id: number): Promise<Menu> {
-  const res = await fetch(`${BASE_URL}/${id}/form`);
-  if (!res.ok) throw new Error('Failed to fetch menu');
-  return res.json();
-}
+  /**
+   * 現在ユーザーのルート一覧取得
+   */
+  getRoutes: async (): Promise<unknown[]> => {
+    return fetchApi<unknown[]>(`${BASE_URL}/routes`);
+  },
 
-export async function getMenuOptions(
-  onlyParent?: boolean
-): Promise<MenuOption[]> {
-  const url = onlyParent
-    ? `${BASE_URL}/options?onlyParent=true`
-    : `${BASE_URL}/options`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to fetch menu options');
-  return res.json();
-}
+  /**
+   * メニュー編集フォーム用データ取得
+   */
+  getFormData: async (id: number): Promise<Menu> => {
+    return fetchApi<Menu>(`${BASE_URL}/${id}/form`);
+  },
 
-export async function createMenu(data: MenuForm): Promise<void> {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create menu');
-}
+  /**
+   * メニュー作成
+   */
+  create: async (data: MenuForm): Promise<void> => {
+    await fetchApi<void>(BASE_URL, {
+      method: 'POST',
+      body: data,
+    });
+  },
 
-export async function updateMenu(id: number, data: MenuForm): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update menu');
-}
+  /**
+   * メニュー更新
+   */
+  update: async (id: number, data: MenuForm): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
 
-export async function deleteMenu(id: number): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete menu');
+  /**
+   * メニュー削除
+   */
+  delete: async (id: number): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+/**
+ * 役割権限ダイアログ等で利用するメニュードロップダウン取得ヘルパー
+ */
+export async function getMenuOptions(onlyParent?: boolean): Promise<MenuOption[]> {
+  return menuApiClient.getOptions(onlyParent);
 }

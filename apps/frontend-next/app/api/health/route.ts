@@ -17,16 +17,35 @@ async function checkBackend(): Promise<HealthCheck['checks']['backend']> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch(`${serverEnv.BACKEND_URL}/health`, {
+    
+    // 1) ${BACKEND_URL}/health を試行
+    let response = await fetch(`${serverEnv.BACKEND_URL}/health`, {
       method: 'GET',
       signal: controller.signal,
-    });
+    }).catch(() => null);
+
+    // 2) 失敗時は Spring Boot の /actuator/health を試行
+    if (!response || !response.ok) {
+      try {
+        const backendOrigin = new URL(serverEnv.BACKEND_URL).origin;
+        const actuatorRes = await fetch(`${backendOrigin}/actuator/health`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+        if (actuatorRes.ok) {
+          response = actuatorRes;
+        }
+      } catch {
+        // ignore
+      }
+    }
     clearTimeout(timeout);
-    if (!response.ok) {
+
+    if (!response || !response.ok) {
       return {
         status: 'error',
         responseTimeMs: Date.now() - start,
-        message: `HTTP ${response.status}`,
+        message: response ? `HTTP ${response.status}` : 'No response',
       };
     }
     return { status: 'ok', responseTimeMs: Date.now() - start };

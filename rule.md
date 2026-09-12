@@ -20,6 +20,13 @@
 - 既存のレビュー依頼ファイルがある場合は、そのファイルへ `Codexレビュー結果` などの見出しで追記する
 - 新規作成する場合は `review/` 配下に `review_YYYYMMDD_<対象>.codex.md` の形式で保存する
 
+## ドキュメントと HTML の同期ルール
+
+- `docs/deploy/local-ai-dev-auto-reload.md` を修正した際は、必ず対応する HTML（`kb/react/10-cicd-deploy/local-ai-dev-auto-reload.html`、実体: `/Volumes/Dev/Git/learning/ai-prompt/react/10-cicd-deploy/`）も同期・更新すること
+- `ai-common.md` 規約に従い、Knowledge Base は `kb` 配下を参照し、旧称 `ai-asset` は使用しない
+
+
+
 ## Docker 接続先
 
 本プロジェクトの Docker コンテナから DB、Elasticsearch、Redis、MongoDB へ接続する際は、デプロイ先サーバー `${SERVER_IP}` を参照してください。

@@ -26,9 +26,7 @@ export const deviceApiServer = {
     if (params.status) {
       searchParams.set('status', params.status);
     }
-    return fetchFromBackend<DevicePageResult>(
-      `retail/devices?${searchParams.toString()}`
-    );
+    return fetchFromBackend<DevicePageResult>(`retail/devices?${searchParams.toString()}`);
   },
 
   /**

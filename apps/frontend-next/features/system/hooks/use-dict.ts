@@ -1,129 +1,82 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  getDicts,
-  getDict,
-  createDict,
-  updateDict,
-  deleteDicts,
-  getDictItems,
-  getDictItem,
-  createDictItem,
-  updateDictItem,
-  deleteDictItems,
-} from '../lib/dict-api.client';
-import type {
-  DictQuery,
-  DictForm,
-  DictItemQuery,
-  DictItemForm,
-} from '../types/dict';
+import { dictApiClient } from '../lib/dict-api.client';
+import type { DictQuery, DictForm, DictPageResult } from '../types/dict';
 
-export function useDicts(params: DictQuery) {
+/**
+ * Query Keys for dictionaries
+ */
+export const dictKeys = {
+  all: ['dicts'] as const,
+  lists: () => [...dictKeys.all, 'list'] as const,
+  list: (params: DictQuery) => [...dictKeys.lists(), params] as const,
+  details: () => [...dictKeys.all, 'detail'] as const,
+  detail: (id: number) => [...dictKeys.details(), id] as const,
+};
+
+/**
+ * 辞書一覧取得フック
+ */
+export function useDicts(params: DictQuery, options?: { placeholderData?: DictPageResult }) {
   return useQuery({
-    queryKey: ['dicts', params],
-    queryFn: () => getDicts(params),
+    queryKey: dictKeys.list(params),
+    queryFn: () => dictApiClient.getPage(params),
+    placeholderData: options?.placeholderData,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-export function useDict(id: number | null) {
+/**
+ * 辞書詳細取得フック
+ */
+export function useDict(id: number) {
   return useQuery({
-    queryKey: ['dict', id],
-    queryFn: () => getDict(id!),
+    queryKey: dictKeys.detail(id),
+    queryFn: () => dictApiClient.getById(id),
     enabled: !!id,
   });
 }
 
+/**
+ * 辞書作成Mutation
+ */
 export function useCreateDict() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (data: DictForm) => createDict(data),
+    mutationFn: (data: DictForm) => dictApiClient.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dicts'] });
+      queryClient.invalidateQueries({ queryKey: dictKeys.lists() });
     },
   });
 }
 
+/**
+ * 辞書更新Mutation
+ */
 export function useUpdateDict() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: DictForm }) =>
-      updateDict(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dicts'] });
+    mutationFn: ({ id, data }: { id: number; data: DictForm }) => dictApiClient.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: dictKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: dictKeys.detail(id) });
     },
   });
 }
 
+/**
+ * 辞書削除Mutation
+ */
 export function useDeleteDicts() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (ids: string) => deleteDicts(ids),
+    mutationFn: (ids: string) => dictApiClient.delete(ids),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dicts'] });
-    },
-  });
-}
-
-// 字典項目
-export function useDictItems(params: DictItemQuery) {
-  return useQuery({
-    queryKey: ['dict-items', params],
-    queryFn: () => getDictItems(params),
-    enabled: !!params.dictCode,
-  });
-}
-
-export function useDictItem(dictCode: string | null, id: number | null) {
-  return useQuery({
-    queryKey: ['dict-item', dictCode, id],
-    queryFn: () => getDictItem(dictCode!, id!),
-    enabled: !!dictCode && !!id,
-  });
-}
-
-export function useCreateDictItem() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      dictCode,
-      data,
-    }: {
-      dictCode: string;
-      data: DictItemForm;
-    }) => createDictItem(dictCode, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
-    },
-  });
-}
-
-export function useUpdateDictItem() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      dictCode,
-      id,
-      data,
-    }: {
-      dictCode: string;
-      id: number;
-      data: DictItemForm;
-    }) => updateDictItem(dictCode, id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
-    },
-  });
-}
-
-export function useDeleteDictItems() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ dictCode, ids }: { dictCode: string; ids: string }) =>
-      deleteDictItems(dictCode, ids),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dict-items'] });
+      queryClient.invalidateQueries({ queryKey: dictKeys.lists() });
     },
   });
 }

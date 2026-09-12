@@ -24,6 +24,7 @@ export interface DictQuery {
   pageNum: number;
   pageSize: number;
   keywords?: string;
+  status?: number;
 }
 
 export interface DictItemQuery {
@@ -50,6 +51,11 @@ export interface DictItemForm {
   sort: number;
   status: number;
   remark?: string;
+}
+
+export interface DictOption {
+  value: string;
+  label: string;
 }
 
 export interface DictPageResult {

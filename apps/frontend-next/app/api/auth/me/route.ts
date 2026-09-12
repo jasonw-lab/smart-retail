@@ -1,23 +1,11 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { BackendApiError, unwrapApiResponse } from '@/lib/api/result';
 import { getLocalMockUserFromToken } from '@/lib/auth/mock-auth';
+import { serverEnv } from '@/lib/env/server';
+import type { UserInfo } from '@/types/api';
 
-const BACKEND_URL = process.env.BACKEND_URL;
-
-interface UserInfo {
-  userId: number;
-  username: string;
-  nickname?: string;
-  avatar?: string;
-  roles: string[];
-  perms: string[];
-}
-
-interface ApiResponse<T> {
-  code: string;
-  msg: string;
-  data: T;
-}
+const BACKEND_URL = serverEnv.BACKEND_URL;
 
 export async function GET() {
   try {
@@ -38,30 +26,19 @@ export async function GET() {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      cache: 'no-store',
     });
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch user info' },
-        { status: response.status }
-      );
-    }
-
-    const result: ApiResponse<UserInfo> = await response.json();
-
-    if (result.code !== '00000') {
-      return NextResponse.json(
-        { error: result.msg || 'Failed to fetch user info' },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(result.data);
+    return NextResponse.json(await unwrapApiResponse<UserInfo>(response));
   } catch (error) {
+    if (error instanceof BackendApiError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: error.status }
+      );
+    }
+
     console.error('Get user info error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

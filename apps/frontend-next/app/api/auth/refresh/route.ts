@@ -1,8 +1,9 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { refreshLocalMockToken } from '@/lib/auth/mock-auth';
+import { serverEnv } from '@/lib/env/server';
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = serverEnv.BACKEND_URL;
 
 interface AuthToken {
   accessToken: string;
@@ -28,10 +29,7 @@ export async function POST() {
 
     const mockToken = refreshLocalMockToken(refreshToken);
     if (mockToken) {
-      // localhost ではSecureを無効化（開発・テスト環境対応）
-      const isSecure =
-        process.env.NODE_ENV === 'production' &&
-        !process.env.BACKEND_URL?.includes('localhost');
+      const isSecure = process.env.NODE_ENV === 'production';
 
       cookieStore.set('access_token', mockToken.accessToken, {
         httpOnly: true,
@@ -71,10 +69,7 @@ export async function POST() {
       // リフレッシュ失敗 - Cookieをクリア
       cookieStore.delete('access_token');
       cookieStore.delete('refresh_token');
-      return NextResponse.json(
-        { error: 'Token refresh failed' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Token refresh failed' }, { status: 401 });
     }
 
     const result: ApiResponse<AuthToken> = await response.json();
@@ -82,22 +77,12 @@ export async function POST() {
     if (result.code !== '00000') {
       cookieStore.delete('access_token');
       cookieStore.delete('refresh_token');
-      return NextResponse.json(
-        { error: result.msg || 'Token refresh failed' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: result.msg || 'Token refresh failed' }, { status: 401 });
     }
 
-    const {
-      accessToken,
-      refreshToken: newRefreshToken,
-      expiresIn,
-    } = result.data;
+    const { accessToken, refreshToken: newRefreshToken, expiresIn } = result.data;
 
-    // localhost ではSecureを無効化（開発・テスト環境対応）
-    const isSecure =
-      process.env.NODE_ENV === 'production' &&
-      !process.env.BACKEND_URL?.includes('localhost');
+    const isSecure = process.env.NODE_ENV === 'production';
 
     // 新しいトークンをCookieに保存
     cookieStore.set('access_token', accessToken, {
@@ -121,9 +106,6 @@ export async function POST() {
     return NextResponse.json({ success: true, expiresIn });
   } catch (error) {
     console.error('Refresh error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

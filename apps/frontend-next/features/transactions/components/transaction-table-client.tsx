@@ -1,27 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { Eye, Download, TrendingUp, Receipt, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DataTable, type Column } from '@/components/ui/data-table';
 import { FilterBar, type FilterField } from '@/components/ui/filter-bar';
 import { Progress } from '@/components/ui/progress';
-import {
-  formatCurrency,
-  formatRelativeTime,
-  formatDateTime,
-  formatPercent,
-} from '@/lib/format';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { formatCurrency, formatRelativeTime, formatDateTime, formatDate } from '@/lib/format';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
 import { useTransactions } from '../hooks/use-transactions';
+import { transactionApiClient } from '../lib/transaction-api.client';
+import { buildTransactionQuery } from '../lib/transaction-query';
 import { TransactionDetailDialog } from './transaction-detail-dialog';
 import {
   PaymentMethod,
@@ -31,7 +24,6 @@ import {
   type Transaction,
   type TransactionQuery,
   type TransactionPageResult,
-  type PaymentMethodType,
 } from '../types/transaction';
 
 interface TransactionTableClientProps {
@@ -46,13 +38,32 @@ const periodOptions = [
   { value: '30days', label: '過去30日' },
 ];
 
+function escapeCsvCell(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function buildCsv(rows: string[][]): string {
+  const bom = '\uFEFF';
+  return bom + rows.map((row) => row.map(escapeCsvCell).join(',')).join('\n');
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
 export function TransactionTableClient({
   initialData,
   initialParams,
 }: TransactionTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const { data: stores = [] } = useStoreOptions();
 
@@ -63,8 +74,7 @@ export function TransactionTableClient({
     period: initialParams.period || 'today',
     orderNumber: initialParams.orderNumber || '',
   });
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   const {
     data = initialData,
@@ -115,18 +125,15 @@ export function TransactionTableClient({
   ];
 
   const handleSearch = () => {
-    const newParams: TransactionQuery = {
+    const baseParams: TransactionQuery = {
       ...params,
       pageNum: 1,
       orderNumber: filterValues.orderNumber || undefined,
-      storeId: filterValues.storeId
-        ? parseInt(filterValues.storeId, 10)
-        : undefined,
-      paymentMethod:
-        (filterValues.paymentMethod as TransactionQuery['paymentMethod']) ||
-        undefined,
+      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
+      paymentMethod: (filterValues.paymentMethod as TransactionQuery['paymentMethod']) || undefined,
       period: filterValues.period,
     };
+    const newParams = { ...baseParams, ...buildTransactionQuery(baseParams) };
     setParams(newParams);
     updateURL(newParams);
   };
@@ -138,13 +145,14 @@ export function TransactionTableClient({
       period: 'today',
       orderNumber: '',
     });
-    const newParams: TransactionQuery = {
+    const baseParams: TransactionQuery = {
       pageNum: 1,
       pageSize: params.pageSize,
       period: 'today',
     };
+    const newParams = { ...baseParams, ...buildTransactionQuery(baseParams) };
     setParams(newParams);
-    router.push(pathname);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const handlePageChange = (page: number) => {
@@ -163,9 +171,29 @@ export function TransactionTableClient({
     router.push(`${pathname}?${urlParams.toString()}`);
   };
 
-  const handleExportCSV = () => {
-    // CSV export logic placeholder
-    alert('CSV出力機能は準備中です');
+  const handleExportCSV = async () => {
+    try {
+      const blob = await transactionApiClient.exportTransactions(params);
+      downloadBlob(blob, `transactions-${formatDate(new Date())}.csv`);
+      return;
+    } catch {
+      // Backend /export が未実装の場合はフロントエンドで CSV を生成
+    }
+
+    const rows = [
+      ['注文番号', '店舗名', '合計金額', '決済方法', '決済日時', 'プロバイダ', '決済参照ID'],
+      ...transactions.map((transaction) => [
+        transaction.orderNumber,
+        transaction.storeName || '',
+        String(transaction.totalAmount),
+        PaymentMethodLabel[transaction.paymentMethod],
+        formatDateTime(transaction.transactionTime),
+        transaction.paymentProvider || '',
+        transaction.referenceId || '',
+      ]),
+    ];
+    const csv = buildCsv(rows);
+    downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `transactions-${formatDate(new Date())}.csv`);
   };
 
   const columns: Column<Transaction>[] = [
@@ -176,6 +204,7 @@ export function TransactionTableClient({
       render: (_, row) => (
         <a
           href="#"
+          data-testid={testId(TESTIDS.TRANSACTION_DETAIL_LINK, row.id)}
           className="font-mono text-sm text-primary hover:underline"
           onClick={(e) => {
             e.preventDefault();
@@ -198,9 +227,7 @@ export function TransactionTableClient({
       width: '100px',
       align: 'right',
       sortable: true,
-      render: (_, row) => (
-        <span className="font-mono">{formatCurrency(row.totalAmount)}</span>
-      ),
+      render: (_, row) => <span className="font-mono">{formatCurrency(row.totalAmount)}</span>,
     },
     {
       key: 'paymentMethod',
@@ -223,13 +250,9 @@ export function TransactionTableClient({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="cursor-help text-sm">
-                {formatRelativeTime(row.transactionTime)}
-              </span>
+              <span className="cursor-help text-sm">{formatRelativeTime(row.transactionTime)}</span>
             </TooltipTrigger>
-            <TooltipContent>
-              {formatDateTime(row.transactionTime)}
-            </TooltipContent>
+            <TooltipContent>{formatDateTime(row.transactionTime)}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ),
@@ -241,6 +264,7 @@ export function TransactionTableClient({
       align: 'center',
       render: (_, row) => (
         <Button
+          data-testid={testId(TESTIDS.TRANSACTION_DETAIL_BUTTON, row.id)}
           variant="ghost"
           size="icon"
           onClick={(e) => {
@@ -255,57 +279,45 @@ export function TransactionTableClient({
     },
   ];
 
-  // Get summary data with fallback defaults
-  const totalAmount = data.summary?.totalAmount || 4820500;
-  const totalCount = data.summary?.totalCount || 1248;
-  const byPaymentMethod = data.summary?.byPaymentMethod || [
-    {
-      method: 'CARD' as PaymentMethodType,
-      amount: 2892300,
-      count: 748,
-      ratio: 60,
-    },
-    {
-      method: 'QR' as PaymentMethodType,
-      amount: 1446150,
-      count: 374,
-      ratio: 30,
-    },
-    {
-      method: 'CASH' as PaymentMethodType,
-      amount: 482050,
-      count: 126,
-      ratio: 10,
-    },
-  ];
+  const transactions = displayData?.list || [];
+  const totalAmount =
+    displayData.summary?.totalAmount ??
+    transactions.reduce((sum, transaction) => sum + transaction.totalAmount, 0);
+  const totalCount = displayData.summary?.totalCount ?? transactions.length;
+  const byPaymentMethod =
+    displayData.summary?.byPaymentMethod ??
+    Object.values(PaymentMethod).map((method) => {
+      const matching = transactions.filter((transaction) => transaction.paymentMethod === method);
+      const amount = matching.reduce((sum, transaction) => sum + transaction.totalAmount, 0);
+      const count = matching.length;
 
-  // Calculate previous period comparison (mock data for now)
-  const previousPeriodComparison = '+11.9%';
+      return {
+        method,
+        amount,
+        count,
+        ratio: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
+      };
+    });
 
   return (
-    <div className="space-y-6">
+    <div data-testid={TESTIDS.TRANSACTION_PAGE} className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Sales Card */}
-        <Card>
+        <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_SALES}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">売り上げ</span>
               <TrendingUp className="h-4 w-4 text-success" />
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">
-                {formatCurrency(totalAmount)}
-              </span>
-              <span className="text-sm text-success">
-                {previousPeriodComparison}
-              </span>
+              <span className="text-3xl font-bold">{formatCurrency(totalAmount)}</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Transaction Count Card */}
-        <Card>
+        <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_COUNT}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">件数</span>
@@ -314,24 +326,20 @@ export function TransactionTableClient({
             <div className="flex flex-col">
               <span className="text-3xl font-bold">
                 {totalCount.toLocaleString()}
-                <span className="text-lg font-normal text-muted-foreground ml-1">
-                  件
-                </span>
+                <span className="text-lg font-normal text-muted-foreground ml-1">件</span>
               </span>
               <span className="text-sm text-muted-foreground mt-1">
-                本日: {Math.round(totalCount * 0.1)}件
+                表示中: {transactions.length.toLocaleString()}件
               </span>
             </div>
           </CardContent>
         </Card>
 
         {/* Payment Method Distribution Card */}
-        <Card>
+        <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_PAYMENT}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">
-                決済方法分布
-              </span>
+              <span className="text-sm text-muted-foreground">決済方法分布</span>
               <span className="text-xs text-muted-foreground">本日計</span>
             </div>
             <div className="space-y-3">
@@ -369,15 +377,29 @@ export function TransactionTableClient({
         onSearch={handleSearch}
         onReset={handleReset}
         actions={
-          <Button variant="outline" onClick={handleExportCSV}>
+          <Button
+            data-testid={TESTIDS.TRANSACTION_EXPORT_BUTTON}
+            variant="outline"
+            onClick={handleExportCSV}
+          >
             <Download className="mr-2 h-4 w-4" />
             CSV出力
           </Button>
         }
       />
 
+      {isError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+        </div>
+      )}
+
       {/* Data Table */}
       <DataTable
+        dataTestId={TESTIDS.TRANSACTION_TABLE}
         columns={columns}
         data={displayData?.list || []}
         getRowKey={(row) => row.id}

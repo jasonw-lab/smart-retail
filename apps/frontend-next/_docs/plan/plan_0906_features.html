@@ -1,0 +1,3054 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>機能単位実装計画 U0〜U15 | SmartRetail Pro (demo2)</title>
+    <meta
+      name="description"
+      content="SmartRetail Pro (demo2) フロントエンドの残作業を機能単位に割り直したタスク一覧（2026-09-06 / feature/front-next-base）"
+    />
+    <style>
+      /* ==================================================================
+         Design tokens — src/app/globals.css と同一
+         /learn/demo/tanstack-query/tq-01 と同じ配色
+      ================================================================== */
+      :root {
+        --background: 210 20% 99%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+        --primary: 220 91% 54%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 220 14% 96%;
+        --secondary-foreground: 222 47% 11%;
+        --muted: 220 14% 96%;
+        --muted-foreground: 215 16% 47%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 220 13% 91%;
+        --ring: 220 91% 54%;
+        --radius: 0.5rem;
+        --sidebar-width: 244px;
+        --toc-width: 236px;
+      }
+
+      [data-theme='dark'] {
+        --background: 224 71% 4%;
+        --foreground: 213 31% 91%;
+        --card: 222 47% 11%;
+        --card-foreground: 213 31% 91%;
+        --primary: 217 91% 60%;
+        --primary-foreground: 222 47% 11%;
+        --secondary: 215 28% 17%;
+        --secondary-foreground: 213 31% 91%;
+        --muted: 215 28% 17%;
+        --muted-foreground: 215 20% 65%;
+        --destructive: 0 62% 30%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 215 28% 17%;
+        --ring: 217 91% 60%;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --background: 224 71% 4%;
+          --foreground: 213 31% 91%;
+          --card: 222 47% 11%;
+          --card-foreground: 213 31% 91%;
+          --primary: 217 91% 60%;
+          --primary-foreground: 222 47% 11%;
+          --secondary: 215 28% 17%;
+          --secondary-foreground: 213 31% 91%;
+          --muted: 215 28% 17%;
+          --muted-foreground: 215 20% 65%;
+          --destructive: 0 62% 30%;
+          --destructive-foreground: 0 0% 100%;
+          --border: 215 28% 17%;
+          --ring: 217 91% 60%;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        border-color: hsl(var(--border));
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          'Hiragino Sans',
+          'Noto Sans JP',
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      code,
+      pre,
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+      }
+
+      /* ==================== 左サイドバー（カテゴリのみ1階層） ==================== */
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 30;
+        width: var(--sidebar-width);
+        border-right: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+        padding: 24px 16px;
+        overflow-y: auto;
+      }
+
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+      }
+
+      .sidebar-label {
+        margin: 28px 0 10px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .sidebar-nav {
+        display: grid;
+        gap: 2px;
+      }
+
+      .sidebar-nav a {
+        display: grid;
+        grid-template-columns: 2rem 1fr;
+        align-items: center;
+        border-radius: calc(var(--radius) - 2px);
+        padding: 9px 10px;
+        color: hsl(var(--muted-foreground));
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition:
+          background-color 0.15s,
+          color 0.15s;
+      }
+
+      .sidebar-nav a span:first-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+        opacity: 0.7;
+      }
+
+      .sidebar-nav a:hover {
+        background: hsl(var(--muted));
+        color: hsl(var(--foreground));
+      }
+
+      .sidebar-nav a.active {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+
+      .sidebar-nav a.active span:first-child {
+        opacity: 0.85;
+      }
+
+      .sidebar-tools {
+        display: grid;
+        gap: 8px;
+        margin-top: 28px;
+        border-top: 1px solid hsl(var(--border));
+        padding-top: 16px;
+      }
+
+      /* ==================== 右上固定TOC ==================== */
+      .toc {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 20;
+        width: var(--toc-width);
+        max-height: calc(100vh - 48px);
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--card) / 0.96);
+        padding: 14px;
+        overflow-y: auto;
+        backdrop-filter: blur(8px);
+      }
+
+      .toc-title {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .toc-category {
+        margin-top: 4px;
+        font-size: 0.9375rem;
+        font-weight: 700;
+      }
+
+      .toc ul {
+        display: grid;
+        gap: 2px;
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .toc a {
+        display: grid;
+        grid-template-columns: 1.75rem 1fr;
+        gap: 4px;
+        border-radius: 6px;
+        padding: 6px 8px;
+        color: hsl(var(--muted-foreground));
+        font-size: 0.8125rem;
+        line-height: 1.4;
+        text-decoration: none;
+      }
+
+      .toc a span:first-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.6875rem;
+        opacity: 0.75;
+      }
+
+      .toc a:hover,
+      .toc a.active {
+        background: hsl(var(--muted));
+        color: hsl(var(--foreground));
+      }
+
+      .toc a.active {
+        color: hsl(var(--primary));
+        font-weight: 600;
+      }
+
+      /* ==================== main ==================== */
+      .main {
+        margin-left: var(--sidebar-width);
+        padding: 32px 24px 96px;
+      }
+
+      .article {
+        margin: 0 auto;
+        max-width: 80rem;
+        padding-right: calc(var(--toc-width) + 32px);
+      }
+
+      @media (max-width: 1279px) {
+        .toc {
+          display: none;
+        }
+        .article {
+          padding-right: 0;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          position: static;
+          width: auto;
+          border-right: 0;
+          border-bottom: 1px solid hsl(var(--border));
+        }
+        .sidebar-nav {
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          display: grid;
+        }
+        .main {
+          margin-left: 0;
+        }
+      }
+
+      /* ==================== hero ==================== */
+      .hero {
+        display: grid;
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+
+      @media (min-width: 1024px) {
+        .hero {
+          grid-template-columns: 1fr 17rem;
+          align-items: end;
+        }
+      }
+
+      h1 {
+        margin: 12px 0 0;
+        font-size: clamp(1.75rem, 3vw, 2.25rem);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+      }
+
+      .lead {
+        margin: 12px 0 0;
+        max-width: none;
+        line-height: 1.75;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .stat-card {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 0;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--card));
+        padding: 16px;
+        font-size: 0.875rem;
+      }
+
+      .stat-card dt {
+        color: hsl(var(--muted-foreground));
+      }
+
+      .stat-card dd {
+        margin: 4px 0 0;
+        font-weight: 500;
+      }
+
+      /* ==================== category page ==================== */
+      .category-section[hidden] {
+        display: none;
+      }
+
+      .category-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .category-heading span {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: hsl(var(--primary));
+      }
+
+      .category-heading h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+
+      .category-lead {
+        margin: 0 0 28px;
+        max-width: none;
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* issue = 縦に並ぶ論点 */
+      .issue-title {
+        scroll-margin-top: 24px;
+        margin: 40px 0 14px;
+        font-size: 1.375rem;
+        font-weight: 700;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+      }
+
+      .issue-title:first-of-type {
+        margin-top: 0;
+      }
+
+      .block-label {
+        margin: 22px 0 0;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: hsl(var(--primary));
+      }
+
+      .block-label + * {
+        margin-top: 8px;
+      }
+
+      p {
+        max-width: none;
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      /* ==================== badges ==================== */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid transparent;
+        border-radius: calc(var(--radius) - 2px);
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .badge-default {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+
+      .badge-secondary {
+        background: hsl(var(--secondary));
+        color: hsl(var(--secondary-foreground));
+      }
+
+      .badge-outline {
+        border-color: hsl(var(--border));
+        color: hsl(var(--foreground));
+      }
+
+      .badge-s {
+        border-color: #fda4af;
+        background: #fff1f2;
+        color: #be123c;
+      }
+
+      .badge-a {
+        border-color: #fcd34d;
+        background: #fffbeb;
+        color: #b45309;
+      }
+
+      [data-theme='dark'] .badge-s {
+        border-color: #9f1239;
+        background: rgb(76 5 25 / 0.4);
+        color: #fda4af;
+      }
+
+      [data-theme='dark'] .badge-a {
+        border-color: #92400e;
+        background: rgb(69 26 3 / 0.4);
+        color: #fcd34d;
+      }
+
+      /* ==================== week head ==================== */
+      .week-head {
+        border: 1px solid hsl(var(--border));
+        border-left: 4px solid hsl(var(--primary));
+        border-radius: var(--radius);
+        background: hsl(var(--card));
+        padding: 18px;
+      }
+
+      .week-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .week-id {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: hsl(var(--primary));
+      }
+
+      .week-time {
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .week-head p {
+        margin: 10px 0 0;
+        font-size: 0.9375rem;
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* ==================== lists ==================== */
+      .goal-grid {
+        display: grid;
+        gap: 8px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      @media (min-width: 768px) {
+        .goal-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .goal-grid li {
+        border-radius: var(--radius);
+        background: hsl(var(--muted) / 0.5);
+        padding: 12px;
+        font-size: 0.875rem;
+      }
+
+      .accent-list {
+        display: grid;
+        gap: 8px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .accent-list > li {
+        border-left: 2px solid hsl(var(--primary) / 0.4);
+        padding-left: 12px;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 8px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .step-list > li {
+        display: flex;
+        gap: 12px;
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .step-num {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 9999px;
+        background: hsl(var(--primary) / 0.1);
+        color: hsl(var(--primary));
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      /* step-list li は flex。テキストと入れ子リストを1つの子にまとめて縦積みにする */
+      .step-body {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .step-body > ul {
+        margin-top: 8px;
+      }
+      .accent-list ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        list-style: disc;
+      }
+      .accent-list ul li {
+        margin-bottom: 4px;
+      }
+
+      /* ==================== tables ==================== */
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 8px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+
+      thead th {
+        background: hsl(var(--muted) / 0.5);
+        text-align: left;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid hsl(var(--border));
+        padding: 10px 12px;
+        vertical-align: top;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td code {
+        white-space: nowrap;
+      }
+
+      .col-day {
+        width: 5rem;
+        white-space: nowrap;
+        font-weight: 600;
+      }
+
+      .row-off td {
+        color: hsl(var(--muted-foreground));
+        font-style: italic;
+      }
+
+      /* ==================== callouts ==================== */
+      .callout {
+        margin-top: 8px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        background: hsl(var(--muted) / 0.3);
+        padding: 16px;
+      }
+
+      .callout h4 {
+        margin-bottom: 6px;
+      }
+
+      .callout p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.7;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .callout p + p {
+        margin-top: 8px;
+      }
+
+      .callout-primary {
+        border-color: hsl(var(--primary) / 0.3);
+        background: hsl(var(--primary) / 0.05);
+      }
+
+      .callout-danger {
+        border-color: hsl(var(--destructive) / 0.3);
+        background: hsl(var(--destructive) / 0.05);
+      }
+
+      .callout-danger h4 {
+        color: hsl(var(--destructive));
+      }
+
+      /* ==================== deliverable ==================== */
+      .deliverable {
+        margin-top: 8px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+
+      .deliverable ul {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+      }
+
+      .deliverable li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .check {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        border-radius: 4px;
+        background: hsl(var(--primary) / 0.1);
+        color: hsl(var(--primary));
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      /* ==================== code ==================== */
+      .file-card {
+        margin-top: 12px;
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .file-card-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid hsl(var(--border));
+        background: hsl(var(--muted) / 0.5);
+        padding: 9px 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8125rem;
+        font-weight: 600;
+      }
+
+      .file-card-note {
+        padding: 12px;
+        font-size: 0.8125rem;
+        color: hsl(var(--muted-foreground));
+      }
+
+      pre {
+        margin: 0;
+        overflow-x: auto;
+        background: #020617;
+        padding: 14px;
+        font-size: 0.8125rem;
+        line-height: 1.65;
+        color: #e2e8f0;
+      }
+
+      pre + pre {
+        border-top: 1px solid hsl(var(--border));
+      }
+
+      code {
+        font-size: 0.875em;
+      }
+
+      p code,
+      li code,
+      td code,
+      .week-head code {
+        border-radius: 4px;
+        background: hsl(var(--muted));
+        padding: 1px 5px;
+        color: hsl(var(--foreground));
+      }
+
+      .token-comment {
+        color: #64748b;
+        font-style: italic;
+      }
+
+      .token-string {
+        color: #86efac;
+      }
+
+      .token-keyword {
+        color: #93c5fd;
+      }
+
+      .token-type {
+        color: #fbbf24;
+      }
+
+      .token-number {
+        color: #f0abfc;
+      }
+
+      /* ==================== misc ==================== */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid hsl(var(--border));
+        border-radius: calc(var(--radius) - 2px);
+        background: transparent;
+        padding: 7px 12px;
+        color: hsl(var(--foreground));
+        font-family: inherit;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: hsl(var(--muted));
+      }
+
+      .muted {
+        color: hsl(var(--muted-foreground));
+      }
+
+      .footnote {
+        margin-top: 48px;
+        border-top: 1px solid hsl(var(--border));
+        padding-top: 16px;
+        font-size: 0.8125rem;
+        color: hsl(var(--muted-foreground));
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 左サイドバー: カテゴリのみの1階層。入れ子にしない -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">計</span>
+        <span>SmartRetail Pro 実装計画 (demo2)</span>
+      </div>
+
+      <div class="sidebar-label">カテゴリ</div>
+      <nav class="sidebar-nav" id="sidebar-nav" aria-label="カテゴリ">
+        <a href="#cat-1"><span>01</span><span>全体像</span></a>
+        <a href="#cat-2"><span>02</span><span>U0 準備</span></a>
+        <a href="#cat-3"><span>03</span><span>U1-U4 不具合・導線・E2E</span></a>
+        <a href="#cat-4"><span>04</span><span>U5-U13 i18n</span></a>
+        <a href="#cat-5"><span>05</span><span>U14-U15 仕上げ</span></a>
+      </nav>
+
+      <div class="sidebar-tools">
+        <a class="btn" href="plan_0906_features.md">Markdown正本</a>
+        <button class="btn" type="button" id="theme-toggle">表示テーマを切替</button>
+      </div>
+    </aside>
+
+    <!-- 右上固定TOC: 表示中カテゴリの h2.issue-title を自動収集する -->
+    <nav class="toc" id="toc" aria-label="現在カテゴリの目次"></nav>
+
+    <main class="main">
+      <article class="article">
+        <header class="hero">
+          <div>
+            <span class="badge badge-default">2026-09-06 / feature/front-next-base</span>
+            <h1>機能単位実装計画 U0〜U15</h1>
+            <p class="lead">
+              姉妹リポジトリ（learning/tech-lead-react-demo）の元版計画を、本リポジトリのコードと
+              突き合わせて再構成したタスク一覧。上から順に着手する。1ユニット＝1コミットで、
+              前のユニットが緑にならないうちに次へ進まない。
+            </p>
+          </div>
+          <dl class="stat-card">
+            <!-- PLAN:STATS -->
+            <div>
+              <dt>完了</dt>
+              <dd>5 / 16</dd>
+            </div>
+            <div>
+              <dt>進行中</dt>
+              <dd>0</dd>
+            </div>
+            <div>
+              <dt>残り</dt>
+              <dd>11</dd>
+            </div>
+            <!-- /PLAN:STATS -->
+          </dl>
+        </header>
+
+        <!-- ============ カテゴリ1: 全体像 ============ -->
+        <section class="category-section" id="cat-1" data-category="全体像">
+          <div class="category-heading">
+            <span>01</span>
+            <h2>全体像</h2>
+          </div>
+          <p class="category-lead">
+            元版との突き合わせ結果と進捗の正本をここに集約する。個別ユニットの詳細は次のカテゴリ以降。
+          </p>
+
+          <!-- PLAN:CURRENT -->
+          <div class="callout callout-primary">
+            <h4>いま着手中のユニットはありません</h4>
+            <p>
+              次に着手するのは <strong>U5 i18n: products（基準実装）</strong>（i18n(0710#25)）。
+            </p>
+          </div>
+          <!-- /PLAN:CURRENT -->
+
+          <h2 class="issue-title" id="cat-1-issue-1">背景: 元版との突き合わせ</h2>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            本リポジトリは <code>feature/front-next-base</code> ブランチで小売 API 統合（config /
+            notice / profile / files / categories / payments 等）を進めており、
+            元版とはコード状態が大きく異なる。元版ユニットの適用可否を突き合わせた結果が下表。
+          </p>
+
+          <p class="block-label">突き合わせ結果サマリー</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>元版</th>
+                  <th>内容</th>
+                  <th>demo2 での判定</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>U0</td>
+                  <td>作業ツリーの確定</td>
+                  <td>
+                    <strong>再定義</strong>: 旧 plan 4件は Git 未追跡のため削除不要。ルート
+                    <code>.gitignore</code> の是正と plan / レビューの Git 追跡開始が主題
+                  </td>
+                </tr>
+                <tr>
+                  <td>U1</td>
+                  <td>import 配置の是正</td>
+                  <td>
+                    <strong>対象外</strong>: <code>lib/api/result.ts</code> は52行で末尾 import
+                    なし。指摘49 の元レビューも本リポジトリに存在しない
+                  </td>
+                </tr>
+                <tr>
+                  <td>U2</td>
+                  <td>E2E 非決定性の解消</td>
+                  <td>
+                    <strong>再定義</strong>: VRT
+                    時刻固定は有効。フィルタリセットは機構が異なるため再現確認から
+                  </td>
+                </tr>
+                <tr>
+                  <td>U3</td>
+                  <td>system API 統一</td>
+                  <td>
+                    <strong>縮小</strong>: 生 fetch は <code>log-api.client.ts</code> のみ。ただし
+                    <code>/system/log</code> クラッシュの実害あり
+                  </td>
+                </tr>
+                <tr>
+                  <td>U4</td>
+                  <td>辞書項目画面</td>
+                  <td>
+                    <strong>大半完了</strong>: UI は実装済み。mock ハンドラと E2E が欠けている
+                  </td>
+                </tr>
+                <tr>
+                  <td>U5</td>
+                  <td>ナビ導線</td>
+                  <td><strong>拡大</strong>: products / devices / transactions の3項目が未搭載</td>
+                </tr>
+                <tr>
+                  <td>U6〜U13</td>
+                  <td>i18n</td>
+                  <td>
+                    <strong>部分適用済み</strong>: useTranslations
+                    使用16ファイル。残りを機能単位で潰す
+                  </td>
+                </tr>
+                <tr>
+                  <td>U14</td>
+                  <td>import 境界</td>
+                  <td><strong>適用可</strong>: 違反リストは demo2 の実態に更新</td>
+                </tr>
+                <tr>
+                  <td>U15</td>
+                  <td>WS チケット残リスク</td>
+                  <td><strong>そのまま適用可</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2 class="issue-title" id="cat-1-issue-2">ユニット一覧と作業状況</h2>
+
+          <p class="block-label">ユニット一覧（定義。着手中に書き換えない）</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>ユニット</th>
+                  <th>種別</th>
+                  <th>元版</th>
+                  <th>主対象</th>
+                  <th>依存</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>U0</td>
+                  <td>作業ツリー確定と plan 入れ替え</td>
+                  <td>整理</td>
+                  <td>U0</td>
+                  <td>
+                    ルート <code>.gitignore</code>、<code>apps/frontend-next/.gitignore</code>
+                  </td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td>U1</td>
+                  <td>log API クライアントの fetchApi 化</td>
+                  <td>不具合修正</td>
+                  <td>U3</td>
+                  <td><code>features/system/lib/log-api.client.ts</code></td>
+                  <td>U0</td>
+                </tr>
+                <tr>
+                  <td>U2</td>
+                  <td>dict items の mock/E2E 整備</td>
+                  <td>機能補完</td>
+                  <td>U4</td>
+                  <td>
+                    <code>e2e/mocks/mock-server.ts</code>, <code>e2e/specs/system.spec.ts</code>
+                  </td>
+                  <td>U0</td>
+                </tr>
+                <tr>
+                  <td>U3</td>
+                  <td>products/devices/transactions 導線</td>
+                  <td>機能追加</td>
+                  <td>U5</td>
+                  <td><code>components/layout/sidebar.tsx</code></td>
+                  <td>U0</td>
+                </tr>
+                <tr>
+                  <td>U4</td>
+                  <td>E2E 非決定性の点検・解消</td>
+                  <td>品質</td>
+                  <td>U2</td>
+                  <td>
+                    <code>e2e/specs/{dashboard,products,stores,devices,transactions}.spec.ts</code>
+                  </td>
+                  <td>U0</td>
+                </tr>
+                <tr>
+                  <td>U5</td>
+                  <td>i18n: products（基準実装）</td>
+                  <td>i18n(0710#25)</td>
+                  <td>U6</td>
+                  <td><code>features/products/</code></td>
+                  <td>U0</td>
+                </tr>
+                <tr>
+                  <td>U6</td>
+                  <td>i18n: stores</td>
+                  <td>i18n</td>
+                  <td>U7</td>
+                  <td><code>features/stores/</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U7</td>
+                  <td>i18n: devices</td>
+                  <td>i18n</td>
+                  <td>U8</td>
+                  <td><code>features/devices/</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U8</td>
+                  <td>i18n: inventory</td>
+                  <td>i18n</td>
+                  <td>U9</td>
+                  <td><code>features/inventory/</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U9</td>
+                  <td>i18n: transactions</td>
+                  <td>i18n</td>
+                  <td>U10</td>
+                  <td><code>features/transactions/</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U10</td>
+                  <td>i18n: alerts</td>
+                  <td>i18n</td>
+                  <td>U11</td>
+                  <td><code>features/alerts/</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U11</td>
+                  <td>i18n: dashboard</td>
+                  <td>i18n</td>
+                  <td>U12</td>
+                  <td><code>features/dashboard/</code></td>
+                  <td>U4, U5</td>
+                </tr>
+                <tr>
+                  <td>U12</td>
+                  <td>i18n: system</td>
+                  <td>i18n</td>
+                  <td>U13</td>
+                  <td><code>features/system/</code>（45ファイル・最大）</td>
+                  <td>U1, U5</td>
+                </tr>
+                <tr>
+                  <td>U13</td>
+                  <td>i18n: その他（categories/files/payments/profile/auth）</td>
+                  <td>i18n</td>
+                  <td>-</td>
+                  <td>上記以外の features と <code>app/**/profile</code></td>
+                  <td>U5</td>
+                </tr>
+                <tr>
+                  <td>U14</td>
+                  <td>feature 間 import 境界の ESLint 強制</td>
+                  <td>品質(0710#12)</td>
+                  <td>U14</td>
+                  <td><code>eslint.config.mjs</code>, <code>features/*/index.ts</code></td>
+                  <td>U5〜U13</td>
+                </tr>
+                <tr>
+                  <td>U15</td>
+                  <td>WS チケットの残リスク明文化</td>
+                  <td>設計(0710#5)</td>
+                  <td>U15</td>
+                  <td><code>_docs/adr/ADR-005-stomp-realtime.md</code></td>
+                  <td>-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="block-label">作業状況（進捗の正本。実装コミットとは別コミットで更新する）</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>ユニット</th>
+                  <th>種別</th>
+                  <th>依存</th>
+                  <th>状態</th>
+                  <th>進捗</th>
+                  <th>更新日</th>
+                  <th>メモ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- PLAN:TABLE -->
+                <tr>
+                  <td>U0</td>
+                  <td>plan / レビューの Git 追跡開始</td>
+                  <td>整理</td>
+                  <td>-</td>
+                  <td><span class="badge badge-secondary">完了</span></td>
+                  <td>2/2</td>
+                  <td>2026-09-12</td>
+                  <td>gitignore是正・planおよびレビュー文書追跡開始</td>
+                </tr>
+                <tr>
+                  <td>U1</td>
+                  <td>log API クライアントの fetchApi 化</td>
+                  <td>不具合修正</td>
+                  <td>U0</td>
+                  <td><span class="badge badge-secondary">完了</span></td>
+                  <td>-</td>
+                  <td>2026-09-12</td>
+                  <td>fetchApi化・E2Eパス</td>
+                </tr>
+                <tr>
+                  <td>U2</td>
+                  <td>dict items の mock/E2E 整備</td>
+                  <td>機能補完</td>
+                  <td>U0</td>
+                  <td><span class="badge badge-secondary">完了</span></td>
+                  <td>-</td>
+                  <td>2026-09-12</td>
+                  <td>mockハンドラ・E2E追加・7テストパス</td>
+                </tr>
+                <tr>
+                  <td>U3</td>
+                  <td>products/devices/transactions 導線</td>
+                  <td>機能追加</td>
+                  <td>U0</td>
+                  <td><span class="badge badge-secondary">完了</span></td>
+                  <td>-</td>
+                  <td>2026-09-12</td>
+                  <td>sidebar導線追加・E2E全27テストパス</td>
+                </tr>
+                <tr>
+                  <td>U4</td>
+                  <td>E2E 非決定性の点検・解消</td>
+                  <td>品質</td>
+                  <td>U0</td>
+                  <td><span class="badge badge-secondary">完了</span></td>
+                  <td>-</td>
+                  <td>2026-09-12</td>
+                  <td>VRT時刻固定・スナップショット更新・3連続パス</td>
+                </tr>
+                <tr>
+                  <td>U5</td>
+                  <td>i18n: products（基準実装）</td>
+                  <td>i18n(0710#25)</td>
+                  <td>U0</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U6</td>
+                  <td>i18n: stores</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U7</td>
+                  <td>i18n: devices</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U8</td>
+                  <td>i18n: inventory</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U9</td>
+                  <td>i18n: transactions</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U10</td>
+                  <td>i18n: alerts</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U11</td>
+                  <td>i18n: dashboard</td>
+                  <td>i18n</td>
+                  <td>U4, U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U12</td>
+                  <td>i18n: system</td>
+                  <td>i18n</td>
+                  <td>U1, U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>0/8</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U13</td>
+                  <td>i18n: その他（categories/files/payments/profile/auth）</td>
+                  <td>i18n</td>
+                  <td>U5</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U14</td>
+                  <td>feature 間 import 境界の ESLint 強制</td>
+                  <td>品質(0710#12)</td>
+                  <td>U5〜U13</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>U15</td>
+                  <td>WS チケットの残リスク明文化</td>
+                  <td>設計(0710#5)</td>
+                  <td>-</td>
+                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td></td>
+                </tr>
+                <!-- /PLAN:TABLE -->
+              </tbody>
+            </table>
+          </div>
+
+          <p class="block-label">状態の定義</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>状態</th>
+                  <th>意味</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>未着手</td>
+                  <td>手を付けていない</td>
+                </tr>
+                <tr>
+                  <td>着手中</td>
+                  <td>作業中。メモに「いま何をしているか」を書く</td>
+                </tr>
+                <tr>
+                  <td>レビュー待ち</td>
+                  <td>実装は済んだが受入条件の確認が終わっていない</td>
+                </tr>
+                <tr>
+                  <td>完了</td>
+                  <td>受入条件をすべて満たし、コミット済み</td>
+                </tr>
+                <tr>
+                  <td>保留</td>
+                  <td>ブロックされている。<strong>メモに理由必須</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ul class="accent-list">
+            <li>同時に「着手中」にするユニットは<strong>1つまで</strong></li>
+            <li>
+              進捗はサブタスクがあるユニットのみ <code>済/全</code>（U0 は2コミット、U12 は8機能）
+            </li>
+            <li>更新日は <code>YYYY-MM-DD</code></li>
+          </ul>
+
+          <h2 class="issue-title" id="cat-1-issue-3">共通ルール</h2>
+
+          <p class="block-label">現状と課題</p>
+          <p>複数ユニットを連続で回すため、コミット粒度と記録先を先に固定しておく。</p>
+
+          <p class="block-label">実装内容</p>
+          <ul class="accent-list">
+            <li>ブランチは <code>feature/front-next-base</code> で継続する</li>
+            <li>
+              1ユニット＝1コミット。Conventional Commits 形式。AI 生成を示す文言・
+              <code>Co-Authored-By</code> は書かない。author / committer は人間の値のまま
+            </li>
+            <li>
+              1ユニットの範囲を超える「ついで修正」をしない。気付いた別問題は正本 Markdown
+              末尾の「追加で見つかった課題」に逃がして次ユニット化する。ユニット化の判断基準:
+              進行中のユニットを壊さない小粒の修正は現行計画に新ユニットとして追記してよい（依存と作業状況表も更新）。それ以外は
+              U0〜U15 完了後に棚卸しして次期計画にユニット化する
+            </li>
+            <li>
+              0710 指摘（5/12/25）に対応したら
+              <code>_review/review_0710_adr-architecture.claude.md</code> の末尾に追記する。
+              指摘48/49
+              の元ファイルは本リポジトリに存在しないため追記不要。新規レビューファイルは作らない
+            </li>
+            <li>
+              進捗は「作業状況」表を更新し
+              <code>python3 _scripts/build_plan_html.py --sync</code> で HTML
+              に反映する（コミット前に <code>--check</code>）。実装コミットには混ぜない
+            </li>
+            <li>
+              plan は <code>_docs/plan/</code> に md と HTML
+              を各1本だけ維持する。差し替えるときは古い md / HTML を削除する
+            </li>
+            <li>
+              機能別 issue の対応状態は <code>_docs/issues.html</code> が正本（AGENTS.md の UI-first
+              フロー参照）。本計画のユニット完了時に該当 issue がある場合は issues.html も更新する
+            </li>
+          </ul>
+
+          <p class="block-label">レビュー記録の書式</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>_review/review_0710_adr-architecture.claude.md への追記フォーマット</span>
+              <span class="badge badge-outline">markdown</span>
+            </div>
+            <pre><code class="language-md">## YYYY/MM/DD HH:MM kimi 対応完了
+
+### 対応状況サマリー
+
+| #   | 指摘内容 | 重大度 | 対応状況    |
+| --- | -------- | ------ | ----------- |
+| 5   | ...      | High   | ✅ 対応完了 |
+
+### 各指摘の対応詳細
+
+#### 5. xxx ✅
+
+- 変更内容: ...
+- 変更ファイル: `path/to/file:line`
+- 判断理由: ...</code></pre>
+          </div>
+          <p class="muted">
+            ステータス表記: ✅ 対応完了 / ⚠️ 要対応（別タスク）/ ❌ 対応不要（理由必須）
+          </p>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>全ユニット共通（本リポジトリに test:unit は存在しない）</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash"># 静的チェック
+pnpm lint &amp;&amp; pnpm typecheck
+
+# ビルド
+pnpm build
+
+# E2E フルスイート（本番ビルド + モックサーバーを自動起動する）
+pnpm test:e2e
+
+# 単一 spec のみ
+CI=true pnpm exec playwright test e2e/specs/system.spec.ts
+
+# VRT スナップショット更新
+pnpm exec playwright test --update-snapshots
+
+# 手動確認（2ターミナルで起動）
+# lib/env/server.ts:5 は BACKEND_URL を必須として起動時に検証する。初回のみ環境ファイルを用意すること
+cp .env.example .env.local   # 初回のみ。BACKEND_URL=http://localhost:8091/api/v1 が入る
+
+pnpm mock:server   # ターミナル1 (port 8091)
+pnpm dev           # ターミナル2 (port 3001)
+
+# .env.local を作らない場合は環境変数を直接渡す（package.json の start:test と同じ形）
+BACKEND_URL=http://localhost:8091/api/v1 pnpm dev</code></pre>
+          </div>
+          <div class="callout callout-danger">
+            <h4>BACKEND_URL が無いと <code>pnpm dev</code> は起動時に落ちる</h4>
+            <p>
+              <code>lib/env/server.ts:5</code> は <code>BACKEND_URL</code>
+              を<strong>必須</strong>（<code>z.string().url()</code>）として検証し、欠けていると
+              <code>Invalid server environment variables</code>
+              の例外で終了する。リポジトリには <code>.env.example</code> しか無く
+              <code>.env</code> / <code>.env.local</code> は未作成なので、そのまま
+              <code>pnpm dev</code> を叩くと必ず失敗する。
+            </p>
+          </div>
+        </section>
+
+        <!-- ============ カテゴリ2: U0 準備 ============ -->
+        <section class="category-section" id="cat-2" data-category="U0 準備" hidden>
+          <div class="category-heading">
+            <span>02</span>
+            <h2>U0 準備</h2>
+          </div>
+          <p class="category-lead">
+            新規実装を始める前に必ず終わらせる。plan とレビュー報告書を Git の追跡対象に入れる。
+          </p>
+
+          <h2 class="issue-title" id="cat-2-issue-1">U0 plan / レビュー文書の Git 追跡開始</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U0</span>
+              <!-- PLAN:BADGE:U0 -->
+              <span class="badge badge-secondary">完了 2/2</span>
+              <!-- /PLAN:BADGE:U0 -->
+              <span class="badge badge-outline">整理</span>
+              <span class="week-time">依存なし / 2コミット</span>
+            </div>
+            <p>
+              ルート <code>.gitignore</code> の <code>plan*.md</code> /
+              <code>p*.md</code> により、本計画の正本である md が
+              <strong>ignored</strong> になっている（生成物の HTML
+              だけが追跡済みという捻れた状態）。これを解消するのが U0 の主題。
+            </p>
+          </div>
+
+          <p class="block-label">前提の訂正（2026-09-12 実測）</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>当初の想定</th>
+                  <th>実態</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>未コミット差分が <code>.gitignore</code> の1件ある</td>
+                  <td>
+                    <code>git status</code> はクリーン。<code>apps/frontend-next/.gitignore</code>
+                    はコミット済みで <code>test-results</code> も記載済み
+                  </td>
+                </tr>
+                <tr>
+                  <td>旧 plan 4件を削除する必要がある</td>
+                  <td>
+                    <code>plan_0619.md</code> / <code>impl.md</code> /
+                    <code>tech-leader-todo.md</code> /
+                    <code>TODO-feature-todo.md</code>
+                    は<strong>一度も Git に追跡されていない</strong>（<code>git log --all</code>
+                    で0件）。削除コミットは不要
+                  </td>
+                </tr>
+                <tr>
+                  <td>本 plan を追加するだけでよい</td>
+                  <td>
+                    ルート <code>.gitignore:83</code> <code>plan*.md</code> / <code>:91</code>
+                    <code>p*.md</code> により本 md が <strong>ignored</strong>。<code>git add</code>
+                    が拒否される（<strong>真のブロッカー</strong>）
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="block-label">実装内容</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>コミットメッセージ</th>
+                  <th>含める変更</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>
+                    <code>chore(gitignore): track frontend-next plan and review docs</code>
+                  </td>
+                  <td>
+                    ルート <code>.gitignore</code> 末尾に
+                    <code>!apps/frontend-next/_docs/plan/*.md</code> と
+                    <code>!apps/frontend-next/_review/*.md</code> を追加（既存の ignore
+                    行より<strong>後ろ</strong>に置く）。<code>apps/frontend-next/.gitignore</code>
+                    の
+                    <code>_review/*</code>
+                    許可リストに本レビュー報告書を追加。ついでに同ファイル末尾の
+                    <code>*storybook.logstorybook-static</code
+                    >（改行欠落で2エントリが連結）を2行に分割し、 EOF に改行を入れる
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>
+                    <code>docs(plan): add feature-unit implementation plan and review report</code>
+                  </td>
+                  <td>
+                    <code>_docs/plan/plan_0906_features.md</code> と
+                    <code>_review/review_0912_plan-0906-features.md</code> の追加
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-primary">
+            <p>
+              ネストした <code>.gitignore</code> の否定規則は親の規則より優先される。ルート側の
+              <code>review_*.md</code> は <code>apps/frontend-next/.gitignore</code> の
+              <code>!_review/...</code>
+              で上書きされるため、両方に手を入れる必要がある。
+            </p>
+            <p>
+              <strong>適用状況（2026-09-12 時点）</strong>: コミット1のうち
+              <code>.gitignore</code> 2ファイルの否定規則追加は、本 plan
+              を追跡可能にするため<strong>ワークツリーに適用済み</strong>（未コミット）。残りは
+              <code>*storybook.logstorybook-static</code> の2行分割と EOF 改行、およびコミット作業。
+            </p>
+          </div>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span
+                  ><code>git check-ignore -v _docs/plan/plan_0906_features.md</code>
+                  が<strong>否定規則</strong>（<code>!</code>付き）を返す、または該当なしで終了する</span
+                >
+              </li>
+              <li>
+                <span class="check">2</span
+                ><span
+                  ><code>git status --short</code> に両ファイルが <code>??</code> として現れ、<code
+                    >git add</code
+                  >
+                  できる</span
+                >
+              </li>
+              <li>
+                <span class="check">3</span
+                ><span><code>git status</code> がクリーン（コミット後）</span>
+              </li>
+              <li>
+                <span class="check">4</span
+                ><span><code>pnpm lint</code> / <code>pnpm typecheck</code> が通る</span>
+              </li>
+              <li>
+                <span class="check">5</span
+                ><span><code>_docs/plan/</code> に本 md と HTML が各1本だけ存在する</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>確定前後で確認する</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">git check-ignore -v _docs/plan/plan_0906_features.md
+git status --short
+pnpm lint &amp;&amp; pnpm typecheck</code></pre>
+          </div>
+        </section>
+
+        <!-- ============ カテゴリ3: U1-U4 不具合・導線・E2E ============ -->
+        <section class="category-section" id="cat-3" data-category="U1-U4 不具合・導線・E2E" hidden>
+          <div class="category-heading">
+            <span>03</span>
+            <h2>U1-U4 不具合・導線・E2E</h2>
+          </div>
+          <p class="category-lead">
+            実害のある不具合の修正、実装済み機能の開通、E2E の信頼性確保。
+          </p>
+
+          <h2 class="issue-title" id="cat-3-issue-1">U1 log API クライアントの fetchApi 統一</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U1</span>
+              <!-- PLAN:BADGE:U1 -->
+              <span class="badge badge-secondary">完了</span>
+              <!-- /PLAN:BADGE:U1 -->
+              <span class="badge badge-default">不具合修正</span>
+              <span class="week-time">元版 U3 ／ 依存: U0</span>
+            </div>
+            <p>
+              system の8クライアントのうち生 fetch は <code>log-api.client.ts</code> のみ。これが
+              <code>/system/log</code> のクラッシュ原因になっている。
+            </p>
+          </div>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            <code>features/system/lib/</code> の8クライアントのうち、生
+            <code>fetch</code> を使っているのは <code>log-api.client.ts</code> のみ（<code
+              >user-api.client.ts</code
+            >
+            は fetchApi 済み。<code>:151</code> の export だけ Blob 扱いのため意図的に生 fetch
+            で、コメント付き）。
+          </p>
+          <p>
+            <code>log-api.client.ts:13</code> の <code>getLogs</code> は
+            <code>res.json()</code> をそのまま返すため
+            <code>{code,msg,data}</code> のエンベロープごと返る。一方
+            <code>log-table-client.tsx:64-65</code> は <code>useLogs(params)</code> の戻り値を
+            <code>displayData</code> として <code>:67</code> で
+            <code>displayData.list.forEach(...)</code> するため、<strong
+              >クエリ解決後に <code>displayData.list</code> が undefined となり
+              <code>/system/log</code> がハイドレーション後にクラッシュする</strong
+            >。GET のみなので CSRF 403 は起きないが、401 リフレッシュ・timeout も効かない。
+          </p>
+
+          <p class="block-label">実装内容</p>
+          <ol class="step-list">
+            <li>
+              <span class="step-num">1</span
+              ><span
+                ><code>getLogs</code> を
+                <code>fetchApi&lt;LogPageResult&gt;(path)</code> に置き換える。<strong
+                  >参照実装: 同ディレクトリの <code>role-api.client.ts</code> /
+                  <code>dict-api.client.ts</code></strong
+                ></span
+              >
+            </li>
+            <li>
+              <span class="step-num">2</span
+              ><span
+                >書き換え後、<code>pnpm mock:server</code> + <code>pnpm dev</code>（2ターミナル）で
+                <code>/system/log</code>
+                を開き、リロード後も一覧が表示されコンソールにエラーが出ないことを実機確認する（<code
+                  >/logs</code
+                >
+                の GET ハンドラは <code>e2e/mocks/mock-server.ts:1306</code> に存在することを
+                2026-09-08 に確認済み。mock 追加は不要）</span
+              >
+            </li>
+          </ol>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span><code>/system/log</code> がハイドレーション後も正常に表示される</span>
+              </li>
+              <li>
+                <span class="check">2</span
+                ><span><code>pnpm test:e2e</code> の system.spec が green</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>コミット: <code>fix(system): route log api client through fetchApi</code></span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">CI=true pnpm exec playwright test e2e/specs/system.spec.ts</code></pre>
+          </div>
+
+          <h2 class="issue-title" id="cat-3-issue-2">U2 dict items の mock / E2E 整備</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U2</span>
+              <!-- PLAN:BADGE:U2 -->
+              <span class="badge badge-secondary">完了</span>
+              <!-- /PLAN:BADGE:U2 -->
+              <span class="badge badge-outline">機能補完</span>
+              <span class="week-time">元版 U4 の残り ／ 依存: U0</span>
+            </div>
+            <p>辞書項目画面の UI は実装済み。欠けているのは mock とテストだけ。</p>
+          </div>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            辞書項目画面の UI は<strong>実装済み</strong>（
+            <code>app/[locale]/(dashboard)/system/dict/[dictCode]/page.tsx</code>、
+            <code>dict-item-table-client.tsx</code>、<code>dict-item-dialog.tsx</code>。Items
+            ボタンは <code>dict-table-client.tsx:258</code> で有効、
+            <code>dict-api.server.ts:67,75</code> に items 取得あり）。
+          </p>
+          <ul class="accent-list">
+            <li>
+              <code>e2e/mocks/mock-server.ts</code> に
+              <code>/dicts/:dictCode/items</code> のハンドラが<strong>存在しない</strong> → mock
+              環境では items 画面の Server fetch が失敗し画面を検証できない
+            </li>
+            <li>
+              <code>e2e/specs/system.spec.ts</code> に dict items のテストが無い（既存は user / role
+              / menu / dept / dict / log の6テスト）
+            </li>
+          </ul>
+
+          <p class="block-label">実装内容</p>
+          <ol class="step-list">
+            <li>
+              <span class="step-num">1</span
+              ><span
+                ><code>mock-server.ts</code> に <code>/dicts/:dictCode/items</code> の GET / POST /
+                PUT / DELETE ハンドラを追加（既存の dict ハンドラ
+                <code>:1293</code> 付近を雛形に）</span
+              >
+            </li>
+            <li>
+              <span class="step-num">2</span
+              ><span
+                ><code>system.spec.ts</code>
+                に「辞書項目の一覧表示」「辞書項目の作成」テストを追加</span
+              >
+            </li>
+          </ol>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span
+                  >mock 環境で辞書一覧の Items
+                  から遷移し、項目の一覧・作成・編集・削除ができる</span
+                >
+              </li>
+              <li>
+                <span class="check">2</span
+                ><span><code>pnpm test:e2e</code> の system.spec が green</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span
+                >コミット: <code>test(e2e): add dict item mock handlers and coverage</code></span
+              >
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">CI=true pnpm exec playwright test e2e/specs/system.spec.ts</code></pre>
+          </div>
+
+          <h2 class="issue-title" id="cat-3-issue-3">
+            U3 products / devices / transactions のナビゲーション導線
+          </h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U3</span>
+              <!-- PLAN:BADGE:U3 -->
+              <span class="badge badge-secondary">完了</span>
+              <!-- /PLAN:BADGE:U3 -->
+              <span class="badge badge-outline">機能追加</span>
+              <span class="week-time">元版 U5 ／ 依存: U0</span>
+            </div>
+            <p>3ページは存在するのに、サイドバーに項目がなく UI から到達できない。</p>
+          </div>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            <code>components/layout/sidebar.tsx</code> のメイン項目（<code>:46-52</code> 付近）は
+            dashboard / stores / inventory / alerts のみで、<code>/products</code>
+            <code>/devices</code> <code>/transactions</code> の3ページは存在するのに UI
+            から到達できない（<code>header.tsx</code> のパンくずマップには名前がある）。文言キー
+            <code>navigation.products</code> / <code>devices</code> / <code>transactions</code>
+            は ja/en とも既存。
+          </p>
+
+          <p class="block-label">実装内容</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>components/layout/sidebar.tsx</span>
+              <span class="badge badge-outline">メイン項目配列に追加する3項目</span>
+            </div>
+            <pre><code class="language-ts">{ titleKey: 'products', href: '/products', icon: ShoppingBag },
+{ titleKey: 'devices', href: '/devices', icon: Monitor },
+{ titleKey: 'transactions', href: '/transactions', icon: Receipt },</code></pre>
+            <div class="file-card-note">
+              配置は <code>dashboard</code> の後に <code>products</code>、<code>inventory</code>
+              の後・<code>alerts</code> の前に <code>devices</code> /
+              <code>transactions</code> が自然。アイコンは <code>lucide-react</code> から。
+            </div>
+          </div>
+
+          <ul class="accent-list">
+            <li>
+              折りたたみ時のツールチップ、<code>SIDEBAR_NAV_LINK</code> の testId
+              は既存ロジックがそのまま効く。念のため確認する
+            </li>
+            <li>
+              <code>e2e/specs/navigation.spec.ts</code>
+              にサイドバーから3画面へ遷移するケースを追加（現在は dashboard / stores / inventory /
+              alerts / system 系のみ）
+            </li>
+            <li><code>e2e/specs/layout.spec.ts</code> に VRT スナップショットがあれば更新する</li>
+          </ul>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li><span class="check">1</span><span>サイドバーから3画面へ遷移できる</span></li>
+              <li>
+                <span class="check">2</span
+                ><span><code>navigation.spec.ts</code> / <code>layout.spec.ts</code> が green</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>
+                コミット:
+                <code
+                  >feat(layout): add products, devices and transactions to sidebar navigation</code
+                >
+              </span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">CI=true pnpm exec playwright test e2e/specs/navigation.spec.ts e2e/specs/layout.spec.ts</code></pre>
+          </div>
+
+          <h2 class="issue-title" id="cat-3-issue-4">U4 E2E 非決定性の点検・解消</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U4</span>
+              <!-- PLAN:BADGE:U4 -->
+              <span class="badge badge-secondary">完了</span>
+              <!-- /PLAN:BADGE:U4 -->
+              <span class="badge badge-outline">品質</span>
+              <span class="week-time">元版 U2 を再定義 ／ 依存: U0</span>
+            </div>
+            <p>
+              元版の原因分析は本リポジトリに当てはまらない。まず再現するか確認し、再現したものだけ直す。
+            </p>
+          </div>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            元版の原因分析（<code>use-table-query-params.ts</code> の
+            <code>startTransition</code>
+            競合）は本リポジトリには<strong>当てはまらない</strong>（同フックは未導入、
+            <code>router.push</code> 直接呼び出し）。指摘48
+            の元レビューファイルは本リポジトリに存在しないため、レビュー記録の追記は不要。
+          </p>
+
+          <p class="block-label">4-1. VRT の時刻固定</p>
+          <ul class="accent-list">
+            <li>
+              <code>features/dashboard/components/welcome-message.tsx:14</code> の
+              <code>getGreeting()</code> が実行時刻で挨拶文を切り替える。<strong
+                >ただし <code>WelcomeMessage</code> の利用箇所は
+                <code>app/[locale]/(dashboard)/page.tsx:61</code> の1つだけ</strong
+              >なので、時刻依存の影響を受ける VRT は <code>dashboard.spec.ts:17</code> のみ
+            </li>
+            <li>
+              <code>products.spec.ts:25</code> の VRT（<code>products-list.png</code>）に
+              <code>welcome-message</code>
+              は含まれない。<strong>時刻固定では直らない</strong>ため、揺れるなら別の非決定性要因を疑う
+              <ul>
+                <li>
+                  疑う順: ①
+                  <code>waitForLoadState('networkidle')</code>
+                  だけで一覧データの描画完了を待てていない（<code>table</code> の行数や
+                  <code>TESTIDS</code> を明示的に待つ）／② mock データのソート順が不定／③
+                  画像・フォントの読み込み遅延
+                </li>
+                <li>
+                  <strong>まず3回連続実行して再現を確認する。再現しなければ触らない</strong>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <code>page.clock.setFixedTime()</code> で時刻を固定する（<code>page.clock</code> は
+              Playwright 1.45+ で利用可能。本リポジトリは <code>@playwright/test 1.60.0</code>
+              導入済みのためアップグレード不要: 2026-09-08 に
+              <code>pnpm list @playwright/test</code>
+              で確認。着手時にバージョンが変わっていたら再確認し、1.45
+              未満ならアップグレードを先行する）
+            </li>
+            <li>
+              アラートの相対時刻の元データ（<code>e2e/mocks/handlers.ts:230</code> の
+              <code>mockAlerts[].createdAt</code
+              >）は固定文字列なので、ブラウザ側の現在時刻を止めれば揺れないはず
+            </li>
+            <li>
+              スナップショット更新が必要なら
+              <code>pnpm exec playwright test --update-snapshots</code> を実行し、<strong
+                >差分画像を目視確認する</strong
+              >
+            </li>
+          </ul>
+
+          <p class="block-label">4-2. フィルタリセットの安定性確認</p>
+          <ul class="accent-list">
+            <li>
+              対象: <code>stores.spec.ts:24</code> / <code>devices.spec.ts:38</code> /
+              <code>transactions.spec.ts:39</code> のリセット後 <code>toHaveURL</code>
+            </li>
+            <li>
+              3回連続で実行して再現しなければ対応不要。<strong>再現した場合のみ</strong>待機条件を修正する（
+              <code>timeout</code> の延長で誤魔化さない）
+            </li>
+          </ul>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span><span>対象 spec を3回連続で実行して全て green</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>コミット: <code>test(e2e): stabilize VRT with fixed clock</code></span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">CI=true pnpm exec playwright test e2e/specs/dashboard.spec.ts e2e/specs/products.spec.ts e2e/specs/stores.spec.ts e2e/specs/devices.spec.ts e2e/specs/transactions.spec.ts</code></pre>
+          </div>
+        </section>
+
+        <!-- ============ カテゴリ4: U5-U13 i18n ============ -->
+        <section class="category-section" id="cat-4" data-category="U5-U13 i18n" hidden>
+          <div class="category-heading">
+            <span>04</span>
+            <h2>U5-U13 i18n</h2>
+          </div>
+          <p class="category-lead">
+            機能ごとに日本語ハードコードを潰す。1機能＝1コミット。U5 の products
+            で方式を確定し、以降は同じ手順を繰り返す。
+          </p>
+
+          <h2 class="issue-title" id="cat-4-issue-1">共通手順（U5 で型を作り、U6 以降は踏襲）</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U5-U13</span>
+              <!-- PLAN:BADGE:U5-U13 -->
+              <span class="badge badge-outline">0/9 完了</span>
+              <!-- /PLAN:BADGE:U5-U13 -->
+              <span class="badge badge-outline">i18n / 0710 指摘25</span>
+              <span class="week-time">9ユニット</span>
+            </div>
+            <p>
+              本リポジトリは i18n が部分適用済み（<code>useTranslations</code>
+              使用は16ファイル）。<code>system</code> namespace は128キーと充実しているが、features
+              配下にはまだ日本語ハードコードが多い。
+            </p>
+          </div>
+
+          <p class="block-label">実装内容</p>
+          <ol class="step-list">
+            <li>
+              <span class="step-num">1</span><span>対象機能配下から日本語リテラルを洗い出す</span>
+            </li>
+            <li>
+              <span class="step-num">2</span
+              ><span
+                ><code>messages/ja.json</code> の該当 namespace に既存キーがあれば再利用する</span
+              >
+            </li>
+            <li>
+              <span class="step-num">3</span
+              ><span
+                >不足分のみキーを追加。<strong
+                  ><code>ja.json</code> と <code>en.json</code> に必ず同じキーを追加する</strong
+                ></span
+              >
+            </li>
+            <li>
+              <span class="step-num">4</span
+              ><span
+                >Client Component は <code>useTranslations</code>、Server Component は
+                <code>getTranslations</code></span
+              >
+            </li>
+            <li>
+              <span class="step-num">5</span>
+              <div class="step-body">
+                <span
+                  >Zod スキーマのエラーメッセージは <code>validation</code> namespace
+                  に寄せる。方式（a: キー名を返して component 側で <code>t()</code> / b:
+                  <code>t</code> を渡すスキーマ生成関数）は U5 で確定し、以降踏襲する</span
+                >
+                <ul class="accent-list">
+                  <li>
+                    判断基準:
+                    <strong>(b)（スキーマ生成関数）を採用する。</strong>
+                    現行実装の実測（2026-09-12）に基づく:
+                    <ul>
+                      <li>
+                        スキーマは13ファイル（<code>features/{products,stores,devices,inventory}/schemas/</code>、<code
+                          >features/system/schemas/</code
+                        >
+                        8件、<code>features/auth/components/login-form.tsx</code> 内に1件）
+                      </li>
+                      <li>
+                        エラー表示は
+                        <code>{form.formState.errors.&lt;field&gt;.message}</code> を
+                        <code>&lt;p&gt;</code> に直接流す形が <strong>44箇所</strong>（例:
+                        <code>features/products/components/product-form.tsx:43,56</code
+                        >、<code>app/[locale]/(dashboard)/profile/page.tsx</code>）
+                      </li>
+                      <li>
+                        (a) を採ると<strong
+                          >この44箇所すべての JSX を
+                          <code>t(errors.&lt;field&gt;.message)</code> に書き換える</strong
+                        >必要があり、U5〜U13 のスコープが大きく膨らむ
+                      </li>
+                      <li>
+                        <code>max(100, '100文字以内で入力してください')</code>
+                        のように<strong>引数を含むメッセージ</strong>があり、キー名だけを返す (a)
+                        では
+                        <code>{max: 100}</code> の補間ができない
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    (b) の欠点（スキーマが
+                    <code>t</code>
+                    に依存する）は、本リポジトリに<strong>ユニットテストが無く</strong>（<code
+                      >*.test.ts</code
+                    >
+                    ゼロ、テストは Playwright E2E のみ）、スキーマの他 component
+                    再利用も現状ゼロのため実害が無い
+                  </li>
+                  <li>
+                    <strong><code>validation</code> namespace の共通キーは U5 で確定させる</strong
+                    >（<code>required</code> / <code>maxLength</code> / <code>minValue</code> /
+                    <code>invalidFormat</code> 等）。U6
+                    以降は原則このキーを再利用し、機能固有の文言のみ追加する
+                  </li>
+                  <li>
+                    確定した方式は <code>CONTRIBUTING.md</code> の「i18n の書き方」節に記録し、U6
+                    以降の担当者はそこを参照する
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">6</span
+              ><span
+                ><strong
+                  >既存 E2E
+                  がテキスト照合している文言は、現行の表示文字列と一字一句同じにする。変える場合は
+                  spec も同じコミットで直す</strong
+                ></span
+              >
+            </li>
+          </ol>
+
+          <p class="block-label">Zod 方式 (b) の実装形（U5 で型を作る）</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span><code>features/products/schemas/product-schema.ts</code></span>
+              <span class="badge badge-outline">ts</span>
+            </div>
+            <pre><code class="language-ts">import type { useTranslations } from 'next-intl';
+type T = ReturnType&lt;typeof useTranslations&lt;'validation'&gt;&gt;;
+
+export const createProductFormSchema = (t: T) =&gt;
+  z.object({
+    productCode: z.string().min(1, t('required')),
+    productName: z.string().min(1, t('required')).max(100, t('maxLength', { max: 100 })),
+  });
+export type ProductFormValues = z.infer&lt;ReturnType&lt;typeof createProductFormSchema&gt;&gt;;</code></pre>
+          </div>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span
+                >component 側。JSX（<code>errors.&lt;field&gt;.message</code>
+                の表示）は一切変更しない</span
+              >
+              <span class="badge badge-outline">tsx</span>
+            </div>
+            <pre><code class="language-tsx">const t = useTranslations('validation');
+const schema = useMemo(() =&gt; createProductFormSchema(t), [t]);
+const form = useForm({ resolver: zodResolver(schema) });</code></pre>
+          </div>
+          <ul class="accent-list">
+            <li>
+              <code>useMemo</code> を省くと毎レンダーで resolver が作り直されるので<strong
+                >必須</strong
+              >
+            </li>
+            <li>
+              <code>ProductFormValues</code> の export 名・型は据え置き、既存の import
+              側に影響を出さない
+            </li>
+          </ul>
+
+          <p class="block-label">着手時に洗い出す: 既存 spec の文言照合</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>対象機能の spec が何を文言照合しているか</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">grep -rn "getByText('\|getByRole('button', { name: '\|getByLabel('\|getByPlaceholder('" e2e/specs/&lt;domain&gt;*.spec.ts</code></pre>
+          </div>
+          <p>照合文言は2種類ある。<strong>扱いが違うので分けて判断する</strong>。</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>種別</th>
+                  <th>例</th>
+                  <th>i18n 化の影響</th>
+                  <th>対応</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>mock データ由来</td>
+                  <td>
+                    <code>getByText('テスト商品1')</code> / <code>東京本店</code> /
+                    <code>レジ端末1</code>
+                  </td>
+                  <td><strong>無し</strong>（<code>e2e/mocks/</code> のデータ）</td>
+                  <td>触らない</td>
+                </tr>
+                <tr>
+                  <td>UI 文言由来</td>
+                  <td>
+                    <code>getByText('店舗を登録しました')</code> /
+                    <code>getByRole('button', { name: 'キャンセル' })</code>
+                  </td>
+                  <td><strong>あり</strong>（1文字変えれば落ちる）</td>
+                  <td>
+                    ja の値を現行文字列と完全一致で移す。変える場合は同じコミットで spec も直す
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="block-label">実測済みの UI 文言照合（2026-09-12）— 着手前チェックリスト</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ユニット</th>
+                  <th>spec:行</th>
+                  <th>照合文言</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>U5 products</td>
+                  <td><code>products-crud.spec.ts:44</code></td>
+                  <td><code>商品を作成しました</code></td>
+                </tr>
+                <tr>
+                  <td>U6 stores</td>
+                  <td><code>stores.spec.ts:36</code></td>
+                  <td><code>店舗を登録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U7 devices</td>
+                  <td><code>devices.spec.ts:62</code></td>
+                  <td><code>デバイスを登録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U8 inventory</td>
+                  <td><code>inventory.spec.ts:95</code></td>
+                  <td><code>廃棄を記録しました</code></td>
+                </tr>
+                <tr>
+                  <td>U11 dashboard</td>
+                  <td><code>navigation.spec.ts:102</code></td>
+                  <td><code>再試行</code></td>
+                </tr>
+                <tr>
+                  <td>U12 system</td>
+                  <td><code>system.spec.ts:20,21,23,49,53,75,78</code></td>
+                  <td>
+                    <code>Search</code> / <code>Reset</code> / <code>Add User</code> /
+                    <code>Add New Role</code> / <code>Permissions</code> / <code>Create Menu</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td>U12 system</td>
+                  <td><code>system.spec.ts:24,25,28,50,54,58,79</code></td>
+                  <td>
+                    <code>ユーザーの追加</code> / <code>ユーザーの編集</code> /
+                    <code>役割の追加</code> / <code>役割の編集</code> / <code>権限設定</code> /
+                    <code>メニューの追加</code> / <code>キャンセル</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <code>products.spec.ts:79-81</code> のバリデーションエラー確認は
+            <code>.text-destructive</code> のクラス照合で、<strong>文言に依存しない</strong>。U5 の
+            Zod i18n 化で壊れない。
+          </p>
+
+          <div class="callout callout-danger">
+            <h4>demo2 固有の注意: system.spec.ts の英日混在照合</h4>
+            <p>
+              <code>system.spec.ts</code> は英語ボタン名（<code>Search</code> / <code>Reset</code> /
+              <code>Add New Dictionary</code>）と日本語（<code>字典の追加</code> /
+              <code>キャンセル</code>）が混在した文言を照合している。<code>字典</code>
+              は誤字（正しくは <code>辞書</code>、<code>dict-dialog.tsx:84</code>）なので、U12 で
+              <code>辞書の追加</code> に直し、spec を同時に更新する。
+            </p>
+          </div>
+
+          <p class="block-label">受入条件（各ユニット共通）</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span>対象機能に日本語リテラルが残っていない（コメントを除く）</span>
+              </li>
+              <li>
+                <span class="check">2</span
+                ><span><code>ja.json</code> と <code>en.json</code> のキー構造が一致する</span>
+              </li>
+              <li>
+                <span class="check">3</span
+                ><span
+                  ><strong
+                    ><code>en.json</code> の値が日本語のままコピーされていないこと</strong
+                  ></span
+                >
+              </li>
+              <li><span class="check">4</span><span>対象機能の E2E spec が green</span></li>
+              <li>
+                <span class="check">5</span
+                ><span><code>/en/...</code> で画面を開いて英語表示になることを目視確認する</span>
+              </li>
+              <li>
+                <span class="check">6</span
+                ><span
+                  ><strong><code>/en</code> の自動回帰</strong>: 現在 <code>e2e/specs/</code> に
+                  <code>/en</code> ルートを開く spec は<strong>1件も無い</strong>ため、目視確認は CI
+                  に残らない。U5 で
+                  <code>e2e/specs/i18n.spec.ts</code>
+                  を新規作成し、以降のユニットでケースを1件ずつ追加する</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>U5 で作る雛形。ja の文言が en に混入していたら落ちる</span>
+              <span class="badge badge-outline">ts</span>
+            </div>
+            <pre><code class="language-ts">test('商品一覧が英語で表示される', async ({ page }) =&gt; {
+  await login(page);
+  await page.goto('/en/products');
+  await expect(page.getByRole('main')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('main')).not.toHaveText(/[ぁ-んァ-ヶ一-龥]/);
+});</code></pre>
+          </div>
+          <ul class="accent-list">
+            <li>
+              mock データ（<code>テスト商品1</code> 等）が <code>main</code> 内に出る画面では
+              <code>not.toHaveText</code>
+              が使えない。その場合は見出し・ボタン等の<strong>特定要素</strong>に絞って英語文言を照合する
+            </li>
+            <li>
+              VRT スナップショットは ja / en で別ファイルになり維持コストが増えるため、<code
+                >/en</code
+              >
+              では<strong>撮らない</strong>
+            </li>
+          </ul>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>リテラル洗い出しと、キー構造・値コピー漏れの機械判定</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash"># 日本語リテラルの洗い出し
+grep -rn "[ぁ-んァ-ヶ一-龥]" features/&lt;domain&gt; --include="*.tsx" --include="*.ts"
+
+# キー構造の一致（現在の基準値: 376 キーで一致済み）
+node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');const f=(o,p='')=&gt;Object.entries(o).flatMap(([k,v])=&gt;typeof v==='object'?f(v,p+k+'.'):[p+k]);const A=f(a).sort(),B=f(b).sort();console.log(A.length,B.length,JSON.stringify(A.filter(x=&gt;!B.includes(x))),JSON.stringify(B.filter(x=&gt;!A.includes(x))))"
+
+# en に日本語が残っていないか（出力が [] になること）
+node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');const w=(o,p='')=&gt;Object.entries(o).flatMap(([k,v])=&gt;typeof v==='object'?w(v,p+k+'.'):[[p+k,v]]);const B=Object.fromEntries(w(b));console.log(w(a).filter(([k,v])=&gt;B[k]===v&amp;&amp;/[ぁ-んァ-ヶ一-龥]/.test(v)).map(([k])=&gt;k))"</code></pre>
+          </div>
+
+          <p class="block-label">コミット例</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>1機能＝1コミット</span>
+              <span class="badge badge-outline">git</span>
+            </div>
+            <pre><code class="language-bash">refactor(products): move hardcoded strings to i18n messages</code></pre>
+          </div>
+
+          <h2 class="issue-title" id="cat-4-issue-2">ユニット別の規模と注意点</h2>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            規模に差があるため、機能ごとの概数（日本語リテラル含有ファイル数・コメント含む）と注意点を分けて持つ。
+          </p>
+
+          <p class="block-label">実装内容</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>機能</th>
+                  <th>概数</th>
+                  <th>補足</th>
+                  <th>状態</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>U5</td>
+                  <td>products</td>
+                  <td>7</td>
+                  <td>
+                    <strong>基準実装</strong>。方式を確定し <code>CONTRIBUTING.md</code> に「i18n
+                    の書き方」節を追記する
+                  </td>
+                  <td>
+                    <!-- PLAN:BADGE:U5 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U5 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U6</td>
+                  <td>stores</td>
+                  <td>7</td>
+                  <td></td>
+                  <td>
+                    <!-- PLAN:BADGE:U6 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U6 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U7</td>
+                  <td>devices</td>
+                  <td>10</td>
+                  <td>U3 でサイドバーに載るので表記の整合を取る</td>
+                  <td>
+                    <!-- PLAN:BADGE:U7 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U7 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U8</td>
+                  <td>inventory</td>
+                  <td>11</td>
+                  <td><code>inventory-form.tsx</code> / 各ダイアログを含む</td>
+                  <td>
+                    <!-- PLAN:BADGE:U8 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U8 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U9</td>
+                  <td>transactions</td>
+                  <td>7</td>
+                  <td>CSV エクスポートのヘッダ文言も対象</td>
+                  <td>
+                    <!-- PLAN:BADGE:U9 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U9 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U10</td>
+                  <td>alerts</td>
+                  <td>10</td>
+                  <td>
+                    STOMP 接続状態の表示文言を含む（<code>alert-list-client.tsx</code>
+                    は一部適用済み）
+                  </td>
+                  <td>
+                    <!-- PLAN:BADGE:U10 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U10 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U11</td>
+                  <td>dashboard</td>
+                  <td>6</td>
+                  <td>
+                    挨拶文は U4 の VRT 時刻固定と整合を取る。<strong>ja の文言は変えない</strong>
+                  </td>
+                  <td>
+                    <!-- PLAN:BADGE:U11 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U11 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U12</td>
+                  <td>system</td>
+                  <td>45</td>
+                  <td>
+                    最大。user / role / menu / dept / dict / log / config / notice
+                    の<strong>8機能</strong>で分割コミット可（進捗 0/8。dict item は dict に含める）
+                  </td>
+                  <td>
+                    <!-- PLAN:BADGE:U12 -->
+                    <span class="badge badge-outline">未着手 0/8</span>
+                    <!-- /PLAN:BADGE:U12 -->
+                  </td>
+                </tr>
+                <tr>
+                  <td>U13</td>
+                  <td>その他</td>
+                  <td>10</td>
+                  <td>
+                    categories 4 / files 2 / payments 3 / auth 1。components の無い機能は hooks/lib
+                    のユーザー向け文言のみ
+                  </td>
+                  <td>
+                    <!-- PLAN:BADGE:U13 -->
+                    <span class="badge badge-outline">未着手</span>
+                    <!-- /PLAN:BADGE:U13 -->
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span><span>9ユニットすべてで上記の共通受入条件を満たす</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ============ カテゴリ5: U14-U15 仕上げ ============ -->
+        <section class="category-section" id="cat-5" data-category="U14-U15 仕上げ" hidden>
+          <div class="category-heading">
+            <span>05</span>
+            <h2>U14-U15 仕上げ</h2>
+          </div>
+          <p class="category-lead">
+            境界をルールで固定し、単独では解消できない残リスクを正本に記録する。
+          </p>
+
+          <h2 class="issue-title" id="cat-5-issue-1">U14 feature 間 import 境界の ESLint 強制</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U14</span>
+              <!-- PLAN:BADGE:U14 -->
+              <span class="badge badge-outline">未着手</span>
+              <!-- /PLAN:BADGE:U14 -->
+              <span class="badge badge-outline">品質 / 0710 指摘12</span>
+              <span class="week-time">依存: U5〜U13</span>
+            </div>
+            <p>feature 間の依存が無制限になっている。公開 API 経由だけを許可する。</p>
+          </div>
+
+          <p class="block-label">実装内容</p>
+          <ol class="step-list">
+            <li>
+              <span class="step-num">1</span>
+              <div class="step-body">
+                <span
+                  ><code>eslint.config.mjs</code> の <code>no-restricted-imports</code>
+                  に、他 feature の深い階層への import を禁止するパターンを追加する。公開 API（
+                  <code>@/features/&lt;domain&gt;</code> の
+                  <code>index.ts</code>）経由のみ許可する。<strong
+                    >必ず
+                    <code>files</code>
+                    でスコープを限定した独立ブロックとして追加する。既存ブロックに混ぜない</strong
+                  ></span
+                >
+                <ul class="accent-list">
+                  <li>
+                    現行 <code>eslint.config.mjs:14-46</code> の
+                    <code>no-restricted-imports</code> は <code>files</code>
+                    の無いルートレベル設定で、<strong>全ファイルに適用される</strong>。ここに
+                    feature 深掘り禁止パターンを足すと
+                    <code>app/[locale]/(dashboard)/**/page.tsx</code> や
+                    <code>components/layout/</code> からの import まで巻き込み、<code
+                      >pnpm lint</code
+                    >
+                    / <code>pnpm build</code> が大量に落ちる
+                  </li>
+                  <li>
+                    禁止するのは <strong>feature 間（横方向）</strong> のみ。<code>app/</code> や
+                    <code>components/</code> から feature への
+                    import（<strong>縦方向</strong>）は<strong>許可</strong>する
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">2</span
+              ><span
+                ><code>index.ts</code> が無い feature（<strong
+                  >alerts / auth / dashboard / files / products</strong
+                >）に公開 API として <code>index.ts</code> を追加する（既存: categories / devices /
+                inventory / payments / stores / system / transactions）</span
+              >
+            </li>
+            <li>
+              <span class="step-num">3</span>
+              <div class="step-body">
+                <span
+                  ><code>useStoreOptions</code
+                  >（<code>features/stores/hooks/use-stores.ts:40</code>）は
+                  <strong>transactions / inventory / devices の3 feature・5箇所</strong
+                  >から参照されている（<code>transaction-table-client.tsx:14</code> /
+                  <code>inventory-form.tsx:21</code> / <code>inventory-table-client.tsx:32</code> /
+                  <code>device-table-client.tsx:16</code> / <code>device-form.tsx:20</code>）</span
+                >
+                <ul class="accent-list">
+                  <li>
+                    <strong
+                      >方針は先に確定させる: <code>features/stores/index.ts</code> から re-export
+                      し、利用側の import を <code>@/features/stores</code> に付け替える</strong
+                    >（<code>lib/hooks/</code> へは移さない）
+                  </li>
+                  <li>
+                    判断理由: このフックは store ドメインの API（<code>store-api.client</code>）と
+                    TanStack Query のキーに依存しており、stores feature の所有物である。<code
+                      >lib/hooks/</code
+                    >
+                    へ出すと共有層が features の API に逆依存し、U14
+                    が消そうとしている結合方向の問題がそのまま残る
+                  </li>
+                  <li>
+                    <code>lib/hooks/</code>
+                    へ出すのは「どの feature
+                    にも属さない純粋なユーティリティフック」に限る。今回の対象には無い
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">4</span
+              ><span
+                ><code>_review/review_0710_adr-architecture.claude.md</code>
+                の末尾に指摘12の対応ブロックを追記する</span
+              >
+            </li>
+          </ol>
+
+          <p class="block-label">追加するルールブロック</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span
+                >既存のルートレベルブロックとは<strong>別に</strong>、<code>eslint.config.mjs</code>
+                の配列の後ろへ追加する</span
+              >
+              <span class="badge badge-outline">js</span>
+            </div>
+            <pre><code class="language-js">{
+  files: ['features/**/*.{ts,tsx}'],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@/features/*/*'],
+            message: '他 feature へは公開 API（@/features/&lt;domain&gt;）経由で import すること。',
+          },
+        ],
+      },
+    ],
+  },
+},</code></pre>
+          </div>
+          <div class="callout callout-danger">
+            <h4>Flat Config の上書きに注意</h4>
+            <p>
+              同じルール名を後段ブロックが再指定すると<strong>上書き</strong>になる。上記ブロックは
+              <code>features/**</code> にのみ効くため、<code>features/</code> 配下では既存の
+              <code>paths</code> 指定（<code>@/e2e/testids</code> / <code>next/link</code> /
+              <code>next/navigation</code> の禁止）が消える。<strong
+                >既存の <code>paths</code> 3件を上記ブロックにも書き写して両立させること</strong
+              >（<code>features/</code> 配下こそ <code>next/link</code> 禁止が効いてほしい箇所）。
+            </p>
+            <p>
+              <code>group: ['@/features/*/*']</code> は自 feature 内の深掘りも巻き込むが、自 feature
+              内は相対
+              import（<code>../hooks/use-products</code>）が既存の書き方なので実害は出ない。着手時に
+              <code>grep -rn "from '@/features/" features</code> で確認する。
+            </p>
+          </div>
+
+          <p class="block-label">判明している違反（2026-09-06 実測。着手前に再検証すること）</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>i18n ユニットで import が増減するため、U14 着手前に再実測する</span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">grep -rn "from '@/features/" features --include="*.ts" --include="*.tsx" | grep -v "index"</code></pre>
+          </div>
+          <ul class="accent-list">
+            <li>
+              <code>features/products/components/product-table-client.tsx</code> →
+              <code>@/features/categories/hooks/use-categories</code>
+            </li>
+            <li>
+              <code>features/transactions/components/transaction-table-client.tsx</code> →
+              <code>@/features/stores/hooks/use-stores</code>
+            </li>
+            <li>
+              <code>features/inventory/components/inventory-form.tsx</code> →
+              <code>@/features/products/lib/product-api.client</code> と
+              <code>@/features/stores/hooks/use-stores</code>
+            </li>
+            <li>
+              <code>features/inventory/components/inventory-table-client.tsx</code> →
+              <code>@/features/stores/hooks/use-stores</code>
+            </li>
+            <li>
+              <code>features/devices/components/device-table-client.tsx</code> /
+              <code>device-form.tsx</code> → <code>@/features/stores/hooks/use-stores</code>
+            </li>
+            <li>
+              <code>features/payments/types/payment.ts</code> →
+              <code>@/features/transactions/types/transaction</code>（type-only）
+            </li>
+          </ul>
+
+          <div class="callout callout-primary">
+            <h4>スコープの但し書き（重要）</h4>
+            <p>
+              0710 指摘12 は2論点を含む。(1) ESLint 境界ルールが feature
+              ごとの手動列挙でスケールしない ← U14 で対応する。(2) Server/Client
+              境界のカバレッジに穴がある ← U14 のスコープ外。
+            </p>
+            <p>
+              (2) について、本リポジトリも <code>lib/api/server.ts:1</code> に
+              <code>import 'server-only'</code> があり（<code>server-only@^0.0.1</code> 導入済み）、
+              Client から server モジュールへの import は推移的にビルド時エラーになる。U14 で (2)
+              まで対応しない場合は、<strong
+                >レビュー記録で指摘12を「✅ 対応完了」にせず、(2) を「⚠️
+                要対応（別タスク）」として明記する</strong
+              >。
+            </p>
+          </div>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span
+                  ><code>pnpm lint</code>
+                  が通り、意図的な例外（<code>eslint-disable</code>）がゼロ</span
+                >
+              </li>
+              <li>
+                <span class="check">2</span><span><code>pnpm build</code> が通る</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span
+                >コミット:
+                <code>refactor(features): enforce cross-feature import boundaries</code></span
+              >
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">pnpm lint &amp;&amp; pnpm build</code></pre>
+          </div>
+
+          <h2 class="issue-title" id="cat-5-issue-2">U15 WS チケット方式の残リスク明文化</h2>
+
+          <div class="week-head">
+            <div class="week-meta">
+              <span class="week-id">U15</span>
+              <!-- PLAN:BADGE:U15 -->
+              <span class="badge badge-outline">未着手</span>
+              <!-- /PLAN:BADGE:U15 -->
+              <span class="badge badge-outline">設計 / 0710 指摘5</span>
+              <span class="week-time">依存なし</span>
+            </div>
+            <p>短寿命チケットを検証した後に、最終的に生の accessToken が JS へ返っている。</p>
+          </div>
+
+          <p class="block-label">現状と課題</p>
+          <p>
+            <code>app/api/ws/connect/route.ts:22</code>
+            は短寿命チケットを検証した後に<strong>生の accessToken を JS に返している</strong>。
+            恒久対応には Backend 側の改修が必要で、FE 単独では解消できない。
+          </p>
+
+          <p class="block-label">実装内容</p>
+          <ul class="accent-list">
+            <li>
+              <code>_docs/adr/ADR-005-stomp-realtime.md</code>
+              に「現状の残リスク（accessToken が JS に露出する）」「Backend
+              側に必要な対応」「移行条件」を追記する
+            </li>
+            <li>
+              FE 側の緩和状況:
+              <code>features/alerts/hooks/use-stomp.ts</code> はトークンをローカル変数で取得後すぐ
+              <code>connectHeaders</code> に渡している（ <code>:101-102</code> 付近）。長寿命 state
+              への保持がなければ追加対応は不要。接続確立後の参照破棄だけ確認する
+            </li>
+            <li>
+              <code>_review/review_0710_adr-architecture.claude.md</code>
+              の末尾に指摘5の対応ブロックを追記する
+            </li>
+          </ul>
+
+          <p class="block-label">受入条件</p>
+          <div class="deliverable">
+            <ul>
+              <li>
+                <span class="check">1</span
+                ><span>ADR-005 に残リスク・Backend 側必要対応・移行条件が明記されている</span>
+              </li>
+              <li>
+                <span class="check">2</span
+                ><span><code>e2e/specs/alerts.spec.ts</code> が green</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="block-label">検証コマンド</p>
+          <div class="file-card">
+            <div class="file-card-head">
+              <span>
+                コミット:
+                <code>docs(adr): record remaining ws ticket risk and migration conditions</code>
+              </span>
+              <span class="badge badge-outline">shell</span>
+            </div>
+            <pre><code class="language-bash">CI=true pnpm exec playwright test e2e/specs/alerts.spec.ts</code></pre>
+          </div>
+        </section>
+
+        <p class="footnote">
+          正本は <a href="plan_0906_features.md">plan_0906_features.md</a> です。本 HTML は
+          <code>_scripts/build_plan_html.py</code> がアンカー内ブロックだけを書き換える生成物です。
+        </p>
+      </article>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var root = document.documentElement;
+        var toc = document.getElementById('toc');
+        var sidebarLinks = Array.prototype.slice.call(document.querySelectorAll('#sidebar-nav a'));
+        var sections = Array.prototype.slice.call(document.querySelectorAll('.category-section'));
+
+        /* ---------- 言語別ハイライト（外部ライブラリ非依存） ---------- */
+        var languageRules = {
+          ts: [
+            { pattern: '\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/', className: 'token-comment' },
+            {
+              pattern: '"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'|`(?:\\\\.|[^`\\\\])*`',
+              className: 'token-string',
+            },
+            {
+              pattern:
+                '\\b(?:async|await|const|let|else|export|extends|false|function|if|import|interface|new|null|return|true|type|undefined|void|try|catch|class)\\b',
+              className: 'token-keyword',
+            },
+            {
+              pattern: '\\b(?:string|number|boolean|unknown|never|Promise|Props)\\b',
+              className: 'token-type',
+            },
+            { pattern: '\\b\\d+(?:\\.\\d+)?\\b', className: 'token-number' },
+          ],
+          java: [
+            { pattern: '\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/', className: 'token-comment' },
+            { pattern: '"(?:\\\\.|[^"\\\\])*"', className: 'token-string' },
+            {
+              pattern:
+                '\\b(?:class|enum|extends|final|if|implements|import|interface|new|null|package|private|public|protected|return|static|throw|void)\\b',
+              className: 'token-keyword',
+            },
+            {
+              pattern: '\\b(?:String|Long|Integer|Boolean|List|PageResult|Result)\\b',
+              className: 'token-type',
+            },
+            { pattern: '\\b\\d+(?:\\.\\d+)?\\b', className: 'token-number' },
+          ],
+          go: [
+            { pattern: '\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/', className: 'token-comment' },
+            { pattern: '"(?:\\\\.|[^"\\\\])*"|`[^`]*`', className: 'token-string' },
+            {
+              pattern:
+                '\\b(?:const|defer|else|for|func|go|if|import|interface|map|package|range|return|struct|type|var)\\b',
+              className: 'token-keyword',
+            },
+            { pattern: '\\b(?:string|int|int64|bool|error)\\b', className: 'token-type' },
+            { pattern: '\\b\\d+(?:\\.\\d+)?\\b', className: 'token-number' },
+          ],
+          vue: [
+            { pattern: '&lt;!--[\\s\\S]*?--&gt;', className: 'token-comment' },
+            {
+              pattern: '"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'',
+              className: 'token-string',
+            },
+            {
+              pattern: '\\b(?:const|computed|defineProps|export|import|ref|return|watch)\\b',
+              className: 'token-keyword',
+            },
+            { pattern: '&lt;\\/?[a-zA-Z][\\w:-]*', className: 'token-type' },
+            { pattern: '\\b\\d+(?:\\.\\d+)?\\b', className: 'token-number' },
+          ],
+          html: [
+            { pattern: '&lt;!--[\\s\\S]*?--&gt;', className: 'token-comment' },
+            {
+              pattern: '"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\'',
+              className: 'token-string',
+            },
+            { pattern: '&lt;\\/?[a-zA-Z][\\w:-]*', className: 'token-type' },
+            { pattern: '\\b[a-zA-Z-]+(?==)', className: 'token-keyword' },
+            { pattern: '\\b\\d+(?:\\.\\d+)?\\b', className: 'token-number' },
+          ],
+        };
+
+        function escapeHtml(text) {
+          return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function highlight(text, rules) {
+          var source = rules
+            .map(function (rule) {
+              return '(' + rule.pattern + ')';
+            })
+            .join('|');
+          var re = new RegExp(source, 'g');
+          return escapeHtml(text).replace(re, function () {
+            var args = arguments;
+            for (var i = 1; i <= rules.length; i++) {
+              if (args[i] !== undefined) {
+                return '<span class="' + rules[i - 1].className + '">' + args[i] + '</span>';
+              }
+            }
+            return args[0];
+          });
+        }
+
+        Array.prototype.slice
+          .call(document.querySelectorAll('pre > code[class^="language-"]'))
+          .forEach(function (block) {
+            var lang = block.className.replace('language-', '');
+            var rules = languageRules[lang];
+            if (!rules) return;
+            block.innerHTML = highlight(block.textContent, rules);
+          });
+
+        /* ---------- 右上固定TOC（表示中カテゴリの h2.issue-title を自動収集） ---------- */
+        function buildToc(section) {
+          var headings = Array.prototype.slice.call(section.querySelectorAll('h2.issue-title'));
+          toc.innerHTML = '';
+          if (headings.length === 0) return;
+
+          var title = document.createElement('div');
+          title.className = 'toc-title';
+          title.textContent = '現在カテゴリ';
+
+          var category = document.createElement('div');
+          category.className = 'toc-category';
+          category.textContent = section.dataset.category || '';
+
+          var list = document.createElement('ul');
+          headings.forEach(function (heading, index) {
+            var item = document.createElement('li');
+            var link = document.createElement('a');
+            var num = document.createElement('span');
+            var label = document.createElement('span');
+            num.textContent = ('0' + (index + 1)).slice(-2);
+            label.textContent = heading.textContent.trim();
+            link.href = '#' + heading.id;
+            link.appendChild(num);
+            link.appendChild(label);
+            item.appendChild(link);
+            list.appendChild(item);
+          });
+
+          toc.appendChild(title);
+          toc.appendChild(category);
+          toc.appendChild(list);
+          observeHeadings(headings);
+        }
+
+        var headingObserver = null;
+
+        function observeHeadings(headings) {
+          if (headingObserver) headingObserver.disconnect();
+          if (!('IntersectionObserver' in window)) return;
+          headingObserver = new IntersectionObserver(
+            function (entries) {
+              var visible = entries.filter(function (entry) {
+                return entry.isIntersecting;
+              });
+              if (!visible.length) return;
+              var id = visible[0].target.id;
+              Array.prototype.slice.call(toc.querySelectorAll('a')).forEach(function (a) {
+                a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+              });
+            },
+            { rootMargin: '-10% 0px -70% 0px', threshold: 0 }
+          );
+          headings.forEach(function (h) {
+            headingObserver.observe(h);
+          });
+        }
+
+        /* ---------- カテゴリ単位で1ページ ---------- */
+        function activate(id, updateHash) {
+          var target = document.getElementById(id);
+          if (!target || !target.classList.contains('category-section')) return;
+
+          sections.forEach(function (section) {
+            section.hidden = section !== target;
+          });
+          sidebarLinks.forEach(function (link) {
+            var active = link.getAttribute('href') === '#' + id;
+            link.classList.toggle('active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+          });
+
+          buildToc(target);
+          if (updateHash && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + id);
+          }
+          window.scrollTo({ top: 0 });
+        }
+
+        sidebarLinks.forEach(function (link) {
+          link.addEventListener('click', function (event) {
+            event.preventDefault();
+            activate(link.getAttribute('href').slice(1), true);
+          });
+        });
+
+        var initial = (window.location.hash || '').slice(1);
+        var initialSection = initial && document.getElementById(initial);
+        activate(
+          initialSection && initialSection.classList.contains('category-section')
+            ? initial
+            : sections[0].id,
+          false
+        );
+
+        /* ---------- テーマ ---------- */
+        var stored = localStorage.getItem('learning-map-theme');
+        if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
+
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+          var current =
+            root.dataset.theme ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          var next = current === 'dark' ? 'light' : 'dark';
+          root.dataset.theme = next;
+          localStorage.setItem('learning-map-theme', next);
+        });
+      })();
+    </script>
+  </body>
+</html>

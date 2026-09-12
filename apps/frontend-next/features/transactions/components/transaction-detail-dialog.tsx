@@ -18,12 +18,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TESTIDS } from '@/lib/testing/testids';
 import { formatCurrency, formatDateTime } from '@/lib/format';
-import {
-  PaymentMethodLabel,
-  PaymentMethodIcon,
-  type Transaction,
-} from '../types/transaction';
+import { PaymentMethodLabel, PaymentMethodIcon, type Transaction } from '../types/transaction';
 
 interface TransactionDetailDialogProps {
   transaction: Transaction | null;
@@ -47,7 +44,7 @@ export function TransactionDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent data-testid={TESTIDS.TRANSACTION_DETAIL_DIALOG} className="max-w-lg">
         <DialogHeader>
           <DialogTitle>💳 決済詳細 - {transaction.orderNumber}</DialogTitle>
         </DialogHeader>
@@ -55,9 +52,7 @@ export function TransactionDetailDialog({
         <div className="space-y-4">
           {/* 決済情報 */}
           <section>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
-              決済情報
-            </h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">決済情報</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">注文番号</span>
@@ -98,6 +93,7 @@ export function TransactionDetailDialog({
                       {transaction.referenceId}
                     </code>
                     <Button
+                      data-testid={TESTIDS.TRANSACTION_COPY_REFERENCE}
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
@@ -114,10 +110,11 @@ export function TransactionDetailDialog({
           {/* 購入商品 */}
           {transaction.details && transaction.details.length > 0 && (
             <section>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                購入商品
-              </h3>
-              <div className="rounded-md border">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">購入商品</h3>
+              <div
+                data-testid={TESTIDS.TRANSACTION_DETAIL_ITEMS_TABLE}
+                className="rounded-md border"
+              >
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -133,9 +130,7 @@ export function TransactionDetailDialog({
                         <TableCell className="truncate max-w-[150px]">
                           {detail.productName}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {detail.quantity}
-                        </TableCell>
+                        <TableCell className="text-center">{detail.quantity}</TableCell>
                         <TableCell className="text-right font-mono">
                           {formatCurrency(detail.unitPrice)}
                         </TableCell>
@@ -148,19 +143,19 @@ export function TransactionDetailDialog({
                 </Table>
               </div>
               <div className="flex justify-end mt-2">
-                <span className="text-sm text-muted-foreground mr-2">
-                  合計:
-                </span>
-                <span className="font-semibold">
-                  {formatCurrency(transaction.totalAmount)}
-                </span>
+                <span className="text-sm text-muted-foreground mr-2">合計:</span>
+                <span className="font-semibold">{formatCurrency(transaction.totalAmount)}</span>
               </div>
             </section>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button
+            data-testid={TESTIDS.TRANSACTION_DETAIL_CLOSE}
+            variant="outline"
+            onClick={onClose}
+          >
             閉じる
           </Button>
         </DialogFooter>

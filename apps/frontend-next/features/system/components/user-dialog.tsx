@@ -3,18 +3,11 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -25,24 +18,8 @@ import {
 import { useCreateUser, useUpdateUser } from '../hooks/use-user';
 import { useDeptOptions } from '../hooks/use-dept';
 import { useRoleOptions } from '../hooks/use-role';
+import { userFormSchema, type UserFormValues } from '../schemas/user-schema';
 import type { User, DeptOption } from '../types';
-
-const userSchema = z.object({
-  username: z.string().min(1, 'ユーザー名は必須です'),
-  nickname: z.string().min(1, 'ニックネームは必須です'),
-  deptId: z.number().min(1, '部門は必須です'),
-  gender: z.number(),
-  mobile: z.string().optional(),
-  email: z
-    .string()
-    .email('メール形式が正しくありません')
-    .optional()
-    .or(z.literal('')),
-  status: z.number(),
-  roleIds: z.array(z.number()).min(1, '役割は必須です'),
-});
-
-type UserFormData = z.infer<typeof userSchema>;
 
 interface UserDialogProps {
   open: boolean;
@@ -57,8 +34,8 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
   const { data: roleOptions = [] } = useRoleOptions();
   const isEditing = !!user;
 
-  const form = useForm<UserFormData>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       username: '',
       nickname: '',
@@ -99,7 +76,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
     }
   }, [open, user, form]);
 
-  const onSubmit = async (data: UserFormData) => {
+  const onSubmit = async (data: UserFormValues) => {
     if (isEditing) {
       await updateMutation.mutateAsync({ id: user.id, data });
     } else {
@@ -110,10 +87,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const flattenOptions = (
-    options: DeptOption[],
-    level = 0
-  ): { value: number; label: string }[] => {
+  const flattenOptions = (options: DeptOption[], level = 0): { value: number; label: string }[] => {
     const result: { value: number; label: string }[] = [];
     for (const opt of options) {
       result.push({ value: opt.value, label: '　'.repeat(level) + opt.label });
@@ -142,9 +116,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>
-            {isEditing ? 'ユーザーの編集' : 'ユーザーの追加'}
-          </SheetTitle>
+          <SheetTitle>{isEditing ? 'ユーザーの編集' : 'ユーザーの追加'}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -157,32 +129,22 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
               disabled={isEditing}
             />
             {form.formState.errors.username && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.username.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.username.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="nickname">ニックネーム *</Label>
-            <Input
-              id="nickname"
-              {...form.register('nickname')}
-              placeholder="ニックネームを入力"
-            />
+            <Input id="nickname" {...form.register('nickname')} placeholder="ニックネームを入力" />
             {form.formState.errors.nickname && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.nickname.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.nickname.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label>部門 *</Label>
             <Select
-              value={
-                form.watch('deptId') > 0 ? String(form.watch('deptId')) : ''
-              }
+              value={form.watch('deptId') > 0 ? String(form.watch('deptId')) : ''}
               onValueChange={(v) => form.setValue('deptId', parseInt(v))}
             >
               <SelectTrigger>
@@ -197,9 +159,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
               </SelectContent>
             </Select>
             {form.formState.errors.deptId && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.deptId.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.deptId.message}</p>
             )}
           </div>
 
@@ -231,9 +191,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
                   <input
                     type="checkbox"
                     checked={form.watch('roleIds').includes(role.value)}
-                    onChange={(e) =>
-                      handleRoleChange(role.value, e.target.checked)
-                    }
+                    onChange={(e) => handleRoleChange(role.value, e.target.checked)}
                     className="rounded"
                   />
                   <span className="text-sm">{role.label}</span>
@@ -241,9 +199,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
               ))}
             </div>
             {form.formState.errors.roleIds && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.roleIds.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.roleIds.message}</p>
             )}
           </div>
 
@@ -266,9 +222,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
                 placeholder="user@example.com"
               />
               {form.formState.errors.email && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
               )}
             </div>
           </div>
@@ -277,9 +231,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
             <Label>状態</Label>
             <Switch
               checked={form.watch('status') === 1}
-              onCheckedChange={(checked) =>
-                form.setValue('status', checked ? 1 : 0)
-              }
+              onCheckedChange={(checked) => form.setValue('status', checked ? 1 : 0)}
             />
             <span className="text-sm text-muted-foreground">
               {form.watch('status') === 1 ? '有効' : '無効'}

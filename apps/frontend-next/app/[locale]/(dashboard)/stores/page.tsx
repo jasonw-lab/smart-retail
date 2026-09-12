@@ -1,29 +1,17 @@
 import { Suspense } from 'react';
 import { StoreTableClient } from '@/features/stores/components/store-table-client';
 import { storeApiServer } from '@/features/stores/lib/store-api.server';
-import { isRedirectError } from '@/lib/api/server';
-import type {
-  StoreQuery,
-  StorePageResult,
-  StoreStatusType,
-} from '@/features/stores/types/store';
+import type { StoreQuery, StorePageResult, StoreStatusType } from '@/features/stores/types/store';
 
 interface SearchParams {
   page?: string;
   name?: string;
   status?: string;
+  address?: string;
 }
 
 async function getStores(params: StoreQuery): Promise<StorePageResult> {
-  try {
-    return await storeApiServer.getPage(params);
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-    // API未実装時の空データフォールバック
-    return { list: [], total: 0 };
-  }
+  return storeApiServer.getPage(params);
 }
 
 export default async function StoresPage({
@@ -36,6 +24,7 @@ export default async function StoresPage({
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
     pageSize: 10,
     storeName: resolvedSearchParams.name,
+    address: resolvedSearchParams.address,
     status: resolvedSearchParams.status as StoreStatusType | undefined,
   };
 

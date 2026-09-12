@@ -36,12 +36,35 @@ export interface UserForm {
   email?: string;
   status: number;
   roleIds: number[];
-  password?: string;
 }
 
 export interface UserPageResult {
   list: User[];
   total: number;
+}
+
+/**
+ * ログインユーザーのプロフィール情報
+ */
+export interface UserProfile {
+  id: number;
+  username: string;
+  nickname: string;
+  gender?: number;
+  deptId?: number;
+  deptName?: string;
+  mobile?: string;
+  email?: string;
+  avatar?: string;
+  roleNames?: string[];
+}
+
+/**
+ * パスワード変更リクエスト
+ */
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export const GenderLabel: Record<number, string> = {

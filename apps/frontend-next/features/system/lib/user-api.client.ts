@@ -1,80 +1,159 @@
-import type { User, UserQuery, UserPageResult, UserForm } from '../types/user';
+import { fetchApi } from '@/lib/api/client';
+import type {
+  User,
+  UserQuery,
+  UserPageResult,
+  UserForm,
+  UserProfile,
+  PasswordChangeRequest,
+} from '../types/user';
+import type { UserFormValues, ProfileFormValues } from '../schemas/user-schema';
 
 const BASE_URL = '/api/proxy/api/v1/users';
 
-export async function getUsers(params: UserQuery): Promise<UserPageResult> {
-  const searchParams = new URLSearchParams();
-  searchParams.set('pageNum', String(params.pageNum));
-  searchParams.set('pageSize', String(params.pageSize));
-  if (params.keywords) searchParams.set('keywords', params.keywords);
-  if (params.status !== undefined)
+function buildUserQueryParams(params: UserQuery): URLSearchParams {
+  const searchParams = new URLSearchParams({
+    pageNum: String(params.pageNum),
+    pageSize: String(params.pageSize),
+  });
+  if (params.keywords) {
+    searchParams.set('keywords', params.keywords);
+  }
+  if (params.status !== undefined) {
     searchParams.set('status', String(params.status));
-  if (params.deptId) searchParams.set('deptId', String(params.deptId));
-  if (params.startTime) searchParams.set('startTime', params.startTime);
-  if (params.endTime) searchParams.set('endTime', params.endTime);
-
-  const res = await fetch(`${BASE_URL}?${searchParams.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch users');
-  return res.json();
+  }
+  if (params.deptId) {
+    searchParams.set('deptId', String(params.deptId));
+  }
+  if (params.startTime) {
+    searchParams.set('startTime', params.startTime);
+  }
+  if (params.endTime) {
+    searchParams.set('endTime', params.endTime);
+  }
+  return searchParams;
 }
 
-export async function getUser(id: number): Promise<User> {
-  const res = await fetch(`${BASE_URL}/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch user');
-  return res.json();
-}
+/**
+ * Client Component専用のUser API
+ * Route Handler経由でBackendにアクセス
+ */
+export const userApiClient = {
+  /**
+   * ユーザー一覧取得（ページネーション）
+   */
+  getPage: async (params: UserQuery): Promise<UserPageResult> => {
+    return fetchApi<UserPageResult>(`${BASE_URL}?${buildUserQueryParams(params).toString()}`);
+  },
 
-export async function createUser(data: UserForm): Promise<void> {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create user');
-}
+  /**
+   * ユーザー詳細取得
+   */
+  getById: async (id: number): Promise<User> => {
+    return fetchApi<User>(`${BASE_URL}/${id}`);
+  },
 
-export async function updateUser(id: number, data: UserForm): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update user');
-}
+  /**
+   * 編集フォーム用データ取得
+   */
+  getFormData: async (id: number): Promise<UserForm> => {
+    return fetchApi<UserForm>(`${BASE_URL}/${id}/form`);
+  },
 
-export async function deleteUsers(ids: string): Promise<void> {
-  // Backend expects List<Long> in body for batch delete
-  const idList = ids.split(',').map((id) => parseInt(id, 10));
-  const res = await fetch(BASE_URL, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(idList),
-  });
-  if (!res.ok) throw new Error('Failed to delete users');
-}
+  /**
+   * ユーザー作成
+   */
+  create: async (data: UserFormValues): Promise<void> => {
+    await fetchApi<void>(BASE_URL, {
+      method: 'POST',
+      body: data,
+    });
+  },
 
-export async function resetPassword(
-  userId: number,
-  password: string
-): Promise<void> {
-  // Backend: PATCH /{id}/password with RequestParam password
-  const res = await fetch(
-    `${BASE_URL}/${userId}/password?password=${encodeURIComponent(password)}`,
-    {
+  /**
+   * ユーザー更新
+   */
+  update: async (id: number, data: UserFormValues): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  /**
+   * ユーザー一括削除
+   * ids はカンマ区切りのユーザーID
+   */
+  delete: async (ids: string): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${ids}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * パスワードリセット
+   */
+  resetPassword: async (id: number, password: string): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}/password?password=${encodeURIComponent(password)}`, {
       method: 'PATCH',
+    });
+  },
+
+  /**
+   * ログインユーザーのプロフィール取得
+   */
+  getProfile: async (): Promise<UserProfile> => {
+    return fetchApi<UserProfile>(`${BASE_URL}/profile`);
+  },
+
+  /**
+   * ログインユーザーのプロフィール更新
+   */
+  updateProfile: async (data: ProfileFormValues): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/profile`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  /**
+   * ログインユーザーのパスワード変更
+   */
+  changePassword: async (data: PasswordChangeRequest): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/password`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  /**
+   * ユーザー一覧エクスポート
+   * Blob レスポンスを扱うため fetchApi ではなく生の fetch を使用
+   */
+  exportUsers: async (params: UserQuery): Promise<Blob> => {
+    const searchParams = new URLSearchParams();
+    if (params.keywords) {
+      searchParams.set('keywords', params.keywords);
     }
-  );
-  if (!res.ok) throw new Error('Failed to reset password');
-}
+    if (params.status !== undefined) {
+      searchParams.set('status', String(params.status));
+    }
+    if (params.deptId) {
+      searchParams.set('deptId', String(params.deptId));
+    }
+    if (params.startTime) {
+      searchParams.set('startTime', params.startTime);
+    }
+    if (params.endTime) {
+      searchParams.set('endTime', params.endTime);
+    }
 
-export async function exportUsers(params: UserQuery): Promise<Blob> {
-  const searchParams = new URLSearchParams();
-  if (params.keywords) searchParams.set('keywords', params.keywords);
-  if (params.status !== undefined)
-    searchParams.set('status', String(params.status));
-  if (params.deptId) searchParams.set('deptId', String(params.deptId));
-
-  const res = await fetch(`${BASE_URL}/export?${searchParams.toString()}`);
-  if (!res.ok) throw new Error('Failed to export users');
-  return res.blob();
-}
+    const res = await fetch(`${BASE_URL}/export?${searchParams.toString()}`, {
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error('Failed to export users');
+    }
+    return res.blob();
+  },
+};

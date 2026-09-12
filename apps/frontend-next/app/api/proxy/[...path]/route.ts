@@ -1,28 +1,31 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { API_SUCCESS_CODE, statusFromApiCode, type ApiResponse } from '@/lib/api/result';
+import { serverEnv } from '@/lib/env/server';
+import { validateCsrfToken } from '@/lib/security/csrf';
 
-const BACKEND_URL = process.env.BACKEND_URL;
-
-interface ApiResponse<T> {
-  code: string;
-  msg: string;
-  data: T;
-}
+const BACKEND_URL = serverEnv.BACKEND_URL;
 
 /**
  * Client Component用のProxy Route Handler
  * /api/proxy/* へのリクエストをBackend APIに転送
  */
-async function handler(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value;
 
   if (!accessToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // CSRF protection for state-changing requests
+  const method = request.method;
+  if (method !== 'GET' && method !== 'HEAD') {
+    const valid = await validateCsrfToken(request);
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
   }
 
   // path already includes 'api/v1/...' but BACKEND_URL already has /api/v1
@@ -39,16 +42,20 @@ async function handler(
   });
 
   try {
+    const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+    const headers = new Headers();
+    const contentType = request.headers.get('content-type');
+    const accept = request.headers.get('accept');
+
+    if (contentType) headers.set('Content-Type', contentType);
+    if (accept) headers.set('Accept', accept);
+    headers.set('Authorization', `Bearer ${accessToken}`);
+
     const backendResponse = await fetch(url.toString(), {
       method: request.method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body:
-        request.method !== 'GET' && request.method !== 'HEAD'
-          ? await request.text()
-          : undefined,
+      headers,
+      body: hasBody ? await request.arrayBuffer() : undefined,
+      cache: 'no-store',
     });
 
     if (backendResponse.status === 401) {
@@ -62,10 +69,12 @@ async function handler(
 
     const result: ApiResponse<unknown> = await backendResponse.json();
 
-    if (result.code !== '00000') {
+    if (result.code !== API_SUCCESS_CODE) {
       return NextResponse.json(
         { error: result.msg || 'Backend API error', code: result.code },
-        { status: 400 }
+        {
+          status: statusFromApiCode(result.code, backendResponse.ok ? 400 : backendResponse.status),
+        }
       );
     }
 
@@ -73,10 +82,7 @@ async function handler(
     return NextResponse.json(result.data);
   } catch (error) {
     console.error('Proxy error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

@@ -13,11 +13,7 @@ const ticketStore = new Map<string, TicketEntry>();
 /**
  * チケットを保存
  */
-export function storeTicket(
-  ticket: string,
-  accessToken: string,
-  ttlSeconds: number = 30
-): void {
+export function storeTicket(ticket: string, accessToken: string, ttlSeconds: number = 30): void {
   const expiresAt = Date.now() + ttlSeconds * 1000;
   ticketStore.set(ticket, { accessToken, expiresAt });
 

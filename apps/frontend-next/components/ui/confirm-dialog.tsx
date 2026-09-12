@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TESTIDS } from '@/lib/testing/testids';
 import {
   Dialog,
   DialogContent,
@@ -44,12 +45,10 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false}>
+      <DialogContent data-testid={TESTIDS.CONFIRM_DIALOG} showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {variant === 'destructive' && (
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-            )}
+            {variant === 'destructive' && <AlertTriangle className="h-5 w-5 text-destructive" />}
             {title}
           </DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -57,6 +56,7 @@ export function ConfirmDialog({
         {children && <div className="py-2">{children}</div>}
         <DialogFooter>
           <Button
+            data-testid={TESTIDS.CONFIRM_DIALOG_CANCEL}
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
@@ -64,6 +64,7 @@ export function ConfirmDialog({
             {cancelLabel}
           </Button>
           <Button
+            data-testid={TESTIDS.CONFIRM_DIALOG_OK}
             variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={handleConfirm}
             disabled={isLoading}

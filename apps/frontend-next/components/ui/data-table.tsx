@@ -1,14 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -27,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { TESTIDS } from '@/lib/testing/testids';
 
 export type SortDirection = 'asc' | 'desc' | null;
 
@@ -64,6 +58,7 @@ export interface DataTableProps<T> {
   };
   getRowColorBar?: (row: T) => string | null;
   isRowHighlighted?: (row: T) => boolean;
+  dataTestId?: string;
 }
 
 export function DataTable<T>({
@@ -83,6 +78,7 @@ export function DataTable<T>({
   pagination,
   getRowColorBar,
   isRowHighlighted,
+  dataTestId = TESTIDS.DATA_TABLE,
 }: DataTableProps<T>) {
   const handleSort = (key: string) => {
     if (!onSort) return;
@@ -114,16 +110,13 @@ export function DataTable<T>({
     onSelectionChange(newSet);
   };
 
-  const allSelected =
-    data.length > 0 && data.every((row) => selectedKeys.has(getRowKey(row)));
+  const allSelected = data.length > 0 && data.every((row) => selectedKeys.has(getRowKey(row)));
   const someSelected = data.some((row) => selectedKeys.has(getRowKey(row)));
 
-  const totalPages = pagination
-    ? Math.ceil(pagination.total / pagination.pageSize)
-    : 0;
+  const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 0;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-testid={dataTestId}>
       {/* Scrollable Table Container */}
       <div className="flex-1 overflow-auto">
         <Table>
@@ -136,9 +129,7 @@ export function DataTable<T>({
                     onCheckedChange={handleSelectAll}
                     className="border-outline-variant text-primary"
                     aria-label="Select all"
-                    {...(someSelected && !allSelected
-                      ? { 'data-state': 'indeterminate' }
-                      : {})}
+                    {...(someSelected && !allSelected ? { 'data-state': 'indeterminate' } : {})}
                   />
                 </TableHead>
               )}
@@ -188,7 +179,10 @@ export function DataTable<T>({
                   colSpan={columns.length + (selectable ? 1 : 0)}
                   className="h-24 text-center"
                 >
-                  <div className="flex items-center justify-center gap-2 text-on-surface-variant">
+                  <div
+                    data-testid={TESTIDS.LOADING_SPINNER}
+                    className="flex items-center justify-center gap-2 text-on-surface-variant"
+                  >
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading...
                   </div>
@@ -196,7 +190,7 @@ export function DataTable<T>({
               </TableRow>
             )}
             {!isLoading && data.length === 0 && (
-              <TableRow>
+              <TableRow data-testid={TESTIDS.EMPTY_STATE}>
                 <TableCell
                   colSpan={columns.length + (selectable ? 1 : 0)}
                   className="h-24 text-center text-on-surface-variant"
@@ -234,9 +228,7 @@ export function DataTable<T>({
                         )}
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={(checked) =>
-                            handleSelectRow(rowKey, !!checked)
-                          }
+                          onCheckedChange={(checked) => handleSelectRow(rowKey, !!checked)}
                           onClick={(e) => e.stopPropagation()}
                           className="border-outline-variant text-primary"
                           aria-label="Select row"
@@ -252,9 +244,7 @@ export function DataTable<T>({
                       </td>
                     )}
                     {columns.map((column) => {
-                      const value = (row as Record<string, unknown>)[
-                        column.key
-                      ];
+                      const value = (row as Record<string, unknown>)[column.key];
                       return (
                         <TableCell
                           key={column.key}
@@ -281,34 +271,38 @@ export function DataTable<T>({
 
       {/* Pagination - Stitch style */}
       {pagination && totalPages > 0 && (
-        <div className="p-4 bg-surface border-t border-outline-variant flex justify-between items-center text-xs">
-          <div className="text-on-surface-variant">
+        <div
+          data-testid={TESTIDS.PAGINATION}
+          className="p-4 bg-surface border-t border-outline-variant flex justify-between items-center text-xs"
+        >
+          <div data-testid={TESTIDS.PAGINATION_TOTAL} className="text-on-surface-variant">
             Total {pagination.total} items
           </div>
           <div className="flex items-center gap-2">
             {pagination.onPageSizeChange && (
               <Select
                 value={String(pagination.pageSize)}
-                onValueChange={(value) =>
-                  pagination.onPageSizeChange?.(Number(value))
-                }
+                onValueChange={(value) => pagination.onPageSizeChange?.(Number(value))}
               >
-                <SelectTrigger className="h-8 w-24 text-xs bg-surface border-outline-variant">
+                <SelectTrigger
+                  data-testid={TESTIDS.PAGINATION_SIZE}
+                  className="h-8 w-24 text-xs bg-surface border-outline-variant"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map(
-                    (size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size}/page
-                      </SelectItem>
-                    )
-                  )}
+                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size}/page
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
             <nav className="flex items-center gap-1">
               <Button
+                data-testid={TESTIDS.PAGINATION_PREV}
+                aria-label="Previous page"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-outline-variant hover:bg-surface-container-high"
@@ -317,13 +311,12 @@ export function DataTable<T>({
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <Button
-                size="sm"
-                className="h-8 px-3 bg-primary text-primary-foreground font-bold"
-              >
+              <Button size="sm" className="h-8 px-3 bg-primary text-primary-foreground font-bold">
                 {pagination.pageNum}
               </Button>
               <Button
+                data-testid={TESTIDS.PAGINATION_NEXT}
+                aria-label="Next page"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-outline-variant hover:bg-surface-container-high"
@@ -336,6 +329,8 @@ export function DataTable<T>({
             <div className="flex items-center gap-2 text-on-surface-variant">
               <span>Go to</span>
               <input
+                data-testid={TESTIDS.PAGINATION_GOTO}
+                aria-label="Go to page"
                 type="text"
                 className="w-10 h-8 border border-outline-variant rounded px-2 text-center text-xs focus:ring-primary focus:border-primary bg-surface"
                 defaultValue={pagination.pageNum}

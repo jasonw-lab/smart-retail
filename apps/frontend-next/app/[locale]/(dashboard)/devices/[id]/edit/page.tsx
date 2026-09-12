@@ -3,11 +3,7 @@ import { DeviceForm } from '@/features/devices/components/device-form';
 import { deviceApiServer } from '@/features/devices/lib/device-api.server';
 import { isRedirectError } from '@/lib/api/server';
 
-export default async function EditDevicePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditDevicePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id, 10);
 

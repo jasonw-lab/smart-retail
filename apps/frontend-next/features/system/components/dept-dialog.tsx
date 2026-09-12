@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,22 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  useCreateDept,
-  useUpdateDept,
-  useDeptOptions,
-} from '../hooks/use-dept';
+import { useCreateDept, useUpdateDept, useDeptOptions } from '../hooks/use-dept';
+import { deptFormSchema, type DeptFormValues } from '../schemas/dept-schema';
 import type { Dept, DeptOption } from '../types/dept';
 
-const deptSchema = z.object({
-  parentId: z.number(),
-  name: z.string().min(1, '部門名は必須です'),
-  code: z.string().min(1, 'コードは必須です'),
-  sort: z.number().min(0),
-  status: z.number(),
-});
+const deptSchema = deptFormSchema;
 
-type DeptFormData = z.infer<typeof deptSchema>;
+type DeptFormData = DeptFormValues;
 
 interface DeptDialogProps {
   open: boolean;
@@ -46,6 +38,7 @@ interface DeptDialogProps {
 }
 
 export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
+  const t = useTranslations('system.dept');
   const createMutation = useCreateDept();
   const updateMutation = useUpdateDept();
   const { data: deptOptions = [] } = useDeptOptions();
@@ -85,20 +78,23 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
   }, [open, dept, parentId, form]);
 
   const onSubmit = async (data: DeptFormData) => {
-    if (isEditing) {
-      await updateMutation.mutateAsync({ id: dept.id, data });
-    } else {
-      await createMutation.mutateAsync(data);
+    try {
+      if (isEditing) {
+        await updateMutation.mutateAsync({ id: dept.id, data });
+        toast.success(t('updateSuccess'));
+      } else {
+        await createMutation.mutateAsync(data);
+        toast.success(t('createSuccess'));
+      }
+      onClose();
+    } catch {
+      toast.error(isEditing ? t('updateFailed') : t('createFailed'));
     }
-    onClose();
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  const flattenOptions = (
-    options: DeptOption[],
-    level = 0
-  ): { value: number; label: string }[] => {
+  const flattenOptions = (options: DeptOption[], level = 0): { value: number; label: string }[] => {
     const result: { value: number; label: string }[] = [];
     for (const opt of options) {
       result.push({ value: opt.value, label: '　'.repeat(level) + opt.label });
@@ -109,10 +105,7 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
     return result;
   };
 
-  const flatOptions = [
-    { value: 0, label: 'トップレベル' },
-    ...flattenOptions(deptOptions),
-  ];
+  const flatOptions = [{ value: 0, label: 'トップレベル' }, ...flattenOptions(deptOptions)];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -143,29 +136,17 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="name">部門名 *</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="部門名を入力"
-            />
+            <Input id="name" {...form.register('name')} placeholder="部門名を入力" />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="code">コード *</Label>
-            <Input
-              id="code"
-              {...form.register('code')}
-              placeholder="例: SALES, HR"
-            />
+            <Input id="code" {...form.register('code')} placeholder="例: SALES, HR" />
             {form.formState.errors.code && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.code.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
             )}
           </div>
 

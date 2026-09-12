@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import {
   ChevronRight,
   ChevronDown,
   Package,
-  History,
   Trash2,
   Download,
   AlertTriangle,
@@ -26,13 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { formatDate, formatDateTime } from '@/lib/format';
+import { TESTIDS, testId } from '@/lib/testing/testids';
+import { toast } from 'sonner';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
 import { useInventory } from '../hooks/use-inventory';
 import { ReplenishDialog } from './replenish-dialog';
@@ -53,13 +49,9 @@ interface InventoryTableClientProps {
   initialParams: InventoryQuery;
 }
 
-export function InventoryTableClient({
-  initialData,
-  initialParams,
-}: InventoryTableClientProps) {
+export function InventoryTableClient({ initialData, initialParams }: InventoryTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const { data: stores = [] } = useStoreOptions();
 
@@ -72,9 +64,7 @@ export function InventoryTableClient({
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Dialogs
-  const [replenishTarget, setReplenishTarget] = useState<Inventory | null>(
-    null
-  );
+  const [replenishTarget, setReplenishTarget] = useState<Inventory | null>(null);
   const [disposeTarget, setDisposeTarget] = useState<{
     inventory: Inventory;
     lot: InventoryLot;
@@ -95,30 +85,21 @@ export function InventoryTableClient({
   // Calculate inventory summary
   const summary = useMemo(() => {
     const list = displayData?.list || [];
-    const totalQuantity = list.reduce(
-      (sum, item) => sum + item.totalQuantity,
-      0
-    );
+    const totalQuantity = list.reduce((sum, item) => sum + item.totalQuantity, 0);
     const lowStockCount = list.filter(
       (item) =>
-        item.status === InventoryStatus.OUT_OF_STOCK ||
-        item.totalQuantity <= item.reorderPoint
+        item.status === InventoryStatus.OUT_OF_STOCK || item.totalQuantity <= item.reorderPoint
     ).length;
     const expiringCount = list.filter(
-      (item) =>
-        item.status === InventoryStatus.EXPIRING ||
-        item.status === InventoryStatus.EXPIRED
+      (item) => item.status === InventoryStatus.EXPIRING || item.status === InventoryStatus.EXPIRED
     ).length;
-    // Mock turnover rate
-    const turnoverRate = 97.1;
-
     return {
       totalQuantity,
       lowStockCount,
       expiringCount,
-      turnoverRate,
+      turnoverRate: null as number | null,
     };
-  }, [data]);
+  }, [displayData]);
 
   const filterFields: FilterField[] = [
     {
@@ -155,9 +136,7 @@ export function InventoryTableClient({
     const newParams: InventoryQuery = {
       ...params,
       pageNum: 1,
-      storeId: filterValues.storeId
-        ? parseInt(filterValues.storeId, 10)
-        : undefined,
+      storeId: filterValues.storeId ? parseInt(filterValues.storeId, 10) : undefined,
       productName: filterValues.productName || undefined,
       status: (filterValues.status as InventoryQuery['status']) || undefined,
     };
@@ -169,7 +148,7 @@ export function InventoryTableClient({
     setFilterValues({ storeId: '', productName: '', status: '' });
     const newParams = { pageNum: 1, pageSize: params.pageSize };
     setParams(newParams);
-    router.push(pathname);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const handlePageChange = (page: number) => {
@@ -188,8 +167,43 @@ export function InventoryTableClient({
   };
 
   const handleExportCSV = () => {
-    // CSV export logic placeholder
-    alert('CSVエクスポート機能は準備中です');
+    const rows = displayData?.list || [];
+    if (rows.length === 0) {
+      toast.info('エクスポートするデータがありません');
+      return;
+    }
+
+    const headers = ['店舗名', '商品コード', '商品名', 'ロット番号', '数量', '賞味期限', '状態'];
+    const escape = (value: unknown) => `"${String(value ?? '-').replace(/"/g, '""')}"`;
+
+    const lines = [
+      headers.join(','),
+      ...rows.map((item) => {
+        const lot = item.lots?.[0];
+        return [
+          item.storeName,
+          item.productCode,
+          item.productName,
+          lot?.lotNumber || '-',
+          item.totalQuantity,
+          item.oldestExpiryDate ? formatDate(item.oldestExpiryDate) : '-',
+          InventoryStatusLabel[item.status],
+        ]
+          .map(escape)
+          .join(',');
+      }),
+    ];
+
+    const csv = '\ufeff' + lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `inventory_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
   };
 
   const toggleExpand = (id: number) => {
@@ -218,10 +232,10 @@ export function InventoryTableClient({
   const totalPages = Math.ceil((displayData?.total || 0) / params.pageSize);
 
   return (
-    <div className="space-y-6">
+    <div data-testid={TESTIDS.INVENTORY_PAGE} className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card data-testid={TESTIDS.INVENTORY_SUMMARY_QUANTITY}>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-3">
@@ -231,9 +245,7 @@ export function InventoryTableClient({
                 <p className="text-sm text-muted-foreground">在庫数</p>
                 <p className="text-2xl font-bold">
                   {summary.totalQuantity.toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    件
-                  </span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
                 </p>
               </div>
             </div>
@@ -241,6 +253,7 @@ export function InventoryTableClient({
         </Card>
 
         <Card
+          data-testid={TESTIDS.INVENTORY_SUMMARY_LOW_STOCK}
           className={summary.lowStockCount > 0 ? 'border-destructive/50' : ''}
         >
           <CardContent className="pt-6">
@@ -249,21 +262,20 @@ export function InventoryTableClient({
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  在庫不足アラート
-                </p>
+                <p className="text-sm text-muted-foreground">在庫不足アラート</p>
                 <p className="text-2xl font-bold text-destructive">
                   {summary.lowStockCount}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    件
-                  </span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className={summary.expiringCount > 0 ? 'border-warning/50' : ''}>
+        <Card
+          data-testid={TESTIDS.INVENTORY_SUMMARY_EXPIRING}
+          className={summary.expiringCount > 0 ? 'border-warning/50' : ''}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-warning/10 p-3">
@@ -273,16 +285,14 @@ export function InventoryTableClient({
                 <p className="text-sm text-muted-foreground">期限切れ間近</p>
                 <p className="text-2xl font-bold text-warning">
                   {summary.expiringCount}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    件
-                  </span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid={TESTIDS.INVENTORY_SUMMARY_TURNOVER}>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-success/10 p-3">
@@ -291,10 +301,10 @@ export function InventoryTableClient({
               <div>
                 <p className="text-sm text-muted-foreground">在庫回転率</p>
                 <p className="text-2xl font-bold text-success">
-                  {summary.turnoverRate}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    %
-                  </span>
+                  {summary.turnoverRate == null ? '-' : summary.turnoverRate}
+                  {summary.turnoverRate != null && (
+                    <span className="text-sm font-normal text-muted-foreground ml-1">%</span>
+                  )}
                 </p>
               </div>
             </div>
@@ -311,11 +321,18 @@ export function InventoryTableClient({
         onReset={handleReset}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExportCSV}>
+            <Button
+              data-testid={TESTIDS.INVENTORY_EXPORT_BUTTON}
+              variant="outline"
+              onClick={handleExportCSV}
+            >
               <Download className="mr-2 h-4 w-4" />
               CSVエクスポート
             </Button>
-            <Button onClick={() => router.push('/inventory/new')}>
+            <Button
+              data-testid={TESTIDS.INVENTORY_NEW_BUTTON}
+              onClick={() => router.push('/inventory/new')}
+            >
               <Plus className="mr-2 h-4 w-4" />
               新規在庫登録
             </Button>
@@ -323,7 +340,16 @@ export function InventoryTableClient({
         }
       />
 
-      <div className="rounded-md border">
+      {isError && (
+        <div
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+        </div>
+      )}
+
+      <div data-testid={TESTIDS.INVENTORY_TABLE} className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -340,20 +366,14 @@ export function InventoryTableClient({
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   読み込み中...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && displayData?.list?.length === 0 && (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   在庫データが見つかりません
                 </TableCell>
               </TableRow>
@@ -367,10 +387,14 @@ export function InventoryTableClient({
                 return (
                   <React.Fragment key={item.id}>
                     {/* Main row */}
-                    <TableRow className="hover:bg-muted/50">
+                    <TableRow
+                      data-testid={testId(TESTIDS.INVENTORY_TABLE_ROW, item.id)}
+                      className="hover:bg-muted/50"
+                    >
                       <TableCell>
                         {hasLots && (
                           <Button
+                            data-testid={testId(TESTIDS.INVENTORY_ROW_EXPAND, item.id)}
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
@@ -385,9 +409,7 @@ export function InventoryTableClient({
                         )}
                       </TableCell>
                       <TableCell>{item.storeName}</TableCell>
-                      <TableCell className="font-medium">
-                        {item.productName}
-                      </TableCell>
+                      <TableCell className="font-medium">{item.productName}</TableCell>
                       <TableCell>
                         <span className="font-mono text-xs text-muted-foreground">
                           {firstLot?.lotNumber || '-'}
@@ -433,15 +455,14 @@ export function InventoryTableClient({
                         )}
                       </TableCell>
                       <TableCell>
-                        <StatusBadge
-                          variant={InventoryStatusColor[item.status]}
-                        >
+                        <StatusBadge variant={InventoryStatusColor[item.status]}>
                           {InventoryStatusLabel[item.status]}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button
+                            data-testid={testId(TESTIDS.INVENTORY_REPLENISH_BUTTON, item.id)}
                             variant="outline"
                             size="sm"
                             onClick={() => setReplenishTarget(item)}
@@ -449,6 +470,7 @@ export function InventoryTableClient({
                             補充
                           </Button>
                           <Button
+                            data-testid={testId(TESTIDS.INVENTORY_HISTORY_BUTTON, item.id)}
                             variant="ghost"
                             size="sm"
                             onClick={() => setHistoryTarget(item)}
@@ -462,21 +484,14 @@ export function InventoryTableClient({
                     {/* Expanded lot rows */}
                     {isExpanded &&
                       item.lots?.map((lot) => (
-                        <TableRow
-                          key={`${item.id}-${lot.id}`}
-                          className="bg-muted/30"
-                        >
+                        <TableRow key={`${item.id}-${lot.id}`} className="bg-muted/30">
                           <TableCell></TableCell>
                           <TableCell className="text-muted-foreground text-sm pl-6"></TableCell>
                           <TableCell></TableCell>
                           <TableCell>
-                            <span className="font-mono text-xs">
-                              {lot.lotNumber}
-                            </span>
+                            <span className="font-mono text-xs">{lot.lotNumber}</span>
                           </TableCell>
-                          <TableCell className="text-right text-sm">
-                            {lot.quantity}
-                          </TableCell>
+                          <TableCell className="text-right text-sm">{lot.quantity}</TableCell>
                           <TableCell>
                             {lot.expiryDate ? (
                               <span
@@ -497,12 +512,11 @@ export function InventoryTableClient({
                           <TableCell></TableCell>
                           <TableCell>
                             <Button
+                              data-testid={testId(TESTIDS.INVENTORY_DISPOSE_BUTTON, lot.id)}
                               variant="ghost"
                               size="sm"
                               className="text-destructive hover:text-destructive"
-                              onClick={() =>
-                                setDisposeTarget({ inventory: item, lot })
-                              }
+                              onClick={() => setDisposeTarget({ inventory: item, lot })}
                             >
                               <Trash2 className="mr-1 h-3 w-3" />
                               廃棄
@@ -521,16 +535,12 @@ export function InventoryTableClient({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            全{displayData?.total || 0}件中{' '}
-            {(params.pageNum - 1) * params.pageSize + 1}-
-            {Math.min(
-              params.pageNum * params.pageSize,
-              displayData?.total || 0
-            )}
-            件
+            全{displayData?.total || 0}件中 {(params.pageNum - 1) * params.pageSize + 1}-
+            {Math.min(params.pageNum * params.pageSize, displayData?.total || 0)}件
           </p>
           <div className="flex items-center gap-2">
             <Button
+              data-testid={TESTIDS.INVENTORY_PREV_PAGE}
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(params.pageNum - 1)}
@@ -542,6 +552,7 @@ export function InventoryTableClient({
               {params.pageNum} / {totalPages}
             </span>
             <Button
+              data-testid={TESTIDS.INVENTORY_NEXT_PAGE}
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(params.pageNum + 1)}

@@ -44,6 +44,9 @@ export const mockProducts = [
     categoryName: 'カテゴリA',
     unitPrice: 1000,
     description: 'テスト商品1の説明',
+    imageUrl: 'https://picsum.photos/seed/prd001/200/200',
+    stockQuantity: 173,
+    salesCount: 453,
     status: 1,
     createTime: '2026-01-01T00:00:00',
     updateTime: '2026-01-01T00:00:00',
@@ -56,6 +59,9 @@ export const mockProducts = [
     categoryName: 'カテゴリA',
     unitPrice: 2000,
     description: 'テスト商品2の説明',
+    imageUrl: 'https://picsum.photos/seed/prd002/200/200',
+    stockQuantity: 136,
+    salesCount: 320,
     status: 1,
     createTime: '2026-01-02T00:00:00',
     updateTime: '2026-01-02T00:00:00',
@@ -68,6 +74,9 @@ export const mockProducts = [
     categoryName: 'カテゴリB',
     unitPrice: 1500,
     description: 'サンプル商品の説明',
+    imageUrl: '',
+    stockQuantity: 1,
+    salesCount: 314,
     status: 0,
     createTime: '2026-01-03T00:00:00',
     updateTime: '2026-01-03T00:00:00',
@@ -80,6 +89,129 @@ export const mockDashboardStats = {
   lowStockCount: 12,
   alertCount: 5,
 };
+
+export const mockDashboardKpi = {
+  sales: {
+    value: 107316,
+    change: 8.8,
+    changeType: 'increase',
+  },
+  outOfStockSKU: {
+    value: 7,
+    label: 'SKU',
+  },
+  activeStores: {
+    active: 29,
+    total: 30,
+  },
+  suspendedAlerts: {
+    value: 218,
+    requiresAction: true,
+  },
+  systemUptime: {
+    value: 99.98,
+  },
+  newCustomers: {
+    value: 1240,
+    change: 12.5,
+  },
+  averageOrderValue: {
+    value: 3480,
+  },
+};
+
+export const mockDashboardSales = {
+  '7d': [
+    { date: '5/26', sales: 123478, profit: 30869 },
+    { date: '5/27', sales: 114248, profit: 28562 },
+    { date: '5/28', sales: 80452, profit: 20113 },
+    { date: '5/29', sales: 97698, profit: 24424 },
+    { date: '5/30', sales: 100106, profit: 25026 },
+    { date: '5/31', sales: 83781, profit: 20945 },
+    { date: '6/1', sales: 98559, profit: 24639 },
+  ],
+  '30d': [
+    { date: '5/3', sales: 122173, profit: 28099 },
+    { date: '5/4', sales: 111097, profit: 25552 },
+    { date: '5/5', sales: 70543, profit: 16224 },
+    { date: '5/6', sales: 91237, profit: 20984 },
+    { date: '5/7', sales: 94127, profit: 21649 },
+    { date: '5/8', sales: 74538, profit: 17143 },
+    { date: '5/9', sales: 92271, profit: 21222 },
+    { date: '5/10', sales: 125928, profit: 28963 },
+    { date: '5/11', sales: 95491, profit: 21962 },
+    { date: '5/12', sales: 88494, profit: 20353 },
+    { date: '5/13', sales: 108236, profit: 24894 },
+    { date: '5/14', sales: 75886, profit: 17453 },
+    { date: '5/15', sales: 109653, profit: 25220 },
+    { date: '5/16', sales: 73296, profit: 16858 },
+    { date: '5/17', sales: 95972, profit: 22073 },
+    { date: '5/18', sales: 120693, profit: 27759 },
+    { date: '5/19', sales: 113096, profit: 26012 },
+    { date: '5/20', sales: 89907, profit: 20678 },
+    { date: '5/21', sales: 84219, profit: 19370 },
+    { date: '5/22', sales: 87974, profit: 20234 },
+    { date: '5/23', sales: 107259, profit: 24669 },
+    { date: '5/24', sales: 115266, profit: 26511 },
+    { date: '5/25', sales: 89832, profit: 20661 },
+    { date: '5/26', sales: 85969, profit: 19772 },
+    { date: '5/27', sales: 93683, profit: 21547 },
+    { date: '5/28', sales: 104992, profit: 24148 },
+    { date: '5/29', sales: 101133, profit: 23260 },
+    { date: '5/30', sales: 96369, profit: 22164 },
+    { date: '5/31', sales: 128427, profit: 29538 },
+    { date: '6/1', sales: 107282, profit: 24674 },
+  ],
+  '1y': [
+    { date: '2025/7', sales: 2434781, profit: 535651 },
+    { date: '2025/8', sales: 2342481, profit: 515345 },
+    { date: '2025/9', sales: 2004526, profit: 440995 },
+    { date: '2025/10', sales: 2176982, profit: 478936 },
+    { date: '2025/11', sales: 2201060, profit: 484233 },
+    { date: '2025/12', sales: 2037818, profit: 448319 },
+    { date: '2026/1', sales: 2185595, profit: 480830 },
+    { date: '2026/2', sales: 2466069, profit: 542535 },
+    { date: '2026/3', sales: 2212432, profit: 486735 },
+    { date: '2026/4', sales: 2154123, profit: 473907 },
+    { date: '2026/5', sales: 2318637, profit: 510100 },
+    { date: '2026/6', sales: 2049052, profit: 450791 },
+  ],
+};
+
+const dashboardAlertBaseTime = new Date('2026-06-01T10:00:00+09:00').getTime();
+
+export const mockDashboardAlerts = [
+  {
+    id: 'dashboard-alert-1',
+    type: 'out_of_stock',
+    title: '在庫切れ',
+    description: '商品の在庫がなくなりました',
+    lotNumber: 'LOT-2026-0921-890',
+    timestamp: new Date(dashboardAlertBaseTime - 30 * 60000).toISOString(),
+    actionLabel: '在庫確認',
+    actionLink: '/inventory',
+  },
+  {
+    id: 'dashboard-alert-2',
+    type: 'low_stock',
+    title: '在庫確認要',
+    description: '在庫が少なくなっています',
+    lotNumber: 'LOT-2026-0922-650',
+    timestamp: new Date(dashboardAlertBaseTime - 2 * 60 * 60000).toISOString(),
+    actionLabel: '在庫確認',
+    actionLink: '/inventory',
+  },
+  {
+    id: 'dashboard-alert-3',
+    type: 'out_of_stock',
+    title: '在庫切れ',
+    description: '商品の在庫がなくなりました',
+    lotNumber: 'LOT-2026-0912-194',
+    timestamp: new Date(dashboardAlertBaseTime - 5 * 60 * 60000).toISOString(),
+    actionLabel: '在庫確認',
+    actionLink: '/inventory',
+  },
+];
 
 export const mockAlerts = [
   {
@@ -111,6 +243,38 @@ export const mockAlerts = [
     status: 'acknowledged',
     read: true,
     createdAt: '2026-05-25T15:30:00',
+  },
+];
+
+export const mockAlertMonitoring = {
+  networkStability: 94.2,
+  incidentStores: [
+    { name: '新宿国際通り店', issues: 3 },
+    { name: '秋田駅前店', issues: 2 },
+    { name: '銀座中央通り店', issues: 1 },
+  ],
+};
+
+export const mockCategories = [
+  {
+    id: 1,
+    categoryCode: 'CAT-001',
+    categoryName: 'カテゴリA',
+    description: 'カテゴリAの説明',
+    sortOrder: 1,
+    status: 1,
+    createTime: '2026-01-01T00:00:00',
+    updateTime: '2026-01-01T00:00:00',
+  },
+  {
+    id: 2,
+    categoryCode: 'CAT-002',
+    categoryName: 'カテゴリB',
+    description: 'カテゴリBの説明',
+    sortOrder: 2,
+    status: 1,
+    createTime: '2026-01-02T00:00:00',
+    updateTime: '2026-01-02T00:00:00',
   },
 ];
 
@@ -160,28 +324,41 @@ export const mockDevices = [
   },
 ];
 
+// Aggregate-format inventory used by UI/tests. Backend returns the same aggregate format.
 export const mockInventory = [
   {
     id: 1,
     storeId: 1,
     storeName: '東京本店',
     productId: 1,
+    productCode: 'P001',
     productName: 'テスト商品1',
-    quantity: 100,
-    minQuantity: 10,
+    totalQuantity: 100,
+    reorderPoint: 10,
+    upperLimit: 200,
+    oldestExpiryDate: '2026-12-31',
     status: 'NORMAL',
-    lastUpdated: '2026-05-29T08:00:00',
+    turnoverRate: 1.2,
+    lots: [{ id: 101, lotNumber: 'LOT-001', quantity: 100, expiryDate: '2026-12-31' }],
+    createTime: '2026-01-01T00:00:00',
+    updateTime: '2026-05-29T08:00:00',
   },
   {
     id: 2,
     storeId: 1,
     storeName: '東京本店',
     productId: 2,
+    productCode: 'P002',
     productName: 'テスト商品2',
-    quantity: 5,
-    minQuantity: 10,
+    totalQuantity: 5,
+    reorderPoint: 10,
+    upperLimit: 100,
+    oldestExpiryDate: '2026-06-25',
     status: 'LOW_STOCK',
-    lastUpdated: '2026-05-29T08:30:00',
+    turnoverRate: 0.8,
+    lots: [{ id: 102, lotNumber: 'LOT-002', quantity: 5, expiryDate: '2026-06-25' }],
+    createTime: '2026-01-01T00:00:00',
+    updateTime: '2026-05-29T08:30:00',
   },
 ];
 
@@ -192,9 +369,29 @@ export const mockTransactions = [
     storeId: 1,
     storeName: '東京本店',
     totalAmount: 3500,
-    paymentMethod: 'CREDIT_CARD',
+    paymentMethod: 'CARD',
+    paymentProvider: 'Stripe',
+    referenceId: 'REF-001',
     status: 'COMPLETED',
     transactionTime: '2026-05-29T09:15:00',
+    details: [
+      {
+        id: 1,
+        productId: 1,
+        productName: 'テスト商品1',
+        quantity: 2,
+        unitPrice: 1000,
+        subtotal: 2000,
+      },
+      {
+        id: 2,
+        productId: 2,
+        productName: 'テスト商品2',
+        quantity: 1,
+        unitPrice: 1500,
+        subtotal: 1500,
+      },
+    ],
   },
   {
     id: 2,
@@ -203,8 +400,27 @@ export const mockTransactions = [
     storeName: '東京本店',
     totalAmount: 1200,
     paymentMethod: 'CASH',
+    referenceId: 'REF-002',
     status: 'COMPLETED',
     transactionTime: '2026-05-29T09:30:00',
+    details: [
+      {
+        id: 3,
+        productId: 1,
+        productName: 'テスト商品1',
+        quantity: 1,
+        unitPrice: 1000,
+        subtotal: 1000,
+      },
+      {
+        id: 4,
+        productId: 2,
+        productName: 'テスト商品2',
+        quantity: 1,
+        unitPrice: 200,
+        subtotal: 200,
+      },
+    ],
   },
 ];
 
@@ -311,6 +527,7 @@ export const mockDicts = [
     id: 1,
     name: 'ステータス',
     code: 'status',
+    dictCode: 'status',
     status: 1,
     remark: '有効/無効ステータス',
   },
@@ -318,10 +535,54 @@ export const mockDicts = [
     id: 2,
     name: '性別',
     code: 'gender',
+    dictCode: 'gender',
     status: 1,
     remark: '性別',
   },
 ];
+
+// System: Dictionary Items
+export const mockDictItems = [
+  {
+    id: 1,
+    dictId: 1,
+    dictCode: 'status',
+    label: '有効',
+    value: '1',
+    sort: 1,
+    status: 1,
+    remark: '有効状態',
+  },
+  {
+    id: 2,
+    dictId: 1,
+    dictCode: 'status',
+    label: '無効',
+    value: '0',
+    sort: 2,
+    status: 1,
+    remark: '無効状態',
+  },
+  {
+    id: 3,
+    dictId: 2,
+    dictCode: 'gender',
+    label: '男性',
+    value: '1',
+    sort: 1,
+    status: 1,
+  },
+  {
+    id: 4,
+    dictId: 2,
+    dictCode: 'gender',
+    label: '女性',
+    value: '2',
+    sort: 2,
+    status: 1,
+  },
+];
+
 
 // System: Logs
 export const mockLogs = [
@@ -393,17 +654,13 @@ export const handlers = [
   http.get(`${BACKEND_URL}/users/me`, ({ request }) => {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer mock_token_')) {
-      return HttpResponse.json(
-        { code: 'A0002', msg: 'Unauthorized', data: null },
-        { status: 401 }
-      );
+      return HttpResponse.json({ code: 'A0002', msg: 'Unauthorized', data: null }, { status: 401 });
     }
 
     // Extract username from token
     const match = authHeader.match(/mock_token_(\w+)_/);
     const username = match?.[1] || 'admin';
-    const user =
-      mockUsers[username as keyof typeof mockUsers] || mockUsers.admin;
+    const user = mockUsers[username as keyof typeof mockUsers] || mockUsers.admin;
 
     return apiResponse({
       userId: user.userId,
@@ -428,6 +685,21 @@ export const handlers = [
   // Dashboard: Stats
   http.get(`${BACKEND_URL}/retail/dashboard/stats`, () => {
     return apiResponse(mockDashboardStats);
+  }),
+
+  // Dashboard: KPI
+  http.get(`${BACKEND_URL}/retail/dashboard/kpi`, () => {
+    return apiResponse(mockDashboardKpi);
+  }),
+
+  // Dashboard: Alerts
+  http.get(`${BACKEND_URL}/retail/dashboard/alerts`, () => {
+    return apiResponse(mockDashboardAlerts);
+  }),
+
+  // Dashboard: Sales chart
+  http.get(`${BACKEND_URL}/retail/dashboard/sales`, () => {
+    return apiResponse(mockDashboardSales);
   }),
 
   // Products: List with pagination
@@ -476,25 +748,22 @@ export const handlers = [
   }),
 
   // Products: Update
-  http.put(
-    `${BACKEND_URL}/retail/products/:id`,
-    async ({ params, request }) => {
-      const id = Number(params.id);
-      const body = await request.json();
-      const product = mockProducts.find((p) => p.id === id);
-      if (!product) {
-        return HttpResponse.json(
-          { code: 'B0001', msg: 'Product not found', data: null },
-          { status: 404 }
-        );
-      }
-      return apiResponse({
-        ...product,
-        ...body,
-        updateTime: new Date().toISOString(),
-      });
+  http.put(`${BACKEND_URL}/retail/products/:id`, async ({ params, request }) => {
+    const id = Number(params.id);
+    const body = await request.json();
+    const product = mockProducts.find((p) => p.id === id);
+    if (!product) {
+      return HttpResponse.json(
+        { code: 'B0001', msg: 'Product not found', data: null },
+        { status: 404 }
+      );
     }
-  ),
+    return apiResponse({
+      ...product,
+      ...body,
+      updateTime: new Date().toISOString(),
+    });
+  }),
 
   // Products: Delete
   http.delete(`${BACKEND_URL}/retail/products/:id`, ({ params }) => {
@@ -512,6 +781,11 @@ export const handlers = [
   // Alerts: List
   http.get(`${BACKEND_URL}/retail/alerts`, () => {
     return apiResponse(mockAlerts);
+  }),
+
+  // Alerts: Monitoring summary
+  http.get(`${BACKEND_URL}/retail/alerts/monitoring`, () => {
+    return apiResponse(mockAlertMonitoring);
   }),
 
   // Stores: List with pagination
@@ -660,6 +934,82 @@ export const handlers = [
     const list = mockDicts.slice(start, start + pageSize);
 
     return apiResponse({ list, total: mockDicts.length });
+  }),
+
+  // System: Dictionary Items
+  http.get(`${BACKEND_URL}/dicts/:dictCode/items`, ({ request, params }) => {
+    const { dictCode } = params;
+    const url = new URL(request.url);
+    const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+    const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+    const keywords = url.searchParams.get('keywords') || '';
+
+    let filtered = mockDictItems.filter((d) => d.dictCode === dictCode);
+    if (keywords) {
+      const kw = keywords.toLowerCase();
+      filtered = filtered.filter(
+        (d) => d.label.toLowerCase().includes(kw) || d.value.toLowerCase().includes(kw)
+      );
+    }
+    const start = (pageNum - 1) * pageSize;
+    const list = filtered.slice(start, start + pageSize);
+
+    return apiResponse({ list, total: filtered.length });
+  }),
+
+  // System: Dictionary Item Form Data
+  http.get(`${BACKEND_URL}/dicts/:dictCode/items/:itemId/form`, ({ params }) => {
+    const { dictCode, itemId } = params;
+    const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === Number(itemId));
+    if (!item) {
+      return HttpResponse.json(
+        { code: 'B0001', msg: 'Dict item not found', data: null },
+        { status: 404 }
+      );
+    }
+    return apiResponse(item);
+  }),
+
+  // System: Create Dictionary Item
+  http.post(`${BACKEND_URL}/dicts/:dictCode/items`, async ({ request, params }) => {
+    const { dictCode } = params;
+    const body = (await request.json()) as Record<string, unknown>;
+    const dict = mockDicts.find((d) => d.code === dictCode);
+    const newItem = {
+      id: mockDictItems.length + 1,
+      dictId: dict?.id || 1,
+      dictCode: String(dictCode),
+      label: String(body.label || ''),
+      value: String(body.value || ''),
+      sort: Number(body.sort) || 1,
+      status: Number(body.status) ?? 1,
+      remark: body.remark ? String(body.remark) : undefined,
+    };
+    mockDictItems.push(newItem);
+    return apiResponse(null);
+  }),
+
+  // System: Update Dictionary Item
+  http.put(`${BACKEND_URL}/dicts/:dictCode/items/:itemId`, async ({ request, params }) => {
+    const { dictCode, itemId } = params;
+    const body = (await request.json()) as Record<string, unknown>;
+    const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === Number(itemId));
+    if (item) {
+      Object.assign(item, body);
+    }
+    return apiResponse(null);
+  }),
+
+  // System: Delete Dictionary Items
+  http.delete(`${BACKEND_URL}/dicts/:dictCode/items/:ids`, ({ params }) => {
+    const { dictCode, ids } = params;
+    const idList = String(ids).split(',').map(Number);
+    const remaining = mockDictItems.filter(
+      (d) => !(d.dictCode === dictCode && idList.includes(d.id))
+    );
+    mockDictItems.length = 0;
+    mockDictItems.push(...remaining);
+    return apiResponse(null);
   }),
 
   // System: Logs

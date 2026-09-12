@@ -15,9 +15,7 @@ export default async function MenuPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Menu Management</h1>
-        <p className="text-muted-foreground">
-          Manage system navigation menus and permissions
-        </p>
+        <p className="text-muted-foreground">Manage system navigation menus and permissions</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

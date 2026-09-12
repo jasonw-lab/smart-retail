@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TESTIDS } from '@/lib/testing/testids';
 import { storeFormSchema, type StoreFormValues } from '../schemas/store-schema';
 import { useCreateStore, useUpdateStore } from '../hooks/use-stores';
 import { StoreStatus, StoreStatusLabel, type Store } from '../types/store';
@@ -70,9 +71,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
       }
       router.push('/stores');
     } catch (error) {
-      toast.error(
-        mode === 'create' ? '登録に失敗しました' : '更新に失敗しました'
-      );
+      toast.error(mode === 'create' ? '登録に失敗しました' : '更新に失敗しました');
     }
   };
 
@@ -82,7 +81,11 @@ export function StoreForm({ store, mode }: StoreFormProps) {
         <CardTitle>{mode === 'create' ? '店舗登録' : '店舗編集'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          data-testid={TESTIDS.STORE_FORM}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="storeCode">
@@ -90,6 +93,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
               </Label>
               <Input
                 id="storeCode"
+                data-testid={TESTIDS.STORE_FORM_CODE}
                 {...form.register('storeCode')}
                 disabled={mode === 'edit'}
                 placeholder="STORE-001"
@@ -107,6 +111,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
               </Label>
               <Input
                 id="storeName"
+                data-testid={TESTIDS.STORE_FORM_NAME}
                 {...form.register('storeName')}
                 placeholder="東京本店"
               />
@@ -122,13 +127,12 @@ export function StoreForm({ store, mode }: StoreFormProps) {
             <Label htmlFor="address">住所</Label>
             <Input
               id="address"
+              data-testid={TESTIDS.STORE_FORM_ADDRESS}
               {...form.register('address')}
               placeholder="東京都千代田区..."
             />
             {form.formState.errors.address && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.address.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
             )}
           </div>
 
@@ -137,13 +141,12 @@ export function StoreForm({ store, mode }: StoreFormProps) {
               <Label htmlFor="phone">電話番号</Label>
               <Input
                 id="phone"
+                data-testid={TESTIDS.STORE_FORM_PHONE}
                 {...form.register('phone')}
                 placeholder="03-1234-5678"
               />
               {form.formState.errors.phone && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.phone.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
               )}
             </div>
 
@@ -151,14 +154,13 @@ export function StoreForm({ store, mode }: StoreFormProps) {
               <Label htmlFor="email">メールアドレス</Label>
               <Input
                 id="email"
+                data-testid={TESTIDS.STORE_FORM_EMAIL}
                 type="email"
                 {...form.register('email')}
                 placeholder="store@example.com"
               />
               {form.formState.errors.email && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
               )}
             </div>
           </div>
@@ -167,11 +169,9 @@ export function StoreForm({ store, mode }: StoreFormProps) {
             <Label>ステータス</Label>
             <Select
               value={form.watch('status')}
-              onValueChange={(value) =>
-                form.setValue('status', value as StoreFormValues['status'])
-              }
+              onValueChange={(value) => form.setValue('status', value as StoreFormValues['status'])}
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger data-testid={TESTIDS.STORE_FORM_STATUS} className="w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -185,10 +185,11 @@ export function StoreForm({ store, mode }: StoreFormProps) {
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button data-testid={TESTIDS.STORE_FORM_SUBMIT} type="submit" disabled={isSubmitting}>
               {isSubmitting ? '保存中...' : mode === 'create' ? '登録' : '更新'}
             </Button>
             <Button
+              data-testid={TESTIDS.STORE_FORM_CANCEL}
               type="button"
               variant="outline"
               onClick={() => router.push('/stores')}

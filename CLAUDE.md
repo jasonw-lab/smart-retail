@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 > 本ファイルの共通ルールは [`rule.md`](./rule.md) に集約しています。併せて参照してください。
+> インフラ運用（M5 Mac OrbStack ローカル運用、リモート VPS デプロイ運用、環境変数設定など）の詳細は [`AGENTS.md`](./AGENTS.md) を参照してください。
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -51,17 +52,19 @@ cd apps/frontend && pnpm lint:prettier
 cd apps/frontend && pnpm lint:stylelint
 ```
 
-### Docker
+### Docker & Infrastructure
+
+運用環境の詳細および切り替え基準（搭載メモリ >= 48GB の本機 M5 Mac は OrbStack、< 48GB は VPS）は [`AGENTS.md`](./AGENTS.md) を参照してください。
+
 ```bash
-# Start infrastructure (MySQL, Redis, MinIO)
-cd platform/docker && docker compose -f docker-compose-env.yml --env-file .env up -d
+# ローカル開発インフラ (OrbStack)
+cd platform/docker && make local-setup     # 初回ディレクトリ・設定初期化
+cd platform/docker && make local-env-up    # インフラ起動 (MySQL, Redis, PowerJob)
+cd platform/docker && make local-env-down  # インフラ停止
 
-# Start application (backend, frontend)
-cd platform/docker && docker compose -f docker-compose-app.yml --env-file .env up -d
-
-# Stop all
-cd platform/docker && docker compose -f docker-compose-app.yml down
-cd platform/docker && docker compose -f docker-compose-env.yml down
+# リモートデプロイ (VPS)
+cd platform/docker && make deploy          # backend デプロイ
+cd platform/docker && make fe              # frontend ビルド & デプロイ
 ```
 
 ## Architecture
@@ -145,7 +148,7 @@ The request wrapper returns `response.data.data` directly. Frontend receives:
 - UI Design: `docs/architecture/design/smart-retail-ui-design.md`
 - DB Design: `docs/architecture/design/smart-retail-sql.md`
 - Issues: `docs/issues/plan_*.md`
-- Project rules: `AGENT.md`
+- Project rules: [`AGENTS.md`](./AGENTS.md)
 
 ## Git Workflow
 - 新しいissueに対応するとき、ブランチを現在のbranchから対応用branch新規作成する

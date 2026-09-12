@@ -21,6 +21,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { formatDate } from '@/lib/format';
+import { TESTIDS } from '@/lib/testing/testids';
 import { useDispose } from '../hooks/use-inventory';
 import type { Inventory, InventoryLot } from '../types/inventory';
 
@@ -39,12 +40,7 @@ const disposeReasons = [
   { value: 'OTHER', label: 'その他' },
 ];
 
-export function DisposeDialog({
-  inventory,
-  lot,
-  open,
-  onClose,
-}: DisposeDialogProps) {
+export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogProps) {
   const dispose = useDispose();
 
   // デフォルト理由: 期限切れの場合は「期限切れ」
@@ -57,7 +53,7 @@ export function DisposeDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lot) return;
+    if (!inventory || !lot) return;
 
     const quantity = parseInt(form.quantity, 10);
     if (isNaN(quantity) || quantity <= 0 || quantity > lot.quantity) {
@@ -72,6 +68,9 @@ export function DisposeDialog({
     try {
       await dispose.mutateAsync({
         lotId: lot.id,
+        storeId: inventory.storeId,
+        productId: inventory.productId,
+        lotNumber: lot.lotNumber,
         quantity,
         reason: form.reason,
         note: form.note || undefined,
@@ -88,7 +87,7 @@ export function DisposeDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent data-testid={TESTIDS.INVENTORY_DISPOSE_DIALOG}>
         <DialogHeader>
           <DialogTitle>🗑️ 廃棄（在庫調整）</DialogTitle>
         </DialogHeader>
@@ -128,6 +127,7 @@ export function DisposeDialog({
             </Label>
             <Input
               id="quantity"
+              data-testid={TESTIDS.INVENTORY_DISPOSE_QUANTITY}
               type="number"
               min="1"
               max={lot.quantity}
@@ -141,11 +141,8 @@ export function DisposeDialog({
             <Label>
               理由 <span className="text-destructive">*</span>
             </Label>
-            <Select
-              value={form.reason}
-              onValueChange={(v) => setForm({ ...form, reason: v })}
-            >
-              <SelectTrigger>
+            <Select value={form.reason} onValueChange={(v) => setForm({ ...form, reason: v })}>
+              <SelectTrigger data-testid={TESTIDS.INVENTORY_DISPOSE_REASON}>
                 <SelectValue placeholder="理由を選択" />
               </SelectTrigger>
               <SelectContent>
@@ -162,6 +159,7 @@ export function DisposeDialog({
             <Label htmlFor="note">備考</Label>
             <Textarea
               id="note"
+              data-testid={TESTIDS.INVENTORY_DISPOSE_NOTE}
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
               rows={2}
@@ -169,10 +167,16 @@ export function DisposeDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              data-testid={TESTIDS.INVENTORY_DISPOSE_CANCEL}
+              type="button"
+              variant="outline"
+              onClick={onClose}
+            >
               キャンセル
             </Button>
             <Button
+              data-testid={TESTIDS.INVENTORY_DISPOSE_SUBMIT}
               type="submit"
               variant="destructive"
               disabled={dispose.isPending}

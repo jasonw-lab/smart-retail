@@ -14,6 +14,7 @@ export interface RoleQuery {
   pageNum: number;
   pageSize: number;
   keywords?: string;
+  status?: number;
 }
 
 export interface RoleForm {
@@ -37,8 +38,7 @@ export const DataScopeLabel: Record<number, string> = {
   4: '本人のみ',
 };
 
-export interface MenuOption {
+export interface RoleOption {
   value: number;
   label: string;
-  children?: MenuOption[];
 }

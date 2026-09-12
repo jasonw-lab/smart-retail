@@ -1,49 +1,69 @@
+import { fetchApi } from '@/lib/api/client';
 import type { Dept, DeptQuery, DeptForm, DeptOption } from '../types/dept';
 
 const BASE_URL = '/api/proxy/api/v1/depts';
 
-export async function getDepts(params?: DeptQuery): Promise<Dept[]> {
-  const searchParams = new URLSearchParams();
-  if (params?.keywords) searchParams.set('keywords', params.keywords);
-  if (params?.status !== undefined)
-    searchParams.set('status', String(params.status));
+/**
+ * Client Component専用のDept API
+ * Route Handler経由でBackendにアクセス
+ */
+export const deptApiClient = {
+  /**
+   * 部門一覧取得（ツリー）
+   */
+  getList: async (params?: DeptQuery): Promise<Dept[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.keywords) {
+      searchParams.set('keywords', params.keywords);
+    }
+    if (params?.status !== undefined) {
+      searchParams.set('status', String(params.status));
+    }
+    const query = searchParams.toString();
+    return fetchApi<Dept[]>(`${BASE_URL}${query ? `?${query}` : ''}`);
+  },
 
-  const res = await fetch(`${BASE_URL}?${searchParams.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch depts');
-  return res.json();
-}
+  /**
+   * 部門ドロップダウン取得
+   */
+  getOptions: async (): Promise<DeptOption[]> => {
+    return fetchApi<DeptOption[]>(`${BASE_URL}/options`);
+  },
 
-export async function getDept(id: number): Promise<Dept> {
-  const res = await fetch(`${BASE_URL}/${id}/form`);
-  if (!res.ok) throw new Error('Failed to fetch dept');
-  return res.json();
-}
+  /**
+   * 部門編集フォーム用データ取得
+   */
+  getFormData: async (id: number): Promise<Dept> => {
+    return fetchApi<Dept>(`${BASE_URL}/${id}/form`);
+  },
 
-export async function getDeptOptions(): Promise<DeptOption[]> {
-  const res = await fetch(`${BASE_URL}/options`);
-  if (!res.ok) throw new Error('Failed to fetch dept options');
-  return res.json();
-}
+  /**
+   * 部門作成
+   */
+  create: async (data: DeptForm): Promise<void> => {
+    await fetchApi<void>(BASE_URL, {
+      method: 'POST',
+      body: data,
+    });
+  },
 
-export async function createDept(data: DeptForm): Promise<void> {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create dept');
-}
+  /**
+   * 部門更新
+   */
+  update: async (id: number, data: DeptForm): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
 
-export async function updateDept(id: number, data: DeptForm): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update dept');
-}
-
-export async function deleteDepts(ids: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${ids}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete depts');
-}
+  /**
+   * 部門一括削除
+   * @param ids カンマ区切りの部門ID
+   */
+  delete: async (ids: string): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${ids}`, {
+      method: 'DELETE',
+    });
+  },
+};

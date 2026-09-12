@@ -16,11 +16,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TESTIDS } from '@/lib/testing/testids';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
-import {
-  deviceFormSchema,
-  type DeviceFormValues,
-} from '../schemas/device-schema';
+import { deviceFormSchema, type DeviceFormValues } from '../schemas/device-schema';
 import { useCreateDevice, useUpdateDevice } from '../hooks/use-devices';
 import {
   DeviceType,
@@ -51,9 +49,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
       status: device?.status || DeviceStatus.ONLINE,
       lastHeartbeat: device?.lastHeartbeat || '',
       errorCode: device?.errorCode || '',
-      metadataJson: device?.metadata
-        ? JSON.stringify(device.metadata, null, 2)
-        : '',
+      metadataJson: device?.metadata ? JSON.stringify(device.metadata, null, 2) : '',
     },
   });
 
@@ -99,26 +95,27 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
       }
       router.push('/devices');
     } catch {
-      toast.error(
-        mode === 'create' ? '登録に失敗しました' : '更新に失敗しました'
-      );
+      toast.error(mode === 'create' ? '登録に失敗しました' : '更新に失敗しました');
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {mode === 'create' ? 'デバイス登録' : 'デバイス編集'}
-        </CardTitle>
+        <CardTitle>{mode === 'create' ? 'デバイス登録' : 'デバイス編集'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          data-testid={TESTIDS.DEVICE_FORM}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="deviceCode">デバイスコード</Label>
               <Input
                 id="deviceCode"
+                data-testid={TESTIDS.DEVICE_FORM_CODE}
                 {...form.register('deviceCode')}
                 disabled={mode === 'edit'}
                 placeholder="自動採番 (空欄可)"
@@ -136,6 +133,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
               </Label>
               <Input
                 id="deviceName"
+                data-testid={TESTIDS.DEVICE_FORM_NAME}
                 {...form.register('deviceName')}
                 placeholder="決済端末1"
               />
@@ -153,12 +151,10 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
                 店舗 <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={
-                  form.watch('storeId') ? String(form.watch('storeId')) : ''
-                }
+                value={form.watch('storeId') ? String(form.watch('storeId')) : ''}
                 onValueChange={(v) => form.setValue('storeId', parseInt(v, 10))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid={TESTIDS.DEVICE_FORM_STORE}>
                   <SelectValue placeholder="店舗を選択" />
                 </SelectTrigger>
                 <SelectContent>
@@ -170,9 +166,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
                 </SelectContent>
               </Select>
               {form.formState.errors.storeId && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.storeId.message}
-                </p>
+                <p className="text-sm text-destructive">{form.formState.errors.storeId.message}</p>
               )}
             </div>
 
@@ -181,13 +175,10 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
               <Select
                 value={form.watch('deviceType')}
                 onValueChange={(v) =>
-                  form.setValue(
-                    'deviceType',
-                    v as DeviceFormValues['deviceType']
-                  )
+                  form.setValue('deviceType', v as DeviceFormValues['deviceType'])
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid={TESTIDS.DEVICE_FORM_TYPE}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,11 +197,9 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
               <Label>ステータス</Label>
               <Select
                 value={form.watch('status')}
-                onValueChange={(v) =>
-                  form.setValue('status', v as DeviceFormValues['status'])
-                }
+                onValueChange={(v) => form.setValue('status', v as DeviceFormValues['status'])}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid={TESTIDS.DEVICE_FORM_STATUS}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,6 +217,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
                 <Label htmlFor="lastHeartbeat">最終Heartbeat</Label>
                 <Input
                   id="lastHeartbeat"
+                  data-testid={TESTIDS.DEVICE_FORM_LAST_HEARTBEAT}
                   type="datetime-local"
                   {...form.register('lastHeartbeat')}
                 />
@@ -240,6 +230,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
               <Label htmlFor="errorCode">エラーコード</Label>
               <Input
                 id="errorCode"
+                data-testid={TESTIDS.DEVICE_FORM_ERROR_CODE}
                 {...form.register('errorCode')}
                 placeholder="ERR-001"
               />
@@ -250,6 +241,7 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
             <Label htmlFor="metadataJson">備考 (JSON)</Label>
             <Textarea
               id="metadataJson"
+              data-testid={TESTIDS.DEVICE_FORM_METADATA}
               {...form.register('metadataJson')}
               placeholder='{"serial": "ABC123", "model": "XYZ-100"}'
               rows={3}
@@ -260,10 +252,11 @@ export function DeviceForm({ device, mode }: DeviceFormProps) {
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button data-testid={TESTIDS.DEVICE_FORM_SUBMIT} type="submit" disabled={isSubmitting}>
               {isSubmitting ? '保存中...' : mode === 'create' ? '登録' : '更新'}
             </Button>
             <Button
+              data-testid={TESTIDS.DEVICE_FORM_CANCEL}
               type="button"
               variant="outline"
               onClick={() => router.push('/devices')}

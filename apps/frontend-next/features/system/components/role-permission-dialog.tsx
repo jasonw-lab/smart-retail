@@ -5,20 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { ChevronRight, ChevronDown, Search } from 'lucide-react';
-import {
-  useMenuOptions,
-  useRoleMenuIds,
-  useUpdateRoleMenus,
-} from '../hooks/use-role';
-import type { Role, MenuOption } from '../types/role';
+import { useMenuOptions, useRoleMenuIds, useUpdateRoleMenus } from '../hooks/use-role';
+import type { Role } from '../types/role';
+import type { MenuOption } from '../types/menu';
 
 interface RolePermissionDialogProps {
   open: boolean;
@@ -26,11 +17,7 @@ interface RolePermissionDialogProps {
   role: Role | null;
 }
 
-export function RolePermissionDialog({
-  open,
-  onClose,
-  role,
-}: RolePermissionDialogProps) {
+export function RolePermissionDialog({ open, onClose, role }: RolePermissionDialogProps) {
   const [search, setSearch] = useState('');
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -78,11 +65,7 @@ export function RolePermissionDialog({
     return ids;
   };
 
-  const handleCheck = (
-    id: number,
-    checked: boolean,
-    children?: MenuOption[]
-  ) => {
+  const handleCheck = (id: number, checked: boolean, children?: MenuOption[]) => {
     const newSet = new Set(checkedIds);
     if (checked) {
       newSet.add(id);
@@ -107,16 +90,11 @@ export function RolePermissionDialog({
     onClose();
   };
 
-  const filterMenus = (
-    options: MenuOption[],
-    keyword: string
-  ): MenuOption[] => {
+  const filterMenus = (options: MenuOption[], keyword: string): MenuOption[] => {
     if (!keyword) return options;
     return options
       .map((opt) => {
-        const childMatches = opt.children
-          ? filterMenus(opt.children, keyword)
-          : [];
+        const childMatches = opt.children ? filterMenus(opt.children, keyword) : [];
         if (opt.label.includes(keyword) || childMatches.length > 0) {
           return {
             ...opt,
@@ -158,9 +136,7 @@ export function RolePermissionDialog({
             {!hasChildren && <span className="w-5" />}
             <Checkbox
               checked={isChecked}
-              onCheckedChange={(checked) =>
-                handleCheck(opt.value, !!checked, opt.children)
-              }
+              onCheckedChange={(checked) => handleCheck(opt.value, !!checked, opt.children)}
             />
             <span className="text-sm">{opt.label}</span>
           </div>

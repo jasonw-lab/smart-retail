@@ -12,3 +12,7 @@ export * from './menu-dialog';
 export * from './user-table-client';
 export * from './user-dialog';
 export * from './reset-password-dialog';
+export * from './config-table-client';
+export * from './config-dialog';
+export * from './notice-table-client';
+export * from './notice-dialog';

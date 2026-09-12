@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,16 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateDict, useUpdateDict } from '../hooks/use-dict';
+import { dictFormSchema, type DictFormValues } from '../schemas/dict-schema';
 import type { Dict } from '../types/dict';
-
-const dictSchema = z.object({
-  name: z.string().min(1, '名前は必須です'),
-  dictCode: z.string().min(1, 'コードは必須です'),
-  status: z.number(),
-  remark: z.string().optional(),
-});
-
-type DictFormData = z.infer<typeof dictSchema>;
 
 interface DictDialogProps {
   open: boolean;
@@ -45,8 +36,8 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
   const updateMutation = useUpdateDict();
   const isEditing = !!dict;
 
-  const form = useForm<DictFormData>({
-    resolver: zodResolver(dictSchema),
+  const form = useForm<DictFormValues>({
+    resolver: zodResolver(dictFormSchema),
     defaultValues: {
       name: '',
       dictCode: '',
@@ -75,7 +66,7 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
     }
   }, [open, dict, form]);
 
-  const onSubmit = async (data: DictFormData) => {
+  const onSubmit = async (data: DictFormValues) => {
     if (isEditing) {
       await updateMutation.mutateAsync({ id: dict.id, data });
     } else {
@@ -96,15 +87,9 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">名前 *</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="字典名を入力"
-            />
+            <Input id="name" {...form.register('name')} placeholder="字典名を入力" />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -117,9 +102,7 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
               disabled={isEditing}
             />
             {form.formState.errors.dictCode && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.dictCode.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.dictCode.message}</p>
             )}
           </div>
 
@@ -141,12 +124,7 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="remark">備考</Label>
-            <Textarea
-              id="remark"
-              {...form.register('remark')}
-              placeholder="備考を入力"
-              rows={3}
-            />
+            <Textarea id="remark" {...form.register('remark')} placeholder="備考を入力" rows={3} />
           </div>
 
           <DialogFooter>

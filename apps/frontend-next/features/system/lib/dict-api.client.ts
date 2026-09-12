@@ -1,112 +1,137 @@
+import { fetchApi } from '@/lib/api/client';
 import type {
   Dict,
+  DictForm,
   DictQuery,
   DictPageResult,
-  DictForm,
+  DictOption,
   DictItem,
+  DictItemForm,
   DictItemQuery,
   DictItemPageResult,
-  DictItemForm,
 } from '../types/dict';
 
 const BASE_URL = '/api/proxy/api/v1/dicts';
 
-export async function getDicts(params: DictQuery): Promise<DictPageResult> {
-  const searchParams = new URLSearchParams();
-  searchParams.set('pageNum', String(params.pageNum));
-  searchParams.set('pageSize', String(params.pageSize));
-  if (params.keywords) searchParams.set('keywords', params.keywords);
+/**
+ * Client Component専用のDict API
+ * Route Handler経由でBackendにアクセス
+ */
+export const dictApiClient = {
+  /**
+   * 辞書一覧取得（ページネーション）
+   */
+  getPage: async (params: DictQuery): Promise<DictPageResult> => {
+    const searchParams = new URLSearchParams({
+      pageNum: String(params.pageNum),
+      pageSize: String(params.pageSize),
+    });
+    if (params.keywords) {
+      searchParams.set('keywords', params.keywords);
+    }
+    if (params.status !== undefined) {
+      searchParams.set('status', String(params.status));
+    }
+    return fetchApi<DictPageResult>(`${BASE_URL}/page?${searchParams.toString()}`);
+  },
 
-  const res = await fetch(`${BASE_URL}?${searchParams.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch dicts');
-  return res.json();
-}
+  /**
+   * 辞書オプション一覧取得
+   */
+  getOptions: async (): Promise<DictOption[]> => {
+    return fetchApi<DictOption[]>(`${BASE_URL}/options`);
+  },
 
-export async function getDict(id: number): Promise<Dict> {
-  const res = await fetch(`${BASE_URL}/${id}/form`);
-  if (!res.ok) throw new Error('Failed to fetch dict');
-  return res.json();
-}
+  /**
+   * 辞書詳細取得
+   */
+  getById: async (id: number): Promise<Dict> => {
+    return fetchApi<Dict>(`${BASE_URL}/${id}/form`);
+  },
 
-export async function createDict(data: DictForm): Promise<void> {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create dict');
-}
+  /**
+   * 辞書フォームデータ取得
+   */
+  getFormData: async (id: number): Promise<DictForm> => {
+    return fetchApi<DictForm>(`${BASE_URL}/${id}/form`);
+  },
 
-export async function updateDict(id: number, data: DictForm): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update dict');
-}
+  /**
+   * 辞書作成
+   */
+  create: async (data: DictForm): Promise<void> => {
+    await fetchApi<void>(BASE_URL, {
+      method: 'POST',
+      body: data,
+    });
+  },
 
-export async function deleteDicts(ids: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${ids}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete dicts');
-}
+  /**
+   * 辞書更新
+   */
+  update: async (id: number, data: DictForm): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
 
-// 辞書項目 - Backend: /api/v1/dicts/{dictCode}/items
-export async function getDictItems(
-  params: DictItemQuery
-): Promise<DictItemPageResult> {
-  const searchParams = new URLSearchParams();
-  searchParams.set('pageNum', String(params.pageNum));
-  searchParams.set('pageSize', String(params.pageSize));
-  if (params.keywords) searchParams.set('keywords', params.keywords);
+  /**
+   * 辞書削除（複数はカンマ区切り）
+   */
+  delete: async (ids: string): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${ids}`, {
+      method: 'DELETE',
+    });
+  },
 
-  const res = await fetch(
-    `${BASE_URL}/${params.dictCode}/items?${searchParams.toString()}`
-  );
-  if (!res.ok) throw new Error('Failed to fetch dict items');
-  return res.json();
-}
+  /**
+   * 辞書項目一覧取得（ページネーション）
+   */
+  getItems: async (dictCode: string, params: DictItemQuery): Promise<DictItemPageResult> => {
+    const searchParams = new URLSearchParams({
+      pageNum: String(params.pageNum),
+      pageSize: String(params.pageSize),
+    });
+    if (params.keywords) {
+      searchParams.set('keywords', params.keywords);
+    }
+    return fetchApi<DictItemPageResult>(`${BASE_URL}/${dictCode}/items?${searchParams.toString()}`);
+  },
 
-export async function getDictItem(
-  dictCode: string,
-  id: number
-): Promise<DictItem> {
-  const res = await fetch(`${BASE_URL}/${dictCode}/items/${id}/form`);
-  if (!res.ok) throw new Error('Failed to fetch dict item');
-  return res.json();
-}
+  /**
+   * 辞書項目フォームデータ取得
+   */
+  getItemFormData: async (dictCode: string, itemId: number): Promise<DictItemForm> => {
+    return fetchApi<DictItemForm>(`${BASE_URL}/${dictCode}/items/${itemId}/form`);
+  },
 
-export async function createDictItem(
-  dictCode: string,
-  data: DictItemForm
-): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${dictCode}/items`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create dict item');
-}
+  /**
+   * 辞書項目作成
+   */
+  createItem: async (dictCode: string, data: DictItemForm): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${dictCode}/items`, {
+      method: 'POST',
+      body: data,
+    });
+  },
 
-export async function updateDictItem(
-  dictCode: string,
-  id: number,
-  data: DictItemForm
-): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${dictCode}/items/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update dict item');
-}
+  /**
+   * 辞書項目更新
+   */
+  updateItem: async (dictCode: string, itemId: number, data: DictItemForm): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${dictCode}/items/${itemId}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
 
-export async function deleteDictItems(
-  dictCode: string,
-  ids: string
-): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${dictCode}/items/${ids}`, {
-    method: 'DELETE',
-  });
-  if (!res.ok) throw new Error('Failed to delete dict items');
-}
+  /**
+   * 辞書項目削除（複数はカンマ区切り）
+   */
+  deleteItems: async (dictCode: string, ids: string): Promise<void> => {
+    await fetchApi<void>(`${BASE_URL}/${dictCode}/items/${ids}`, {
+      method: 'DELETE',
+    });
+  },
+};

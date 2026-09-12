@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,17 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateRole, useUpdateRole } from '../hooks/use-role';
+import { roleFormSchema, type RoleFormValues } from '../schemas/role-schema';
 import type { Role } from '../types/role';
-
-const roleSchema = z.object({
-  name: z.string().min(1, '役割名は必須です'),
-  code: z.string().min(1, 'コードは必須です'),
-  dataScope: z.number(),
-  status: z.number(),
-  sort: z.number().min(0),
-});
-
-type RoleFormData = z.infer<typeof roleSchema>;
 
 interface RoleDialogProps {
   open: boolean;
@@ -45,8 +35,8 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
   const updateMutation = useUpdateRole();
   const isEditing = !!role;
 
-  const form = useForm<RoleFormData>({
-    resolver: zodResolver(roleSchema),
+  const form = useForm<RoleFormValues>({
+    resolver: zodResolver(roleFormSchema),
     defaultValues: {
       name: '',
       code: '',
@@ -78,7 +68,7 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
     }
   }, [open, role, form]);
 
-  const onSubmit = async (data: RoleFormData) => {
+  const onSubmit = async (data: RoleFormValues) => {
     if (isEditing) {
       await updateMutation.mutateAsync({ id: role.id, data });
     } else {
@@ -99,29 +89,17 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">役割名 *</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="役割名を入力"
-            />
+            <Input id="name" {...form.register('name')} placeholder="役割名を入力" />
             {form.formState.errors.name && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="code">コード *</Label>
-            <Input
-              id="code"
-              {...form.register('code')}
-              placeholder="例: ADMIN, USER"
-            />
+            <Input id="code" {...form.register('code')} placeholder="例: ADMIN, USER" />
             {form.formState.errors.code && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.code.message}
-              </p>
+              <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
             )}
           </div>
 

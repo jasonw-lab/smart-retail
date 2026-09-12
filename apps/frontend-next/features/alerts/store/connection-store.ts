@@ -13,6 +13,5 @@ export const useConnectionStore = create<ConnectionState>((set) => ({
   reconnectCount: 0,
   setConnected: (connected) => set({ isConnected: connected }),
   setReconnectCount: (count) => set({ reconnectCount: count }),
-  incrementReconnectCount: () =>
-    set((state) => ({ reconnectCount: state.reconnectCount + 1 })),
+  incrementReconnectCount: () => set((state) => ({ reconnectCount: state.reconnectCount + 1 })),
 }));

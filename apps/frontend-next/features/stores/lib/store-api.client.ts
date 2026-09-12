@@ -18,6 +18,7 @@ export const storeApiClient = {
     searchParams.set('pageNum', String(params.pageNum));
     searchParams.set('pageSize', String(params.pageSize));
     if (params.storeName) searchParams.set('storeName', params.storeName);
+    if (params.address) searchParams.set('address', params.address);
     if (params.status) searchParams.set('status', params.status);
 
     return fetchApi<StorePageResult>(`${BASE_URL}?${searchParams.toString()}`);
@@ -27,7 +28,7 @@ export const storeApiClient = {
    * 全店舗リスト取得(セレクトボックス用)
    */
   async getAll(): Promise<Store[]> {
-    return fetchApi<Store[]>(`${BASE_URL}/list`);
+    return fetchApi<Store[]>(BASE_URL);
   },
 
   /**

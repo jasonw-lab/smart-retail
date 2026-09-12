@@ -10,11 +10,7 @@ interface SearchParams {
   endTime?: string;
 }
 
-export default async function LogPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function LogPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const resolvedSearchParams = await searchParams;
   const params: LogQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),

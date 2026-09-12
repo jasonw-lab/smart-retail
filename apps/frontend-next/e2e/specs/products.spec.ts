@@ -18,6 +18,16 @@ test.describe('商品管理UI構造', () => {
     await expect(mainContent.locator('h1')).toBeVisible({ timeout: 10000 });
   });
 
+  test('商品一覧ページの VRT', async ({ page }) => {
+    await page.goto('/products');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page).toHaveScreenshot('products-list.png', {
+      fullPage: true,
+      threshold: 0.2,
+    });
+  });
+
   test('商品一覧テーブルが表示される', async ({ page }) => {
     await page.goto('/products');
     await page.waitForLoadState('domcontentloaded');
@@ -67,11 +77,7 @@ test.describe('商品フォームバリデーション', () => {
     // バリデーションエラーが表示される（エラー要素の存在確認）
     // 具体的なテキストではなく、エラー表示の存在を確認
     await expect(
-      page
-        .locator(
-          '[class*="error"], [class*="Error"], .text-error, .text-destructive'
-        )
-        .first()
+      page.locator('[class*="error"], [class*="Error"], .text-error, .text-destructive').first()
     ).toBeVisible({ timeout: 5000 });
   });
 });

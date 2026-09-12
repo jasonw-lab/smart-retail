@@ -12,22 +12,14 @@ interface SearchParams {
   endTime?: string;
 }
 
-export default async function UserPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function UserPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const resolvedSearchParams = await searchParams;
   const params: UserQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
     pageSize: 10,
     keywords: resolvedSearchParams.keywords,
-    status: resolvedSearchParams.status
-      ? parseInt(resolvedSearchParams.status)
-      : undefined,
-    deptId: resolvedSearchParams.deptId
-      ? parseInt(resolvedSearchParams.deptId)
-      : undefined,
+    status: resolvedSearchParams.status ? parseInt(resolvedSearchParams.status) : undefined,
+    deptId: resolvedSearchParams.deptId ? parseInt(resolvedSearchParams.deptId) : undefined,
     startTime: resolvedSearchParams.startTime,
     endTime: resolvedSearchParams.endTime,
   };
@@ -43,9 +35,7 @@ export default async function UserPage({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">User Management</h1>
-        <p className="text-muted-foreground">
-          Manage system user accounts and permissions
-        </p>
+        <p className="text-muted-foreground">Manage system user accounts and permissions</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

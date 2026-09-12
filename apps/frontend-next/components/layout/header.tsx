@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { LogOut, Bell, Maximize, ChevronDown, Menu } from 'lucide-react';
+import { LogOut, Bell, Maximize, ChevronDown, Menu, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAppStore } from '@/store/app-store';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { TESTIDS } from '@/lib/testing/testids';
 
 interface HeaderProps {
   user?: {
@@ -29,6 +30,7 @@ export function Header({ user }: HeaderProps) {
   const { toggleSidebarCollapse } = useAppStore();
   const t = useTranslations('navigation');
   const tAuth = useTranslations('auth');
+  const tHeader = useTranslations('header');
 
   // Breadcrumb mapping using translation keys
   const pathTitleMap: Record<string, string> = {
@@ -46,15 +48,12 @@ export function Header({ user }: HeaderProps) {
     '/system/dept': t('dept'),
     '/system/dict': t('dict'),
     '/system/log': t('log'),
+    '/profile': tHeader('profile'),
   };
 
-  function getBreadcrumbs(
-    currentPath: string
-  ): { label: string; href: string }[] {
+  function getBreadcrumbs(currentPath: string): { label: string; href: string }[] {
     const segments = currentPath.split('/').filter(Boolean);
-    const breadcrumbs: { label: string; href: string }[] = [
-      { label: t('dashboard'), href: '/' },
-    ];
+    const breadcrumbs: { label: string; href: string }[] = [{ label: t('dashboard'), href: '/' }];
 
     if (segments.length === 0) return breadcrumbs;
 
@@ -86,25 +85,29 @@ export function Header({ user }: HeaderProps) {
   };
 
   return (
-    <header className="flex justify-between items-center w-full px-6 h-16 bg-surface-container-lowest border-b border-outline-variant/30 shadow-sm sticky top-0 z-40">
+    <header
+      data-testid={TESTIDS.LAYOUT_HEADER}
+      className="flex justify-between items-center w-full px-6 h-16 bg-surface-container-lowest border-b border-outline-variant/30 shadow-sm sticky top-0 z-40"
+    >
       {/* Left: Menu toggle and Breadcrumbs */}
       <div className="flex items-center gap-4">
         <button
+          data-testid={TESTIDS.HEADER_MENU_TOGGLE}
           onClick={toggleSidebarCollapse}
+          aria-label="サイドバーを開閉"
           className="p-2 rounded-full text-outline hover:bg-surface-container-low transition-colors"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <nav className="flex items-center space-x-2 text-sm">
+        <nav
+          data-testid={TESTIDS.HEADER_BREADCRUMB}
+          className="flex items-center space-x-2 text-sm"
+        >
           {breadcrumbs.map((crumb, index) => (
             <span key={crumb.href} className="flex items-center">
-              {index > 0 && (
-                <span className="text-outline-variant mx-2">/</span>
-              )}
+              {index > 0 && <span className="text-outline-variant mx-2">/</span>}
               {index === breadcrumbs.length - 1 ? (
-                <span className="text-primary font-semibold">
-                  {crumb.label}
-                </span>
+                <span className="text-primary font-semibold">{crumb.label}</span>
               ) : (
                 <Link
                   href={crumb.href}
@@ -122,7 +125,9 @@ export function Header({ user }: HeaderProps) {
       <div className="flex items-center gap-2">
         {/* Fullscreen */}
         <button
+          data-testid={TESTIDS.HEADER_FULLSCREEN}
           onClick={handleFullscreen}
+          aria-label="全画面表示"
           className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors"
         >
           <Maximize className="h-5 w-5" />
@@ -132,7 +137,11 @@ export function Header({ user }: HeaderProps) {
         <LanguageSwitcher />
 
         {/* Notifications */}
-        <button className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative">
+        <button
+          data-testid={TESTIDS.HEADER_NOTIFICATIONS}
+          aria-label="通知"
+          className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative"
+        >
           <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-white" />
         </button>
@@ -143,11 +152,13 @@ export function Header({ user }: HeaderProps) {
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 pl-2 cursor-pointer group hover:bg-surface-container-low rounded-lg pr-2 py-1 transition-colors">
+            <button
+              data-testid={TESTIDS.HEADER_USER_MENU}
+              aria-label="ユーザー メニュー"
+              className="flex items-center gap-3 pl-2 cursor-pointer group hover:bg-surface-container-low rounded-lg pr-2 py-1 transition-colors"
+            >
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-sm font-medium border border-outline-variant group-hover:border-primary transition-colors">
-                {(user?.nickname || user?.username || 'D')
-                  .charAt(0)
-                  .toUpperCase()}
+                {(user?.nickname || user?.username || 'D').charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
                 {user?.nickname || user?.username || 'demo'}
@@ -165,7 +176,14 @@ export function Header({ user }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/profile" className="flex items-center">
+                <User className="mr-2 h-4 w-4" />
+                {tHeader('profile')}
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
+              data-testid={TESTIDS.HEADER_LOGOUT}
               onClick={handleLogout}
               className="text-error cursor-pointer"
             >

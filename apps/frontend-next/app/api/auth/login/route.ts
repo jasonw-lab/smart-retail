@@ -1,11 +1,10 @@
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import {
-  authenticateLocalMockUser,
-  isLocalMockAuthEnabled,
-} from '@/lib/auth/mock-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { authenticateLocalMockUser, isLocalMockAuthEnabled } from '@/lib/auth/mock-auth';
+import { serverEnv } from '@/lib/env/server';
+import { getClientIp, isRateLimited } from '@/lib/security/rate-limit';
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = serverEnv.BACKEND_URL;
 
 interface LoginRequest {
   username: string;
@@ -31,10 +30,7 @@ interface ApiResponse<T> {
 async function setAuthCookies(token: AuthToken) {
   const cookieStore = await cookies();
 
-  // localhost ではSecureを無効化（開発・テスト環境対応）
-  const isSecure =
-    process.env.NODE_ENV === 'production' &&
-    !process.env.BACKEND_URL?.includes('localhost');
+  const isSecure = process.env.NODE_ENV === 'production';
 
   cookieStore.set('access_token', token.accessToken, {
     httpOnly: true,
@@ -53,23 +49,15 @@ async function setAuthCookies(token: AuthToken) {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const clientIp = getClientIp(request);
+  if (isRateLimited(`login:${clientIp}`, { limit: 30, windowMs: 60 * 1000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   try {
     const body: LoginRequest = await request.json();
     let result: ApiResponse<AuthToken> | null = null;
-
-    if (!BACKEND_URL && isLocalMockAuthEnabled()) {
-      const mockToken = authenticateLocalMockUser(body.username, body.password);
-      if (!mockToken) {
-        return NextResponse.json(
-          { error: 'Invalid credentials' },
-          { status: 401 }
-        );
-      }
-
-      await setAuthCookies(mockToken);
-      return NextResponse.json({ success: true, mock: true });
-    }
 
     // Backend認証API呼び出し
     // BACKEND_URL already includes /api/v1 prefix
@@ -83,10 +71,7 @@ export async function POST(request: Request) {
       });
 
       if (!response.ok) {
-        return NextResponse.json(
-          { error: 'Authentication failed' },
-          { status: response.status }
-        );
+        return NextResponse.json({ error: 'Authentication failed' }, { status: response.status });
       }
 
       result = await response.json();
@@ -94,10 +79,7 @@ export async function POST(request: Request) {
       const mockToken = authenticateLocalMockUser(body.username, body.password);
       if (!mockToken) {
         if (isLocalMockAuthEnabled()) {
-          return NextResponse.json(
-            { error: 'Invalid credentials' },
-            { status: 401 }
-          );
+          return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
         throw error;
@@ -108,17 +90,11 @@ export async function POST(request: Request) {
     }
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
     }
 
     if (result.code !== '00000') {
-      return NextResponse.json(
-        { error: result.msg || 'Authentication failed' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: result.msg || 'Authentication failed' }, { status: 401 });
     }
 
     await setAuthCookies(result.data);
@@ -126,9 +102,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

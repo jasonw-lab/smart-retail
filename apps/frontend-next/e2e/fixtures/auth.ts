@@ -1,4 +1,5 @@
 import { test as base, expect } from '@playwright/test';
+import { TESTIDS } from '../testids';
 
 /**
  * Authentication fixture for E2E tests
@@ -34,12 +35,12 @@ export async function login(
       await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
 
       // Wait for form inputs to be available
-      await page.waitForSelector('input[id="username"]', { timeout: 10000 });
+      await page.waitForSelector(`[data-testid="${TESTIDS.LOGIN_USERNAME}"]`, { timeout: 10000 });
 
       // Clear and fill in credentials (form may have default values)
-      await page.fill('input[id="username"]', username);
-      await page.fill('input[id="password"]', password);
-      await page.fill('input[id="captchaCode"]', captchaCode);
+      await page.fill(`[data-testid="${TESTIDS.LOGIN_USERNAME}"]`, username);
+      await page.fill(`[data-testid="${TESTIDS.LOGIN_PASSWORD}"]`, password);
+      await page.fill(`[data-testid="${TESTIDS.LOGIN_CAPTCHA}"]`, captchaCode);
 
       // Submit form and wait for response or navigation
       const responsePromise = page.waitForResponse(
@@ -47,7 +48,7 @@ export async function login(
         { timeout: 30000 }
       );
 
-      await page.click('button[type="submit"]');
+      await page.click(`[data-testid="${TESTIDS.LOGIN_SUBMIT}"]`);
 
       const response = await responsePromise;
       // Check if login succeeded
@@ -90,7 +91,5 @@ export async function login(
     }
   }
 
-  throw new Error(
-    `Login failed after ${maxAttempts} attempts: ${lastError?.message}`
-  );
+  throw new Error(`Login failed after ${maxAttempts} attempts: ${lastError?.message}`);
 }

@@ -3,40 +3,16 @@ import { redirect } from '@/i18n/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { Sidebar } from '@/components/layout/sidebar';
 import { MainContent } from '@/components/layout/main-content';
-import { getLocalMockUserFromToken } from '@/lib/auth/mock-auth';
+import { fetchFromBackend, isRedirectError } from '@/lib/api/server';
+import type { UserInfo } from '@/types/api';
 
-async function getUser() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
-
-  if (!accessToken) {
-    return null;
-  }
-
-  const mockUser = getLocalMockUserFromToken(accessToken);
-  if (mockUser) {
-    return mockUser;
-  }
-
+async function getUser(): Promise<UserInfo | null> {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      return null;
+    return await fetchFromBackend<UserInfo>('users/me');
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
     }
-
-    const result = await response.json();
-    if (result.code !== '00000') {
-      return null;
-    }
-
-    return result.data;
-  } catch {
     return null;
   }
 }
@@ -46,10 +22,7 @@ interface DashboardLayoutProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function DashboardLayout({
-  children,
-  params,
-}: DashboardLayoutProps) {
+export default async function DashboardLayout({ children, params }: DashboardLayoutProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -65,7 +38,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
       <Sidebar />
-      <MainContent user={user}>{children}</MainContent>
+      <MainContent user={user ?? undefined}>{children}</MainContent>
     </div>
   );
 }

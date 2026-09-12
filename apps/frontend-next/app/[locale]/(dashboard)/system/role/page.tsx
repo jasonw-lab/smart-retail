@@ -8,11 +8,7 @@ interface SearchParams {
   keywords?: string;
 }
 
-export default async function RolePage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function RolePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const resolvedSearchParams = await searchParams;
   const params: RoleQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
@@ -31,9 +27,7 @@ export default async function RolePage({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Role Management</h1>
-        <p className="text-muted-foreground">
-          Manage system roles and data permissions
-        </p>
+        <p className="text-muted-foreground">Manage system roles and data permissions</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

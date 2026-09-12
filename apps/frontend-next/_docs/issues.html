@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>機能単位 issue 一覧（UI-first API 整合 / ADR-011）</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --accent: #0d9488;
+      --accent-soft: #ccfbf1;
+      --frontend: #3b82f6;
+      --backend: #f59e0b;
+      --both: #8b5cf6;
+      --doc: #64748b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 { margin: 0 0 0.5rem; font-size: 1.75rem; }
+    h2 { margin: 2rem 0 1rem; font-size: 1.25rem; color: #115e59; }
+    .meta { color: var(--muted); font-size: 0.875rem; }
+    .meta a { color: var(--accent); }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .card strong {
+      display: block;
+      font-size: 1.75rem;
+      color: var(--accent);
+    }
+    .card span { color: var(--muted); font-size: 0.875rem; }
+    .legend {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.875rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .badge.frontend { background: #dbeafe; color: #1e40af; }
+    .badge.backend { background: #fef3c7; color: #92400e; }
+    .badge.both { background: #ede9fe; color: #5b21b6; }
+    .badge.doc { background: #f1f5f9; color: #475569; }
+    .badge.open { background: #dbeafe; color: #1d4ed8; }
+    .badge.in_progress { background: #fef9c3; color: #a16207; }
+    .badge.done { background: #dcfce7; color: #15803d; }
+    .badge.backlog { background: #f1f5f9; color: #64748b; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      font-size: 0.875rem;
+    }
+    thead { background: var(--accent-soft); }
+    th, td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { font-weight: 700; color: #115e59; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody tr:last-child td { border-bottom: none; }
+    .id { font-weight: 700; color: #115e59; white-space: nowrap; }
+    .domain { font-weight: 700; white-space: nowrap; }
+    .field { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.8rem; }
+    .reason { color: var(--muted); }
+    td ul { margin: 0; padding-left: 1.1rem; }
+    td ul li { margin-bottom: 0.25rem; }
+    .note {
+      background: #fffbeb;
+      border-left: 4px solid var(--backend);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-size: 0.875rem;
+      color: #78350f;
+    }
+    .resolved {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-size: 0.875rem;
+      color: #14532d;
+    }
+    footer {
+      margin-top: 2rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>機能単位 issue 一覧（UI-first API 整合 / ADR-011）</h1>
+      <div class="meta">
+        生成日: 2026-07-19 &nbsp;|&nbsp; 最終更新日: 2026-07-20 &nbsp;|&nbsp;
+        対象ブランチ: feat/retail-api-integration &nbsp;|&nbsp;
+        元資料:
+        <a href="./adr/ADR-011-backward-compatible-retail-api-evolution.md">ADR-011</a> /
+        <a href="./api-modifications.html">api-modifications.html</a> /
+        <a href="./workflow.md">workflow.md</a>
+      </div>
+    </header>
+
+    <div class="note">
+      <strong>運用:</strong>
+      本ファイルは issue の内容と対応状態の正本です。機能開発完了後に、該当 issue のステータス・サマリーカード・最終更新日・更新履歴をメンテナンスしてください。
+      進行手順（backend e2e → frontend e2e の逐次フロー）は <code>_docs/workflow.md</code> を参照。
+    </div>
+
+    <div class="summary">
+      <div class="card"><strong>9</strong><span>総 issue 数</span></div>
+      <div class="card"><strong>3</strong><span>open</span></div>
+      <div class="card"><strong>0</strong><span>in_progress</span></div>
+      <div class="card"><strong>6</strong><span>done</span></div>
+    </div>
+
+    <div class="legend">
+      <span><span class="badge both">両方</span> Backend + Frontend</span>
+      <span><span class="badge frontend">Frontend</span> Frontend のみ（backend e2e スキップ）</span>
+      <span><span class="badge open">open</span> 未着手</span>
+      <span><span class="badge in_progress">in_progress</span> 対応中</span>
+      <span><span class="badge done">done</span> 完了</span>
+      <span><span class="badge backlog">backlog</span> 延期・対象外</span>
+    </div>
+
+    <h2>open issue（推奨実施順）</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>機能</th>
+          <th>作業項目</th>
+          <th>対象側</th>
+          <th>依存</th>
+          <th>受入条件</th>
+          <th>ステータス</th>
+          <th>元資料</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="id">ISSUE-001</td>
+          <td class="domain">inventory</td>
+          <td>
+            <ul>
+              <li>[Backend] 現行 Vue 契約の固定テスト追加（<span class="field">GET /retail/inventories</span> がロット配列を返すこと）</li>
+              <li>[Backend] <span class="field">GET /retail/inventory-summaries</span> を追加（店舗・SKU 集約、<span class="field">lots</span>、<span class="field">summaryKey = "{storeId}-{productId}"</span>、<span class="field">turnoverRate</span> は null）</li>
+              <li>[Backend] <span class="field">POST /retail/inventories/{inventoryId}/discard</span> を実装（数量減算＋reason 付き DISPOSAL 履歴を同一トランザクション。quantity 検証: 形式違反 400 / 残量不足 409）</li>
+              <li>[Backend] <span class="field">InventoryTransactionForm</span> / <span class="field">InventoryTransactionPageVO</span> に任意の <span class="field">reason</span> を追加・永続化</li>
+              <li>[Backend] backend e2e テスト全パス</li>
+              <li>[Frontend] E2E mock 修正（<span class="field">/retail/inventories</span> をロット形式へ、<span class="field">/retail/inventory-summaries</span> を追加、<span class="field">turnoverRate</span> を null 化、在庫 VRT 快照更新）</li>
+              <li>[Frontend] <span class="field">Inventory</span> 型の集約行 <span class="field">id</span> を <span class="field">summaryKey</span> へ置換し、詳細・更新・廃棄・既存ロットへの補充を <span class="field">lots[].id</span> 起点に変更</li>
+              <li>[Frontend] 廃棄処理を <span class="field">/{inventoryId}/discard</span> へ切替（note への重複記録をやめる）</li>
+              <li>[Frontend] <code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge both">両方</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li><span class="field">GET /retail/inventories</span> のロット数と ID が Backend 追加前後で変わらない</li>
+              <li><span class="field">GET /retail/inventory-summaries</span> の <span class="field">lots[].id</span> が既存ロット ID と一致する</li>
+              <li>廃棄処理で在庫減算と reason 付き履歴作成が原子的に成功または失敗する</li>
+              <li>E2E mock がロット形式と集約形式を正しいエンドポイントで返し、E2E スイートが green</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>ADR-011 §2、api-modifications.html（inventory）</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-002</td>
+          <td class="domain">alerts</td>
+          <td>
+            <ul>
+              <li>[Backend] <span class="field">GET /retail/alerts</span> に任意パラメータ <span class="field">storeId, status, priority, category</span> を追加（既存配列レスポンスは維持）</li>
+              <li>[Backend] <span class="field">AlertPageVO</span> に任意の <span class="field">category</span>（INVENTORY/DEVICE/TEMPERATURE/PAYMENT/OTHER、alertType から導出）と <span class="field">read</span> を追加</li>
+              <li>[Backend] <span class="field">PATCH /retail/alerts/{id}/read</span> を追加（(userId, alertId) 一意キー、未登録は read:false。業務 status と分離）</li>
+              <li>[Backend] backend e2e テスト全パス（既存 storeId/status の回帰を含む）</li>
+              <li>[Frontend] <span class="field">alertApiClient.getPage</span> のクライアント側フィルタを廃止しサーバフィルタへ切替</li>
+              <li>[Frontend] 既読操作を <span class="field">PATCH /{id}/read</span> へ切替（status=ACK による代替をやめる）</li>
+              <li>[Frontend] E2E mock 更新（追加パラメータ・category/read・既読 API）</li>
+              <li>[Frontend] <code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge both">両方</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>アラートの <span class="field">read</span> 更新で業務 <span class="field">status</span> が変化しない</li>
+              <li>Vue 版の既存呼出が変更前後で同じ応答を受け取る</li>
+              <li>alerts 一覧レスポンスが利用者間で共有キャッシュされない（ADR-010 準拠）</li>
+            </ul>
+          </td>
+          <td><span class="badge open">open</span></td>
+          <td>ADR-011 §3、api-modifications.html（alerts）</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-003</td>
+          <td class="domain">system/notice</td>
+          <td>
+            <ul>
+              <li><span class="field">features/system/types/notice.ts</span> から <span class="field">priority</span> を削除し、<span class="field">level: "L" | "M" | "H"</span> と <span class="field">targetType: 1 | 2</span> を型として明示</li>
+              <li><span class="field">notice-dialog.tsx</span>: level→priority 変換送信をやめ <span class="field">level</span> のみ送信、<span class="field">targetType</span> のフォーム値を 1/2 に揃える</li>
+              <li><span class="field">notice-table-client.tsx</span>: 一覧を <span class="field">level</span> ベースのラベル / badge に変更</li>
+              <li>[別プロジェクト・記録のみ] Vue 版 <span class="field">notice.api.ts</span> の <span class="field">NoticePageVO.priority</span> を <span class="field">level?: "L" | "M" | "H"</span> に直す型のみの修正</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>通知作成・更新で Next.js 版と Vue 版が同じ <span class="field">level</span> / <span class="field">targetType</span> 契約を送信する</li>
+              <li>Backend への数値 <span class="field">priority</span> 送信がなくなる</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>ADR-011 §4、api-modifications.html（system/notice）</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-004</td>
+          <td class="domain">payments</td>
+          <td>
+            <ul>
+              <li><span class="field">payment-api.client.ts</span> で Backend 正規名へ変換（<span class="field">amount→totalAmount</span>、<span class="field">referenceId→paymentReferenceId</span>、<span class="field">transactionTime→saleTimestamp</span>、<span class="field">details→items</span>）</li>
+              <li>明細は <span class="field">productId, quantity, unitPrice</span> のみ送信し、表示専用の <span class="field">productName</span> は送信契約に含めない</li>
+              <li><span class="field">PaymentPayload</span> 型の整理（変換責務を client に閉じる）</li>
+              <li><code>pnpm test:e2e</code> 全パス（payments API は現状利用箇所なしのため型・変換の検証中心）</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>Backend 変更なく、変換後 payload が現行 Backend validation を通る</li>
+            </ul>
+          </td>
+          <td><span class="badge open">open</span></td>
+          <td>ADR-011 §5、api-modifications.html（payments）</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-005</td>
+          <td class="domain">products</td>
+          <td>
+            <ul>
+              <li><span class="field">product-form.tsx</span> のカテゴリID数値入力を <span class="field">useCategories()</span> の選択肢による Select へ変更（api-modifications.html 全 4 項目は 2026-07-19 調査で解決済み。残作業は本項目のみ）</li>
+              <li><span class="field">e2e/specs/products-crud.spec.ts</span> のフォーム操作を Select に合わせて更新</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>フォームでカテゴリを名称から選択でき、作成・更新が正常に動作する</li>
+              <li>既存 E2E が green</li>
+            </ul>
+          </td>
+          <td><span class="badge open">open</span></td>
+          <td>api-modifications.html（categories 行）、現状確認 2026-07-19</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-006</td>
+          <td class="domain">system/user</td>
+          <td>
+            <ul>
+              <li><span class="field">user-table-client.tsx</span> の Export ボタンに onClick を実装し、<span class="field">exportUsers(params)</span> + Blob ダウンロードを接続（startTime/endTime 転送自体は実装済み）</li>
+              <li>日付範囲フィルタの値をエクスポート条件に引き継ぐ</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>フィルタ適用後に Export すると同一条件付きの <span class="field">/api/proxy/api/v1/users/export?...startTime=...&amp;endTime=...</span> が発火し、Blob がダウンロードされる</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>api-modifications.html（system/user）、現状確認 2026-07-19</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-007</td>
+          <td class="domain">system/role</td>
+          <td>
+            <ul>
+              <li><span class="field">role-api.server.ts</span> の getPage に <span class="field">status</span> 付与を追加（client 版と同条件。client 側は接続済み）</li>
+              <li><span class="field">system/role/page.tsx</span> の SearchParams に <span class="field">status</span> を追加し <span class="field">RoleQuery.status</span> へ渡す（URL 同期方針の決定を含む）</li>
+              <li><span class="field">e2e/mocks/handlers.ts</span> の <span class="field">/roles/page</span> モックに keywords/status フィルタを追加（既存テストを壊さないこと）</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>Status 選択で <span class="field">/api/proxy/api/v1/roles/page</span> に <span class="field">status=1|0</span> が含まれる</li>
+              <li>SSR 初期取得でも status 指定が機能する</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>api-modifications.html（system/role）、現状確認 2026-07-19</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-008</td>
+          <td class="domain">system/dict</td>
+          <td>
+            <ul>
+              <li>ページネーションの Go to 入力に value / onChange / onKeyDown(Enter) を実装し <span class="field">handlePageChange</span> へ接続（1〜totalPages にクランプ）</li>
+              <li>Next ボタンに onClick と <span class="field">disabled={pageNum &gt;= totalPages}</span> を実装</li>
+              <li>ページ番号表示の固定 "1" を現在の <span class="field">pageNum</span> に修正</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>Go to で指定ページへ遷移し、範囲外（0・totalPages 超過・非数値）では遷移しない</li>
+              <li>Next が最終ページで disabled になる</li>
+              <li>ページ番号表示が現在の pageNum と一致する</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>api-modifications.html（system/dict）、現状確認 2026-07-19</td>
+        </tr>
+        <tr>
+          <td class="id">ISSUE-009</td>
+          <td class="domain">system/log</td>
+          <td>
+            <ul>
+              <li><span class="field">log-table-client.tsx</span> の Avg. Response Time 棒グラフの固定モックデータ（<span class="field">responseTimeData</span>）を削除し、API 値が提供されるまでは非表示に（「本番コードにモックを置かない」規約。api-modifications.html 未記載の新規検出項目）</li>
+              <li>応答時間の集計値が必要な場合は Backend 集計 API の起票を別途検討</li>
+              <li><code>pnpm test:e2e</code> 全パス</li>
+            </ul>
+          </td>
+          <td><span class="badge frontend">Frontend</span></td>
+          <td>なし</td>
+          <td>
+            <ul>
+              <li>本番コードパスに固定モックデータが残っていない</li>
+              <li>module 円グラフ（動的生成済み）に影響がない</li>
+            </ul>
+          </td>
+          <td><span class="badge done">done</span></td>
+          <td>現状確認 2026-07-19</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>検証済み・対応不要（2026-07-19 コード確認）</h2>
+
+    <div class="resolved">
+      api-modifications.html（2026-07-14 生成）の以下の項目は、2026-07-19 のコード確認で<strong>すでに解決済み</strong>であることを検証しました。
+      レポート側の該当行は次回メンテナンス時に「対応済み」へ更新してください。
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>機能</th>
+          <th>項目</th>
+          <th>確認結果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="domain">products</td>
+          <td class="field">imageUrl / status / productCode / categoryId フィルタ</td>
+          <td>imageUrl 入力欄・status 切替・更新時 productCode omit・Category API による動的フィルタのすべてが実装済み</td>
+        </tr>
+        <tr>
+          <td class="domain">stores</td>
+          <td class="field">address フィルタ</td>
+          <td>UI → URL → page.tsx → StoreQuery → client/server getPage → E2E mock まで全経路が接続済み（実 Backend の address 受付は backend 側で要確認）</td>
+        </tr>
+        <tr>
+          <td class="domain">system/user</td>
+          <td class="field">UserForm.password / ステータス列ラベル</td>
+          <td>型から password 削除済み、ステータス列は Status / Active / Disabled に修正済み</td>
+        </tr>
+        <tr>
+          <td class="domain">system/menu</td>
+          <td class="field">visible フィルタ</td>
+          <td>MenuQuery・client・table・E2E mock まで接続済み</td>
+        </tr>
+        <tr>
+          <td class="domain">system/dict</td>
+          <td class="field">status フィルタ</td>
+          <td>UI・型・API クライアントの 3 層が接続済み</td>
+        </tr>
+        <tr>
+          <td class="domain">system/log</td>
+          <td class="field">module 円グラフ</td>
+          <td>moduleStats（API の module 値）から円グラフ・凡例を動的生成済み</td>
+        </tr>
+        <tr>
+          <td class="domain">inventory</td>
+          <td class="field">DisposeDto.reason / InventoryTransaction.reason</td>
+          <td>ISSUE-001 対応済み。廃棄は POST /retail/inventories/{lotId}/discard（reason/remarks）へ切替、Backend も受理・永続化済み</td>
+        </tr>
+        <tr>
+          <td class="domain">system/role</td>
+          <td class="field">status フィルタ（client 側）</td>
+          <td>RoleQuery・client・handleSearch は接続済み。server/mock の追随は ISSUE-007 で対応</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>対象外・延期（issue 化しない）</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>扱い</th>
+          <th>理由</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="domain">ダッシュボード天気</td>
+          <td><span class="badge backlog">backlog</span></td>
+          <td class="reason">ADR-011 §6: 情報源・対象店舗の位置・キャッシュ時間・障害時表示が未決定。placeholder を維持</td>
+        </tr>
+        <tr>
+          <td class="domain">在庫回転率の実計算</td>
+          <td><span class="badge backlog">backlog</span></td>
+          <td class="reason">ADR-011 §6: 対象期間・数量/金額基準・平均在庫の算出方法が未決定。null を維持</td>
+        </tr>
+        <tr>
+          <td class="domain">決済管理画面向けの追加項目</td>
+          <td><span class="badge backlog">backlog</span></td>
+          <td class="reason">ADR-011 §6: UI とユースケースができた時点で別途契約を決める</td>
+        </tr>
+        <tr>
+          <td class="domain">api-modifications.html の Document（現状維持）項目</td>
+          <td><span class="badge backlog">backlog</span></td>
+          <td class="reason">products の productCode/status フィルタ、stores 表示専用フィールド、devices metadataJson / URL 短縮形、inventory status enum mapper / remarks vs note、transactions（gap なし）、alerts value 型、dashboard userName/avatarUrl、heartbeat、system/menu params、system/config</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>更新履歴</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>改訂者</th>
+          <th>内容</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2026/07/20</td>
+          <td>kimi</td>
+          <td>ISSUE-003（notice）/ ISSUE-006（user）/ ISSUE-007（role）/ ISSUE-008（dict）/ ISSUE-009（log）完了（PR #5〜#9）。統合検証ブランチで全件 e2e パスを確認（87 passed + 1 flaky 復帰）。ISSUE-002/004/005 は別途対応</td>
+        </tr>
+        <tr>
+          <td>2026/07/20</td>
+          <td>kimi</td>
+          <td>ISSUE-001（inventory）完了。Backend の inventory-summaries 追加・discard 実装に合わせ、frontend を summaryKey/lots[].id 契約へ切替、E2E mock をロット正本化。lint/build/test:e2e パス（dashboard VRT は時刻依存の既存フレークとして記録）</td>
+        </tr>
+        <tr>
+          <td>2026/07/19</td>
+          <td>kimi</td>
+          <td>初版作成。ADR-011 由来の 4 issue と api-modifications.html 由来の 5 issue を登録。api-modifications.html の解決済み項目は「検証済み・対応不要」に分離</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <footer>
+      本ファイルは <code>_docs/workflow.md</code> の進行フローに従ってメンテナンスします。<br />
+      issue 完了時はステータス・サマリーカード・最終更新日・更新履歴を更新し、あわせて <code>_docs/api-modifications.html</code> の該当項目も対応済みに更新してください。
+    </footer>
+  </div>
+</body>
+</html>

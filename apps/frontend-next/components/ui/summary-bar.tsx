@@ -34,23 +34,15 @@ export function SummaryBar({ items, className, ...props }: SummaryBarProps) {
           <div
             className={cn(
               'flex items-center gap-2',
-              item.onClick &&
-                'cursor-pointer hover:opacity-80 transition-opacity',
-              item.active &&
-                'ring-2 ring-primary ring-offset-2 rounded-md px-2 -mx-2'
+              item.onClick && 'cursor-pointer hover:opacity-80 transition-opacity',
+              item.active && 'ring-2 ring-primary ring-offset-2 rounded-md px-2 -mx-2'
             )}
             onClick={item.onClick}
             role={item.onClick ? 'button' : undefined}
             tabIndex={item.onClick ? 0 : undefined}
-            onKeyDown={
-              item.onClick
-                ? (e) => e.key === 'Enter' && item.onClick?.()
-                : undefined
-            }
+            onKeyDown={item.onClick ? (e) => e.key === 'Enter' && item.onClick?.() : undefined}
           >
-            {item.icon && (
-              <span className="text-muted-foreground">{item.icon}</span>
-            )}
+            {item.icon && <span className="text-muted-foreground">{item.icon}</span>}
             <span className="text-sm text-muted-foreground">{item.label}:</span>
             {item.color ? (
               <span

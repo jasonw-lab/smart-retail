@@ -1,7 +1,13 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import withBundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 // Content Security Policy
 const ContentSecurityPolicy = `
@@ -14,10 +20,16 @@ const ContentSecurityPolicy = `
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';
+  report-uri /api/report;
+  report-to csp-endpoint;
 `;
 
 // Security headers configuration
 const securityHeaders = [
+  {
+    key: 'Reporting-Endpoints',
+    value: 'csp-endpoint="/api/report"',
+  },
   {
     key: 'Content-Security-Policy',
     value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim(),
@@ -71,4 +83,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withAnalyzer(withNextIntl(nextConfig)), {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+});

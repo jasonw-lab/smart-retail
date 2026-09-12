@@ -12,7 +12,7 @@ import {
   ShoppingCart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { KPIData } from '../lib/mock-data';
+import type { KPIData } from '../types/dashboard';
 
 interface KPICardsProps {
   data: KPIData;
@@ -37,23 +37,17 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 売上高 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            売上高
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">売上高</CardTitle>
           <Badge variant="default" className="text-xs">
             本日
           </Badge>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {formatCurrency(data.sales.value)}
-          </div>
+          <div className="text-2xl font-bold">{formatCurrency(data.sales.value)}</div>
           <div
             className={cn(
               'flex items-center text-xs mt-1',
-              data.sales.changeType === 'increase'
-                ? 'text-emerald-600'
-                : 'text-red-600'
+              data.sales.changeType === 'increase' ? 'text-emerald-800' : 'text-red-700'
             )}
           >
             {data.sales.changeType === 'increase' ? (
@@ -69,17 +63,13 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 在庫切れSKU */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            在庫切れSKU
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">在庫切れSKU</CardTitle>
           <Package className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
             {data.outOfStockSKU.value}{' '}
-            <span className="text-sm font-normal text-gray-500">
-              {data.outOfStockSKU.label}
-            </span>
+            <span className="text-sm font-normal text-gray-500">{data.outOfStockSKU.label}</span>
           </div>
         </CardContent>
       </Card>
@@ -87,9 +77,7 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 稼働店舗 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            稼働店舗
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">稼働店舗</CardTitle>
           <Badge variant="success" className="text-xs">
             営業中
           </Badge>
@@ -107,9 +95,7 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 休業中アラート */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            休業中アラート
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">休業中アラート</CardTitle>
           {data.suspendedAlerts.requiresAction && (
             <Badge variant="warning" className="text-xs">
               要対応
@@ -136,13 +122,11 @@ export function KPICardsBottom({ data }: KPICardsProps) {
       {/* システム稼働率 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            システム稼働率
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">システム稼働率</CardTitle>
           <Activity className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-emerald-600">
+          <div className="text-2xl font-bold text-emerald-800">
             {data.systemUptime.value.toFixed(2)}%
           </div>
         </CardContent>
@@ -151,35 +135,26 @@ export function KPICardsBottom({ data }: KPICardsProps) {
       {/* 新規顧客 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            新規顧客
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">新規顧客</CardTitle>
           <Users className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            +{data.newCustomers.value.toLocaleString()}
-          </div>
+          <div className="text-2xl font-bold">+{data.newCustomers.value.toLocaleString()}</div>
         </CardContent>
       </Card>
 
       {/* 平均客単価 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">
-            平均客単価
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">平均客単価</CardTitle>
           <ShoppingCart className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {formatCurrency(data.averageOrderValue.value)}
-          </div>
+          <div className="text-2xl font-bold">{formatCurrency(data.averageOrderValue.value)}</div>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-// Re-export type for convenience
-export type { KPIData } from '../lib/mock-data';
+export type { KPIData } from '../types/dashboard';

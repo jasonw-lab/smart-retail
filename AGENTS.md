@@ -7,6 +7,10 @@
 
 ## リモートデプロイ運用（Mac -> Ubuntu）
 
+> [!NOTE]
+> **前提条件**: ローカルマシンの搭載メモリが **48GB 未満**（`< 48GB`）の場合、開発リソース確保のため本リモートデプロイ運用（Ubuntu サーバー `192.168.1.199` へのデプロイ）を実施します。  
+> 搭載メモリが **48GB 以上** の開発機（本 PC: M5 Mac 64GB）では、後述の [M5 Mac ローカル開発運用（OrbStack Docker 利用）](#m5-mac-ローカル開発運用orbstack-docker-利用) を標準として開発を行います。
+
 本プロジェクトは Docker Context + SSH を使い、Mac から Ubuntu サーバー（`192.168.1.199`）へリモートデプロイする運用を前提としています。
 
 ### 必須 `.env` 変数（`platform/docker/.env`）
@@ -132,3 +136,61 @@ mvn test -pl services/retail-be -Dtest='com.smartdx.retail.e2e.*E2ETest'
 - Docker 29+ / OrbStack の最小 API バージョン（1.40）対策として、`src/test/resources/docker-java.properties` で `api.version=1.44` を指定している
 - E2E 用に Flyway を有効化し、`db/migration/retail` のスキーマを適用している
 - `RetailE2EBase` の MySQL/Redis コンテナはシングルトン管理。これによりテストクラス間で Spring のアプリケーションコンテキストキャッシュが正しく機能する
+
+
+## M5 Mac ローカル開発運用（OrbStack Docker 利用）
+
+> [!NOTE]
+> **適用基準**: ローカル搭載メモリが **48GB 以上** の開発機（本 PC: M5 Mac 64GB）では、リモート VPS ではなく本セクションの OrbStack ローカルインフラを利用して開発を行います。
+
+M5 Mac (Apple Silicon 64GB) 上の日常開発では、Docker インフラ（MySQL, Redis, PowerJob, OpenSearch）を OrbStack 上で起動し、バックエンド（Spring Boot）やフロントエンド（Vite）は Mac ホスト上で直接起動して接続します。
+
+### 前提と接続先
+
+- **Docker エンジン**: OrbStack
+- **BASEPATH**: `/mydata`（`/etc/synthetic.conf` により `{local-path}` へのシンボリックリンクとして設定。VPS と同一パス）
+- **接続先（ホストから接続）**:
+  | サービス | ポート | 接続先 / パラメータ | 備考 |
+  |---|---|---|---|
+  | **MySQL 8.0** | `3306` | `localhost:3306` (user: `root`, pass: `123456`, db: `smart_dx_db`) | `smart_dx_db`, `powerjob` を自動作成 |
+  | **Redis 7.2** | `6379` | `localhost:6379` (pass: `123456`) | コンテナ名: `smart-retail-redis` |
+  | **OpenSearch** | `9200` | `http://localhost:9200` | `smart-property-dx` のインフラ起動時 |
+  | **PowerJob Server** | `7700` | `http://localhost:7700` | シミュレータ用 |
+
+### ローカル運用コマンド（`platform/docker/Makefile`）
+
+```bash
+cd platform/docker
+
+make local-setup     # /mydata 配下のディレクトリ構造・設定初期化 & jason-lab-net ネットワーク作成
+make local-env-up    # ローカルインフラ (MySQL, Redis, PowerJob) を起動
+make local-env-ps    # コンテナ稼働状態確認
+make local-env-logs  # インフラコンテナのログ確認
+make local-env-down  # インフラコンテナ停止
+```
+
+### OpenSearch の起動（smart-property-dx 連携）
+
+```bash
+cd ../../../smart-property-dx/platform/docker
+./start-env.sh
+```
+※同一の Docker ネットワーク `jason-lab-net` を共有しているため、互いに干渉せず共存します。
+
+### ローカルアプリケーション起動
+
+1. **バックエンド (Spring Boot)**
+   ```bash
+   cd apps/backend  # (または ../smart-dx-backend/apps/backend)
+   mvn spring-boot:run -pl app -Dspring-boot.run.profiles=dev
+   ```
+   - `application.yml` のデフォルトで `localhost:3306` (MySQL) および `localhost:6379` (Redis) に自動接続されます。
+   - Flyway により `smart_dx_db` に `retail_*` テーブルが自動作成されます。
+
+2. **フロントエンド (Vite)**
+   ```bash
+   cd apps/frontend
+   pnpm dev
+   ```
+   - `localhost:8080` のバックエンド API にプロキシ接続されます。
+

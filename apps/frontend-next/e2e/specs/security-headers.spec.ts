@@ -46,9 +46,7 @@ test.describe('セキュリティヘッダー', () => {
     expect(permissionsPolicy).toContain('microphone=()');
   });
 
-  test('Strict-Transport-Securityヘッダーが設定されている', async ({
-    request,
-  }) => {
+  test('Strict-Transport-Securityヘッダーが設定されている', async ({ request }) => {
     const response = await request.get('/login');
     const hsts = response.headers()['strict-transport-security'];
 

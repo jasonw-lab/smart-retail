@@ -25,10 +25,7 @@ export const storeKeys = {
 /**
  * 店舗一覧取得フック
  */
-export function useStores(
-  params: StoreQuery,
-  options?: { placeholderData?: StorePageResult }
-) {
+export function useStores(params: StoreQuery, options?: { placeholderData?: StorePageResult }) {
   return useQuery({
     queryKey: storeKeys.list(params),
     queryFn: () => storeApiClient.getPage(params),

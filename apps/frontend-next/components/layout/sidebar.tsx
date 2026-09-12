@@ -22,6 +22,9 @@ import {
   LogOut,
   Cog,
   Megaphone,
+  ShoppingBag,
+  Monitor,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -45,8 +48,11 @@ const navSections: NavSection[] = [
     titleKey: '',
     items: [
       { titleKey: 'dashboard', href: '/', icon: LayoutDashboard },
+      { titleKey: 'products', href: '/products', icon: ShoppingBag },
       { titleKey: 'stores', href: '/stores', icon: Store },
       { titleKey: 'inventory', href: '/inventory', icon: Boxes },
+      { titleKey: 'devices', href: '/devices', icon: Monitor },
+      { titleKey: 'transactions', href: '/transactions', icon: Receipt },
       { titleKey: 'alerts', href: '/alerts', icon: Bell },
     ],
   },

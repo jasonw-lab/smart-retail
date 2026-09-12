@@ -8,8 +8,11 @@ import { TESTIDS } from '../testids';
  *
  * Current sidebar structure (sidebar.tsx):
  * - Dashboard → /
+ * - Products → /products
  * - Stores → /stores
  * - Inventory → /inventory
+ * - Devices → /devices
+ * - Transactions → /transactions
  * - Alerts → /alerts
  * - System (expandable):
  *   - Users → /system/user
@@ -35,6 +38,19 @@ test.describe('サイドバーナビゲーション', () => {
       await expect(page.getByRole('main')).toBeVisible({ timeout: 10000 });
     });
 
+    test('Products (/products) にアクセスできる', async ({ page }) => {
+      const productsLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Products' });
+      await expect(productsLink).toBeVisible({ timeout: 5000 });
+      await productsLink.click();
+
+      await expect(page).toHaveURL(/\/products$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
     test('Stores (/stores) にアクセスできる', async ({ page }) => {
       const storeLink = page
         .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
@@ -56,6 +72,32 @@ test.describe('サイドバーナビゲーション', () => {
       await inventoryLink.click();
 
       await expect(page).toHaveURL(/\/inventory$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
+    test('Devices (/devices) にアクセスできる', async ({ page }) => {
+      const devicesLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Devices' });
+      await expect(devicesLink).toBeVisible({ timeout: 5000 });
+      await devicesLink.click();
+
+      await expect(page).toHaveURL(/\/devices$/, { timeout: 15000 });
+      await expect(page.getByRole('main').locator('h1')).toBeVisible({
+        timeout: 10000,
+      });
+    });
+
+    test('Transactions (/transactions) にアクセスできる', async ({ page }) => {
+      const transactionsLink = page
+        .locator(`[data-testid="${TESTIDS.LAYOUT_SIDEBAR}"]`)
+        .getByRole('link', { name: 'Transactions' });
+      await expect(transactionsLink).toBeVisible({ timeout: 5000 });
+      await transactionsLink.click();
+
+      await expect(page).toHaveURL(/\/transactions$/, { timeout: 15000 });
       await expect(page.getByRole('main').locator('h1')).toBeVisible({
         timeout: 10000,
       });

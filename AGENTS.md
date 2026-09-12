@@ -5,6 +5,13 @@
 本ファイルは SmartRetail Pro プロジェクトの AI コーディングエージェント向けガイドです。
 プロジェクト固有の詳細は [`CLAUDE.md`](./CLAUDE.md) を参照してください。
 
+## ディレクトリ制限・対応範囲ルール
+
+> [!CAUTION]
+> 以下のディレクトリには厳格なアクセス制限があります。
+> - `apps/backend-go` : **対応対象外（read・修正ともに厳禁）**
+> - `apps/frontend` : **既存 Vue 版（修正・書き込みはNG / 必要な場合の仕様・実装参照（read）のみOK）**
+
 ## リモートデプロイ運用（Mac -> Ubuntu）
 
 > [!NOTE]
@@ -153,8 +160,9 @@ M5 Mac (Apple Silicon 64GB) 上の日常開発では、Docker インフラ（MyS
   | サービス | ポート | 接続先 / パラメータ | 備考 |
   |---|---|---|---|
   | **MySQL 8.0** | `3306` | `localhost:3306` (user: `root`, pass: `123456`, db: `smart_dx_db`) | `smart_dx_db`, `powerjob` を自動作成 |
-  | **Redis 7.2** | `6379` | `localhost:6379` (pass: `123456`) | コンテナ名: `smart-retail-redis` |
-  | **OpenSearch** | `9200` | `http://localhost:9200` | `smart-property-dx` のインフラ起動時 |
+  | **Redis 7.2** | `6379` | `localhost:6379` (pass: `123456`) | コンテナ名: `smart-dx-redis` |
+  | **OpenSearch** | `9200` | `http://localhost:9200` | コンテナ名: `smart-dx-opensearch` |
+  | **OpenSearch Dashboards** | `5601` | `http://localhost:5601` | コンテナ名: `smart-dx-opensearch-dashboards` |
   | **PowerJob Server** | `7700` | `http://localhost:7700` | シミュレータ用 |
 
 ### ローカル運用コマンド（`platform/docker/Makefile`）
@@ -163,19 +171,11 @@ M5 Mac (Apple Silicon 64GB) 上の日常開発では、Docker インフラ（MyS
 cd platform/docker
 
 make local-setup     # /mydata 配下のディレクトリ構造・設定初期化 & jason-lab-net ネットワーク作成
-make local-env-up    # ローカルインフラ (MySQL, Redis, PowerJob) を起動
+make local-env-up    # ローカルインフラ (MySQL, Redis, PowerJob, OpenSearch) を一括起動
 make local-env-ps    # コンテナ稼働状態確認
 make local-env-logs  # インフラコンテナのログ確認
 make local-env-down  # インフラコンテナ停止
 ```
-
-### OpenSearch の起動（smart-property-dx 連携）
-
-```bash
-cd ../../../smart-property-dx/platform/docker
-./start-env.sh
-```
-※同一の Docker ネットワーク `jason-lab-net` を共有しているため、互いに干渉せず共存します。
 
 ### ローカルアプリケーション起動
 
@@ -187,7 +187,8 @@ cd ../../../smart-property-dx/platform/docker
    - `application.yml` のデフォルトで `localhost:3306` (MySQL) および `localhost:6379` (Redis) に自動接続されます。
    - Flyway により `smart_dx_db` に `retail_*` テーブルが自動作成されます。
 
-2. **フロントエンド (Vite)**
+2. **フロントエンド (Vite)**  
+   ※ `apps/frontend` は既存 Vue 版です（参考・参照用。修正・書き込みはNG）。
    ```bash
    cd apps/frontend
    pnpm dev

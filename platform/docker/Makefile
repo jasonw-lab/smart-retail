@@ -14,7 +14,7 @@ local-setup:
 	@./setup-local-env.sh
 
 local-env-up:
-	@echo "==> Starting local infrastructure (MySQL, Redis, PowerJob) ..."
+	@echo "==> Starting local infrastructure (MySQL, Redis, PowerJob, OpenSearch) ..."
 	@docker compose -f docker-compose-env.yml up -d
 
 local-env-down:

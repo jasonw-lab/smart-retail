@@ -1,0 +1,42 @@
+{
+  "description": "Extract text from listing-related documents",
+  "processors": [
+    {
+      "attachment": {
+        "field": "data",
+        "target_field": "attachment",
+        "indexed_chars": 100000,
+        "ignore_missing": true,
+        "properties": [
+          "content",
+          "content_length",
+          "content_type",
+          "language",
+          "author",
+          "date",
+          "title"
+        ]
+      }
+    },
+    {
+      "remove": {
+        "field": "data",
+        "ignore_missing": true
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "remove": {
+        "field": "data",
+        "ignore_missing": true
+      }
+    },
+    {
+      "set": {
+        "field": "attachment.error",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

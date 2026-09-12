@@ -1,0 +1,314 @@
+# MinIO デモアセット投入マニフェスト
+# 形式: TEMPLATE|OBJECT_KEY
+# TEMPLATE は templates/ 配下のファイル名（sample.jpg / sample.png / sample.pdf）
+# OBJECT_KEY は MinIO バケット (default: property) 内のオブジェクトキー
+#
+# 投入対象: PROP-2026-000200 〜 000229（30 件）
+# 連動: docs/design/db/property_demo_data.sql / opensearch/init/realty-listings-demo-bulk.ndjson
+#
+# ============================================================================
+# PROP-2026-000200 (mansion / 港区 / S / 4分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000200/main.jpg
+sample.jpg|property-images/PROP-2026-000200/sub01.jpg
+sample.jpg|property-images/PROP-2026-000200/sub02.jpg
+sample.png|property-images/PROP-2026-000200/layout.png
+sample.jpg|thumbnails/PROP-2026-000200/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000200/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000200/summary.pdf
+sample.pdf|property-docs/PROP-2026-000200/important.pdf
+# ============================================================================
+# PROP-2026-000201 (mansion / 港区 / A / 8分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000201/main.jpg
+sample.jpg|property-images/PROP-2026-000201/sub01.jpg
+sample.jpg|property-images/PROP-2026-000201/sub02.jpg
+sample.png|property-images/PROP-2026-000201/layout.png
+sample.jpg|thumbnails/PROP-2026-000201/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000201/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000201/summary.pdf
+sample.pdf|property-docs/PROP-2026-000201/important.pdf
+# ============================================================================
+# PROP-2026-000202 (house / 港区 / B / 13分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000202/main.jpg
+sample.jpg|property-images/PROP-2026-000202/sub01.jpg
+sample.jpg|property-images/PROP-2026-000202/sub02.jpg
+sample.png|property-images/PROP-2026-000202/layout.png
+sample.jpg|thumbnails/PROP-2026-000202/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000202/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000202/summary.pdf
+sample.pdf|property-docs/PROP-2026-000202/valuation.pdf
+# ============================================================================
+# PROP-2026-000203 (office / 港区 / S / 3分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000203/main.jpg
+sample.jpg|property-images/PROP-2026-000203/sub01.jpg
+sample.jpg|property-images/PROP-2026-000203/sub02.jpg
+sample.png|property-images/PROP-2026-000203/layout.png
+sample.jpg|thumbnails/PROP-2026-000203/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000203/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000203/summary.pdf
+sample.pdf|property-docs/PROP-2026-000203/important.pdf
+# ============================================================================
+# PROP-2026-000204 (retail / 港区 / B / 18分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000204/main.jpg
+sample.jpg|property-images/PROP-2026-000204/sub01.jpg
+sample.jpg|property-images/PROP-2026-000204/sub02.jpg
+sample.png|property-images/PROP-2026-000204/layout.png
+sample.jpg|thumbnails/PROP-2026-000204/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000204/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000204/summary.pdf
+# ============================================================================
+# PROP-2026-000205 (land / 港区 / C / 14分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000205/main.jpg
+sample.jpg|property-images/PROP-2026-000205/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000205/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000205/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000205/summary.pdf
+sample.pdf|property-docs/PROP-2026-000205/valuation.pdf
+# ============================================================================
+# PROP-2026-000206 (mansion / 渋谷区 / S / 5分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000206/main.jpg
+sample.jpg|property-images/PROP-2026-000206/sub01.jpg
+sample.jpg|property-images/PROP-2026-000206/sub02.jpg
+sample.png|property-images/PROP-2026-000206/layout.png
+sample.jpg|thumbnails/PROP-2026-000206/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000206/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000206/summary.pdf
+sample.pdf|property-docs/PROP-2026-000206/important.pdf
+# ============================================================================
+# PROP-2026-000207 (house / 渋谷区 / A / 9分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000207/main.jpg
+sample.jpg|property-images/PROP-2026-000207/sub01.jpg
+sample.jpg|property-images/PROP-2026-000207/sub02.jpg
+sample.png|property-images/PROP-2026-000207/layout.png
+sample.jpg|thumbnails/PROP-2026-000207/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000207/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000207/summary.pdf
+sample.pdf|property-docs/PROP-2026-000207/valuation.pdf
+# ============================================================================
+# PROP-2026-000208 (office / 渋谷区 / B / 7分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000208/main.jpg
+sample.jpg|property-images/PROP-2026-000208/sub01.jpg
+sample.jpg|property-images/PROP-2026-000208/sub02.jpg
+sample.png|property-images/PROP-2026-000208/layout.png
+sample.jpg|thumbnails/PROP-2026-000208/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000208/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000208/summary.pdf
+# ============================================================================
+# PROP-2026-000209 (retail / 渋谷区 / S / 4分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000209/main.jpg
+sample.jpg|property-images/PROP-2026-000209/sub01.jpg
+sample.jpg|property-images/PROP-2026-000209/sub02.jpg
+sample.png|property-images/PROP-2026-000209/layout.png
+sample.jpg|thumbnails/PROP-2026-000209/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000209/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000209/summary.pdf
+sample.pdf|property-docs/PROP-2026-000209/important.pdf
+# ============================================================================
+# PROP-2026-000210 (retail / 渋谷区 / A / 11分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000210/main.jpg
+sample.jpg|property-images/PROP-2026-000210/sub01.jpg
+sample.png|property-images/PROP-2026-000210/layout.png
+sample.jpg|thumbnails/PROP-2026-000210/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000210/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000210/summary.pdf
+# ============================================================================
+# PROP-2026-000211 (land / 渋谷区 / C / 19分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000211/main.jpg
+sample.jpg|property-images/PROP-2026-000211/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000211/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000211/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000211/summary.pdf
+# ============================================================================
+# PROP-2026-000212 (mansion / 千代田区 / S / 5分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000212/main.jpg
+sample.jpg|property-images/PROP-2026-000212/sub01.jpg
+sample.jpg|property-images/PROP-2026-000212/sub02.jpg
+sample.png|property-images/PROP-2026-000212/layout.png
+sample.jpg|thumbnails/PROP-2026-000212/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000212/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000212/summary.pdf
+sample.pdf|property-docs/PROP-2026-000212/important.pdf
+# ============================================================================
+# PROP-2026-000213 (house / 千代田区 / C / 15分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000213/main.jpg
+sample.jpg|property-images/PROP-2026-000213/sub01.jpg
+sample.jpg|property-images/PROP-2026-000213/sub02.jpg
+sample.png|property-images/PROP-2026-000213/layout.png
+sample.jpg|thumbnails/PROP-2026-000213/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000213/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000213/summary.pdf
+sample.pdf|property-docs/PROP-2026-000213/valuation.pdf
+# ============================================================================
+# PROP-2026-000214 (office / 千代田区 / S / 3分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000214/main.jpg
+sample.jpg|property-images/PROP-2026-000214/sub01.jpg
+sample.jpg|property-images/PROP-2026-000214/sub02.jpg
+sample.png|property-images/PROP-2026-000214/layout.png
+sample.jpg|thumbnails/PROP-2026-000214/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000214/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000214/summary.pdf
+sample.pdf|property-docs/PROP-2026-000214/important.pdf
+# ============================================================================
+# PROP-2026-000215 (office / 千代田区 / A / 6分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000215/main.jpg
+sample.jpg|property-images/PROP-2026-000215/sub01.jpg
+sample.jpg|property-images/PROP-2026-000215/sub02.jpg
+sample.png|property-images/PROP-2026-000215/layout.png
+sample.jpg|thumbnails/PROP-2026-000215/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000215/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000215/summary.pdf
+sample.pdf|property-docs/PROP-2026-000215/important.pdf
+# ============================================================================
+# PROP-2026-000216 (retail / 千代田区 / B / 9分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000216/main.jpg
+sample.jpg|property-images/PROP-2026-000216/sub01.jpg
+sample.jpg|property-images/PROP-2026-000216/sub02.jpg
+sample.png|property-images/PROP-2026-000216/layout.png
+sample.jpg|thumbnails/PROP-2026-000216/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000216/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000216/summary.pdf
+# ============================================================================
+# PROP-2026-000217 (land / 千代田区 / A / 12分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000217/main.jpg
+sample.jpg|property-images/PROP-2026-000217/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000217/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000217/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000217/summary.pdf
+sample.pdf|property-docs/PROP-2026-000217/valuation.pdf
+# ============================================================================
+# PROP-2026-000218 (mansion / 目黒区 / S / 5分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000218/main.jpg
+sample.jpg|property-images/PROP-2026-000218/sub01.jpg
+sample.jpg|property-images/PROP-2026-000218/sub02.jpg
+sample.png|property-images/PROP-2026-000218/layout.png
+sample.jpg|thumbnails/PROP-2026-000218/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000218/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000218/summary.pdf
+sample.pdf|property-docs/PROP-2026-000218/important.pdf
+# ============================================================================
+# PROP-2026-000219 (house / 目黒区 / A / 8分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000219/main.jpg
+sample.jpg|property-images/PROP-2026-000219/sub01.jpg
+sample.jpg|property-images/PROP-2026-000219/sub02.jpg
+sample.png|property-images/PROP-2026-000219/layout.png
+sample.jpg|thumbnails/PROP-2026-000219/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000219/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000219/summary.pdf
+sample.pdf|property-docs/PROP-2026-000219/valuation.pdf
+# ============================================================================
+# PROP-2026-000220 (house / 目黒区 / B / 14分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000220/main.jpg
+sample.jpg|property-images/PROP-2026-000220/sub01.jpg
+sample.jpg|property-images/PROP-2026-000220/sub02.jpg
+sample.png|property-images/PROP-2026-000220/layout.png
+sample.jpg|thumbnails/PROP-2026-000220/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000220/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000220/summary.pdf
+# ============================================================================
+# PROP-2026-000221 (office / 目黒区 / C / 17分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000221/main.jpg
+sample.jpg|property-images/PROP-2026-000221/sub01.jpg
+sample.png|property-images/PROP-2026-000221/layout.png
+sample.jpg|thumbnails/PROP-2026-000221/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000221/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000221/summary.pdf
+# ============================================================================
+# PROP-2026-000222 (retail / 目黒区 / B / 10分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000222/main.jpg
+sample.jpg|property-images/PROP-2026-000222/sub01.jpg
+sample.jpg|property-images/PROP-2026-000222/sub02.jpg
+sample.png|property-images/PROP-2026-000222/layout.png
+sample.jpg|thumbnails/PROP-2026-000222/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000222/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000222/summary.pdf
+# ============================================================================
+# PROP-2026-000223 (land / 目黒区 / A / 7分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000223/main.jpg
+sample.jpg|property-images/PROP-2026-000223/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000223/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000223/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000223/summary.pdf
+sample.pdf|property-docs/PROP-2026-000223/valuation.pdf
+# ============================================================================
+# PROP-2026-000224 (mansion / 新宿区 / S / 4分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000224/main.jpg
+sample.jpg|property-images/PROP-2026-000224/sub01.jpg
+sample.jpg|property-images/PROP-2026-000224/sub02.jpg
+sample.png|property-images/PROP-2026-000224/layout.png
+sample.jpg|thumbnails/PROP-2026-000224/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000224/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000224/summary.pdf
+sample.pdf|property-docs/PROP-2026-000224/important.pdf
+# ============================================================================
+# PROP-2026-000225 (house / 新宿区 / C / 19分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000225/main.jpg
+sample.jpg|property-images/PROP-2026-000225/sub01.jpg
+sample.jpg|property-images/PROP-2026-000225/sub02.jpg
+sample.png|property-images/PROP-2026-000225/layout.png
+sample.jpg|thumbnails/PROP-2026-000225/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000225/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000225/summary.pdf
+sample.pdf|property-docs/PROP-2026-000225/valuation.pdf
+# ============================================================================
+# PROP-2026-000226 (office / 新宿区 / A / 6分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000226/main.jpg
+sample.jpg|property-images/PROP-2026-000226/sub01.jpg
+sample.jpg|property-images/PROP-2026-000226/sub02.jpg
+sample.png|property-images/PROP-2026-000226/layout.png
+sample.jpg|thumbnails/PROP-2026-000226/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000226/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000226/summary.pdf
+sample.pdf|property-docs/PROP-2026-000226/important.pdf
+# ============================================================================
+# PROP-2026-000227 (retail / 新宿区 / B / 5分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000227/main.jpg
+sample.jpg|property-images/PROP-2026-000227/sub01.jpg
+sample.jpg|property-images/PROP-2026-000227/sub02.jpg
+sample.png|property-images/PROP-2026-000227/layout.png
+sample.jpg|thumbnails/PROP-2026-000227/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000227/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000227/summary.pdf
+# ============================================================================
+# PROP-2026-000228 (land / 新宿区 / C / 16分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000228/main.jpg
+sample.jpg|property-images/PROP-2026-000228/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000228/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000228/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000228/summary.pdf
+# ============================================================================
+# PROP-2026-000229 (land / 新宿区 / B / 16分)
+# ============================================================================
+sample.jpg|property-images/PROP-2026-000229/main.jpg
+sample.jpg|property-images/PROP-2026-000229/sub01.jpg
+sample.jpg|thumbnails/PROP-2026-000229/main_100x80.jpg
+sample.jpg|thumbnails/PROP-2026-000229/main_540x360.jpg
+sample.pdf|property-docs/PROP-2026-000229/summary.pdf
+sample.pdf|property-docs/PROP-2026-000229/valuation.pdf

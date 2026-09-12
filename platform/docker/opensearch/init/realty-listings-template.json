@@ -1,0 +1,159 @@
+{
+  "index_patterns": [
+    "realty_*_listings"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "knn": true,
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "kuromoji_analyzer": {
+              "type": "custom",
+              "tokenizer": "kuromoji_tokenizer",
+              "filter": [
+                "kuromoji_baseform",
+                "ja_stop",
+                "kuromoji_stemmer",
+                "lowercase"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mappings": {
+      "_meta": {
+        "schema": "realty-listings",
+        "version": "1.2.0",
+        "updatedAt": "2026-05-01",
+        "adr": "ADR-004",
+        "documentIdRule": "tenantId:scope:propertyCode"
+      },
+      "dynamic": "strict",
+      "properties": {
+        "tenantId": { "type": "long" },
+
+        "propertyKey": { "type": "keyword" },
+        "propertyCode": { "type": "keyword" },
+        "listingId": { "type": "keyword" },
+        "assetKey": { "type": "keyword" },
+        "docKey": { "type": "keyword" },
+        "contentHash": { "type": "keyword" },
+        "version": { "type": "long" },
+
+        "scope": { "type": "keyword" },
+        "scopePriority": { "type": "integer" },
+
+        "area": { "type": "keyword" },
+        "address": {
+          "type": "text",
+          "analyzer": "kuromoji_analyzer",
+          "fields": {
+            "keyword": { "type": "keyword", "ignore_above": 256 }
+          }
+        },
+        "propertyType": { "type": "keyword" },
+        "priceJpy": { "type": "long" },
+        "layout": { "type": "keyword" },
+        "areaSqm": { "type": "float" },
+        "landSqm": { "type": "float" },
+        "stationWalkMin": { "type": "integer" },
+        "builtYearMonth": { "type": "date", "format": "yyyy-MM" },
+        "listedDate": { "type": "date", "format": "yyyy-MM-dd" },
+        "listedYear": { "type": "integer" },
+        "title": {
+          "type": "text",
+          "analyzer": "kuromoji_analyzer",
+          "fields": {
+            "keyword": { "type": "keyword", "ignore_above": 256 }
+          }
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "kuromoji_analyzer"
+        },
+        "priorityRank": { "type": "keyword" },
+        "reviewStatus": { "type": "keyword" },
+
+        "mainImage": {
+          "properties": {
+            "assetKey": { "type": "keyword" },
+            "s3Path": { "type": "keyword", "index": false },
+            "thumbnailSmKey": { "type": "keyword", "index": false },
+            "thumbnailLgKey": { "type": "keyword", "index": false }
+          }
+        },
+
+        "assetType": { "type": "keyword" },
+        "flag": { "type": "keyword" },
+        "fileKind": { "type": "keyword" },
+        "assetOrder": { "type": "integer" },
+        "docType": { "type": "keyword" },
+        "fileName": {
+          "type": "keyword",
+          "fields": {
+            "text": { "type": "text", "analyzer": "kuromoji_analyzer" }
+          }
+        },
+        "mimeType": { "type": "keyword" },
+        "sizeBytes": { "type": "long" },
+        "s3Path": { "type": "keyword", "index": false },
+
+        "visibilityRoles": { "type": "keyword" },
+
+        "attachment": {
+          "properties": {
+            "content": { "type": "text", "analyzer": "kuromoji_analyzer" },
+            "content_length": { "type": "long" },
+            "content_type": { "type": "keyword" },
+            "language": { "type": "keyword" },
+            "author": { "type": "keyword" },
+            "date": { "type": "date" },
+            "title": { "type": "text", "analyzer": "kuromoji_analyzer" },
+            "error": { "type": "keyword" }
+          }
+        },
+
+        "feature_model": { "type": "keyword" },
+        "feature_version": { "type": "keyword" },
+        "feature_vector": {
+          "type": "knn_vector",
+          "dimension": 512,
+          "method": {
+            "name": "hnsw",
+            "space_type": "cosinesimil",
+            "engine": "lucene",
+            "parameters": {
+              "m": 16,
+              "ef_construction": 100
+            }
+          }
+        },
+
+        "registrant": {
+          "properties": {
+            "userId": { "type": "keyword" },
+            "displayName": { "type": "keyword" }
+          }
+        },
+        "registeredAt": { "type": "date" },
+        "updatedAt": { "type": "date" },
+        "jobRef": { "type": "keyword" },
+
+        "review": {
+          "properties": {
+            "status": { "type": "keyword" },
+            "priorityRank": { "type": "keyword" },
+            "comment": { "type": "text", "analyzer": "kuromoji_analyzer" },
+            "reviewerId": { "type": "keyword" },
+            "reviewerName": { "type": "keyword" },
+            "reviewedAt": { "type": "date" }
+          }
+        }
+      }
+    }
+  }
+}

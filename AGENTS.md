@@ -12,6 +12,35 @@
 > - `apps/backend-go` : **対応対象外（read・修正ともに厳禁）**
 > - `apps/frontend` : **既存 Vue 版（修正・書き込みはNG / 必要な場合の仕様・実装参照（read）のみOK）**
 
+## Git リモート運用方針（GitHub 復旧までの暫定措置）
+
+> [!IMPORTANT]
+> GitHub アカウント一時停止中のため、復旧まで **GitLab (`demolist`) を主リモートとして運用** します。
+> `origin` (GitHub) への Push は失敗するため禁止し、必ず `gitlab` を使用してください。
+
+### リモートリポジトリ構成
+- **フロント / インフラ (`smart-retail-dx`)**: `git@gitlab.com:demolist/smart-retail-dx.git`
+- **バックエンド (`smart-dx-backend`)**: `git@gitlab.com:demolist/smart-dx-backend.git`
+
+### 日常の Push & MR ルール
+1. **Push 先**: デフォルトは `gitlab`（`git config remote.pushDefault gitlab` 設定済み）。
+2. **CLI からの MR 直接発行（Web UI 操作不要）**:
+   フィーチャーブランチから `develop` への MR は Git Push Options を使って CLI から直接作成する:
+   ```bash
+   git push gitlab <ブランチ名> \
+     -o merge_request.create \
+     -o merge_request.target=develop \
+     -o merge_request.title="<MRタイトル>" \
+     -o merge_request.description="<MR詳細説明>"
+   ```
+3. **承認・マージ**: 人間がレビュー・マージを実施する。
+
+### GitHub 復旧時の再同期手順（メモ）
+```bash
+git push origin develop
+git config --unset remote.pushDefault
+```
+
 ## リモートデプロイ運用（Mac -> Ubuntu）
 
 > [!NOTE]

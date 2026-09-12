@@ -11,7 +11,7 @@
 
 - 新しい issue に対応するとき、現在のブランチから対応用ブランチを新規作成する
 - Branch: `feature/issue-<number>-<description>`
-- PR target: `develop` branch
+- PR / MR target: `develop` branch（※GitHub復旧まではGitLabへMR提出。詳細は `AGENTS.md` 参照）
 - Commit format: `feat(scope): description (issue-XXX)`
 
 ## AIレビュー

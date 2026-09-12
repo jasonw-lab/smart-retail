@@ -865,11 +865,11 @@
             </div>
             <div>
               <dt>進行中</dt>
-              <dd>0</dd>
+              <dd>1</dd>
             </div>
             <div>
               <dt>残り</dt>
-              <dd>14</dd>
+              <dd>13</dd>
             </div>
             <!-- /PLAN:STATS -->
           </dl>
@@ -887,8 +887,14 @@
 
           <!-- PLAN:CURRENT -->
           <div class="callout callout-primary">
-            <h4>いま着手中のユニットはありません</h4>
-            <p>次に着手するのは <strong>U2 dict items の mock/E2E 整備</strong>（機能補完）。</p>
+            <h4>U2 dict items の mock/E2E 整備 ｜ 着手中</h4>
+            <p>mockハンドラ・E2E追加に着手</p>
+            <p>
+              <small
+                >対象: <code>e2e/mocks/mock-server.ts</code>,
+                <code>e2e/specs/system.spec.ts</code> ／ 依存: U0 ／ 更新: 2026-09-12</small
+              >
+            </p>
           </div>
           <!-- /PLAN:CURRENT -->
 
@@ -1174,10 +1180,10 @@
                   <td>dict items の mock/E2E 整備</td>
                   <td>機能補完</td>
                   <td>U0</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-default">着手中</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-12</td>
+                  <td>mockハンドラ・E2E追加に着手</td>
                 </tr>
                 <tr>
                   <td>U3</td>
@@ -1739,7 +1745,7 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U2</span>
               <!-- PLAN:BADGE:U2 -->
-              <span class="badge badge-outline">未着手</span>
+              <span class="badge badge-default">着手中</span>
               <!-- /PLAN:BADGE:U2 -->
               <span class="badge badge-outline">機能補完</span>
               <span class="week-time">元版 U4 の残り ／ 依存: U0</span>

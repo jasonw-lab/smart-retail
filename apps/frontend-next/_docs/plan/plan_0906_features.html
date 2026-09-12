@@ -865,11 +865,11 @@
             </div>
             <div>
               <dt>進行中</dt>
-              <dd>0</dd>
+              <dd>1</dd>
             </div>
             <div>
               <dt>残り</dt>
-              <dd>12</dd>
+              <dd>11</dd>
             </div>
             <!-- /PLAN:STATS -->
           </dl>
@@ -887,8 +887,15 @@
 
           <!-- PLAN:CURRENT -->
           <div class="callout callout-primary">
-            <h4>いま着手中のユニットはありません</h4>
-            <p>次に着手するのは <strong>U4 E2E 非決定性の点検・解消</strong>（品質）。</p>
+            <h4>U4 E2E 非決定性の点検・解消 ｜ 着手中</h4>
+            <p>VRT時刻固定・非決定性検証に着手</p>
+            <p>
+              <small
+                >対象:
+                <code>e2e/specs/{dashboard,products,stores,devices,transactions}.spec.ts</code> ／
+                依存: U0 ／ 更新: 2026-09-12</small
+              >
+            </p>
           </div>
           <!-- /PLAN:CURRENT -->
 
@@ -1194,10 +1201,10 @@
                   <td>E2E 非決定性の点検・解消</td>
                   <td>品質</td>
                   <td>U0</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-default">着手中</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-12</td>
+                  <td>VRT時刻固定・非決定性検証に着手</td>
                 </tr>
                 <tr>
                   <td>U5</td>
@@ -1900,7 +1907,7 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U4</span>
               <!-- PLAN:BADGE:U4 -->
-              <span class="badge badge-outline">未着手</span>
+              <span class="badge badge-default">着手中</span>
               <!-- /PLAN:BADGE:U4 -->
               <span class="badge badge-outline">品質</span>
               <span class="week-time">元版 U2 を再定義 ／ 依存: U0</span>

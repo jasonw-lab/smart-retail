@@ -18,6 +18,7 @@ import {
   mockDepts,
   mockMenus,
   mockDicts,
+  mockDictItems,
   mockLogs,
 } from './handlers';
 
@@ -1301,6 +1302,110 @@ const server = createServer(async (req, res) => {
       res.end(apiResponse(newDict));
       return;
     }
+
+    // System: Dict Items Form
+    const dictItemFormMatch = path.match(/^\/dicts\/([a-zA-Z0-9_-]+)\/items\/(\d+)\/form$/);
+    if (dictItemFormMatch && method === 'GET') {
+      const dictCode = dictItemFormMatch[1];
+      const itemId = Number(dictItemFormMatch[2]);
+      const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === itemId);
+      if (!item) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Dict item not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(item));
+      return;
+    }
+
+    // System: Dict Items Detail / Update / Delete
+    const dictItemDetailMatch = path.match(/^\/dicts\/([a-zA-Z0-9_-]+)\/items\/([0-9,]+)$/);
+    if (dictItemDetailMatch) {
+      const dictCode = dictItemDetailMatch[1];
+      const idsStr = dictItemDetailMatch[2];
+
+      if (method === 'GET') {
+        const itemId = Number(idsStr);
+        const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === itemId);
+        if (!item) {
+          res.writeHead(404);
+          res.end(JSON.stringify({ code: 'B0001', msg: 'Dict item not found', data: null }));
+          return;
+        }
+        res.writeHead(200);
+        res.end(apiResponse(item));
+        return;
+      }
+
+      if (method === 'PUT') {
+        const itemId = Number(idsStr);
+        const item = mockDictItems.find((d) => d.dictCode === dictCode && d.id === itemId);
+        if (item) {
+          Object.assign(item, body);
+        }
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+
+      if (method === 'DELETE') {
+        const idList = idsStr.split(',').map(Number);
+        const remaining = mockDictItems.filter(
+          (d) => !(d.dictCode === dictCode && idList.includes(d.id))
+        );
+        mockDictItems.length = 0;
+        mockDictItems.push(...remaining);
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
+    // System: Dict Items List / Create
+    const dictItemsMatch = path.match(/^\/dicts\/([a-zA-Z0-9_-]+)\/items$/);
+    if (dictItemsMatch) {
+      const dictCode = dictItemsMatch[1];
+      if (method === 'GET') {
+        const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+        const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+        const keywords = url.searchParams.get('keywords') || '';
+
+        let filtered = mockDictItems.filter((d) => d.dictCode === dictCode);
+        if (keywords) {
+          const kw = keywords.toLowerCase();
+          filtered = filtered.filter(
+            (d) => d.label.toLowerCase().includes(kw) || d.value.toLowerCase().includes(kw)
+          );
+        }
+        const start = (pageNum - 1) * pageSize;
+        const list = filtered.slice(start, start + pageSize);
+        res.writeHead(200);
+        res.end(apiResponse({ list, total: filtered.length }));
+        return;
+      }
+
+      if (method === 'POST') {
+        const dict = mockDicts.find(
+          (d) => d.code === dictCode || (d as { dictCode?: string }).dictCode === dictCode
+        );
+        const newItem = {
+          id: mockDictItems.length + 1,
+          dictId: dict?.id || 1,
+          dictCode,
+          label: String(body.label || ''),
+          value: String(body.value || ''),
+          sort: Number(body.sort) || 1,
+          status: Number(body.status) ?? 1,
+          remark: body.remark ? String(body.remark) : undefined,
+        };
+        mockDictItems.push(newItem);
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
 
     // System: Logs
     if ((path === '/logs' || path === '/logs/page') && method === 'GET') {

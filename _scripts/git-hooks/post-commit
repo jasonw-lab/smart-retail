@@ -1,0 +1,112 @@
+#!/bin/bash
+# ==============================================================================
+# SmartRetail Pro - Post-Commit Auto Reload Hook (M5 Mac Optimized)
+# Supports execution from both smart-retail-dx and smart-dx-backend repositories.
+# ==============================================================================
+
+# コミットされた変更ファイル一覧を取得
+CHANGED_FILES=$(git diff-tree -r --name-only --no-commit-id HEAD 2>/dev/null)
+
+if [ -z "$CHANGED_FILES" ]; then
+  exit 0
+fi
+
+echo "🔄 [Post-Commit] Analyzing changed files for automatic UI update..."
+
+BE_CHANGED=false
+FE_CHANGED=false
+
+# カレントディレクトリが smart-dx-backend かどうか判定
+REPO_NAME=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+
+if [ "$REPO_NAME" = "smart-dx-backend" ]; then
+  # smart-dx-backend リポジトリ内でのコミットはバックエンド変更とみなす
+  BE_CHANGED=true
+else
+  # smart-retail-dx リポジトリでのコミット
+  for file in $CHANGED_FILES; do
+    if [[ "$file" =~ ^apps/backend/ || "$file" =~ ^smart-dx-backend/ ]]; then
+      BE_CHANGED=true
+    fi
+    if [[ "$file" =~ ^apps/frontend-next/ ]]; then
+      FE_CHANGED=true
+    fi
+  done
+fi
+
+# バックエンドに変更がある場合
+if [ "$BE_CHANGED" = true ]; then
+  BACKEND_DIR="/Volumes/Dev/Git/vps/smart-dx-backend/apps/backend"
+  if [ ! -d "$BACKEND_DIR" ]; then
+    BACKEND_DIR="$(pwd)/apps/backend"
+  fi
+
+  # バックエンドが起動中か確認
+  if curl -sf --connect-timeout 2 --max-time 2 http://localhost:8080/actuator/health > /dev/null 2>&1; then
+    echo "☕ [Post-Commit] Backend changes detected. Running fast-compilation..."
+    
+    # リロード前のプロセス Uptime を取得（再起動の検知用）
+    PRE_UPTIME=$(curl -sf --connect-timeout 2 --max-time 2 http://localhost:8080/actuator/metrics/process.uptime 2>/dev/null | grep -o '"value":[0-9.]*' | cut -d: -f2 | cut -d. -f1 || echo "0")
+
+    # 差分コンパイル実行（関連モジュールを一括コンパイル）
+    COMPILE_OUTPUT=$(cd "$BACKEND_DIR" && mvn compile -pl services/retail-be,services/system-be,services/property-be,app -DskipTests -q 2>&1)
+    COMPILE_STATUS=$?
+
+    if [ $COMPILE_STATUS -ne 0 ]; then
+      echo "❌ [Post-Commit] Compilation failed! Skipping reload."
+      echo "$COMPILE_OUTPUT"
+      exit 1
+    fi
+
+    echo "⏳ [Post-Commit] Waiting for Spring Boot DevTools restart (detected uptime reset)..."
+    RELOADED=false
+    for i in {1..20}; do
+      sleep 0.5
+      CUR_UPTIME=$(curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/metrics/process.uptime 2>/dev/null | grep -o '"value":[0-9.]*' | cut -d: -f2 | cut -d. -f1 || echo "")
+      
+      # 新プロセス起動確認: Uptime が取得でき、かつ PRE_UPTIME より小さいか、健全な起動直後 (< 10秒)
+      if [ -n "$CUR_UPTIME" ]; then
+        if [ "$CUR_UPTIME" -lt "$PRE_UPTIME" ] || [ "$CUR_UPTIME" -lt 10 ]; then
+          # ヘルスチェックも確認
+          if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/health > /dev/null 2>&1; then
+            RELOADED=true
+            break
+          fi
+        fi
+      fi
+    done
+
+    if [ "$RELOADED" = true ]; then
+      echo "✅ [Post-Commit] Spring Boot successfully hot-reloaded!"
+      
+      # フロントエンドへデータ再取得シグナル送信
+      if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/dev/reload > /dev/null 2>&1; then
+        NOTIFY_RES=$(curl -s -X POST http://localhost:3001/api/dev/reload \
+          --connect-timeout 2 --max-time 3 \
+          -H "Content-Type: application/json" \
+          -d '{"action": "refetch", "reason": "Backend modified & hot-reloaded"}' 2>/dev/null)
+        echo "🌐 [Post-Commit] Browser UI notified via SSE: $NOTIFY_RES"
+      else
+        echo "ℹ️  [Post-Commit] Frontend (http://localhost:3001) is not running. Browser notification skipped."
+      fi
+    else
+      echo "⚠️  [Post-Commit] Timeout waiting for backend reload. Check logs in /tmp/smart-retail-backend.log"
+    fi
+  else
+    echo "ℹ️  [Post-Commit] Backend is not currently running on :8080. Skipping reload."
+  fi
+fi
+
+# フロントエンドに変更がある場合
+if [ "$FE_CHANGED" = true ]; then
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/dev/reload > /dev/null 2>&1; then
+    echo "⚡ [Post-Commit] Frontend committed. Notifying browser UI..."
+    curl -s -X POST http://localhost:3001/api/dev/reload \
+      --connect-timeout 2 --max-time 3 \
+      -H "Content-Type: application/json" \
+      -d '{"action": "refetch", "reason": "Frontend committed"}' > /dev/null 2>&1
+    echo "✅ [Post-Commit] Browser UI notified of frontend commit!"
+  fi
+fi
+
+exit 0

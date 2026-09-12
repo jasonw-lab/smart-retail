@@ -93,3 +93,7 @@ review_*.md
 playwright-report
 test-results
 ign*
+
+# frontend-next の計画・レビュー文書は上の plan*.md / p*.md / review_*.md より優先して追跡する
+!apps/frontend-next/_docs/plan/*.md
+!apps/frontend-next/_review/*.md

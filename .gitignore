@@ -78,6 +78,7 @@ node_modules/
 
 dist/*/
 ai*.md
+!ai-dev.md
 __api*.json
 *qa.md
 plan*.md

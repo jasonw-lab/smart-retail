@@ -120,7 +120,10 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
     const newTabs = tabs.filter((t) => t.id !== tabId);
     setTabs(newTabs);
     if (activeTab === tabId && newTabs.length > 0) {
-      setActiveTab(newTabs[newTabs.length - 1].id);
+      const lastTab = newTabs[newTabs.length - 1];
+      if (lastTab) {
+        setActiveTab(lastTab.id);
+      }
     }
   };
 

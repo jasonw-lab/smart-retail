@@ -14,7 +14,7 @@ interface AlertPanelProps {
 }
 
 const alertTypeConfig: Record<
-  AlertType,
+  string,
   {
     label: string;
     variant: 'destructive' | 'warning' | 'info' | 'default';
@@ -36,6 +36,16 @@ const alertTypeConfig: Record<
     variant: 'warning',
     icon: Clock,
   },
+  expiry_soon: {
+    label: '賞味期限',
+    variant: 'warning',
+    icon: Clock,
+  },
+  high_stock: {
+    label: '在庫過多',
+    variant: 'warning',
+    icon: AlertCircle,
+  },
   system: {
     label: 'システム',
     variant: 'info',
@@ -43,7 +53,23 @@ const alertTypeConfig: Record<
   },
 };
 
-function formatRelativeTime(date: Date): string {
+const defaultAlertConfig = {
+  label: 'アラート',
+  variant: 'info' as const,
+  icon: AlertCircle,
+};
+
+function formatRelativeTime(dateInput: Date | string): string {
+  let date: Date;
+  if (typeof dateInput === 'string') {
+    const parsed = new Date(dateInput.replace(' ', 'T'));
+    date = isNaN(parsed.getTime()) ? new Date(dateInput) : parsed;
+  } else {
+    date = dateInput;
+  }
+
+  if (isNaN(date.getTime())) return '-';
+
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
@@ -75,7 +101,7 @@ export function AlertPanel({ alerts, className }: AlertPanelProps) {
         ) : (
           <>
             {alerts.map((alert) => {
-              const config = alertTypeConfig[alert.type];
+              const config = alertTypeConfig[alert.type] ?? defaultAlertConfig;
 
               return (
                 <div
@@ -87,7 +113,7 @@ export function AlertPanel({ alerts, className }: AlertPanelProps) {
                       {config.label}
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      {formatRelativeTime(new Date(alert.timestamp))}
+                      {formatRelativeTime(alert.timestamp)}
                     </span>
                   </div>
                   <p className="text-sm font-medium">{alert.title}</p>

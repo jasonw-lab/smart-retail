@@ -40,4 +40,12 @@ test.describe('ダッシュボードUI構造', () => {
     // ページ内にコンテンツが読み込まれている
     await page.waitForLoadState('domcontentloaded');
   });
+
+  test('アラートパネルがクラッシュせず正常に表示される', async ({ page }) => {
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 10000 });
+
+    // アラート情報のヘッダーが表示され、ErrorBoundaryでキャッチされていないこと
+    await expect(page.getByText('アラート情報')).toBeVisible({ timeout: 10000 });
+  });
 });

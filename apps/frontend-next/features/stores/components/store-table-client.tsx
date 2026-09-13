@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Edit, Trash2, Plus, Boxes, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useStores, useDeleteStore } from '../hooks/use-stores';
 import {
   StoreStatus,
-  StoreStatusLabel,
   StoreStatusColor,
   type Store,
   type StoreQuery,
@@ -26,37 +26,11 @@ interface StoreTableClientProps {
   initialParams: StoreQuery;
 }
 
-const filterFields: FilterField[] = [
-  {
-    key: 'storeName',
-    label: '店舗名',
-    type: 'text',
-    placeholder: '店舗名を入力...',
-    width: 'w-40',
-  },
-  {
-    key: 'address',
-    label: '住所',
-    type: 'text',
-    placeholder: '住所を入力...',
-    width: 'w-40',
-  },
-  {
-    key: 'status',
-    label: 'ステータス',
-    type: 'select',
-    options: [
-      { value: '', label: 'すべて' },
-      { value: StoreStatus.ACTIVE, label: StoreStatusLabel.ACTIVE },
-      { value: StoreStatus.MAINTENANCE, label: StoreStatusLabel.MAINTENANCE },
-      { value: StoreStatus.INACTIVE, label: StoreStatusLabel.INACTIVE },
-    ],
-  },
-];
-
 export function StoreTableClient({ initialData, initialParams }: StoreTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('stores');
+  const tCommon = useTranslations('common');
 
   const [params, setParams] = useState<StoreQuery>(initialParams);
   const [filterValues, setFilterValues] = useState({
@@ -78,6 +52,37 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
   const displayData = isError ? initialData : data;
 
   const deleteStore = useDeleteStore();
+
+  const filterFields: FilterField[] = useMemo(
+    () => [
+      {
+        key: 'storeName',
+        label: t('storeName'),
+        type: 'text',
+        placeholder: t('searchNamePlaceholder'),
+        width: 'w-40',
+      },
+      {
+        key: 'address',
+        label: t('address'),
+        type: 'text',
+        placeholder: t('searchAddressPlaceholder'),
+        width: 'w-40',
+      },
+      {
+        key: 'status',
+        label: t('status'),
+        type: 'select',
+        options: [
+          { value: '', label: tCommon('all') },
+          { value: StoreStatus.ACTIVE, label: t('statusActive') },
+          { value: StoreStatus.MAINTENANCE, label: t('statusMaintenance') },
+          { value: StoreStatus.INACTIVE, label: t('statusInactive') },
+        ],
+      },
+    ],
+    [t, tCommon]
+  );
 
   const handleSearch = () => {
     const newParams = {
@@ -117,145 +122,152 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
     if (!deleteTarget) return;
     try {
       await deleteStore.mutateAsync(deleteTarget.id);
-      toast.success('店舗を削除しました');
+      toast.success(t('deleteSuccess'));
       setDeleteTarget(null);
     } catch {
-      toast.error('削除に失敗しました');
+      toast.error(t('deleteFailed'));
     }
   };
 
-  const columns: Column<Store>[] = [
-    {
-      key: 'storeCode',
-      header: '店舗コード',
-      width: '120px',
-    },
-    {
-      key: 'storeName',
-      header: '店舗名',
-      sortable: true,
-      render: (_, row) => <span className="font-medium">{row.storeName}</span>,
-    },
-    {
-      key: 'address',
-      header: '住所',
-      render: (_, row) => (
-        <span className="text-muted-foreground truncate max-w-[200px] block">
-          {row.address || '-'}
-        </span>
-      ),
-    },
-    {
-      key: 'phone',
-      header: '電話番号',
-      width: '120px',
-      render: (_, row) => <span className="text-muted-foreground">{row.phone || '-'}</span>,
-    },
-    {
-      key: 'status',
-      header: 'ステータス',
-      width: '100px',
-      sortable: true,
-      render: (_, row) => (
-        <StatusBadge variant={StoreStatusColor[row.status]}>
-          {StoreStatusLabel[row.status]}
-        </StatusBadge>
-      ),
-    },
-    {
-      key: 'businessHours',
-      header: '営業時間',
-      width: '100px',
-      render: (_, row) => <span className="text-sm">{row.businessHours || '09:00-22:00'}</span>,
-    },
-    {
-      key: 'manager',
-      header: '担当者',
-      width: '100px',
-      render: (_, row) => <span className="text-sm">{row.manager || '-'}</span>,
-    },
-    {
-      key: 'todaySales',
-      header: '本日売上',
-      width: '120px',
-      align: 'right',
-      sortable: true,
-      render: (_, row) => (
-        <span className={row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'}>
-          {row.status === StoreStatus.ACTIVE && row.todaySales != null
-            ? formatCurrency(row.todaySales)
-            : '-'}
-        </span>
-      ),
-    },
-    {
-      key: 'alertCount',
-      header: 'アラート',
-      width: '100px',
-      align: 'center',
-      render: (_, row) => {
-        if (!row.alertCount) return <span className="text-muted-foreground">-</span>;
-        const variant =
-          row.highestAlertPriority === 1
-            ? 'error'
-            : row.highestAlertPriority === 2
-              ? 'orange'
-              : 'warning';
-        return (
-          <StatusBadge variant={variant}>
-            <AlertTriangle className="h-3 w-3" />
-            {row.alertCount}
-          </StatusBadge>
-        );
+  const columns: Column<Store>[] = useMemo(
+    () => [
+      {
+        key: 'storeCode',
+        header: t('storeCode'),
+        width: '120px',
       },
-    },
-    {
-      key: 'actions',
-      header: '操作',
-      width: '120px',
-      align: 'center',
-      render: (_, row) => (
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            data-testid={testId(TESTIDS.STORE_EDIT_BUTTON, row.id)}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/stores/${row.id}/edit`);
-            }}
-            title="編集"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            data-testid={testId(TESTIDS.STORE_INVENTORY_BUTTON, row.id)}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/inventory?storeId=${row.id}`);
-            }}
-            title="在庫一覧"
-          >
-            <Boxes className="h-4 w-4" />
-          </Button>
-          <Button
-            data-testid={testId(TESTIDS.STORE_DELETE_BUTTON, row.id)}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteTarget(row);
-            }}
-            title="削除"
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
+      {
+        key: 'storeName',
+        header: t('storeName'),
+        sortable: true,
+        render: (_, row) => <span className="font-medium">{row.storeName}</span>,
+      },
+      {
+        key: 'address',
+        header: t('address'),
+        render: (_, row) => (
+          <span className="text-muted-foreground truncate max-w-[200px] block">
+            {row.address || '-'}
+          </span>
+        ),
+      },
+      {
+        key: 'phone',
+        header: t('phone'),
+        width: '120px',
+        render: (_, row) => <span className="text-muted-foreground">{row.phone || '-'}</span>,
+      },
+      {
+        key: 'status',
+        header: t('status'),
+        width: '100px',
+        sortable: true,
+        render: (_, row) => {
+          const statusLabel =
+            row.status === StoreStatus.ACTIVE
+              ? t('statusActive')
+              : row.status === StoreStatus.MAINTENANCE
+                ? t('statusMaintenance')
+                : t('statusInactive');
+          return <StatusBadge variant={StoreStatusColor[row.status]}>{statusLabel}</StatusBadge>;
+        },
+      },
+      {
+        key: 'businessHours',
+        header: t('businessHours'),
+        width: '100px',
+        render: (_, row) => <span className="text-sm">{row.businessHours || '09:00-22:00'}</span>,
+      },
+      {
+        key: 'manager',
+        header: t('manager'),
+        width: '100px',
+        render: (_, row) => <span className="text-sm">{row.manager || '-'}</span>,
+      },
+      {
+        key: 'todaySales',
+        header: t('todaySales'),
+        width: '120px',
+        align: 'right',
+        sortable: true,
+        render: (_, row) => (
+          <span className={row.status === StoreStatus.ACTIVE ? '' : 'text-muted-foreground'}>
+            {row.status === StoreStatus.ACTIVE && row.todaySales != null
+              ? formatCurrency(row.todaySales)
+              : '-'}
+          </span>
+        ),
+      },
+      {
+        key: 'alertCount',
+        header: t('alerts'),
+        width: '100px',
+        align: 'center',
+        render: (_, row) => {
+          if (!row.alertCount) return <span className="text-muted-foreground">-</span>;
+          const variant =
+            row.highestAlertPriority === 1
+              ? 'error'
+              : row.highestAlertPriority === 2
+                ? 'orange'
+                : 'warning';
+          return (
+            <StatusBadge variant={variant}>
+              <AlertTriangle className="h-3 w-3" />
+              {row.alertCount}
+            </StatusBadge>
+          );
+        },
+      },
+      {
+        key: 'actions',
+        header: t('actions'),
+        width: '120px',
+        align: 'center',
+        render: (_, row) => (
+          <div className="flex items-center justify-center gap-1">
+            <Button
+              data-testid={testId(TESTIDS.STORE_EDIT_BUTTON, row.id)}
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/stores/${row.id}/edit`);
+              }}
+              title={tCommon('edit')}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              data-testid={testId(TESTIDS.STORE_INVENTORY_BUTTON, row.id)}
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/inventory?storeId=${row.id}`);
+              }}
+              title={t('viewInventory')}
+            >
+              <Boxes className="h-4 w-4" />
+            </Button>
+            <Button
+              data-testid={testId(TESTIDS.STORE_DELETE_BUTTON, row.id)}
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTarget(row);
+              }}
+              title={tCommon('delete')}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [t, tCommon, router]
+  );
 
   return (
     <div data-testid={TESTIDS.STORE_PAGE} className="space-y-4">
@@ -268,7 +280,7 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
         actions={
           <Button data-testid={TESTIDS.STORE_NEW_BUTTON} onClick={() => router.push('/stores/new')}>
             <Plus className="mr-2 h-4 w-4" />
-            新規登録
+            {t('newStore')}
           </Button>
         }
       />
@@ -279,7 +291,7 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
         isLoading={isLoading}
-        emptyMessage="店舗が見つかりません"
+        emptyMessage={t('emptyMessage')}
         pagination={{
           pageNum: params.pageNum,
           pageSize: params.pageSize,
@@ -291,16 +303,16 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="店舗を削除"
-        description="この操作は取り消せません"
-        confirmLabel="削除"
+        title={t('deleteConfirm')}
+        description={t('deleteConfirmDescription')}
+        confirmLabel={tCommon('delete')}
         variant="destructive"
         onConfirm={handleDelete}
         isLoading={deleteStore.isPending}
       >
         {deleteTarget && (
           <p className="text-sm">
-            店舗名: <span className="font-medium">{deleteTarget.storeName}</span>
+            {t('storeName')}: <span className="font-medium">{deleteTarget.storeName}</span>
           </p>
         )}
       </ConfirmDialog>
@@ -310,7 +322,7 @@ export function StoreTableClient({ initialData, initialParams }: StoreTableClien
           role="alert"
           className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+          {t('fetchError')}
         </div>
       )}
     </div>

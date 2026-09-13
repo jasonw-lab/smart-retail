@@ -58,7 +58,7 @@ export default defineConfig({
     },
     // Next.js production server (build first if needed)
     {
-      command: `pnpm build && DISABLE_RATE_LIMIT=true BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
+      command: `NEXT_DIST_DIR=.next-e2e pnpm build && NEXT_DIST_DIR=.next-e2e DISABLE_RATE_LIMIT=true BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 180 * 1000, // Build can take time

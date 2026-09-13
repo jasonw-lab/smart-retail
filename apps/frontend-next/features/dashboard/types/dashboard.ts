@@ -29,7 +29,14 @@ export interface KPIData {
   salesChart?: SalesChartData;
 }
 
-export type AlertType = 'out_of_stock' | 'low_stock' | 'expiring' | 'system';
+export type AlertType =
+  | 'out_of_stock'
+  | 'low_stock'
+  | 'expiring'
+  | 'expiry_soon'
+  | 'high_stock'
+  | 'system'
+  | (string & {});
 
 export interface AlertItem {
   id: string;

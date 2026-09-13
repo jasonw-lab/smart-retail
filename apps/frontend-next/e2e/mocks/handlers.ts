@@ -211,6 +211,19 @@ export const mockDashboardAlerts = [
     actionLabel: '在庫確認',
     actionLink: '/inventory',
   },
+  {
+    id: 'dashboard-alert-4',
+    alertType: 'EXPIRY_SOON',
+    message: '賞味期限接近: 梅おにぎり',
+    lotNumber: 'LOT-2026-0423',
+    detectedAt: '2026-06-01 08:30:00',
+  },
+  {
+    id: 'dashboard-alert-5',
+    alertType: 'COMMUNICATION_DOWN',
+    message: '店舗端末通信障害',
+    detectedAt: '2026-06-01 09:00:00',
+  },
 ];
 
 export const mockAlerts = [
@@ -582,7 +595,6 @@ export const mockDictItems = [
     status: 1,
   },
 ];
-
 
 // System: Logs
 export const mockLogs = [

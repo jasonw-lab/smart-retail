@@ -1,5 +1,5 @@
 import { fetchFromBackend } from '@/lib/api/server';
-import type { KPIData, AlertItem, SalesChartData } from '../types/dashboard';
+import type { KPIData, AlertItem, AlertType, SalesChartData } from '../types/dashboard';
 
 const BASE_PATH = 'retail/dashboard';
 
@@ -9,6 +9,16 @@ function buildDateQuery(params?: { startDate?: string; endDate?: string }): stri
   if (params?.endDate) searchParams.set('endDate', params.endDate);
   const query = searchParams.toString();
   return query ? `?${query}` : '';
+}
+
+function normalizeAlertType(rawType: unknown): AlertType {
+  if (typeof rawType !== 'string') return 'system';
+  const lower = rawType.toLowerCase();
+  if (lower === 'out_of_stock') return 'out_of_stock';
+  if (lower === 'low_stock') return 'low_stock';
+  if (lower === 'expiry_soon' || lower === 'expiring') return 'expiring';
+  if (lower === 'high_stock') return 'high_stock';
+  return lower as AlertType;
 }
 
 /**
@@ -87,11 +97,13 @@ export const dashboardApiServer = {
         const a = item as Record<string, unknown>;
         return {
           id: String(a.id ?? ''),
-          type: (typeof a.alertType === 'string' ? a.alertType.toLowerCase() : 'system') as any,
-          title: String(a.alertTitle ?? a.title ?? 'アラート'),
-          description: String(a.alertMessage ?? a.description ?? ''),
+          type: normalizeAlertType(a.alertType),
+          title: String(a.alertTitle ?? a.title ?? a.message ?? 'アラート'),
+          description: String(a.alertMessage ?? a.description ?? a.message ?? ''),
           lotNumber: typeof a.lotNumber === 'string' ? a.lotNumber : undefined,
-          timestamp: String(a.createTime ?? a.timestamp ?? new Date().toISOString()),
+          timestamp: String(
+            a.createTime ?? a.detectedAt ?? a.timestamp ?? new Date().toISOString()
+          ),
         };
       });
     } catch {
@@ -102,9 +114,14 @@ export const dashboardApiServer = {
   /**
    * 売上推移を取得する
    */
-  getSalesTrend: async (params?: { startDate?: string; endDate?: string }): Promise<SalesChartData> => {
+  getSalesTrend: async (params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<SalesChartData> => {
     try {
-      const raw = await fetchFromBackend<unknown>(`${BASE_PATH}/sales-trend${buildDateQuery(params)}`);
+      const raw = await fetchFromBackend<unknown>(
+        `${BASE_PATH}/sales-trend${buildDateQuery(params)}`
+      );
       if (raw && typeof raw === 'object' && !Array.isArray(raw) && '7d' in raw) {
         return raw as SalesChartData;
       }

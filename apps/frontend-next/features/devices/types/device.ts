@@ -23,13 +23,16 @@ export const DeviceType = {
 
 export type DeviceTypeType = (typeof DeviceType)[keyof typeof DeviceType];
 
+/**
+ * @deprecated i18n messages (devices.typePaymentTerminal, etc.) を使用してください
+ */
 export const DeviceTypeLabel: Record<DeviceTypeType, string> = {
-  PAYMENT_TERMINAL: '決済端末',
-  CAMERA: 'カメラ',
-  GATE: 'ゲート',
-  REFRIGERATOR_SENSOR: '冷蔵庫センサー',
-  PRINTER: 'プリンター',
-  NETWORK_ROUTER: 'ネットワーク機器',
+  PAYMENT_TERMINAL: 'Payment Terminal',
+  CAMERA: 'Camera',
+  GATE: 'Gate',
+  REFRIGERATOR_SENSOR: 'Refrigerator Sensor',
+  PRINTER: 'Printer',
+  NETWORK_ROUTER: 'Network Router',
 };
 
 export const DeviceTypeIcon: Record<DeviceTypeType, LucideIcon> = {
@@ -53,11 +56,14 @@ export const DeviceStatus = {
 
 export type DeviceStatusType = (typeof DeviceStatus)[keyof typeof DeviceStatus];
 
+/**
+ * @deprecated i18n messages (devices.statusOnline, etc.) を使用してください
+ */
 export const DeviceStatusLabel: Record<DeviceStatusType, string> = {
-  ONLINE: 'オンライン',
-  OFFLINE: 'オフライン',
-  ERROR: 'エラー',
-  MAINTENANCE: 'メンテナンス',
+  ONLINE: 'Online',
+  OFFLINE: 'Offline',
+  ERROR: 'Error',
+  MAINTENANCE: 'Maintenance',
 };
 
 export const DeviceStatusColor: Record<

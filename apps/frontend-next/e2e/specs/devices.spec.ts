@@ -62,13 +62,23 @@ test.describe('デバイス管理', () => {
     await expect(page.getByText('デバイスを登録しました')).toBeVisible({ timeout: 5000 });
   });
 
-  test('デバイスを編集できる', async ({ page }) => {
+  test('必須バリデーションエラーが表示される', async ({ page }) => {
+    await page.goto('/devices/new');
+    await page.click(`[data-testid="${TESTIDS.DEVICE_FORM_SUBMIT}"]`);
+    await expect(page.locator('.text-destructive').first()).toBeVisible();
+  });
+
+  test('デバイスを編集して更新できる', async ({ page }) => {
     await page.goto('/devices');
     await page.click(`[data-testid="${TESTIDS.DEVICE_EDIT_BUTTON}-1"]`);
     await page.waitForURL(/\/devices\/\d+\/edit$/, { timeout: 10000 });
     await expect(page.locator(`[data-testid="${TESTIDS.DEVICE_FORM_NAME}"]`)).toHaveValue(
       'レジ端末1'
     );
+    await page.fill(`[data-testid="${TESTIDS.DEVICE_FORM_NAME}"]`, '更新後レジ端末');
+    await page.click(`[data-testid="${TESTIDS.DEVICE_FORM_SUBMIT}"]`);
+    await page.waitForURL(/\/devices(?:\?.*)?$/, { timeout: 10000 });
+    await expect(page.getByText('デバイスを更新しました')).toBeVisible({ timeout: 5000 });
   });
 
   test('デバイス削除ダイアログをキャンセル', async ({ page }) => {
@@ -76,6 +86,15 @@ test.describe('デバイス管理', () => {
     await page.click(`[data-testid="${TESTIDS.DEVICE_DELETE_BUTTON}-1"]`);
     await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
     await page.click(`[data-testid="${TESTIDS.CONFIRM_DIALOG_CANCEL}"]`);
+    await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).not.toBeVisible();
+  });
+
+  test('デバイスを削除できる', async ({ page }) => {
+    await page.goto('/devices');
+    await page.click(`[data-testid="${TESTIDS.DEVICE_DELETE_BUTTON}-1"]`);
+    await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
+    await page.click(`[data-testid="${TESTIDS.CONFIRM_DIALOG_OK}"]`);
+    await expect(page.getByText('デバイスを削除しました')).toBeVisible({ timeout: 5000 });
     await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).not.toBeVisible();
   });
 });

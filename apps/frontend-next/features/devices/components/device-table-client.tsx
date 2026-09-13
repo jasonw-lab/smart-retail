@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Edit, Trash2, Plus, Monitor, Wifi, WifiOff, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -16,10 +17,9 @@ import { TESTIDS, testId } from '@/lib/testing/testids';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
 import { useDevices, useDeleteDevice } from '../hooks/use-devices';
 import {
-  DeviceTypeLabel,
+  DeviceType,
   DeviceTypeIcon,
   DeviceStatus,
-  DeviceStatusLabel,
   DeviceStatusColor,
   type Device,
   type DeviceQuery,
@@ -34,6 +34,8 @@ interface DeviceTableClientProps {
 export function DeviceTableClient({ initialData, initialParams }: DeviceTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('devices');
+  const tCommon = useTranslations('common');
 
   const { data: stores = [] } = useStoreOptions();
 
@@ -86,48 +88,81 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
     };
   }, [displayData]);
 
-  const filterFields: FilterField[] = [
-    {
-      key: 'storeId',
-      label: '店舗',
-      type: 'select',
-      options: [
-        { value: '', label: 'すべての店舗' },
-        ...stores.map((s) => ({ value: String(s.id), label: s.storeName })),
-      ],
-    },
-    {
-      key: 'deviceType',
-      label: 'デバイス種別',
-      type: 'select',
-      options: [
-        { value: '', label: 'すべての種別' },
-        ...Object.entries(DeviceTypeLabel).map(([v, l]) => ({
-          value: v,
-          label: l,
-        })),
-      ],
-    },
-    {
-      key: 'status',
-      label: '状態',
-      type: 'select',
-      options: [
-        { value: '', label: 'すべての状態' },
-        ...Object.entries(DeviceStatusLabel).map(([v, l]) => ({
-          value: v,
-          label: l,
-        })),
-      ],
-    },
-    {
-      key: 'deviceName',
-      label: 'デバイス名',
-      type: 'text',
-      placeholder: 'キーワードを入力...',
-      width: 'w-40',
-    },
-  ];
+  const deviceTypeOptions = useMemo(
+    () => [
+      { value: DeviceType.PAYMENT_TERMINAL, label: t('typePaymentTerminal') },
+      { value: DeviceType.CAMERA, label: t('typeCamera') },
+      { value: DeviceType.GATE, label: t('typeGate') },
+      { value: DeviceType.REFRIGERATOR_SENSOR, label: t('typeRefrigeratorSensor') },
+      { value: DeviceType.PRINTER, label: t('typePrinter') },
+      { value: DeviceType.NETWORK_ROUTER, label: t('typeNetworkRouter') },
+    ],
+    [t]
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { value: DeviceStatus.ONLINE, label: t('statusOnline') },
+      { value: DeviceStatus.OFFLINE, label: t('statusOffline') },
+      { value: DeviceStatus.ERROR, label: t('statusError') },
+      { value: DeviceStatus.MAINTENANCE, label: t('statusMaintenance') },
+    ],
+    [t]
+  );
+
+  const deviceTypeMap = useMemo(() => {
+    return Object.fromEntries(deviceTypeOptions.map((opt) => [opt.value, opt.label]));
+  }, [deviceTypeOptions]);
+
+  const statusMap = useMemo(() => {
+    return Object.fromEntries(statusOptions.map((opt) => [opt.value, opt.label]));
+  }, [statusOptions]);
+
+  const filterFields: FilterField[] = useMemo(
+    () => [
+      {
+        key: 'storeId',
+        label: t('store'),
+        type: 'select',
+        options: [
+          { value: '', label: t('allStores') },
+          ...stores.map((s) => ({ value: String(s.id), label: s.storeName })),
+        ],
+      },
+      {
+        key: 'deviceType',
+        label: t('deviceType'),
+        type: 'select',
+        options: [
+          { value: '', label: t('allTypes') },
+          ...deviceTypeOptions.map(({ value, label }) => ({
+            value,
+            label,
+          })),
+        ],
+      },
+      {
+        key: 'status',
+        label: t('status'),
+        type: 'select',
+        options: [
+          { value: '', label: t('allStatuses') },
+          ...statusOptions.map(({ value, label }) => ({
+            value,
+            label,
+          })),
+        ],
+      },
+      {
+        key: 'deviceName',
+        label: t('deviceName'),
+        type: 'text',
+        placeholder: t('searchDeviceNamePlaceholder'),
+        width: 'w-40',
+      },
+    ],
+    [t, stores, deviceTypeOptions, statusOptions]
+  );
 
   const handleSearch = () => {
     const newParams: DeviceQuery = {
@@ -174,116 +209,119 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
     if (!deleteTarget) return;
     try {
       await deleteDevice.mutateAsync(deleteTarget.id);
-      toast.success('デバイスを削除しました');
+      toast.success(t('deleteSuccess'));
       setDeleteTarget(null);
     } catch {
-      toast.error('削除に失敗しました');
+      toast.error(t('deleteFailed'));
     }
   };
 
-  const columns: Column<Device>[] = [
-    {
-      key: 'storeName',
-      header: '店舗',
-      width: '100px',
-      sortable: true,
-    },
-    {
-      key: 'deviceName',
-      header: 'デバイス名',
-      sortable: true,
-      render: (_, row) => <span className="font-medium">{row.deviceName}</span>,
-    },
-    {
-      key: 'deviceType',
-      header: 'デバイス種別',
-      width: '130px',
-      sortable: true,
-      render: (_, row) => {
-        const Icon = DeviceTypeIcon[row.deviceType];
-        return (
-          <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-muted-foreground" />
-            <span>{DeviceTypeLabel[row.deviceType]}</span>
+  const columns: Column<Device>[] = useMemo(
+    () => [
+      {
+        key: 'storeName',
+        header: t('store'),
+        width: '100px',
+        sortable: true,
+      },
+      {
+        key: 'deviceName',
+        header: t('deviceName'),
+        sortable: true,
+        render: (_, row) => <span className="font-medium">{row.deviceName}</span>,
+      },
+      {
+        key: 'deviceType',
+        header: t('deviceType'),
+        width: '130px',
+        sortable: true,
+        render: (_, row) => {
+          const Icon = DeviceTypeIcon[row.deviceType];
+          return (
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-muted-foreground" />
+              <span>{deviceTypeMap[row.deviceType] || row.deviceType}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'status',
+        header: t('status'),
+        width: '110px',
+        sortable: true,
+        render: (_, row) => (
+          <StatusBadge variant={DeviceStatusColor[row.status]}>
+            {statusMap[row.status] || row.status}
+          </StatusBadge>
+        ),
+      },
+      {
+        key: 'lastHeartbeat',
+        header: t('lastHeartbeat'),
+        width: '120px',
+        sortable: true,
+        render: (_, row) => {
+          if (!row.lastHeartbeat) {
+            return <span className="text-muted-foreground">-</span>;
+          }
+          return (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-help">{formatRelativeTime(row.lastHeartbeat)}</span>
+                </TooltipTrigger>
+                <TooltipContent>{formatDateTime(row.lastHeartbeat)}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        },
+      },
+      {
+        key: 'deviceCode',
+        header: t('deviceCode'),
+        width: '130px',
+        render: (_, row) => (
+          <span className="font-mono text-xs text-muted-foreground">{row.deviceCode}</span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: tCommon('actions'),
+        width: '100px',
+        align: 'center',
+        render: (_, row) => (
+          <div className="flex items-center justify-center gap-1">
+            <Button
+              data-testid={testId(TESTIDS.DEVICE_EDIT_BUTTON, row.id)}
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/devices/${row.id}/edit`);
+              }}
+              title={tCommon('edit')}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              data-testid={testId(TESTIDS.DEVICE_DELETE_BUTTON, row.id)}
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTarget(row);
+              }}
+              title={tCommon('delete')}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
           </div>
-        );
+        ),
       },
-    },
-    {
-      key: 'status',
-      header: '状態',
-      width: '110px',
-      sortable: true,
-      render: (_, row) => (
-        <StatusBadge variant={DeviceStatusColor[row.status]}>
-          {DeviceStatusLabel[row.status]}
-        </StatusBadge>
-      ),
-    },
-    {
-      key: 'lastHeartbeat',
-      header: '最終通信',
-      width: '120px',
-      sortable: true,
-      render: (_, row) => {
-        if (!row.lastHeartbeat) {
-          return <span className="text-muted-foreground">-</span>;
-        }
-        return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help">{formatRelativeTime(row.lastHeartbeat)}</span>
-              </TooltipTrigger>
-              <TooltipContent>{formatDateTime(row.lastHeartbeat)}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        );
-      },
-    },
-    {
-      key: 'deviceCode',
-      header: 'デバイスコード',
-      width: '130px',
-      render: (_, row) => (
-        <span className="font-mono text-xs text-muted-foreground">{row.deviceCode}</span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '操作',
-      width: '100px',
-      align: 'center',
-      render: (_, row) => (
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            data-testid={testId(TESTIDS.DEVICE_EDIT_BUTTON, row.id)}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/devices/${row.id}/edit`);
-            }}
-            title="編集"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            data-testid={testId(TESTIDS.DEVICE_DELETE_BUTTON, row.id)}
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteTarget(row);
-            }}
-            title="削除"
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
+    ],
+    [t, tCommon, router, deviceTypeMap, statusMap]
+  );
 
   return (
     <div data-testid={TESTIDS.DEVICE_PAGE} className="space-y-6">
@@ -300,16 +338,19 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
             onClick={() => router.push('/devices/new')}
           >
             <Plus className="mr-2 h-4 w-4" />
-            新規登録
+            {t('newDevice')}
           </Button>
         }
       />
 
       {/* Table Title */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">登録デバイスリスト</h2>
+        <h2 className="text-lg font-semibold">{t('deviceListTitle')}</h2>
         <span className="text-sm text-muted-foreground">
-          表示中の件数: {displayData?.list?.length || 0} / {displayData?.total || 0}件
+          {t('displayCount', {
+            current: displayData?.list?.length || 0,
+            total: displayData?.total || 0,
+          })}
         </span>
       </div>
 
@@ -318,7 +359,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
           role="alert"
           className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+          {t('fetchError')}
         </div>
       )}
 
@@ -329,7 +370,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
         isLoading={isLoading}
-        emptyMessage="デバイスが見つかりません"
+        emptyMessage={t('emptyMessage')}
         pagination={{
           pageNum: params.pageNum,
           pageSize: params.pageSize,
@@ -347,7 +388,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
                 <Monitor className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Devices</p>
+                <p className="text-sm text-muted-foreground">{t('totalDevices')}</p>
                 <p className="text-2xl font-bold">{statusSummary.total}</p>
               </div>
             </div>
@@ -361,7 +402,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
                 <Wifi className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Online Now</p>
+                <p className="text-sm text-muted-foreground">{t('onlineNow')}</p>
                 <p className="text-2xl font-bold text-success">{statusSummary.online}</p>
               </div>
             </div>
@@ -375,7 +416,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
                 <WifiOff className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Disconnected</p>
+                <p className="text-sm text-muted-foreground">{t('disconnected')}</p>
                 <p className="text-2xl font-bold text-destructive">{statusSummary.disconnected}</p>
               </div>
             </div>
@@ -389,7 +430,7 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
                 <Wrench className="h-5 w-5 text-warning" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Maintenance</p>
+                <p className="text-sm text-muted-foreground">{t('maintenance')}</p>
                 <p className="text-2xl font-bold text-warning">{statusSummary.maintenance}</p>
               </div>
             </div>
@@ -400,16 +441,16 @@ export function DeviceTableClient({ initialData, initialParams }: DeviceTableCli
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="デバイスを削除"
-        description="この操作は取り消せません"
-        confirmLabel="削除"
+        title={t('deleteConfirm')}
+        description={t('deleteConfirmDescription')}
+        confirmLabel={tCommon('delete')}
         variant="destructive"
         onConfirm={handleDelete}
         isLoading={deleteDevice.isPending}
       >
         {deleteTarget && (
           <p className="text-sm">
-            デバイス名: <span className="font-medium">{deleteTarget.deviceName}</span>
+            {t('deviceNameLabel')} <span className="font-medium">{deleteTarget.deviceName}</span>
           </p>
         )}
       </ConfirmDialog>

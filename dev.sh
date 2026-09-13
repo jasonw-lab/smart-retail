@@ -63,7 +63,7 @@ if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/heal
   echo "   ==> Backend already running on http://localhost:8080. ✅"
 else
   echo "   ==> Starting Spring Boot backend with DevTools (logs: /tmp/smart-retail-backend.log)..."
-  pkill -f "smart-dx-app" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
   (cd "$BACKEND_DIR" && nohup mvn spring-boot:run -pl app -Dspring-boot.run.profiles=dev > /tmp/smart-retail-backend.log 2>&1 &)
   BE_PID=$!
   echo "   ==> Backend launched (PID: $BE_PID). Waiting for health check..."
@@ -87,7 +87,7 @@ if [ "$1" = "down" ] || [ "$1" = "stop-all" ]; then
   echo "🛑 Stopping SmartRetail Pro (Frontend, Backend, and Docker Infrastructure)..."
   pkill -f "next-server" 2>/dev/null || true
   pkill -f "pnpm dev" 2>/dev/null || true
-  pkill -f "smart-dx-app" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
   echo "   ==> Stopping Docker containers (MySQL, Redis, OpenSearch, PowerJob)..."
   docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" down
   echo "✨ All processes and Docker containers stopped cleanly. お疲れ様でした！"
@@ -98,7 +98,7 @@ if [ "$1" = "stop" ]; then
   echo "🛑 Stopping SmartRetail Pro local development processes..."
   pkill -f "next-server" 2>/dev/null || true
   pkill -f "pnpm dev" 2>/dev/null || true
-  pkill -f "smart-dx-app" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
   echo "   ==> Backend & Frontend processes stopped. (Infra containers kept running)"
   echo "   💡 To also stop Docker containers, run: ./dev.sh down"
   exit 0

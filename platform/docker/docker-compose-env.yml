@@ -27,6 +27,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    extra_hosts:
+      - "smart-dx-backend:host-gateway"
     networks:
       jason-lab-net:
         aliases:

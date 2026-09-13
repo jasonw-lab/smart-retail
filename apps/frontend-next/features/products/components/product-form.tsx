@@ -49,7 +49,7 @@ export function ProductForm({ product }: ProductFormProps) {
       unitPrice: product?.unitPrice || 0,
       description: product?.description || '',
       imageUrl: product?.imageUrl || '',
-      status: product?.status ?? 1,
+      status: product?.status === 1 || product?.status === 'active' || product?.status === undefined ? 1 : 0,
     },
   });
 

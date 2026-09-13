@@ -174,35 +174,44 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
       header: t('stockQuantity'),
       width: '80px',
       align: 'right',
-      render: (_, row) => (
-        <span
-          className={
-            typeof row.stockQuantity === 'number' && row.stockQuantity < 20
-              ? 'text-destructive font-medium'
-              : undefined
-          }
-        >
-          {typeof row.stockQuantity === 'number' ? row.stockQuantity : '-'}
-        </span>
-      ),
+      render: (_, row) => {
+        const stock = row.stockQuantity ?? row.stock;
+        return (
+          <span
+            className={
+              typeof stock === 'number' && stock < 20
+                ? 'text-destructive font-medium'
+                : undefined
+            }
+          >
+            {typeof stock === 'number' ? stock : '-'}
+          </span>
+        );
+      },
     },
     {
       key: 'salesCount',
       header: t('salesCount'),
       width: '80px',
       align: 'right',
-      render: (_, row) => <span>{typeof row.salesCount === 'number' ? row.salesCount : '-'}</span>,
+      render: (_, row) => {
+        const sales = row.salesCount ?? row.sales;
+        return <span>{typeof sales === 'number' ? sales : '-'}</span>;
+      },
     },
     {
       key: 'status',
       header: t('status'),
       width: '90px',
       align: 'center',
-      render: (_, row) => (
-        <Badge variant={row.status === 1 ? 'success' : 'destructive'}>
-          {row.status === 1 ? t('statusActive') : t('statusInactive')}
-        </Badge>
-      ),
+      render: (_, row) => {
+        const isActive = row.status === 1 || row.status === 'active';
+        return (
+          <Badge variant={isActive ? 'success' : 'destructive'}>
+            {isActive ? t('statusActive') : t('statusInactive')}
+          </Badge>
+        );
+      },
     },
     {
       key: 'actions',

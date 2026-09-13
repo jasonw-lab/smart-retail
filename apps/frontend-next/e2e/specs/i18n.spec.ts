@@ -18,4 +18,13 @@ test.describe('多言語表示 (i18n)', () => {
     await expect(page.getByRole('button', { name: 'New Product' })).toBeVisible();
     await expect(page.getByPlaceholder('Search products...')).toBeVisible();
   });
+
+  test('店舗一覧が英語で表示される', async ({ page }) => {
+    await page.goto('/en/stores');
+    const main = page.getByRole('main');
+    await expect(main).toBeVisible({ timeout: 15000 });
+    await expect(main.locator('h1')).toHaveText('Store List');
+    await expect(page.getByRole('button', { name: 'New Store' })).toBeVisible();
+    await expect(page.getByPlaceholder('Search by name...')).toBeVisible();
+  });
 });

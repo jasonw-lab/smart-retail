@@ -1,6 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -19,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useCreateProduct, useUpdateProduct } from '../hooks/use-products';
 import { TESTIDS } from '@/lib/testing/testids';
-import { productFormSchema, type ProductFormValues } from '../schemas/product-schema';
+import { createProductFormSchema, type ProductFormValues } from '../schemas/product-schema';
 import type { Product } from '../types/product';
 
 interface ProductFormProps {
@@ -28,13 +30,18 @@ interface ProductFormProps {
 
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter();
+  const t = useTranslations('products');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
   const isEdit = !!product;
 
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
 
+  const schema = useMemo(() => createProductFormSchema(tValidation), [tValidation]);
+
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       productCode: product?.productCode || '',
       productName: product?.productName || '',
@@ -55,14 +62,14 @@ export function ProductForm({ product }: ProductFormProps) {
           id: product.id,
           data: updateData,
         });
-        toast.success('商品を更新しました');
+        toast.success(t('updateSuccess'));
       } else {
         await createProduct.mutateAsync(values);
-        toast.success('商品を作成しました');
+        toast.success(t('createSuccess'));
       }
       router.push('/products');
     } catch {
-      toast.error(isEdit ? '更新に失敗しました' : '作成に失敗しました');
+      toast.error(isEdit ? t('updateFailed') : t('createFailed'));
     }
   };
 
@@ -76,7 +83,7 @@ export function ProductForm({ product }: ProductFormProps) {
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="productCode">商品コード</Label>
+          <Label htmlFor="productCode">{t('productCode')}</Label>
           <Input
             id="productCode"
             data-testid={TESTIDS.PRODUCT_FORM_CODE}
@@ -89,7 +96,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="productName">商品名</Label>
+          <Label htmlFor="productName">{t('productName')}</Label>
           <Input
             id="productName"
             data-testid={TESTIDS.PRODUCT_FORM_NAME}
@@ -102,7 +109,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="categoryId">カテゴリID</Label>
+          <Label htmlFor="categoryId">{t('categoryId')}</Label>
           <Input
             id="categoryId"
             data-testid={TESTIDS.PRODUCT_FORM_CATEGORY}
@@ -116,7 +123,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="unitPrice">単価</Label>
+          <Label htmlFor="unitPrice">{t('unitPrice')}</Label>
           <Input
             id="unitPrice"
             data-testid={TESTIDS.PRODUCT_FORM_PRICE}
@@ -131,7 +138,7 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">説明</Label>
+        <Label htmlFor="description">{t('description')}</Label>
         <Textarea
           id="description"
           data-testid={TESTIDS.PRODUCT_FORM_DESCRIPTION}
@@ -144,7 +151,7 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="imageUrl">画像URL</Label>
+        <Label htmlFor="imageUrl">{t('imageUrl')}</Label>
         <Input
           id="imageUrl"
           disabled={isPending}
@@ -157,7 +164,7 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        <Label htmlFor="status">ステータス</Label>
+        <Label htmlFor="status">{t('status')}</Label>
         <Switch
           id="status"
           checked={form.watch('status') === 1}
@@ -165,14 +172,14 @@ export function ProductForm({ product }: ProductFormProps) {
           disabled={isPending}
         />
         <span className="text-sm text-muted-foreground">
-          {form.watch('status') === 1 ? '有効' : '無効'}
+          {form.watch('status') === 1 ? t('statusActive') : t('statusInactive')}
         </span>
       </div>
 
       <div className="flex gap-4">
         <Button data-testid={TESTIDS.PRODUCT_FORM_SUBMIT} type="submit" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isEdit ? '更新' : '作成'}
+          {isEdit ? tCommon('update') : tCommon('create')}
         </Button>
         <Button
           data-testid={TESTIDS.PRODUCT_FORM_CANCEL}
@@ -181,7 +188,7 @@ export function ProductForm({ product }: ProductFormProps) {
           onClick={() => router.push('/products')}
           disabled={isPending}
         >
-          キャンセル
+          {tCommon('cancel')}
         </Button>
       </div>
     </form>

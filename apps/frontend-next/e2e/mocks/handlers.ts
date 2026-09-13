@@ -9,7 +9,7 @@ export const mockUsers = {
   admin: {
     userId: 1,
     username: 'admin',
-    password: 'password',
+    password: '123456',
     nickname: '管理者',
     avatar: null,
     roles: ['ADMIN'],

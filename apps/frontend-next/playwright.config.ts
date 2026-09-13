@@ -37,6 +37,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: BASE_URL,
+    locale: 'ja-JP',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     actionTimeout: 15000, // Increase action timeout

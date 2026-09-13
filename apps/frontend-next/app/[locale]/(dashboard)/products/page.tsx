@@ -1,10 +1,14 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { productApiServer } from '@/features/products/lib/product-api.server';
 import { ProductTableClient } from '@/features/products/components/product-table-client';
 
-export const metadata: Metadata = {
-  title: '商品管理',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('products');
+  return {
+    title: t('title'),
+  };
+}
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -14,6 +18,7 @@ interface ProductsPageProps {
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const t = await getTranslations('products');
   const params = await searchParams;
   const pageNum = Number(params.page) || 1;
   const productName = params.search || undefined;
@@ -28,7 +33,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">商品管理</h1>
+      <h1 className="text-2xl font-bold">{t('title')}</h1>
       <ProductTableClient initialData={initialData} initialParams={queryParams} />
     </div>
   );

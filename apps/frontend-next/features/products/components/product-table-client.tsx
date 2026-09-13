@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Plus, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -21,18 +22,25 @@ interface ProductTableClientProps {
 }
 
 // Category badge colors
-const categoryColors: Record<string, string> = {
-  飲料: 'bg-blue-100 text-blue-800',
-  食品: 'bg-green-100 text-green-800',
-  日用品: 'bg-purple-100 text-purple-800',
-  お菓子: 'bg-pink-100 text-pink-800',
-  酒類: 'bg-amber-100 text-amber-800',
+const categoryBadgeColors: Record<string, string> = {
+  beverages: 'bg-blue-100 text-blue-800',
+  food: 'bg-green-100 text-green-800',
+  daily: 'bg-purple-100 text-purple-800',
+  snacks: 'bg-pink-100 text-pink-800',
+  alcohol: 'bg-amber-100 text-amber-800',
   default: 'bg-gray-100 text-gray-800',
+};
+
+const getCategoryColor = (categoryName?: string) => {
+  if (!categoryName) return categoryBadgeColors.default;
+  return categoryBadgeColors[categoryName.toLowerCase()] || categoryBadgeColors.default;
 };
 
 export function ProductTableClient({ initialData, initialParams }: ProductTableClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('products');
+  const tCommon = useTranslations('common');
 
   const [params, setParams] = useState<ProductQuery>(initialParams);
   const [filterValues, setFilterValues] = useState({
@@ -57,21 +65,21 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
   const deleteProduct = useDeleteProduct();
 
   const categoryOptions = [
-    { value: '', label: 'カテゴリを選択' },
+    { value: '', label: t('selectCategory') },
     ...categories.map((c) => ({ value: String(c.id), label: c.categoryName })),
   ];
 
   const filterFields: FilterField[] = [
     {
       key: 'productName',
-      label: '商品名',
+      label: t('productName'),
       type: 'text',
-      placeholder: '商品名を入力...',
+      placeholder: t('searchPlaceholder'),
       width: 'w-48',
     },
     {
       key: 'categoryId',
-      label: 'カテゴリ',
+      label: t('category'),
       type: 'select',
       options: categoryOptions,
     },
@@ -113,22 +121,17 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
     if (!deleteTarget) return;
     try {
       await deleteProduct.mutateAsync(deleteTarget.id);
-      toast.success('商品を削除しました');
+      toast.success(t('deleteSuccess'));
       setDeleteTarget(null);
     } catch {
-      toast.error('削除に失敗しました');
+      toast.error(t('deleteFailed'));
     }
-  };
-
-  const getCategoryColor = (categoryName?: string) => {
-    if (!categoryName) return categoryColors.default;
-    return categoryColors[categoryName] || categoryColors.default;
   };
 
   const columns: Column<Product>[] = [
     {
       key: 'image',
-      header: '画像',
+      header: t('image'),
       width: '70px',
       render: (_, row) => (
         <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center overflow-hidden">
@@ -142,13 +145,13 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
     },
     {
       key: 'productName',
-      header: '商品名',
+      header: t('productName'),
       sortable: true,
       render: (_, row) => <div className="font-medium">{row.productName}</div>,
     },
     {
       key: 'categoryName',
-      header: 'カテゴリ',
+      header: t('category'),
       width: '100px',
       render: (_, row) => (
         <span
@@ -160,7 +163,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
     },
     {
       key: 'unitPrice',
-      header: '価格',
+      header: t('price'),
       width: '100px',
       align: 'right',
       sortable: true,
@@ -168,7 +171,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
     },
     {
       key: 'stockQuantity',
-      header: '在庫数',
+      header: t('stockQuantity'),
       width: '80px',
       align: 'right',
       render: (_, row) => (
@@ -185,25 +188,25 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
     },
     {
       key: 'salesCount',
-      header: '売上数',
+      header: t('salesCount'),
       width: '80px',
       align: 'right',
       render: (_, row) => <span>{typeof row.salesCount === 'number' ? row.salesCount : '-'}</span>,
     },
     {
       key: 'status',
-      header: 'ステータス',
+      header: t('status'),
       width: '90px',
       align: 'center',
       render: (_, row) => (
         <Badge variant={row.status === 1 ? 'success' : 'destructive'}>
-          {row.status === 1 ? '有効' : '無効'}
+          {row.status === 1 ? t('statusActive') : t('statusInactive')}
         </Badge>
       ),
     },
     {
       key: 'actions',
-      header: '操作',
+      header: t('actions'),
       width: '100px',
       align: 'center',
       render: (_, row) => (
@@ -214,7 +217,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
             size="sm"
             onClick={() => router.push(`/products/${row.id}/edit`)}
           >
-            編集
+            {tCommon('edit')}
           </Button>
           <Button
             data-testid={testId(TESTIDS.PRODUCT_DELETE_BUTTON, row.id)}
@@ -223,7 +226,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
             className="text-destructive hover:text-destructive"
             onClick={() => setDeleteTarget(row)}
           >
-            削除
+            {tCommon('delete')}
           </Button>
         </div>
       ),
@@ -245,14 +248,14 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
             onClick={() => router.push('/products/new')}
           >
             <Plus className="mr-2 h-4 w-4" />
-            新規登録
+            {t('newProduct')}
           </Button>
         }
       />
 
       {/* Table Title */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">商品一覧</h2>
+        <h2 className="text-lg font-semibold">{t('listTitle')}</h2>
       </div>
 
       {isError && (
@@ -260,7 +263,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
           role="alert"
           className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+          {t('fetchError')}
         </div>
       )}
 
@@ -271,7 +274,7 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
         isLoading={isLoading}
-        emptyMessage="商品が見つかりません"
+        emptyMessage={t('emptyMessage')}
         pagination={{
           pageNum: params.pageNum,
           pageSize: params.pageSize,
@@ -284,9 +287,9 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="商品を削除"
-        description="この操作は取り消せません。関連する在庫データも影響を受ける可能性があります。"
-        confirmLabel="削除"
+        title={t('deleteConfirm')}
+        description={t('deleteConfirmDescription')}
+        confirmLabel={tCommon('delete')}
         variant="destructive"
         onConfirm={handleDelete}
         isLoading={deleteProduct.isPending}
@@ -294,9 +297,9 @@ export function ProductTableClient({ initialData, initialParams }: ProductTableC
         {deleteTarget && (
           <div className="space-y-2">
             <p className="text-sm">
-              商品名: <span className="font-medium">{deleteTarget.productName}</span>
+              {t('productName')}: <span className="font-medium">{deleteTarget.productName}</span>
             </p>
-            <p className="text-sm text-muted-foreground">商品コード: {deleteTarget.productCode}</p>
+            <p className="text-sm text-muted-foreground">{t('productCode')}: {deleteTarget.productCode}</p>
           </div>
         )}
       </ConfirmDialog>

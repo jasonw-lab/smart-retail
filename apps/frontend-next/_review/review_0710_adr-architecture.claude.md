@@ -650,3 +650,47 @@ data-testid を定数管理する方針（E2E方針書 §6.2）自体は良い�
 | `git diff --check` | ✅ 成功 | whitespace error なし |
 
 補足: ローカルの `pnpm` v11 は `package.json` の `pnpm.overrides` を読まないため、overrides と build script 承認を `pnpm-workspace.yaml` に移動。`eslint.config.mjs` が直接 import している `@eslint/eslintrc` を devDependency に明示追加。
+
+---
+
+## 2026/09/13 14:00 kimi 対応完了
+
+### 対応状況サマリー
+
+| #   | 指摘内容                                             | 重大度 | 対応状況                        |
+| --- | ---------------------------------------------------- | ------ | ------------------------------- |
+| 25  | features配下の文言ハードコード (products基準実装) | Medium | ⚠️ 部分対応（U5 products完了） |
+
+### 各指摘の対応詳細
+
+#### 25. features配下の文言ハードコード (products基準実装) ⚠️
+
+- 変更内容:
+  - `features/products/schemas/product-schema.ts`: バリデーションエラーメッセージを i18n 化するファクトリ関数 `createProductFormSchema(t)`（方式 b）を導入し、`validation` namespace の共通キー（`required`, `maxLength`, `minValue`, `invalidUrl` 等）を利用。
+  - `features/products/components/product-form.tsx`: `useTranslations` で `products` / `common` / `validation` を参照し、全ラベル・ボタン・トーストを多言語化。`useMemo` でスキーマ生成。
+  - `features/products/components/product-table-client.tsx`: 全カラムヘッダー・アクション・ステータスバッジ・ダイアログ・エラーメッセージを多言語化。カテゴリ色は英語キーおよびデフォルト色フォールバックに変更。
+  - `app/[locale]/(dashboard)/products/`: page.tsx, new/page.tsx, [id]/edit/page.tsx を `getTranslations` および `generateMetadata` で多言語化。
+  - `messages/ja.json` / `messages/en.json`: `products` および `validation` namespace を拡充し、キー構造・キー数を完全一致。
+  - `CONTRIBUTING.md`: 「i18n の書き方」節を追記し、基準実装（方式 b）の作法を明文化。
+  - `e2e/specs/i18n.spec.ts`: 新規作成し、英語ロケール（`/en/products`）での UI レンダリング自動回帰テストを追加。
+  - `playwright.config.ts`: テスト実行時のロケールを `ja-JP` に統一し、cookie リーク対策として `e2e/fixtures/auth.ts` の `login` 前 cookie クリアを追加。
+- 変更ファイル:
+  - `features/products/schemas/product-schema.ts`
+  - `features/products/components/product-form.tsx`
+  - `features/products/components/product-table-client.tsx`
+  - `app/[locale]/(dashboard)/products/page.tsx`
+  - `app/[locale]/(dashboard)/products/new/page.tsx`
+  - `app/[locale]/(dashboard)/products/[id]/edit/page.tsx`
+  - `messages/ja.json`
+  - `messages/en.json`
+  - `CONTRIBUTING.md`
+  - `e2e/specs/i18n.spec.ts`
+  - `e2e/fixtures/auth.ts`
+  - `e2e/mocks/handlers.ts`
+  - `e2e/mocks/mock-server.ts`
+  - `playwright.config.ts`
+  - `e2e/specs/products.spec.ts-snapshots/products-list-chromium-darwin.png`
+- 判断理由:
+  - Zod スキーマメッセージの i18n 化方式として、コンポーネント側の JSX を書き換えずに引数補間も自然に扱える「スキーマ生成関数（方式 b）」を採用。
+  - 既存 E2E テストとの文言完全一致（`商品を作成しました`、`商品名を入力...`、`操作` など）を維持し、全テスト通過を確認。
+

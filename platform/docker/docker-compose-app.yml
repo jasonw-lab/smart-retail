@@ -3,9 +3,18 @@ networks:
     external: true
     name: jason-lab-net
 
+# 共通ロギング設定（コンテナログの肥大化防止: 最大20MB x 3世代 = 60MB）
+x-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "20m"
+      max-file: "3"
+
 services:
   # Backend Service (Spring Boot)
   smart-dx-backend:
+    <<: *default-logging
     profiles: ["backend", "all"]
     build:
       context: ../../apps/backend
@@ -48,6 +57,7 @@ services:
 
   # Simulator Service (PowerJob Worker)
   smart-retail-simulator:
+    <<: *default-logging
     profiles: ["simulator", "all"]
     build:
       context: ../..

@@ -3,26 +3,40 @@ networks:
     external: true
     name: jason-lab-net
 
+# 共通ロギング設定（コンテナログの肥大化防止: 最大20MB x 3世代 = 60MB）
+x-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "20m"
+      max-file: "3"
+
 services:
 
-  # nginx - use ec-demo's nginx instead
-#  nginx:
-#    image: nginx:stable-alpine
-#    container_name: smart-retail-nginx
-#    restart: unless-stopped
-#    volumes:
-#      - ${BASEPATH}/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-#      - ${BASEPATH}/nginx/conf/conf.d:/etc/nginx/conf.d
-#      - ${BASEPATH}/nginx/html:/usr/share/nginx/html
-#      - ${BASEPATH}/nginx/logs:/var/log/nginx
-#    ports:
-#      - 80:80
-#      - 443:443
-#    networks:
-#      - jason-lab-net
+  # Nginx (インフラコンテナ: smart-dx-nginx)
+  smart-dx-nginx:
+    <<: *default-logging
+    image: nginx:stable-alpine
+    container_name: smart-dx-nginx
+    restart: unless-stopped
+    volumes:
+      - ${BASEPATH:-/mydata}/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ${BASEPATH:-/mydata}/nginx/conf/conf.d:/etc/nginx/conf.d
+      - ${BASEPATH:-/mydata}/nginx/html:/usr/share/nginx/html
+      - ${BASEPATH:-/mydata}/nginx/logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      jason-lab-net:
+        aliases:
+          - nginx
+          - smart-dx-nginx
+
 
   # MySQL for smart-retail
   smart-retail-mysql:
+    <<: *default-logging
     image: mysql:8.0.29
     container_name: smart-retail-mysql-8
     ports:
@@ -52,6 +66,7 @@ services:
 
   # PowerJob Server
   smart-retail-powerjob-server:
+    <<: *default-logging
     image: powerjob/powerjob-server:latest
     container_name: smart-retail-powerjob-server
     restart: unless-stopped
@@ -70,6 +85,7 @@ services:
 
   # Redis for smart-retail / smart-property (インフラコンテナ: smart-dx-redis)
   smart-dx-redis:
+    <<: *default-logging
     image: redis:7.2-alpine
     container_name: smart-dx-redis
     ports:
@@ -93,6 +109,7 @@ services:
 
   # OpenSearch (インフラコンテナ: smart-dx-opensearch)
   smart-dx-opensearch:
+    <<: *default-logging
     build:
       context: ./opensearch
       args:
@@ -133,6 +150,7 @@ services:
 
   # OpenSearch Init (インフラコンテナ: smart-dx-opensearch-init)
   smart-dx-opensearch-init:
+    <<: *default-logging
     build:
       context: ./opensearch-init
       args:
@@ -153,6 +171,7 @@ services:
 
   # OpenSearch Dashboards (インフラコンテナ: smart-dx-opensearch-dashboards)
   smart-dx-opensearch-dashboards:
+    <<: *default-logging
     image: opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION:-2.19.1}
     platform: ${PLATFORM:-linux/arm64}
     container_name: smart-dx-opensearch-dashboards

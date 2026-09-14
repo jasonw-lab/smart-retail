@@ -609,23 +609,15 @@ const server = createServer(async (req, res) => {
     }
 
     // Inventory: List with pagination
-    // 本プロジェクトの在庫UIはSKU集約形式を正とするため、Backendからも集約形式を返す
+    // 実Backend（InventoryController.java）は storeId/productId のみ受領し productName/status はフィルタしない。
+    // フロントエンド（aggregateInventoryItems）の防衛的クライアントフィルタの動作を検証するため、
+    // mock-server でも実Backendと同様に storeId のみフィルタして全件を返す。
     if ((path === '/retail/inventories' || path === '/retail/inventory/page') && method === 'GET') {
       const storeId = url.searchParams.get('storeId') || '';
-      const productName = url.searchParams.get('productName') || '';
-      const status = url.searchParams.get('status') || '';
 
       let filtered = [...mockInventory];
       if (storeId) {
         filtered = filtered.filter((i) => String(i.storeId) === storeId);
-      }
-      if (productName) {
-        filtered = filtered.filter((i) =>
-          i.productName.toLowerCase().includes(productName.toLowerCase())
-        );
-      }
-      if (status) {
-        filtered = filtered.filter((i) => i.status === status);
       }
 
       res.writeHead(200);

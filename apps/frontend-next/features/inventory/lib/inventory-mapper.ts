@@ -5,6 +5,7 @@ import {
   type InventoryLot,
   type InventoryPageItem,
   type InventoryPageResult,
+  type InventoryQuery,
   type InventoryStatusType,
   type InventoryTransaction,
   type StockHistory,
@@ -82,48 +83,74 @@ export function mapInventoryItemToAggregate(item: InventoryPageItem): Inventory 
   };
 }
 
-export function aggregateInventoryItems(items: InventoryPageItem[]): InventoryPageResult {
+export function aggregateInventoryItems(
+  items: InventoryPageItem[],
+  query?: InventoryQuery
+): InventoryPageResult {
   if (!items || items.length === 0) {
     return { list: [], total: 0 };
   }
 
-  // Backendが既に集約形式（lotsを持つ）で返している場合はそのまま返す
+  let list: Inventory[];
+
+  // Backendが既に集約形式（lotsを持つ）で返している場合はそのままマッピング
   const first = items[0] as Partial<Inventory>;
   if (first.lots && first.lots.length > 0) {
-    const list = items.map((item) => mapInventoryItemToAggregate(item));
-    return { list, total: list.length };
+    list = items.map((item) => mapInventoryItemToAggregate(item));
+  } else {
+    const groups = new Map<string, Inventory>();
+
+    for (const item of items) {
+      const key = `${item.storeId}-${item.productId}`;
+      const existing = groups.get(key);
+      const lot = createLot(item);
+
+      if (!existing) {
+        groups.set(key, mapInventoryItemToAggregate(item));
+      } else {
+        existing.totalQuantity += item.quantity;
+        existing.lots = existing.lots ?? [];
+        existing.lots.push(lot);
+
+        if (
+          item.expiryDate &&
+          (!existing.oldestExpiryDate || item.expiryDate < existing.oldestExpiryDate)
+        ) {
+          existing.oldestExpiryDate = item.expiryDate;
+        }
+
+        const itemStatus = mapBackendStatus(item.status);
+        if (statusSeverity[itemStatus] > statusSeverity[existing.status]) {
+          existing.status = itemStatus;
+        }
+      }
+    }
+
+    list = Array.from(groups.values());
   }
 
-  const groups = new Map<string, Inventory>();
-
-  for (const item of items) {
-    const key = `${item.storeId}-${item.productId}`;
-    const existing = groups.get(key);
-    const lot = createLot(item);
-
-    if (!existing) {
-      groups.set(key, mapInventoryItemToAggregate(item));
-    } else {
-      existing.totalQuantity += item.quantity;
-      existing.lots = existing.lots ?? [];
-      existing.lots.push(lot);
-
-      if (
-        item.expiryDate &&
-        (!existing.oldestExpiryDate || item.expiryDate < existing.oldestExpiryDate)
-      ) {
-        existing.oldestExpiryDate = item.expiryDate;
-      }
-
-      const itemStatus = mapBackendStatus(item.status);
-      if (statusSeverity[itemStatus] > statusSeverity[existing.status]) {
-        existing.status = itemStatus;
-      }
+  // クライアント/SSR側フィルタリング（バックエンドが全ロットを返却した場合の防衛的処理）
+  if (query) {
+    if (query.storeId && !Number.isNaN(query.storeId)) {
+      list = list.filter((item) => item.storeId === query.storeId);
+    }
+    if (query.productName && query.productName.trim() !== '') {
+      const keyword = query.productName.trim().toLowerCase();
+      list = list.filter((item) => item.productName.toLowerCase().includes(keyword));
+    }
+    if (query.status) {
+      list = list.filter((item) => item.status === query.status);
     }
   }
 
-  const list = Array.from(groups.values());
-  return { list, total: list.length };
+  const total = list.length;
+
+  if (query?.pageNum && query?.pageSize) {
+    const start = (query.pageNum - 1) * query.pageSize;
+    list = list.slice(start, start + query.pageSize);
+  }
+
+  return { list, total };
 }
 
 export function mapTransactionToHistory(transaction: InventoryTransaction): StockHistory {

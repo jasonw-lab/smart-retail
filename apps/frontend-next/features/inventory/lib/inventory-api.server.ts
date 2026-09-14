@@ -72,7 +72,7 @@ export const inventoryApiServer = {
     const items = await fetchFromBackend<InventoryPageItem[]>(
       `retail/inventories?${searchParams.toString()}`
     );
-    return aggregateInventoryItems(items);
+    return aggregateInventoryItems(items, params);
   },
 
   /**

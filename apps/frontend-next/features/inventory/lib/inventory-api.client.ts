@@ -83,7 +83,7 @@ export const inventoryApiClient = {
   getPage: async (params: InventoryQuery): Promise<InventoryPageResult> => {
     const searchParams = buildInventoryQueryParams(params);
     const items = await fetchApi<InventoryPageItem[]>(`${BASE_URL}?${searchParams.toString()}`);
-    return aggregateInventoryItems(items);
+    return aggregateInventoryItems(items, params);
   },
 
   /**

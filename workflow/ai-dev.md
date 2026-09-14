@@ -133,3 +133,126 @@ export const AlertTypeSchema = z
 - [ ] **モックの多様性**: MSW等のモックデータに、バックエンド実機で使われる生Enumやエッジケースを含める
 - [ ] **Liveスモークテスト**: 実環境起動時に `pnpm test:smoke` で全画面巡回できる構成を用意
 - [ ] **人間介入の基準策定**: トークン消費が通常想定より 10% 以上急増・試行錯誤ループに陥った際、人間が早期介入するルールをチームで共有
+- [ ] **検索条件テストの8大網羅**: 単一・複合・0件・リセット・除外・URL同期・実機スモークを必須検証
+
+---
+
+## 5. 一覧画面・検索条件 E2E テスト方針（シナリオ＆網羅パターン）
+
+### 実事例分析：なぜ「おにぎり」で検索したのに「サラダ」が表示されたのか？
+
+一覧画面の移行（Vue → Next.js）において、**「E2Eモックテストは全件PASSしていたのに、実画面で『おにぎり』と検索しても『サラダ』や『弁当』が表示される」** という重大な不具合が発生しました。
+
+#### 根本原因：過剰モックの罠（Over-Mocking Trap）と契約乖離
+
+```mermaid
+flowchart TD
+  subgraph MockEnv["モックテスト環境 (E2E) - 偽りのグリーン"]
+    UI1["フロントUI: productName='おにぎり'"] -->|URLクエリ付与| MS["モックサーバー (MSW/MockServer)"]
+    MS -->|親切にモック内でfilter処理| MData["おにぎり のみ返却"]
+    MData --> UI1
+    Test1["E2Eテスト: PASS (問題検知できず)"]
+  end
+
+  subgraph RealEnv["実機環境 (Live Backend) - バグ発生"]
+    UI2["フロントUI: productName='おにぎり'"] -->|URLクエリ付与| BE["実バックエンド (Spring Boot)"]
+    BE -->|⚠️ productName未対応のため無視| DB["全ロットデータ (121件) 返却"]
+    DB --> UI2
+    UI2 -->|フロント側でフィルタ処理漏れ| Bug["画面に『サラダ』『弁当』がそのまま表示！"]
+  end
+```
+
+1. **モックサーバーの過剰な親切心**:
+   モックサーバーが気を利かせて `productName` や `status` をクエリパラメータから抽出し、モック内部で配列を `.filter()` して返していた。
+2. **実バックエンドの契約制約**:
+   実バックエンド（Spring Boot `InventoryController`）は `storeId` と `productId` しかクエリパラメータを受け取っておらず、`productName` は無視して全件を返していた。
+3. **フロントエンド側の責務欠落**:
+   Vue版ではバックエンドが全件返す前提で「クライアントサイドフィルタ」を行っていたが、Next.js版では「バックエンドが絞り込んでくれるはず」と誤認し、フロントでの集約・マッピング時にフィルタ処理を行っていなかった。
+4. **結果**:
+   モックE2Eテストはモックが代わりにフィルタしていたため100%成功し、実環境に繋いだ瞬間にバグが露呈した。
+
+---
+
+### 一覧・検索条件 E2E テスト 8 大パターンマトリクス
+
+他プロジェクトでも一覧・検索画面を実装・テストする際は、以下の **8つのテストパターンを必須網羅** します。
+
+| パターン番号 | テストパターン名 | 入力条件・操作シナリオ | 必須検証内容（アサーション） | 防ぐべき障害 |
+| :--- | :--- | :--- | :--- | :--- |
+| **P1: 単一条件** | テキスト検索（完全/部分一致） | キーワード入力（例: `おにぎり` または `おに`）後、検索実行 | 該当商品のみが表示されること。大文字小文字・前後空白トリムが機能すること。 | 部分一致の不具合、空白混入時の検索漏れ |
+| **P2: 除外検証** | 厳密な除外検証 (Negative Test) | 条件A（例: `おにぎり`）で検索実行 | **「条件に合致しない別商品（例: サラダ、弁当）が画面に存在しない（件数0件）」** ことを明示的に検証。 | 過剰モックによる絞り込み漏れ、全件垂れ流し |
+| **P3: セレクト検索** | ドロップダウン選択（店舗/状態） | 1つの選択肢（例: `大阪支店`、`正常`）を選択後、検索実行 | 指定した店舗・ステータスに完全一致する行のみが表示されること。 | Enum変換ミス、値の非同期反映漏れ |
+| **P4: 複合条件** | AND 複合絞り込み | 店舗 × キーワード × ステータス（例: 東京本店 × テスト × 正常） | 全ての条件を満たす積集合（AND）のみが表示され、いずれか一つでも欠けるデータが除外されること。 | OR検索誤認、複数パラメータ結合漏れ |
+| **P5: 0件該当** | 該当なし空状態 (Empty State) | 存在しない値（例: `存在しないXYZ`）で検索実行 | エラーにならず、適切な「データが見つかりません」などの空UIが表示されること。 | 0件時のクラッシュ、undefinedアクセス |
+| **P6: リセット復帰** | 検索リセット (Clear & Restore) | 条件入力で絞り込み後、`リセット` ボタンを押下 | 全入力値が初期化され、一覧が初期状態の全件表示に完全復帰すること。 | フィルタ解除不能、内部state残留 |
+| **P7: URL同期** | URL連動 & SSR再現 (Deep Linking) | 画面検索でURLにクエリ反映後、そのURLへ直接ブラウザアクセス | ページ初期ロード（SSR）時にも、URLパラメータに従って正しく絞り込まれた状態で描画されること。 | SSRとクライアントフェッチの不整合 |
+| **P8: 実機Live検証** | 実バックエンド結合スモーク | `pnpm test:smoke` の中で、実DBデータを対象に検索〜除外を検証 | モックだけでなく、本物のAPIレスポンスに対しても検索絞り込みが正常に作動すること。 | API契約乖離、モックの偽装グリーン |
+
+---
+
+### E2E テスト実装の注意点と Playwright レシピ集
+
+#### 1. 除外アサーションにおける Playwright Strict Mode 対策
+
+初期表示で画面上に複数存在する要素（例: サラダが3行）が、検索後に完全に消えたことを検証する際、`not.toBeVisible()` を安易に使うと Playwright の strict mode 違反でクラッシュします。
+
+```typescript
+// ❌ 危険: 画面上に「サラダ」が複数あると "strict mode violation: resolved to 3 elements" で落ちる
+await expect(page.getByText('サラダ')).not.toBeVisible();
+
+// ⭕ 安全: 画面上の該当要素が「0件」になったことを非同期ポーリング待機する
+await expect(page.getByText('サラダ')).toHaveCount(0, { timeout: 10000 });
+```
+
+#### 2. Radix UI / 非同期セレクトボックスの Flaky 撲滅
+
+Radix UI の Select や Combobox は DOM のポータル要素としてアニメーションを伴って展開・破棄されます。選択直後に検索ボタンを押すと、React の state 反映前にリクエストが飛ぶリスクがあります。
+
+```typescript
+// ⭕ 安定したセレクト選択ヘルパー
+async function selectOptionByFieldLabel(page: Page, label: string, option: string) {
+  const field = page.locator('div.space-y-2', { hasText: label });
+  const trigger = field.locator('[role="combobox"]').first();
+  await trigger.click();
+  await page.getByRole('option', { name: option, exact: true }).click();
+  
+  // トリガー要素の表示テキスト確定を検証
+  await expect(trigger).toHaveText(option);
+  // React state の再レンダリング同期を待機
+  await page.waitForTimeout(200);
+}
+```
+
+#### 3. 多層防衛アーキテクチャ（Defense-in-Depth）の実装指針
+
+フロントエンドでは、「バックエンドが検索パラメータに対応しているか否か」にかかわらず、**クライアント/SSRのマッピング集約レイヤーでも防衛的にフィルタリングを実施する** 設計を標準とします。
+
+```typescript
+// マッピング・集約関数 (例: aggregateInventoryItems)
+export function aggregateInventoryItems(items: RawItem[], query?: QueryParams): PageResult {
+  let list = groupAndAggregate(items);
+
+  // 防衛的クライアントフィルタ: バックエンドが全件返してきても安全に絞り込む
+  if (query) {
+    if (query.storeId && !Number.isNaN(query.storeId)) {
+      list = list.filter((i) => i.storeId === query.storeId);
+    }
+    if (query.productName && query.productName.trim() !== '') {
+      const kw = query.productName.trim().toLowerCase();
+      list = list.filter((i) => i.productName.toLowerCase().includes(kw));
+    }
+    if (query.status) {
+      list = list.filter((i) => i.status === query.status);
+    }
+  }
+
+  const total = list.length;
+  // ページングスライス処理
+  if (query?.pageNum && query?.pageSize) {
+    const start = (query.pageNum - 1) * query.pageSize;
+    list = list.slice(start, start + query.pageSize);
+  }
+
+  return { list, total };
+}
+```

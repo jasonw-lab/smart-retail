@@ -8,6 +8,7 @@ async function selectOptionByFieldLabel(page: Page, label: string, option: strin
   await trigger.click();
   await page.getByRole('option', { name: option, exact: true }).click();
   await expect(trigger).toHaveText(option);
+  await page.waitForTimeout(200);
 }
 
 test.describe('在庫管理', () => {
@@ -75,6 +76,26 @@ test.describe('在庫管理', () => {
     await expect(page.getByText('テスト商品1')).toBeVisible();
     await expect(page.getByText('テスト商品2')).toBeVisible();
     await expect(page.getByText('サンプル商品')).not.toBeVisible();
+  });
+
+  test('商品名「おにぎり」検索でサラダ・弁当が正しく除外される（実機契約乖離防止テスト）', async ({
+    page,
+  }) => {
+    // 初期表示で「おにぎり」「サラダ」「弁当」が存在することを確認
+    await expect(page.getByText('おにぎり')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('サラダ')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('弁当')).toBeVisible({ timeout: 10000 });
+
+    // 「おにぎり」を入力して検索
+    const productInput = page.getByPlaceholder('商品名を入力...');
+    await productInput.fill('おにぎり');
+    await page.click(`[data-testid="${TESTIDS.FILTER_BAR_SEARCH}"]`);
+
+    // 「おにぎり」のみが表示され、「サラダ」「弁当」は一覧から確実に除外される
+    await expect(page.getByText('おにぎり')).toBeVisible();
+    await expect(page.getByText('サラダ')).not.toBeVisible();
+    await expect(page.getByText('弁当')).not.toBeVisible();
+    await expect(page).toHaveURL(/product=%E3%81%8A%E3%81%AB%E3%81%8E%E3%82%8A/, { timeout: 10000 });
   });
 
   test('ステータス「正常」でフィルタ検索', async ({ page }) => {

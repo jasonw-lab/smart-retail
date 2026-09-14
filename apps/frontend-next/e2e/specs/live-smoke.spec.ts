@@ -36,6 +36,21 @@ test.describe('実バックエンド結合スモークテスト', () => {
     await expect(main).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
 
+    // 実バックエンド結合での検索条件検証（「おにぎり」検索で「サラダ」が除外されること）
+    const productInput = page.getByPlaceholder('商品名を入力...');
+    await expect(productInput).toBeVisible({ timeout: 10000 });
+    // 初期状態で両方が存在することを確認
+    await expect(page.getByText('おにぎり').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('サラダ').first()).toBeVisible({ timeout: 10000 });
+
+    // 「おにぎり」を入力して検索
+    await productInput.fill('おにぎり');
+    await page.click('button:has-text("Search"), button:has-text("検索")');
+
+    // 「おにぎり」が表示され、「サラダ」が除外されることを検証
+    await expect(page.getByText('おにぎり').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('サラダ')).toHaveCount(0, { timeout: 10000 });
+
     // 8. 主要画面巡回（デバイス一覧）
     await page.goto('/ja/devices');
     await expect(main).toBeVisible({ timeout: 10000 });

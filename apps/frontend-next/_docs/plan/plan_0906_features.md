@@ -132,7 +132,7 @@ app/[locale]/(dashboard)/<domain>/page.tsx   ← Server Component
 | U6  | 完了   | -    | 2026-09-13 | stores i18n化・E2E 8テストパス |
 | U7  | 完了   | -    | 2026-09-14 | devices i18n化・CRUD E2E拡充・全11テストパス |
 | U8  | 完了   | -    | 2026-09-14 | inventory i18n化・CRUD/検索条件網羅E2E・全16テストパス |
-| U9  | 未着手 | -    | -      |      |
+| U9  | 完了   | -    | 2026-09-14 | transactions i18n化・多層防衛マッパー・E2E 8大パターン/スモーク全11テストパス |
 | U10 | 未着手 | -    | -      |      |
 | U11 | 未着手 | -    | -      |      |
 | U12 | 未着手 | 0/8  | -      |      |

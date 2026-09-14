@@ -373,6 +373,23 @@ export const mockInventory = [
     createTime: '2026-01-01T00:00:00',
     updateTime: '2026-05-29T08:30:00',
   },
+  {
+    id: 3,
+    storeId: 2,
+    storeName: '大阪支店',
+    productId: 3,
+    productCode: 'PRD-003',
+    productName: 'サンプル商品',
+    totalQuantity: 50,
+    reorderPoint: 20,
+    upperLimit: 150,
+    oldestExpiryDate: '2026-11-30',
+    status: 'NORMAL',
+    turnoverRate: 1.5,
+    lots: [{ id: 103, lotNumber: 'LOT-003', quantity: 50, expiryDate: '2026-11-30' }],
+    createTime: '2026-01-15T00:00:00',
+    updateTime: '2026-05-29T09:00:00',
+  },
 ];
 
 export const mockTransactions = [

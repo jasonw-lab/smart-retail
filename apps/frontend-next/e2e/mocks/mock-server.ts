@@ -230,6 +230,9 @@ const server = createServer(async (req, res) => {
 
     if (path === '/retail/dashboard/sales-trend' && method === 'GET') {
       const interval = url.searchParams.get('interval') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
+
       if (interval === 'month') {
         const monthList = mockDashboardSales['1y'].map((item) => ({
           date: item.date,
@@ -240,7 +243,18 @@ const server = createServer(async (req, res) => {
         res.end(apiResponse(monthList));
         return;
       }
-      const dayList = mockDashboardSales['7d'].map((item) => ({
+
+      let rangeKey: '7d' | '30d' = '7d';
+      if (startDate && endDate) {
+        const diffDays = Math.round(
+          (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (diffDays > 10) {
+          rangeKey = '30d';
+        }
+      }
+
+      const dayList = mockDashboardSales[rangeKey].map((item) => ({
         date: item.date,
         salesAmount: item.sales,
         growthRate: 0,
@@ -362,9 +376,15 @@ const server = createServer(async (req, res) => {
       const category = url.searchParams.get('category') || '';
       const storeId = url.searchParams.get('storeId') || '';
       if (status) {
-        // Backend status values are NEW/ACK/RESOLVED; mockAlerts uses frontend values.
-        // Simple equality fallback for tests.
-        filtered = filtered.filter((a) => a.status === status || a.status === 'unread');
+        const targetStatus =
+          status === 'NEW'
+            ? 'unread'
+            : status === 'ACK'
+              ? 'acknowledged'
+              : status === 'RESOLVED'
+                ? 'resolved'
+                : status;
+        filtered = filtered.filter((a) => a.status === targetStatus);
       }
       if (priority) {
         filtered = filtered.filter((a) => String(a.priority) === priority.replace('P', ''));
@@ -380,11 +400,73 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/retail/alerts' && method === 'POST') {
+      const newAlert = {
+        id: `alert-${mockAlerts.length + 1}`,
+        ...body,
+        status: 'unread',
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      mockAlerts.push(newAlert as (typeof mockAlerts)[0]);
+      res.writeHead(200);
+      res.end(apiResponse(newAlert));
+      return;
+    }
+
+    const alertStatusMatch = path.match(/^\/retail\/alerts\/([^/]+)\/status$/);
+    if (alertStatusMatch && (method === 'PATCH' || method === 'PUT')) {
+      const id = alertStatusMatch[1];
+      const alert = mockAlerts.find((a) => String(a.id) === id);
+      if (alert) {
+        const nextStatus = (body['status'] as string) || '';
+        if (nextStatus === 'ACK' || nextStatus === 'acknowledged') alert.status = 'acknowledged';
+        else if (nextStatus === 'RESOLVED' || nextStatus === 'resolved') alert.status = 'resolved';
+        else if (nextStatus === 'NEW' || nextStatus === 'unread') alert.status = 'unread';
+        else if (nextStatus) alert.status = nextStatus;
+        alert.read = alert.status !== 'unread';
+        res.writeHead(200);
+        res.end(apiResponse(alert));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
     if (path === '/retail/alerts/monitoring' && method === 'GET') {
       res.writeHead(200);
       res.end(apiResponse(mockAlertMonitoring));
       return;
     }
+
+    const alertDetailMatch = path.match(/^\/retail\/alerts\/([^/]+)$/);
+    if (alertDetailMatch && alertDetailMatch[1] !== 'monitoring') {
+      const id = alertDetailMatch[1];
+      const alert = mockAlerts.find((a) => String(a.id) === id);
+
+      if (method === 'GET') {
+        if (!alert) {
+          res.writeHead(404);
+          res.end(JSON.stringify({ code: 'B0001', msg: 'Alert not found', data: null }));
+          return;
+        }
+        res.writeHead(200);
+        res.end(apiResponse(alert));
+        return;
+      }
+
+      if (method === 'DELETE') {
+        const index = mockAlerts.findIndex((a) => String(a.id) === id);
+        if (index !== -1) {
+          mockAlerts.splice(index, 1);
+        }
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
 
     // Stores: List all (no pagination params)
     if (path === '/retail/stores' && method === 'GET' && !url.searchParams.has('pageNum')) {

@@ -6,7 +6,7 @@ import type {
   AlertMonitoringSummary,
   AlertQuery,
 } from '../types/alert';
-import { normalizeBackendAlert } from '../types/alert';
+import { normalizeBackendAlert, normalizeBackendAlertList } from '../types/alert';
 
 function buildAlertQuery(params: AlertQuery): URLSearchParams {
   const searchParams = new URLSearchParams({
@@ -26,14 +26,13 @@ export const alertApiServer = {
   /**
    * アラートリスト取得
    */
-  getList: (params: { storeId?: string; status?: string }): Promise<Alert[]> => {
+  getList: async (params: { storeId?: string; status?: string }): Promise<Alert[]> => {
     const searchParams = new URLSearchParams();
     if (params.storeId) searchParams.set('storeId', params.storeId);
     if (params.status) searchParams.set('status', params.status);
     const query = searchParams.toString();
-    return fetchFromBackend<BackendAlertVO[]>(`retail/alerts${query ? `?${query}` : ''}`).then(
-      (data) => (data || []).map(normalizeBackendAlert)
-    );
+    const data = await fetchFromBackend<unknown>(`retail/alerts${query ? `?${query}` : ''}`);
+    return normalizeBackendAlertList(data).map(normalizeBackendAlert);
   },
 
   /**
@@ -41,16 +40,25 @@ export const alertApiServer = {
    */
   getPage: async (params: AlertQuery): Promise<AlertPageResult> => {
     const searchParams = buildAlertQuery(params);
-    const data = await fetchFromBackend<BackendAlertVO[]>(
-      `retail/alerts?${searchParams.toString()}`
-    );
-    const list = (data || []).map(normalizeBackendAlert).filter((alert) => {
+    const data = await fetchFromBackend<unknown>(`retail/alerts?${searchParams.toString()}`);
+    const rawList = normalizeBackendAlertList(data);
+    let total = rawList.length;
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'total' in data &&
+      typeof (data as Record<string, unknown>)['total'] === 'number'
+    ) {
+      total = (data as Record<string, unknown>)['total'] as number;
+    }
+
+    const list = rawList.map(normalizeBackendAlert).filter((alert) => {
       if (params.status && alert.status !== params.status) return false;
       if (params.priority && String(alert.priority) !== params.priority) return false;
       if (params.category && alert.category !== params.category) return false;
       return true;
     });
-    return { list, total: list.length };
+    return { list, total: list.length === rawList.length ? total : list.length };
   },
 
   /**

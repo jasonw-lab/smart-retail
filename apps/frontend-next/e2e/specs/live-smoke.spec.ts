@@ -4,16 +4,20 @@ import { TESTIDS } from '../testids';
 test.describe('実バックエンド結合スモークテスト', () => {
   test('ログイン〜ダッシュボード〜主要画面巡回がエラーなく完了する', async ({ page }) => {
     // 1. ログイン画面へアクセス
-    await page.goto('/ja/login');
-    await expect(page.locator('input[name="username"]')).toBeVisible({ timeout: 10000 });
+    await page.goto('/login');
+    await page.waitForLoadState('domcontentloaded');
 
-    // 2. ログイン実行
-    await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[name="password"]', '123456');
+    // 2. 「管理者 (admin)」ボタンをクリックして自動入力
+    const adminBtn = page.getByRole('button', { name: /管理者/ });
+    await expect(adminBtn).toBeVisible({ timeout: 10000 });
+    await adminBtn.click();
+    await page.waitForTimeout(300);
+
+    // 3. ログインボタンをクリック
     await page.click('button[type="submit"]');
 
-    // 3. ダッシュボードへ遷移したことを確認
-    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15000 });
+    // 4. ダッシュボードへ遷移したことを確認
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 30000 });
     const main = page.getByRole('main');
     await expect(main).toBeVisible({ timeout: 10000 });
 

@@ -131,7 +131,7 @@ app/[locale]/(dashboard)/<domain>/page.tsx   ← Server Component
 | U5  | 完了   | -    | 2026-09-13 | 基準実装確定・schema生成関数(方式b)・i18n.spec追加・全12テストパス |
 | U6  | 完了   | -    | 2026-09-13 | stores i18n化・E2E 8テストパス |
 | U7  | 完了   | -    | 2026-09-14 | devices i18n化・CRUD E2E拡充・全11テストパス |
-| U8  | 着手中 | -    | 2026-09-14 | inventory i18n化・CRUD E2E拡充着手 |
+| U8  | 完了   | -    | 2026-09-14 | inventory i18n化・CRUD E2E拡充・全14テストパス |
 | U9  | 未着手 | -    | -      |      |
 | U10 | 未着手 | -    | -      |      |
 | U11 | 未着手 | -    | -      |      |

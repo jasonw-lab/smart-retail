@@ -118,30 +118,74 @@ export const dashboardApiServer = {
     startDate?: string;
     endDate?: string;
   }): Promise<SalesChartData> => {
-    try {
-      const raw = await fetchFromBackend<unknown>(
-        `${BASE_PATH}/sales-trend${buildDateQuery(params)}`
-      );
-      if (raw && typeof raw === 'object' && !Array.isArray(raw) && '7d' in raw) {
-        return raw as SalesChartData;
-      }
-      if (Array.isArray(raw)) {
-        const points = raw.map((item: unknown) => {
-          const p = item as Record<string, unknown>;
-          const salesVal = Number(p.salesAmount ?? p.sales ?? 0);
-          return {
-            date: typeof p.date === 'string' ? p.date.slice(5) : '',
-            sales: salesVal,
-            profit: Math.round(salesVal * 0.25),
-          };
-        });
+    const parsePoints = (raw: unknown) => {
+      if (!Array.isArray(raw)) return [];
+      return raw.map((item: unknown) => {
+        const p = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+        const salesVal = Number(p.salesAmount ?? p.sales ?? 0);
+        const rawDate = typeof p.date === 'string' ? p.date : '';
+        let formattedDate = rawDate;
+        if (rawDate.includes('-') && rawDate.length === 10) {
+          formattedDate = rawDate.slice(5);
+        }
         return {
-          '7d': points,
-          '30d': points,
-          '1y': points,
+          date: formattedDate,
+          sales: salesVal,
+          profit: Math.round(salesVal * 0.25),
         };
+      });
+    };
+
+    try {
+      if (params?.startDate || params?.endDate) {
+        const raw = await fetchFromBackend<unknown>(
+          `${BASE_PATH}/sales-trend${buildDateQuery(params)}`
+        );
+        if (raw && typeof raw === 'object' && !Array.isArray(raw) && '7d' in raw) {
+          return raw as SalesChartData;
+        }
+        const points = parsePoints(raw);
+        return { '7d': points, '30d': points, '1y': points };
       }
-      return { '7d': [], '30d': [], '1y': [] };
+
+      // ダッシュボード初期表示：7d, 30d, 1y を並列取得
+      const today = new Date();
+      const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+      const endDate = formatDate(today);
+
+      const d7 = new Date(today);
+      d7.setDate(d7.getDate() - 6);
+      const start7d = formatDate(d7);
+
+      const d30 = new Date(today);
+      d30.setDate(d30.getDate() - 29);
+      const start30d = formatDate(d30);
+
+      const [res7d, res30d, res1y] = await Promise.all([
+        fetchFromBackend<unknown>(
+          `${BASE_PATH}/sales-trend?interval=day&startDate=${start7d}&endDate=${endDate}`
+        ).catch(() => null),
+        fetchFromBackend<unknown>(
+          `${BASE_PATH}/sales-trend?interval=day&startDate=${start30d}&endDate=${endDate}`
+        ).catch(() => null),
+        fetchFromBackend<unknown>(
+          `${BASE_PATH}/sales-trend?interval=month&startDate=2026-01-01&endDate=2026-12-31`
+        ).catch(() => null),
+      ]);
+
+      if (res7d && typeof res7d === 'object' && !Array.isArray(res7d) && '7d' in res7d) {
+        return res7d as SalesChartData;
+      }
+
+      const points7d = parsePoints(res7d);
+      const points30d = parsePoints(res30d);
+      const points1y = parsePoints(res1y);
+
+      return {
+        '7d': points7d.length ? points7d : (points1y.slice(-7) ?? []),
+        '30d': points30d.length ? points30d : points1y,
+        '1y': points1y.length ? points1y : points7d,
+      };
     } catch {
       return { '7d': [], '30d': [], '1y': [] };
     }

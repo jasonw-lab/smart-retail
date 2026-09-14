@@ -16,8 +16,33 @@ test.describe('実バックエンド結合スモークテスト', () => {
     const main = page.getByRole('main');
     await expect(main).toBeVisible({ timeout: 10000 });
 
-    // 4. アラートパネル・KPIカードがクラッシュなく表示されていること
+    // 4. アラートパネル・KPIカード・売上推移グラフがクラッシュなく表示されていること
     await expect(page.getByText('アラート情報')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('売上推移')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('売上推移データを取得できません')).not.toBeVisible();
+    await page.waitForTimeout(1500);
+    await page.screenshot({
+      path: '/Users/wangjw/.gemini/antigravity-cli/brain/2180a589-96a7-4151-bbcc-9d952783e29c/dashboard_7d_screenshot.png',
+      fullPage: true,
+    });
+
+    // 売上推移「1年」タブの切り替え＆描画検証（2026年通年データ）
+    const yearTab = page.getByRole('tab', { name: '1年' });
+    await expect(yearTab).toBeVisible({ timeout: 10000 });
+    await yearTab.click();
+    await expect(page.getByText('売上推移データを取得できません')).not.toBeVisible();
+    await page.waitForTimeout(2000);
+    await page.screenshot({
+      path: '/Users/wangjw/.gemini/antigravity-cli/brain/2180a589-96a7-4151-bbcc-9d952783e29c/dashboard_1y_screenshot.png',
+      fullPage: true,
+    });
+
+    // 売上推移「30日」タブの切り替え＆描画検証
+    const monthTab = page.getByRole('tab', { name: '30日' });
+    await expect(monthTab).toBeVisible({ timeout: 10000 });
+    await monthTab.click();
+    await expect(page.getByText('売上推移データを取得できません')).not.toBeVisible();
+
     // ErrorBoundary が発火していないこと
     await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
 

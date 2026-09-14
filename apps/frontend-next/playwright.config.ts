@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // E2E用ポート設定（環境変数で上書き可能）
 const E2E_PORT = process.env.E2E_PORT || '3002';
-const MOCK_PORT = process.env.MOCK_PORT || '8091';
+const MOCK_PORT = process.env.MOCK_PORT || '8095';
 const BASE_URL = `http://localhost:${E2E_PORT}`;
 const MOCK_URL = `http://localhost:${MOCK_PORT}`;
 

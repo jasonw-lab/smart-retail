@@ -95,4 +95,28 @@ test.describe('在庫管理', () => {
     await expect(page.getByText('廃棄を記録しました')).toBeVisible({ timeout: 5000 });
     await expect(dialog).not.toBeVisible();
   });
+
+  test('新規在庫登録ボタンで遷移しキャンセルで一覧へ戻る', async ({ page }) => {
+    await page.goto('/inventory');
+    await page.click(`[data-testid="${TESTIDS.INVENTORY_NEW_BUTTON}"]`);
+    await expect(page).toHaveURL(/\/inventory\/new/, { timeout: 10000 });
+    await expect(page.getByRole('heading', { name: '新規在庫登録' })).toBeVisible();
+
+    await page.click(`[data-testid="${TESTIDS.INVENTORY_FORM_CANCEL}"]`);
+    await expect(page).toHaveURL(/\/inventory$/, { timeout: 10000 });
+  });
+
+  test('新規在庫登録フォームの必須バリデーションエラー', async ({ page }) => {
+    await page.goto('/inventory/new');
+    await page.click(`[data-testid="${TESTIDS.INVENTORY_FORM_SUBMIT}"]`);
+    await expect(page.getByText('店舗を選択してください')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('商品を選択してください')).toBeVisible();
+  });
+
+  test('CSVエクスポートボタンがクリック可能', async ({ page }) => {
+    await page.goto('/inventory');
+    const exportBtn = page.locator(`[data-testid="${TESTIDS.INVENTORY_EXPORT_BUTTON}"]`);
+    await expect(exportBtn).toBeVisible({ timeout: 10000 });
+    await expect(exportBtn).toBeEnabled();
+  });
 });

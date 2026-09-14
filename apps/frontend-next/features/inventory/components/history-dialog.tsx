@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,7 +20,7 @@ import {
 import { formatDateShort } from '@/lib/format';
 import { TESTIDS } from '@/lib/testing/testids';
 import { useInventoryHistory } from '../hooks/use-inventory';
-import { StockHistoryTypeLabel, type Inventory } from '../types/inventory';
+import type { Inventory, StockHistoryTypeType } from '../types/inventory';
 
 interface HistoryDialogProps {
   inventory: Inventory | null;
@@ -28,10 +29,19 @@ interface HistoryDialogProps {
 }
 
 export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) {
+  const t = useTranslations('inventory');
+  const tCommon = useTranslations('common');
   const { data: history = [], isLoading } = useInventoryHistory(
     inventory?.storeId || 0,
     inventory?.productId || 0
   );
+
+  const stockHistoryTypeLabels: Record<StockHistoryTypeType, string> = {
+    IN: t('typeIn'),
+    OUT: t('typeOut'),
+    DISPOSE: t('typeDisposal'),
+    SALE: t('typeSale'),
+  };
 
   if (!inventory) return null;
 
@@ -40,31 +50,34 @@ export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) 
       <DialogContent data-testid={TESTIDS.INVENTORY_HISTORY_DIALOG} className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            📋 入出庫履歴 - {inventory.storeName} / {inventory.productName}
+            {t('historyDialogTitle', {
+              storeName: inventory.storeName ?? '',
+              productName: inventory.productName,
+            })}
           </DialogTitle>
         </DialogHeader>
 
         <div data-testid={TESTIDS.INVENTORY_HISTORY_TABLE} className="max-h-80 overflow-y-auto">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">読み込み中...</div>
+            <div className="text-center py-8 text-muted-foreground">{tCommon('loading')}</div>
           ) : history.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">履歴がありません</div>
+            <div className="text-center py-8 text-muted-foreground">{t('noHistory')}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>日時</TableHead>
-                  <TableHead>種別</TableHead>
-                  <TableHead className="text-right">数量</TableHead>
-                  <TableHead>ロット</TableHead>
-                  <TableHead>備考</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead>{t('type')}</TableHead>
+                  <TableHead className="text-right">{t('quantity')}</TableHead>
+                  <TableHead>{t('lotNumber')}</TableHead>
+                  <TableHead>{t('remarks')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="text-sm">{formatDateShort(item.createdAt)}</TableCell>
-                    <TableCell>{StockHistoryTypeLabel[item.type]}</TableCell>
+                    <TableCell>{stockHistoryTypeLabels[item.type] ?? item.type}</TableCell>
                     <TableCell className="text-right font-mono">
                       {item.type === 'IN' ? '+' : '-'}
                       {item.quantity}
@@ -84,7 +97,7 @@ export function HistoryDialog({ inventory, open, onClose }: HistoryDialogProps) 
 
         <DialogFooter>
           <Button data-testid={TESTIDS.INVENTORY_HISTORY_CLOSE} variant="outline" onClick={onClose}>
-            閉じる
+            {tCommon('close')}
           </Button>
         </DialogFooter>
       </DialogContent>

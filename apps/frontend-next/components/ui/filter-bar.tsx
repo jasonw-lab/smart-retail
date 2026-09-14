@@ -28,6 +28,7 @@ export interface FilterField {
   placeholder?: string;
   options?: FilterOption[];
   width?: string;
+  testId?: string;
 }
 
 export interface FilterBarProps<T extends Record<string, string>> {
@@ -73,6 +74,7 @@ export function FilterBar<T extends Record<string, string>>({
             <label className="text-xs font-medium text-on-surface-variant">{field.label}</label>
             {field.type === 'text' ? (
               <Input
+                data-testid={field.testId}
                 placeholder={field.placeholder}
                 value={values[field.key] || ''}
                 onChange={(e) => handleChange(field.key, e.target.value)}
@@ -86,7 +88,10 @@ export function FilterBar<T extends Record<string, string>>({
                   handleChange(field.key, v === EMPTY_VALUE_PLACEHOLDER ? '' : v)
                 }
               >
-                <SelectTrigger className="w-full bg-surface border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+                <SelectTrigger
+                  data-testid={field.testId}
+                  className="w-full bg-surface border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                >
                   <SelectValue placeholder={field.placeholder || 'Select'} />
                 </SelectTrigger>
                 <SelectContent>

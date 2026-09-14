@@ -10,6 +10,7 @@ import type {
 } from '../types/alert';
 import {
   normalizeBackendAlert,
+  normalizeBackendAlertList,
   mapFrontendPriorityToBackend,
   mapFrontendStatusToBackend,
 } from '../types/alert';
@@ -33,8 +34,8 @@ export const alertApiClient = {
     if (params.priority) searchParams.set('priority', params.priority);
     if (params.category) searchParams.set('category', params.category);
     const query = searchParams.toString();
-    const data = await fetchApi<BackendAlertVO[]>(`${BASE_URL}${query ? `?${query}` : ''}`);
-    return (data || []).map(normalizeBackendAlert);
+    const data = await fetchApi<unknown>(`${BASE_URL}${query ? `?${query}` : ''}`);
+    return normalizeBackendAlertList(data).map(normalizeBackendAlert);
   },
 
   /**
@@ -62,8 +63,19 @@ export const alertApiClient = {
       searchParams.set('category', params.category);
     }
 
-    const data = await fetchApi<BackendAlertVO[]>(`${BASE_URL}?${searchParams.toString()}`);
-    const list = (data || []).map(normalizeBackendAlert).filter((alert) => {
+    const data = await fetchApi<unknown>(`${BASE_URL}?${searchParams.toString()}`);
+    const rawList = normalizeBackendAlertList(data);
+    let total = rawList.length;
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'total' in data &&
+      typeof (data as Record<string, unknown>)['total'] === 'number'
+    ) {
+      total = (data as Record<string, unknown>)['total'] as number;
+    }
+
+    const list = rawList.map(normalizeBackendAlert).filter((alert) => {
       if (params.status && alert.status !== params.status) return false;
       if (params.priority && String(alert.priority) !== params.priority) return false;
       if (params.category && alert.category !== params.category) return false;
@@ -72,7 +84,7 @@ export const alertApiClient = {
 
     return {
       list,
-      total: list.length,
+      total: list.length === rawList.length ? total : list.length,
     };
   },
 

@@ -737,12 +737,37 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Single Sales by ID
+    const salesMatch = path.match(/^\/retail\/sales\/(\d+)$/);
+    if (salesMatch && method === 'GET') {
+      const id = Number(salesMatch[1]);
+      const sale = mockTransactions.find((t) => t.id === id);
+      if (!sale) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Sale not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(sale));
+      return;
+    }
+
     // Transactions/Sales: List all
     if (path === '/retail/sales' && method === 'GET' && !url.searchParams.has('pageNum')) {
       const storeId = url.searchParams.get('storeId') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
       let filtered = [...mockTransactions];
       if (storeId) {
         filtered = filtered.filter((t) => String(t.storeId) === storeId);
+      }
+      if (startDate || endDate) {
+        filtered = filtered.filter((t) => {
+          const date = (t.transactionTime || '').slice(0, 10);
+          if (startDate && date < startDate) return false;
+          if (endDate && date > endDate) return false;
+          return true;
+        });
       }
       res.writeHead(200);
       res.end(apiResponse(filtered));
@@ -756,6 +781,8 @@ const server = createServer(async (req, res) => {
       const orderNumber = url.searchParams.get('orderNumber') || '';
       const storeId = url.searchParams.get('storeId') || '';
       const paymentMethod = url.searchParams.get('paymentMethod') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
 
       let filtered = [...mockTransactions];
       if (orderNumber) {
@@ -768,6 +795,14 @@ const server = createServer(async (req, res) => {
       }
       if (paymentMethod) {
         filtered = filtered.filter((t) => t.paymentMethod === paymentMethod);
+      }
+      if (startDate || endDate) {
+        filtered = filtered.filter((t) => {
+          const date = (t.transactionTime || '').slice(0, 10);
+          if (startDate && date < startDate) return false;
+          if (endDate && date > endDate) return false;
+          return true;
+        });
       }
 
       const start = (pageNum - 1) * pageSize;

@@ -26,12 +26,34 @@ export const PaymentMethodIcon: Record<PaymentMethodType, string> = {
   OTHER: '🔖',
 };
 
+export const DEFAULT_PAYMENT_CONFIG = {
+  method: PaymentMethod.OTHER,
+  label: 'その他',
+  icon: '🔖',
+  color: '#909399',
+} as const;
+
 export const PaymentMethodColor: Record<PaymentMethodType, string> = {
   CARD: '#409EFF',
   QR: '#67C23A',
   CASH: '#E6A23C',
   OTHER: '#909399',
 };
+
+export function getPaymentMethodLabel(method?: string | null): string {
+  if (!method) return DEFAULT_PAYMENT_CONFIG.label;
+  return (PaymentMethodLabel as Record<string, string>)[method] ?? DEFAULT_PAYMENT_CONFIG.label;
+}
+
+export function getPaymentMethodIcon(method?: string | null): string {
+  if (!method) return DEFAULT_PAYMENT_CONFIG.icon;
+  return (PaymentMethodIcon as Record<string, string>)[method] ?? DEFAULT_PAYMENT_CONFIG.icon;
+}
+
+export function getPaymentMethodColor(method?: string | null): string {
+  if (!method) return DEFAULT_PAYMENT_CONFIG.color;
+  return (PaymentMethodColor as Record<string, string>)[method] ?? DEFAULT_PAYMENT_CONFIG.color;
+}
 
 /**
  * 決済明細

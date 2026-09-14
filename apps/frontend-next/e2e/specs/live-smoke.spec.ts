@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { TESTIDS } from '../testids';
 
 test.describe('実バックエンド結合スモークテスト', () => {
   test('ログイン〜ダッシュボード〜主要画面巡回がエラーなく完了する', async ({ page }) => {
@@ -79,6 +80,38 @@ test.describe('実バックエンド結合スモークテスト', () => {
     // 8. 主要画面巡回（デバイス一覧）
     await page.goto('/ja/devices');
     await expect(main).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
+
+    // 9. 主要画面巡回（取引履歴）
+    await page.goto('/ja/transactions');
+    await expect(main).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
+    await expect(page.locator(`[data-testid="${TESTIDS.TRANSACTION_TABLE}"]`)).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(
+      page.locator(`[data-testid="${TESTIDS.TRANSACTION_SUMMARY_SALES}"]`)
+    ).toBeVisible();
+
+    // 実DBデータを用いた絞り込み・除外検証
+    const firstRowLink = page.locator(`[data-testid^="${TESTIDS.TRANSACTION_DETAIL_LINK}"]`).first();
+    await expect(firstRowLink).toBeVisible({ timeout: 10000 });
+    const targetOrder = (await firstRowLink.textContent())?.trim() || '';
+    expect(targetOrder).not.toBe('');
+
+    const secondRowLink = page.locator(`[data-testid^="${TESTIDS.TRANSACTION_DETAIL_LINK}"]`).nth(1);
+    const excludeOrder = (await secondRowLink.textContent())?.trim() || '';
+
+    // 注文番号で検索
+    const orderInput = page.getByPlaceholder('例: ORD-0099');
+    await orderInput.fill(targetOrder);
+    await page.click('button:has-text("Search"), button:has-text("検索")');
+
+    // 検索対象が表示され、別注文番号が除外されることを検証
+    await expect(page.getByText(targetOrder).first()).toBeVisible({ timeout: 10000 });
+    if (excludeOrder && excludeOrder !== targetOrder) {
+      await expect(page.getByText(excludeOrder)).toHaveCount(0, { timeout: 10000 });
+    }
     await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
   });
 });

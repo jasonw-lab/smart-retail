@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { Eye, Download, TrendingUp, Receipt, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,9 @@ import { TransactionDetailDialog } from './transaction-detail-dialog';
 import {
   PaymentMethod,
   PaymentMethodLabel,
-  PaymentMethodIcon,
-  PaymentMethodColor,
+  getPaymentMethodLabel,
+  getPaymentMethodIcon,
+  getPaymentMethodColor,
   type Transaction,
   type TransactionQuery,
   type TransactionPageResult,
@@ -30,13 +32,6 @@ interface TransactionTableClientProps {
   initialData: TransactionPageResult;
   initialParams: TransactionQuery;
 }
-
-const periodOptions = [
-  { value: 'today', label: '本日' },
-  { value: 'yesterday', label: '昨日' },
-  { value: '7days', label: '過去7日' },
-  { value: '30days', label: '過去30日' },
-];
 
 function escapeCsvCell(value: string): string {
   return `"${value.replace(/"/g, '""')}"`;
@@ -62,6 +57,8 @@ export function TransactionTableClient({
   initialData,
   initialParams,
 }: TransactionTableClientProps) {
+  const t = useTranslations('transactions');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -87,39 +84,46 @@ export function TransactionTableClient({
   // エラー時は初期データを使用し続ける（SSRで取得したデータ）
   const displayData = isError ? initialData : data;
 
+  const periodOptions = [
+    { value: 'today', label: t('periodToday') },
+    { value: 'yesterday', label: t('periodYesterday') },
+    { value: '7days', label: t('period7days') },
+    { value: '30days', label: t('period30days') },
+  ];
+
   const filterFields: FilterField[] = [
     {
       key: 'storeId',
-      label: '店舗',
+      label: t('store'),
       type: 'select',
       options: [
-        { value: '', label: 'すべての店舗' },
+        { value: '', label: t('allStores') },
         ...stores.map((s) => ({ value: String(s.id), label: s.storeName })),
       ],
     },
     {
       key: 'paymentMethod',
-      label: '決済方法',
+      label: t('paymentMethod'),
       type: 'select',
       options: [
-        { value: '', label: 'すべて' },
+        { value: '', label: tCommon('all') },
         ...Object.entries(PaymentMethodLabel).map(([v, l]) => ({
           value: v,
-          label: `${PaymentMethodIcon[v as keyof typeof PaymentMethodIcon]} ${l}`,
+          label: `${getPaymentMethodIcon(v)} ${l}`,
         })),
       ],
     },
     {
       key: 'period',
-      label: '期間',
+      label: t('period'),
       type: 'select',
       options: periodOptions,
     },
     {
       key: 'orderNumber',
-      label: '決済番号',
+      label: t('orderNumberFilter'),
       type: 'text',
-      placeholder: '例: ORD-0099',
+      placeholder: t('orderNumberPlaceholder'),
       width: 'w-36',
     },
   ];
@@ -181,12 +185,20 @@ export function TransactionTableClient({
     }
 
     const rows = [
-      ['注文番号', '店舗名', '合計金額', '決済方法', '決済日時', 'プロバイダ', '決済参照ID'],
+      [
+        t('orderNumber'),
+        t('storeName'),
+        t('totalAmount'),
+        t('paymentMethod'),
+        t('transactionDate'),
+        t('provider'),
+        t('paymentRef'),
+      ],
       ...transactions.map((transaction) => [
         transaction.orderNumber,
         transaction.storeName || '',
         String(transaction.totalAmount),
-        PaymentMethodLabel[transaction.paymentMethod],
+        getPaymentMethodLabel(transaction.paymentMethod),
         formatDateTime(transaction.transactionTime),
         transaction.paymentProvider || '',
         transaction.referenceId || '',
@@ -199,7 +211,7 @@ export function TransactionTableClient({
   const columns: Column<Transaction>[] = [
     {
       key: 'orderNumber',
-      header: '注文番号',
+      header: t('orderNumber'),
       width: '150px',
       render: (_, row) => (
         <a
@@ -217,13 +229,13 @@ export function TransactionTableClient({
     },
     {
       key: 'storeName',
-      header: '店舗名',
+      header: t('storeName'),
       width: '120px',
       sortable: true,
     },
     {
       key: 'totalAmount',
-      header: '金額',
+      header: t('amount'),
       width: '100px',
       align: 'right',
       sortable: true,
@@ -231,19 +243,19 @@ export function TransactionTableClient({
     },
     {
       key: 'paymentMethod',
-      header: '決済方法',
+      header: t('paymentMethod'),
       width: '120px',
       sortable: true,
       render: (_, row) => (
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />
-          <span>{PaymentMethodLabel[row.paymentMethod]}</span>
+          <span>{getPaymentMethodLabel(row.paymentMethod)}</span>
         </div>
       ),
     },
     {
       key: 'transactionTime',
-      header: '決済日時',
+      header: t('transactionDate'),
       width: '100px',
       sortable: true,
       render: (_, row) => (
@@ -259,7 +271,7 @@ export function TransactionTableClient({
     },
     {
       key: 'actions',
-      header: '操作',
+      header: tCommon('actions'),
       width: '80px',
       align: 'center',
       render: (_, row) => (
@@ -271,7 +283,7 @@ export function TransactionTableClient({
             e.stopPropagation();
             setSelectedTransaction(row);
           }}
-          title="詳細"
+          title={t('detail')}
         >
           <Eye className="h-4 w-4" />
         </Button>
@@ -307,7 +319,7 @@ export function TransactionTableClient({
         <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_SALES}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">売り上げ</span>
+              <span className="text-sm text-muted-foreground">{t('summarySales')}</span>
               <TrendingUp className="h-4 w-4 text-success" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -320,16 +332,16 @@ export function TransactionTableClient({
         <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_COUNT}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">件数</span>
+              <span className="text-sm text-muted-foreground">{t('summaryCount')}</span>
               <Receipt className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex flex-col">
               <span className="text-3xl font-bold">
                 {totalCount.toLocaleString()}
-                <span className="text-lg font-normal text-muted-foreground ml-1">件</span>
+                <span className="text-lg font-normal text-muted-foreground ml-1">{t('countUnit')}</span>
               </span>
               <span className="text-sm text-muted-foreground mt-1">
-                表示中: {transactions.length.toLocaleString()}件
+                {t('showingCount', { count: transactions.length.toLocaleString() })}
               </span>
             </div>
           </CardContent>
@@ -339,26 +351,26 @@ export function TransactionTableClient({
         <Card data-testid={TESTIDS.TRANSACTION_SUMMARY_PAYMENT}>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">決済方法分布</span>
-              <span className="text-xs text-muted-foreground">本日計</span>
+              <span className="text-sm text-muted-foreground">{t('paymentMethodDistribution')}</span>
+              <span className="text-xs text-muted-foreground">{t('todayTotal')}</span>
             </div>
             <div className="space-y-3">
               {byPaymentMethod.map((item) => (
                 <div key={item.method} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="flex items-center gap-1.5">
-                      <span>{PaymentMethodIcon[item.method]}</span>
-                      <span>{PaymentMethodLabel[item.method]}</span>
+                      <span>{getPaymentMethodIcon(item.method)}</span>
+                      <span>{getPaymentMethodLabel(item.method)}</span>
                     </span>
                     <span className="font-medium">{item.ratio}%</span>
                   </div>
                   <Progress
                     value={item.ratio}
                     className="h-2"
-                    indicatorClassName={`bg-[${PaymentMethodColor[item.method]}]`}
+                    indicatorClassName={`bg-[${getPaymentMethodColor(item.method)}]`}
                     style={
                       {
-                        '--progress-color': PaymentMethodColor[item.method],
+                        '--progress-color': getPaymentMethodColor(item.method),
                       } as React.CSSProperties
                     }
                   />
@@ -383,7 +395,7 @@ export function TransactionTableClient({
             onClick={handleExportCSV}
           >
             <Download className="mr-2 h-4 w-4" />
-            CSV出力
+            {t('exportCsv')}
           </Button>
         }
       />
@@ -393,7 +405,7 @@ export function TransactionTableClient({
           role="alert"
           className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+          {t('fetchError')}
         </div>
       )}
 
@@ -404,7 +416,7 @@ export function TransactionTableClient({
         data={displayData?.list || []}
         getRowKey={(row) => row.id}
         isLoading={isLoading}
-        emptyMessage="決済履歴が見つかりません"
+        emptyMessage={t('noData')}
         rowClickable
         onRowClick={(row) => setSelectedTransaction(row)}
         pagination={{

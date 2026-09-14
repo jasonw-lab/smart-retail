@@ -228,6 +228,28 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/retail/dashboard/sales-trend' && method === 'GET') {
+      const interval = url.searchParams.get('interval') || '';
+      if (interval === 'month') {
+        const monthList = mockDashboardSales['1y'].map((item) => ({
+          date: item.date,
+          salesAmount: item.sales,
+          growthRate: 0,
+        }));
+        res.writeHead(200);
+        res.end(apiResponse(monthList));
+        return;
+      }
+      const dayList = mockDashboardSales['7d'].map((item) => ({
+        date: item.date,
+        salesAmount: item.sales,
+        growthRate: 0,
+      }));
+      res.writeHead(200);
+      res.end(apiResponse(dayList));
+      return;
+    }
+
     if (path === '/retail/products' && method === 'GET') {
       res.writeHead(200);
       res.end(apiResponse(mockProducts));

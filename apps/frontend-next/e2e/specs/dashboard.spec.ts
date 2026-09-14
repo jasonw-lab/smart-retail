@@ -48,4 +48,19 @@ test.describe('ダッシュボードUI構造', () => {
     // アラート情報のヘッダーが表示され、ErrorBoundaryでキャッチされていないこと
     await expect(page.getByText('アラート情報')).toBeVisible({ timeout: 10000 });
   });
+
+  test('売上推移グラフが表示され、1年タブで通年推移が表示される', async ({ page }) => {
+    const mainContent = page.getByRole('main');
+    await expect(mainContent).toBeVisible({ timeout: 10000 });
+
+    // 売上推移が表示され、エラー表示がないこと
+    await expect(page.getByText('売上推移')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('売上推移データを取得できません')).not.toBeVisible();
+
+    // 1年タブをクリック
+    const yearTab = page.getByRole('tab', { name: '1年' });
+    await expect(yearTab).toBeVisible({ timeout: 10000 });
+    await yearTab.click();
+    await expect(page.getByText('売上推移データを取得できません')).not.toBeVisible();
+  });
 });

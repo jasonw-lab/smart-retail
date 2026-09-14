@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -32,6 +33,8 @@ function formatPercent(value: number): string {
 
 // 上段4カード
 export function KPICards({ data }: KPICardsProps) {
+  const t = useTranslations('dashboard');
+
   const salesValue = data?.sales?.value ?? 0;
   const salesChange = data?.sales?.change ?? 0;
   const salesChangeType = data?.sales?.changeType ?? 'increase';
@@ -47,9 +50,9 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 売上高 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">売上高</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('totalSales')}</CardTitle>
           <Badge variant="default" className="text-xs">
-            本日
+            {t('today')}
           </Badge>
         </CardHeader>
         <CardContent>
@@ -73,7 +76,7 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 在庫切れSKU */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">在庫切れSKU</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('outOfStockSku')}</CardTitle>
           <Package className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
@@ -87,16 +90,16 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 稼働店舗 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">稼働店舗</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('activeStores')}</CardTitle>
           <Badge variant="success" className="text-xs">
-            営業中
+            {t('operating')}
           </Badge>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
             {activeStores}
             <span className="text-sm font-normal text-gray-500">
-              /{totalStores}店舗
+              {t('storesSuffix', { total: totalStores })}
             </span>
           </div>
         </CardContent>
@@ -105,10 +108,10 @@ export function KPICards({ data }: KPICardsProps) {
       {/* 休業中アラート */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">休業中アラート</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('closedAlert')}</CardTitle>
           {requiresAction && (
             <Badge variant="warning" className="text-xs">
-              要対応
+              {t('needsAttention')}
             </Badge>
           )}
         </CardHeader>
@@ -127,6 +130,8 @@ export function KPICards({ data }: KPICardsProps) {
 
 // 下段3カード (グラフ下に配置)
 export function KPICardsBottom({ data }: KPICardsProps) {
+  const t = useTranslations('dashboard');
+
   const uptime = data?.systemUptime?.value ?? 99.98;
   const newCust = data?.newCustomers?.value ?? 0;
   const avgOrder = data?.averageOrderValue?.value ?? 0;
@@ -136,7 +141,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
       {/* システム稼働率 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">システム稼働率</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('systemUptime')}</CardTitle>
           <Activity className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
@@ -149,7 +154,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
       {/* 新規顧客 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">新規顧客</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('newCustomers')}</CardTitle>
           <Users className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>
@@ -160,7 +165,7 @@ export function KPICardsBottom({ data }: KPICardsProps) {
       {/* 平均客単価 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-500">平均客単価</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-500">{t('averageSpend')}</CardTitle>
           <ShoppingCart className="h-4 w-4 text-gray-500" />
         </CardHeader>
         <CardContent>

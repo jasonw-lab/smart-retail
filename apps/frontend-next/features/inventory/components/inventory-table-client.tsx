@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import {
   ChevronRight,
@@ -36,12 +37,12 @@ import { DisposeDialog } from './dispose-dialog';
 import { HistoryDialog } from './history-dialog';
 import {
   InventoryStatus,
-  InventoryStatusLabel,
   InventoryStatusColor,
   type Inventory,
   type InventoryLot,
   type InventoryQuery,
   type InventoryPageResult,
+  type InventoryStatusType,
 } from '../types/inventory';
 
 interface InventoryTableClientProps {
@@ -50,8 +51,18 @@ interface InventoryTableClientProps {
 }
 
 export function InventoryTableClient({ initialData, initialParams }: InventoryTableClientProps) {
+  const t = useTranslations('inventory');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
+
+  const inventoryStatusLabels: Record<InventoryStatusType, string> = {
+    [InventoryStatus.NORMAL]: t('statusNormal'),
+    [InventoryStatus.OUT_OF_STOCK]: t('statusOut'),
+    [InventoryStatus.OVERSTOCK]: t('statusOverstock'),
+    [InventoryStatus.EXPIRING]: t('statusExpiring'),
+    [InventoryStatus.EXPIRED]: t('statusExpired'),
+  };
 
   const { data: stores = [] } = useStoreOptions();
 
@@ -104,29 +115,29 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
   const filterFields: FilterField[] = [
     {
       key: 'storeId',
-      label: '店舗',
+      label: t('store'),
       type: 'select',
       options: [
-        { value: '', label: 'すべての店舗' },
+        { value: '', label: t('allStores') },
         ...stores.map((s) => ({ value: String(s.id), label: s.storeName })),
       ],
     },
     {
       key: 'productName',
-      label: '商品名',
+      label: t('productName'),
       type: 'text',
-      placeholder: '商品名を入力...',
+      placeholder: t('searchProductPlaceholder'),
       width: 'w-40',
     },
     {
       key: 'status',
-      label: 'ステータス',
+      label: t('status'),
       type: 'select',
       options: [
-        { value: '', label: 'すべてのステータス' },
-        ...Object.entries(InventoryStatusLabel).map(([v, l]) => ({
-          value: v,
-          label: l,
+        { value: '', label: t('allStatuses') },
+        ...Object.values(InventoryStatus).map((status) => ({
+          value: status,
+          label: inventoryStatusLabels[status] ?? status,
         })),
       ],
     },
@@ -169,11 +180,19 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
   const handleExportCSV = () => {
     const rows = displayData?.list || [];
     if (rows.length === 0) {
-      toast.info('エクスポートするデータがありません');
+      toast.info(t('exportEmpty'));
       return;
     }
 
-    const headers = ['店舗名', '商品コード', '商品名', 'ロット番号', '数量', '賞味期限', '状態'];
+    const headers = [
+      t('storeName'),
+      t('productCode'),
+      t('productName'),
+      t('lotNumber'),
+      t('quantity'),
+      t('expiryDate'),
+      t('state'),
+    ];
     const escape = (value: unknown) => `"${String(value ?? '-').replace(/"/g, '""')}"`;
 
     const lines = [
@@ -187,7 +206,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
           lot?.lotNumber || '-',
           item.totalQuantity,
           item.oldestExpiryDate ? formatDate(item.oldestExpiryDate) : '-',
-          InventoryStatusLabel[item.status],
+          inventoryStatusLabels[item.status] ?? item.status,
         ]
           .map(escape)
           .join(',');
@@ -242,10 +261,12 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                 <Package className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">在庫数</p>
+                <p className="text-sm text-muted-foreground">{t('summaryQuantity')}</p>
                 <p className="text-2xl font-bold">
                   {summary.totalQuantity.toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    {t('itemsCount')}
+                  </span>
                 </p>
               </div>
             </div>
@@ -262,10 +283,12 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">在庫不足アラート</p>
+                <p className="text-sm text-muted-foreground">{t('summaryLowStock')}</p>
                 <p className="text-2xl font-bold text-destructive">
                   {summary.lowStockCount}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    {t('itemsCount')}
+                  </span>
                 </p>
               </div>
             </div>
@@ -282,10 +305,12 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                 <Calendar className="h-5 w-5 text-warning" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">期限切れ間近</p>
+                <p className="text-sm text-muted-foreground">{t('summaryExpiring')}</p>
                 <p className="text-2xl font-bold text-warning">
                   {summary.expiringCount}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">件</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">
+                    {t('itemsCount')}
+                  </span>
                 </p>
               </div>
             </div>
@@ -299,7 +324,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                 <TrendingUp className="h-5 w-5 text-success" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">在庫回転率</p>
+                <p className="text-sm text-muted-foreground">{t('summaryTurnover')}</p>
                 <p className="text-2xl font-bold text-success">
                   {summary.turnoverRate == null ? '-' : summary.turnoverRate}
                   {summary.turnoverRate != null && (
@@ -327,14 +352,14 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
               onClick={handleExportCSV}
             >
               <Download className="mr-2 h-4 w-4" />
-              CSVエクスポート
+              {t('exportCsv')}
             </Button>
             <Button
               data-testid={TESTIDS.INVENTORY_NEW_BUTTON}
               onClick={() => router.push('/inventory/new')}
             >
               <Plus className="mr-2 h-4 w-4" />
-              新規在庫登録
+              {t('newInventory')}
             </Button>
           </div>
         }
@@ -345,7 +370,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
           role="alert"
           className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
         >
-          データ取得に失敗しました。表示中の内容は最後に取得できたデータです。
+          {t('fetchError')}
         </div>
       )}
 
@@ -354,27 +379,27 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-10"></TableHead>
-              <TableHead className="w-[100px]">店舗名</TableHead>
-              <TableHead>商品名</TableHead>
-              <TableHead className="w-[100px]">ロット番号</TableHead>
-              <TableHead className="w-[80px] text-right">数量</TableHead>
-              <TableHead className="w-[100px]">賞味期限</TableHead>
-              <TableHead className="w-[100px]">状態</TableHead>
-              <TableHead className="w-[140px]">操作</TableHead>
+              <TableHead className="w-[100px]">{t('storeName')}</TableHead>
+              <TableHead>{t('productName')}</TableHead>
+              <TableHead className="w-[100px]">{t('lotNumber')}</TableHead>
+              <TableHead className="w-[80px] text-right">{t('quantity')}</TableHead>
+              <TableHead className="w-[100px]">{t('expiryDate')}</TableHead>
+              <TableHead className="w-[100px]">{t('state')}</TableHead>
+              <TableHead className="w-[140px]">{t('operations')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  読み込み中...
+                  {tCommon('loading')}
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && displayData?.list?.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  在庫データが見つかりません
+                  {t('noInventoryData')}
                 </TableCell>
               </TableRow>
             )}
@@ -456,7 +481,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                       </TableCell>
                       <TableCell>
                         <StatusBadge variant={InventoryStatusColor[item.status]}>
-                          {InventoryStatusLabel[item.status]}
+                          {inventoryStatusLabels[item.status] ?? item.status}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>
@@ -467,7 +492,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                             size="sm"
                             onClick={() => setReplenishTarget(item)}
                           >
-                            補充
+                            {t('replenish')}
                           </Button>
                           <Button
                             data-testid={testId(TESTIDS.INVENTORY_HISTORY_BUTTON, item.id)}
@@ -475,7 +500,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                             size="sm"
                             onClick={() => setHistoryTarget(item)}
                           >
-                            確認
+                            {t('viewHistory')}
                           </Button>
                         </div>
                       </TableCell>
@@ -519,7 +544,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
                               onClick={() => setDisposeTarget({ inventory: item, lot })}
                             >
                               <Trash2 className="mr-1 h-3 w-3" />
-                              廃棄
+                              {t('dispose')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -535,8 +560,11 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            全{displayData?.total || 0}件中 {(params.pageNum - 1) * params.pageSize + 1}-
-            {Math.min(params.pageNum * params.pageSize, displayData?.total || 0)}件
+            {t('paginationTotal', {
+              total: displayData?.total || 0,
+              from: (params.pageNum - 1) * params.pageSize + 1,
+              to: Math.min(params.pageNum * params.pageSize, displayData?.total || 0),
+            })}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -546,7 +574,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
               onClick={() => handlePageChange(params.pageNum - 1)}
               disabled={params.pageNum === 1}
             >
-              前へ
+              {tCommon('previous')}
             </Button>
             <span className="text-sm">
               {params.pageNum} / {totalPages}
@@ -558,7 +586,7 @@ export function InventoryTableClient({ initialData, initialParams }: InventoryTa
               onClick={() => handlePageChange(params.pageNum + 1)}
               disabled={params.pageNum >= totalPages}
             >
-              次へ
+              {tCommon('next')}
             </Button>
           </div>
         </div>

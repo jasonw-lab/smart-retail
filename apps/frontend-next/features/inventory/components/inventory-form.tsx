@@ -1,6 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
@@ -20,11 +22,14 @@ import {
 import { productApiClient } from '@/features/products/lib/product-api.client';
 import { useStoreOptions } from '@/features/stores/hooks/use-stores';
 import { TESTIDS } from '@/lib/testing/testids';
-import { inventoryFormSchema, type InventoryFormValues } from '../schemas/inventory-schema';
+import { createInventoryFormSchema, type InventoryFormValues } from '../schemas/inventory-schema';
 import { useCreateInventory } from '../hooks/use-inventory';
 
 export function InventoryForm() {
   const router = useRouter();
+  const t = useTranslations('inventory');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
   const createInventory = useCreateInventory();
   const { data: stores = [] } = useStoreOptions();
   const { data: productsData } = useQuery({
@@ -34,8 +39,10 @@ export function InventoryForm() {
   });
   const products = productsData?.list ?? [];
 
+  const schema = useMemo(() => createInventoryFormSchema(tValidation), [tValidation]);
+
   const form = useForm<InventoryFormValues>({
-    resolver: zodResolver(inventoryFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       storeId: 0,
       productId: 0,
@@ -55,10 +62,10 @@ export function InventoryForm() {
         ...values,
         status: values.quantity > 0 ? 'NORMAL' : 'LOW_STOCK',
       });
-      toast.success('在庫を登録しました');
+      toast.success(t('createSuccess'));
       router.push('/inventory');
     } catch {
-      toast.error('登録に失敗しました');
+      toast.error(t('createFailed'));
     }
   };
 
@@ -71,7 +78,7 @@ export function InventoryForm() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="storeId">
-            店舗 <span className="text-destructive">*</span>
+            {t('storeName')} <span className="text-destructive">*</span>
           </Label>
           <Select
             value={String(form.watch('storeId'))}
@@ -81,7 +88,7 @@ export function InventoryForm() {
             disabled={isPending}
           >
             <SelectTrigger id="storeId" data-testid={TESTIDS.INVENTORY_FORM_STORE}>
-              <SelectValue placeholder="店舗を選択" />
+              <SelectValue placeholder={t('selectStore')} />
             </SelectTrigger>
             <SelectContent>
               {stores.map((store) => (
@@ -98,7 +105,7 @@ export function InventoryForm() {
 
         <div className="space-y-2">
           <Label htmlFor="productId">
-            商品 <span className="text-destructive">*</span>
+            {t('productName')} <span className="text-destructive">*</span>
           </Label>
           <Select
             value={String(form.watch('productId'))}
@@ -108,7 +115,7 @@ export function InventoryForm() {
             disabled={isPending}
           >
             <SelectTrigger id="productId" data-testid={TESTIDS.INVENTORY_FORM_PRODUCT}>
-              <SelectValue placeholder="商品を選択" />
+              <SelectValue placeholder={t('selectProduct')} />
             </SelectTrigger>
             <SelectContent>
               {products.map((product) => (
@@ -125,7 +132,7 @@ export function InventoryForm() {
 
         <div className="space-y-2">
           <Label htmlFor="lotNumber">
-            ロット番号 <span className="text-destructive">*</span>
+            {t('lotNumber')} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="lotNumber"
@@ -141,7 +148,7 @@ export function InventoryForm() {
 
         <div className="space-y-2">
           <Label htmlFor="quantity">
-            数量 <span className="text-destructive">*</span>
+            {t('quantity')} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="quantity"
@@ -157,7 +164,7 @@ export function InventoryForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="expiryDate">賞味期限</Label>
+          <Label htmlFor="expiryDate">{t('expiryDate')}</Label>
           <Input
             id="expiryDate"
             data-testid={TESTIDS.INVENTORY_FORM_EXPIRY}
@@ -168,7 +175,7 @@ export function InventoryForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="location">保管場所</Label>
+          <Label htmlFor="location">{t('location')}</Label>
           <Input
             id="location"
             data-testid={TESTIDS.INVENTORY_FORM_LOCATION}
@@ -180,7 +187,7 @@ export function InventoryForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="remarks">備考</Label>
+        <Label htmlFor="remarks">{t('remarks')}</Label>
         <Textarea
           id="remarks"
           data-testid={TESTIDS.INVENTORY_FORM_REMARKS}
@@ -196,7 +203,7 @@ export function InventoryForm() {
       <div className="flex gap-4">
         <Button data-testid={TESTIDS.INVENTORY_FORM_SUBMIT} type="submit" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          登録
+          {t('submitRegister')}
         </Button>
         <Button
           data-testid={TESTIDS.INVENTORY_FORM_CANCEL}
@@ -205,7 +212,7 @@ export function InventoryForm() {
           onClick={() => router.push('/inventory')}
           disabled={isPending}
         >
-          キャンセル
+          {tCommon('cancel')}
         </Button>
       </div>
     </form>

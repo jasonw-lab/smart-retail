@@ -212,6 +212,7 @@ Browser (React 19)
 
 - **E2E のみ**: ユニットテスト・コンポーネントテストは未導入です。
 - **テストファイル**: `e2e/specs/*.spec.ts`（対象一覧はディレクトリを参照）。
+- **テストケース一覧**: 各 test() の `caseMeta()`（`e2e/fixtures/case-meta.ts`）が正本です。`pnpm e2e:cases` で `_docs/testing/e2e-test-cases.xlsx` / `.md` を生成し、一覧ファイルは直接編集しません（書き方は `CONTRIBUTING.md` の「E2E テストケースの書き方」）。
 - **モック**: `e2e/mocks/mock-server.ts` で Standalone HTTP Server を起動し、Backend API を模倣します。
 - **ログイン**: `e2e/fixtures/auth.ts` の `login(page)` ヘルパーを使用します。
 - **セレクタ方針**: `lib/testing/testids.ts` に data-testid 定数を一元管理し、コンポーネントとテストで共有します。
@@ -283,6 +284,7 @@ AI および開発者による設計・計画・コードのレビュー結果�
 - **対象スクリプト**:
   - ソースドキュメントの編集・同期用スクリプト（例: 進捗 HTML 同期 `_scripts/build_plan_html.py`）
   - API 型定義生成等の補助スクリプト（例: `_scripts/generate-api-types.ts`）
+  - E2E テストケース一覧の生成スクリプト（`_scripts/build-e2e-cases.ts`）
 - **運用原則**:
   - アプリケーションの実行時ソースコードは配置せず、ドキュメント編集および開発支援目的のスクリプトに限定します。
   - スクリプト追加・更新時は、`package.json` の npm scripts や関連ドキュメント内のパス表記も `_scripts/` に統一します。

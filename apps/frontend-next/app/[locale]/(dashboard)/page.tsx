@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { fetchFromBackend, isRedirectError } from '@/lib/api/server';
 import { dashboardApiServer } from '@/features/dashboard/lib/dashboard-api.server';
 import {
@@ -13,9 +14,12 @@ import {
 } from '@/features/dashboard/components';
 import type { UserInfo } from '@/types/api';
 
-export const metadata: Metadata = {
-  title: 'ダッシュボード',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('dashboard');
+  return {
+    title: t('title'),
+  };
+}
 
 async function getDashboardKPI(): Promise<KPIData> {
   return dashboardApiServer.getKPI();

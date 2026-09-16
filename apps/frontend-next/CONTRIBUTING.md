@@ -124,3 +124,51 @@ const form = useForm<<Domain>FormValues>({ resolver: zodResolver(schema), ... })
 ### 4. E2E テストとの整合性
 - 既存の E2E spec が `getByText` / `getByRole` / `getByPlaceholder` などでテキスト照合している文字列は、`messages/ja.json` の値を現行表示と完全に一致させること。
 
+
+## E2E テストケースの書き方
+
+テストケース一覧（`_docs/testing/e2e-test-cases.xlsx` / `.md`）は spec のメタ情報から自動生成します。**一覧ファイルは直接編集しません。**
+
+### 1. test() に caseMeta() を付ける
+
+```ts
+import { caseMeta, suiteMeta } from '../fixtures/case-meta';
+
+test.describe('店舗管理', suiteMeta({ precondition: 'admin でログイン済み' }), () => {
+  test(
+    '単一検索: 店舗名で絞り込む',
+    caseMeta({
+      id: 'STR-002', // spec ごとの接頭辞 + 3桁。重複不可
+      screen: '店舗管理', // e2e/fixtures/case-meta.ts の SCREENS から選ぶ
+      priority: 'P1', // P0 表示確認 / P1 主要操作 / P2 周辺機能
+      perspectives: ['search-text', 'exclude'], // PERSPECTIVES から選ぶ（複数可）
+      steps: ['店舗名に「東京本店」を入力する', '検索ボタンを押す'],
+      expected: ['東京本店が表示される', '大阪支店は表示されない'],
+      note: '既知の弱点や未検証事項があれば書く', // 任意
+    }),
+    async ({ page }) => {
+      // ...
+    }
+  );
+});
+```
+
+- `perspectives` には**実際にアサーションしている観点だけ**を付ける（ダイアログを開いてキャンセルするだけなら `delete` ではなく `dialog`）。カバレッジ表が実態とずれないようにするため
+- 未実装のケースは `test.fixme(title, caseMeta({...}), async () => {})` で登録する。一覧では「未実装」（黄色）になる。実装したら `test` に変えて本体を書く
+
+### 2. 一覧を再生成する
+
+```bash
+pnpm e2e:cases          # xlsx / md を生成（pnpm test:e2e の後に実行すると実行結果も入る）
+pnpm e2e:cases:check    # メタ情報の記入漏れと md の再生成し忘れを検出
+```
+
+spec を追加・変更したコミットには、再生成した `e2e-test-cases.xlsx` / `.md` も含めます。
+
+### 3. タグで絞り込んで実行する
+
+```bash
+pnpm exec playwright test --grep @STR-002       # 1件だけ
+pnpm exec playwright test --grep @p0            # P0 のみ
+pnpm exec playwright test --grep @search-text   # 観点で
+```

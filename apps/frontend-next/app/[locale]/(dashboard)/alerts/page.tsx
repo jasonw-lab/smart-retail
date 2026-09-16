@@ -1,11 +1,15 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { alertApiServer } from '@/features/alerts/lib/alert-api.server';
 import { AlertListClient } from '@/features/alerts/components/alert-list-client';
 import type { Alert, AlertMonitoringSummary } from '@/features/alerts/types/alert';
 
-export const metadata: Metadata = {
-  title: 'アラート',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('alerts');
+  return {
+    title: t('title'),
+  };
+}
 
 async function getInitialAlerts(): Promise<Alert[]> {
   try {
@@ -26,6 +30,7 @@ async function getMonitoringSummary(): Promise<AlertMonitoringSummary | undefine
 }
 
 export default async function AlertsPage() {
+  const t = await getTranslations('alerts');
   const [initialAlerts, monitoringSummary] = await Promise.all([
     getInitialAlerts(),
     getMonitoringSummary(),
@@ -33,7 +38,7 @@ export default async function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">アラート一覧</h1>
+      <h1 className="text-2xl font-bold">{t('listTitle')}</h1>
       <AlertListClient initialAlerts={initialAlerts} monitoringSummary={monitoringSummary} />
     </div>
   );

@@ -7,7 +7,7 @@
 - **対象フェーズ**: 実装 〜 E2E テスト（実バックエンド結合スモーク含む）
 - **実行エージェント**: Antigravity CLI (`agy`) 自律エージェント
 - **準拠ガイドライン**: 
-  - [`workflow/ai-dev.md`](../../workflow/ai-dev.md)（多層防衛・8大E2Eパターン・ハイブリッド検証）
+  - `{kb}/workflow/ai-dev.md`（多層防衛・8大E2Eパターン・ハイブリッド検証。実体: `/Volumes/Dev/Git/learning/kb/workflow/ai-dev.md`）
   - [`apps/frontend-next/_docs/plan/plan_0906_features.md`](../../apps/frontend-next/_docs/plan/plan_0906_features.md)（U9 定義）
   - [`AGENTS.md`](../../AGENTS.md)（ディレクトリ制限・トークン最適化ルール）
 

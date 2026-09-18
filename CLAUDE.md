@@ -153,5 +153,5 @@ The request wrapper returns `response.data.data` directly. Frontend receives:
 ## Git Workflow
 - 新しいissueに対応するとき、ブランチを現在のbranchから対応用branch新規作成する
 - Branch: `feature/issue-<number>-<description>`
-- PR / MR target: `develop` branch（※GitHub復旧まではGitLab運用。詳細は `AGENTS.md` 参照）
+- PR / MR target: `develop` branch（GitHub PR / GitLab MR。詳細は `AGENTS.md` 参照）
 - Commit format: `feat(scope): description (issue-XXX)`

@@ -17,7 +17,7 @@
 
 > [!IMPORTANT]
 > 本プロジェクトでは、API契約乖離によるランタイムクラッシュ防止とトークン消費最適化のため、以下の開発ルールを必須とします。
-> 詳細な背景・ノウハウは [`workflow/ai-dev.md`](./workflow/ai-dev.md)（および HTML版 `{kb}/workflow/ai-dev.html`）を参照してください。
+> 詳細な背景・ノウハウは **Knowledge Base 側の正本** `{kb}/workflow/ai-dev.md`（HTML版: `{kb}/workflow/ai-dev.html`、実体: `/Volumes/Dev/Git/learning/kb/workflow/`）を参照してください。本リポジトリにはコピーを置きません。
 
 ### 1. ランタイムクラッシュ防止の必須ルール
 
@@ -28,34 +28,43 @@
 2. **UIマッピングの防御的プログラミング（デフォルトフォールバック）**:
    - Enumやステータスコードをスタイルや文言に変換するマッピング表（`Record`）には、未知のキーが来ても絶対にクラッシュしないよう、必ず `?? DEFAULT_CONFIG` のフォールバックを用意すること。
 3. **実バックエンド結合スモークテストの実行（`pnpm test:smoke`）**:
-   - 機能追加・修正完了時、モックE2Eテストだけでなく、必ず起動中の実バックエンド（:8080）相手に `pnpm test:smoke`（約4秒）を実行し、全画面でクラッシュ（`ErrorBoundary` 発火）がないことを確認すること。
+   - 機能追加・修正完了時、モックE2Eテストだけでなく、必ず起動中の実バックエンド（:8080）相手に `pnpm test:smoke` を実行し、**spec に列挙した対象画面**でクラッシュ（`ErrorBoundary` 発火）がないことを確認すること。実行前に `BACKEND_URL` が実APIを指し、ローカルモック認証が無効であることを確認する（接続不可は「環境準備エラー」、未実行は「未検証」と報告し、成功に数えない）。
 
-### 2. トークン消費モニタリングと人間介入基準（Human-in-the-Loop: >10% 増加時）
+### 2. トークン消費モニタリングと人間介入基準（Human-in-the-Loop）
 
-本ルールにより通常時のトークン消費は約80〜90%削減されますが、**タスクあたりのトークン消費が通常想定より 10% 以上急増する兆候がある場合、AIは勝手に試行錯誤を続けず、即座に作業を中断して人間に報告・介入を要請してください**:
+次のいずれかに当てはまる場合、**AIは勝手に試行錯誤を続けず、即座に作業を中断して人間に報告・介入を要請してください**（削減効果の数値は未計測のため、目標値としては扱いません）:
 
-- **型修正の連鎖ループ**: `noUncheckedIndexedAccess` の型エラーが連鎖し、同一タスク内で3回以上修正ループを繰り返している場合。
+- **予算超過**: タスク開始時に決めたトークン予算（既定: 同種タスクの中央値 +10%）を超過した場合。計測できない場合は「不明」と報告し、所要時間と修正回数で判断する。
+- **型修正の連鎖ループ**: `noUncheckedIndexedAccess` の型エラーが連鎖し、**同一原因の修正を2回試みても解決しない**場合。
 - **環境・インフラ起因のエラー**: 実機スモークテストの失敗原因がDBシードやコンテナ側にあるにもかかわらず、AIがフロントコードを誤修正し始めている場合。
 - **仕様の大きな乖離**: APIレスポンス形式が根本から異なり、フロント側で無理なマッピング変換コードを生成し始めている場合。
 
 ---
 
-## Git リモート運用方針（GitHub 復旧までの暫定措置）
+## Git リモート運用方針
 
-> [!IMPORTANT]
-> GitHub アカウント一時停止中のため、復旧まで **GitLab (`demolist`) を主リモートとして運用** します。
-> `origin` (GitHub) への Push は失敗するため禁止し、必ず `gitlab` を使用してください。
+GitHub アカウント復旧に伴い、**GitHub (`origin`) を主リモートとして運用** します。
+GitLab (`gitlab`) はバックアップおよび GitLab 経由の運用（MR/CI 等）用として維持します。
 
 ### リモートリポジトリ構成
 
-- **フロント / インフラ (`smart-retail-dx`)**: `git@gitlab.com:demolist/smart-retail-dx.git`
-- **バックエンド (`smart-dx-backend`)**: `git@gitlab.com:demolist/smart-dx-backend.git`
+- **GitHub (`origin` / 主リモート)**: `git@github.com:jasonw-lab/smart-retail.git`
+- **GitLab (`gitlab` / 副リモート)**: `git@gitlab.com:demolist/smart-retail-dx.git`
 
-### 日常の Push & MR ルール
+### 日常の Push & PR / MR ルール
 
-1. **Push 先**: デフォルトは `gitlab`（`git config remote.pushDefault gitlab` 設定済み）。
-2. **CLI からの MR 直接発行（Web UI 操作不要）**:
-   フィーチャーブランチから `develop` への MR は Git Push Options を使って CLI から直接作成する:
+1. **Push 先**: デフォルトは `origin`（GitHub）。
+   ```bash
+   git push origin <ブランチ名>
+   ```
+2. **PR 作成（GitHub）**:
+   フィーチャーブランチから `develop` への PR を作成する。
+   GitHub CLI (`gh`) または Web UI を使用:
+   ```bash
+   gh pr create --base develop --title "<PRタイトル>" --body "<PR詳細説明>"
+   ```
+3. **GitLab への同期 / MR 発行（必要な場合）**:
+   フィーチャーブランチから `develop` への MR は Git Push Options を使って CLI から直接作成可能:
    ```bash
    git push gitlab <ブランチ名> \
      -o merge_request.create \
@@ -63,14 +72,7 @@
      -o merge_request.title="<MRタイトル>" \
      -o merge_request.description="<MR詳細説明>"
    ```
-3. **承認・マージ**: 人間がレビュー・マージを実施する。
-
-### GitHub 復旧時の再同期手順（メモ）
-
-```bash
-git push origin develop
-git config --unset remote.pushDefault
-```
+4. **承認・マージ**: 人間がレビュー・マージを実施する。
 
 ## リモートデプロイ運用（Mac -> Ubuntu）
 

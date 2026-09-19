@@ -6,6 +6,84 @@ set -e
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_REPO="/Volumes/Dev/Git/vps/smart-dx-backend"
+EC_DEMO_DIR="/Volumes/Dev/Git/ec-demo/ec-demo/platform/docker/demo"
+
+# ==============================================================================
+# サブコマンド対応 (down / stop-all / stop / status)
+# ==============================================================================
+if [ "${1:-}" = "down" ] || [ "${1:-}" = "stop-all" ]; then
+  echo "🛑 Stopping all SmartRetail Pro & ec-demo processes and Docker containers..."
+  pkill -f "next-server" 2>/dev/null || true
+  pkill -f "pnpm dev" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
+
+  echo "   ==> Stopping smart-retail Docker containers (MySQL, Redis, OpenSearch, PowerJob, Nginx)..."
+  docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" down 2>/dev/null || true
+
+  if [ -d "$EC_DEMO_DIR" ] && [ -f "$EC_DEMO_DIR/docker-compose-demo-env.yml" ]; then
+    echo "   ==> Stopping ec-demo Docker containers (MySQL, Seata, Kafka, Kafka UI)..."
+    docker compose -f "$EC_DEMO_DIR/docker-compose-demo-env.yml" down 2>/dev/null || true
+  fi
+
+  echo "✨ All processes and Docker containers stopped cleanly. お疲れ様でした！"
+  exit 0
+fi
+
+if [ "${1:-}" = "stop" ]; then
+  echo "🛑 Stopping SmartRetail Pro local development processes..."
+  pkill -f "next-server" 2>/dev/null || true
+  pkill -f "pnpm dev" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
+  echo "   ==> Backend & Frontend processes stopped. (Docker containers kept running)"
+  echo "   💡 To also stop all Docker containers, run: ./dev.sh down"
+  exit 0
+fi
+
+if [ "${1:-}" = "status" ]; then
+  echo "📊 Service Status:"
+  echo -n "   - Infrastructure (smart-retail MySQL): "
+  if docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" ps smart-retail-mysql 2>/dev/null | grep -q "healthy"; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Stopped or Unhealthy ❌"
+  fi
+
+  if [ -d "$EC_DEMO_DIR" ] && [ -f "$EC_DEMO_DIR/docker-compose-demo-env.yml" ]; then
+    echo -n "   - Infrastructure (ec-demo MySQL): "
+    if docker compose -f "$EC_DEMO_DIR/docker-compose-demo-env.yml" ps ec-demo-mysql 2>/dev/null | grep -q "healthy"; then
+      echo "Running (Healthy) ✅"
+    else
+      echo "Stopped or Unhealthy ❌"
+    fi
+    echo -n "   - Infrastructure (ec-demo Kafka): "
+    if docker compose -f "$EC_DEMO_DIR/docker-compose-demo-env.yml" ps ec-demo-kafka 2>/dev/null | grep -q "healthy"; then
+      echo "Running (Healthy) ✅"
+    else
+      echo "Stopped or Unhealthy ❌"
+    fi
+  fi
+
+  echo -n "   - Backend (Spring Boot 8080): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - Frontend (Next.js 3001): "
+  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
+    echo "Running (Healthy) ✅"
+  else
+    echo "Not running ❌"
+  fi
+  echo -n "   - End-to-End Connectivity: "
+  HEALTH_JSON=$(curl -sf --connect-timeout 2 --max-time 2 http://localhost:3001/api/health 2>/dev/null || true)
+  if echo "$HEALTH_JSON" | grep -q '"backend":{"status":"ok"'; then
+    echo "Connected (FE -> BE: OK) ✅"
+  else
+    echo "Disconnected ❌"
+  fi
+  exit 0
+fi
 
 echo "================================================================================"
 echo "🚀 SmartRetail Pro Local AI-Driven Development (M5 Mac Native)"
@@ -63,7 +141,7 @@ if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/heal
   echo "   ==> Backend already running on http://localhost:8080. ✅"
 else
   echo "   ==> Starting Spring Boot backend with DevTools (logs: /tmp/smart-retail-backend.log)..."
-  pkill -f "smart-dx-app" 2>/dev/null || true
+  pkill -f "SmartDxApplication|smart-dx-app" 2>/dev/null || true
   (cd "$BACKEND_DIR" && nohup mvn spring-boot:run -pl app -Dspring-boot.run.profiles=dev > /tmp/smart-retail-backend.log 2>&1 &)
   BE_PID=$!
   echo "   ==> Backend launched (PID: $BE_PID). Waiting for health check..."
@@ -82,57 +160,7 @@ else
   fi
 fi
 
-# サブコマンド対応 (status / stop / down)
-if [ "$1" = "down" ] || [ "$1" = "stop-all" ]; then
-  echo "🛑 Stopping SmartRetail Pro (Frontend, Backend, and Docker Infrastructure)..."
-  pkill -f "next-server" 2>/dev/null || true
-  pkill -f "pnpm dev" 2>/dev/null || true
-  pkill -f "smart-dx-app" 2>/dev/null || true
-  echo "   ==> Stopping Docker containers (MySQL, Redis, OpenSearch, PowerJob)..."
-  docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" down
-  echo "✨ All processes and Docker containers stopped cleanly. お疲れ様でした！"
-  exit 0
-fi
 
-if [ "$1" = "stop" ]; then
-  echo "🛑 Stopping SmartRetail Pro local development processes..."
-  pkill -f "next-server" 2>/dev/null || true
-  pkill -f "pnpm dev" 2>/dev/null || true
-  pkill -f "smart-dx-app" 2>/dev/null || true
-  echo "   ==> Backend & Frontend processes stopped. (Infra containers kept running)"
-  echo "   💡 To also stop Docker containers, run: ./dev.sh down"
-  exit 0
-fi
-
-if [ "$1" = "status" ]; then
-  echo "📊 Service Status:"
-  echo -n "   - Infrastructure (MySQL): "
-  if docker compose -f "$PROJECT_ROOT/platform/docker/docker-compose-env.yml" ps smart-retail-mysql 2>/dev/null | grep -q "healthy"; then
-    echo "Running (Healthy) ✅"
-  else
-    echo "Stopped or Unhealthy ❌"
-  fi
-  echo -n "   - Backend (Spring Boot 8080): "
-  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:8080/actuator/health > /dev/null 2>&1; then
-    echo "Running (Healthy) ✅"
-  else
-    echo "Not running ❌"
-  fi
-  echo -n "   - Frontend (Next.js 3001): "
-  if curl -sf --connect-timeout 1 --max-time 1 http://localhost:3001/api/health > /dev/null 2>&1; then
-    echo "Running (Healthy) ✅"
-  else
-    echo "Not running ❌"
-  fi
-  echo -n "   - End-to-End Connectivity: "
-  HEALTH_JSON=$(curl -sf --connect-timeout 2 --max-time 2 http://localhost:3001/api/health 2>/dev/null || true)
-  if echo "$HEALTH_JSON" | grep -q '"backend":{"status":"ok"'; then
-    echo "Connected (FE -> BE: OK) ✅"
-  else
-    echo "Disconnected ❌"
-  fi
-  exit 0
-fi
 
 # クリーンアップ用トラップハンドラー
 cleanup() {

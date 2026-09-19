@@ -24,6 +24,7 @@ export async function login(
   password = '123456',
   captchaCode = ''
 ) {
+  await page.context().clearCookies();
   const maxAttempts = 3;
   let lastError: Error | null = null;
 

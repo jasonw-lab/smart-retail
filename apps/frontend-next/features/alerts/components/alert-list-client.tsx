@@ -14,7 +14,13 @@ import { useAlertSubscription } from '../hooks/use-alert-subscription';
 import { useAlertStore } from '../store/alert-store';
 import { useAlerts, useUpdateAlertStatus, useDeleteAlert } from '../hooks/use-alerts';
 import type { Alert, AlertMonitoringSummary, AlertPriority, AlertQuery } from '../types/alert';
-import { AlertPriorityLabel, AlertPriorityColor } from '../types/alert';
+import {
+  AlertPriorityLabel,
+  AlertPriorityColor,
+  DEFAULT_PRIORITY_LABEL,
+  DEFAULT_PRIORITY_COLOR,
+  DEFAULT_ALERT_STATUS_COLOR,
+} from '../types/alert';
 import { cn } from '@/lib/utils';
 import { TESTIDS } from '@/lib/testing/testids';
 
@@ -23,17 +29,17 @@ interface AlertListClientProps {
   monitoringSummary?: AlertMonitoringSummary;
 }
 
-const alertTypeLabels: Record<string, string> = {
-  LOW_STOCK: '在庫切れ',
-  EXPIRING: '期限切れ間近',
-  OVERSTOCK: '在庫過多',
-  DEVICE_ERROR: '通信断',
-  PAYMENT_ERROR: '決済端末異常',
-};
-
 export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListClientProps) {
   const t = useTranslations('alerts');
   const tc = useTranslations('common');
+
+  const alertTypeLabels: Record<string, string> = {
+    LOW_STOCK: t('typeLowStock'),
+    EXPIRING: t('typeExpiring'),
+    OVERSTOCK: t('typeOverstock'),
+    DEVICE_ERROR: t('typeDeviceError'),
+    PAYMENT_ERROR: t('typePaymentError'),
+  };
 
   // STOMP connection
   const { isConnected } = useAlertSubscription();
@@ -152,10 +158,11 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
   const filterFields: FilterField[] = [
     {
       key: 'priority',
-      label: '優先度',
+      label: t('filterPriority'),
+      testId: TESTIDS.ALERT_FILTER_PRIORITY,
       type: 'select',
       options: [
-        { value: '', label: 'すべて' },
+        { value: '', label: t('filterAll') },
         { value: '1', label: 'P1' },
         { value: '2', label: 'P2' },
         { value: '3', label: 'P3' },
@@ -164,33 +171,36 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
     },
     {
       key: 'status',
-      label: '状態',
+      label: t('filterStatus'),
+      testId: TESTIDS.ALERT_FILTER_STATUS,
       type: 'select',
       options: [
-        { value: '', label: 'すべて' },
-        { value: 'unread', label: '未対応' },
-        { value: 'acknowledged', label: '対応中' },
-        { value: 'resolved', label: '解決済み' },
+        { value: '', label: t('filterAll') },
+        { value: 'unread', label: t('statusUnread') },
+        { value: 'acknowledged', label: t('statusAcknowledged') },
+        { value: 'resolved', label: t('statusResolved') },
       ],
     },
     {
       key: 'category',
-      label: '種別',
+      label: t('filterCategory'),
+      testId: TESTIDS.ALERT_FILTER_CATEGORY,
       type: 'select',
       options: [
-        { value: '', label: 'すべて' },
-        { value: '通信障害', label: '通信障害' },
-        { value: '冷蔵異常', label: '冷蔵異常' },
-        { value: '在庫異常', label: '在庫異常' },
-        { value: '決済異常', label: '決済異常' },
+        { value: '', label: t('filterAll') },
+        { value: '通信障害', label: t('categoryCommunication') },
+        { value: '冷蔵異常', label: t('categoryRefrigerator') },
+        { value: '在庫異常', label: t('categoryInventory') },
+        { value: '決済異常', label: t('categoryPayment') },
       ],
     },
     {
       key: 'storeId',
-      label: '店舗',
+      label: t('filterStore'),
+      testId: TESTIDS.ALERT_FILTER_STORE,
       type: 'select',
       options: [
-        { value: '', label: 'すべて' },
+        { value: '', label: t('filterAll') },
         { value: '1', label: '新宿国際通り店' },
         { value: '2', label: '秋田駅前店' },
         { value: '3', label: '銀座中央通り店' },
@@ -238,49 +248,53 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
     },
     {
       key: 'priority',
-      header: '優先度',
+      header: t('columnPriority'),
       width: '70px',
       render: (_, row) => (
-        <Badge className={AlertPriorityColor[row.priority]}>
-          {AlertPriorityLabel[row.priority]}
+        <Badge className={AlertPriorityColor[row.priority] ?? DEFAULT_PRIORITY_COLOR}>
+          {AlertPriorityLabel[row.priority] ?? DEFAULT_PRIORITY_LABEL}
         </Badge>
       ),
     },
     {
       key: 'category',
-      header: '種別',
+      header: t('columnCategory'),
       width: '100px',
       render: (_, row) => (
-        <span className="text-sm">{row.category || alertTypeLabels[row.type]}</span>
+        <span className="text-sm">
+          {row.category || (alertTypeLabels[row.type] ?? t('typeOther'))}
+        </span>
       ),
     },
     {
       key: 'status',
-      header: '状態',
+      header: t('columnStatus'),
       width: '80px',
       render: (_, row) => {
-        const statusLabels = {
-          unread: '未対応',
-          acknowledged: '対応中',
-          resolved: '解決済',
+        const statusLabels: Record<string, string> = {
+          unread: t('statusUnread'),
+          acknowledged: t('statusAcknowledged'),
+          resolved: t('statusResolved'),
         };
-        const statusColors = {
+        const statusColors: Record<string, string> = {
           unread: 'bg-destructive/10 text-destructive',
           acknowledged: 'bg-warning/10 text-warning',
           resolved: 'bg-success/10 text-success',
         };
         return (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors[row.status]}`}
+            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+              statusColors[row.status] ?? DEFAULT_ALERT_STATUS_COLOR
+            }`}
           >
-            {statusLabels[row.status]}
+            {statusLabels[row.status] ?? t('statusUnknown')}
           </span>
         );
       },
     },
     {
       key: 'message',
-      header: '概要',
+      header: t('columnSummary'),
       render: (_, row) => (
         <div className="space-y-0.5">
           <p className="text-sm font-medium line-clamp-1">{row.message}</p>
@@ -290,7 +304,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
     },
     {
       key: 'createdAt',
-      header: '検出日時',
+      header: t('columnDetectedAt'),
       width: '100px',
       render: (_, row) => (
         <div className="text-sm text-muted-foreground">
@@ -311,11 +325,12 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
     },
     {
       key: 'actions',
-      header: 'アクション',
+      header: t('columnActions'),
       width: '100px',
       render: (_, row) => (
         <div className="flex items-center gap-1">
           <Button
+            data-testid={`alert-toggle-read-${row.id}`}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -329,6 +344,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
             {row.read ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
           <Button
+            data-testid={`alert-delete-${row.id}`}
             variant="ghost"
             size="icon"
             className="h-8 w-8"
@@ -372,11 +388,11 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
     <div data-testid={TESTIDS.ALERT_PAGE} className="space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-        <span>Dashboard</span>
+        <span>{t('breadcrumbDashboard')}</span>
         <span>/</span>
-        <span>在庫一覧</span>
+        <span>{t('breadcrumbInventory')}</span>
         <span>/</span>
-        <span className="text-foreground">アラート一覧</span>
+        <span className="text-foreground">{t('breadcrumbAlerts')}</span>
       </nav>
 
       {/* Priority Tabs */}
@@ -384,32 +400,32 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
         <div className="flex items-center justify-between">
           <TabsList data-testid={TESTIDS.ALERT_PRIORITY_TABS}>
             <TabsTrigger data-testid={TESTIDS.ALERT_TAB_ALL} value="all">
-              全て
+              {t('tabAll')}
             </TabsTrigger>
             <TabsTrigger data-testid={TESTIDS.ALERT_TAB_P1} value="1" className="gap-2">
               <span className="bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">
                 P1
               </span>
-              <span>{priorityCounts[1]}</span>件
+              <span>{priorityCounts[1] ?? 0}</span>{t('itemsCount')}
             </TabsTrigger>
             <TabsTrigger data-testid={TESTIDS.ALERT_TAB_P2} value="2" className="gap-2">
               <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded">P2</span>
-              <span>{priorityCounts[2]}</span>件
+              <span>{priorityCounts[2] ?? 0}</span>{t('itemsCount')}
             </TabsTrigger>
             <TabsTrigger data-testid={TESTIDS.ALERT_TAB_P3} value="3" className="gap-2">
               <span className="bg-warning text-warning-foreground text-xs px-1.5 py-0.5 rounded">
                 P3
               </span>
-              <span>{priorityCounts[3]}</span>件
+              <span>{priorityCounts[3] ?? 0}</span>{t('itemsCount')}
             </TabsTrigger>
             <TabsTrigger data-testid={TESTIDS.ALERT_TAB_P4} value="4" className="gap-2">
               <span className="bg-info text-info-foreground text-xs px-1.5 py-0.5 rounded">P4</span>
-              <span>{priorityCounts[4]}</span>件
+              <span>{priorityCounts[4] ?? 0}</span>{t('itemsCount')}
             </TabsTrigger>
           </TabsList>
 
           <p className="text-sm text-muted-foreground">
-            この画面の監視データは約5分ごとに更新されます
+            {t('monitoringNotice')}
           </p>
         </div>
 
@@ -436,11 +452,12 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
         <TabsContent value={selectedPriority} className="mt-4">
           <DataTable
             dataTestId={TESTIDS.ALERT_TABLE}
+            getRowTestId={(row) => `${TESTIDS.ALERT_TABLE_ROW}-${row.id}`}
             columns={columns}
             data={paginatedAlerts}
             isLoading={isLoading}
             getRowKey={(row) => row.id}
-            emptyMessage="アラートはありません"
+            emptyMessage={t('emptyMessage')}
             pagination={{
               pageNum,
               pageSize,
@@ -456,13 +473,13 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
       {/* Footer Info */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          表示中 {startItem}-{endItem}件 / 全件 {total}
+          {t('showingCount', { start: startItem, end: endItem, total })}
         </span>
         <div data-testid={TESTIDS.ALERT_CONNECTION_STATUS} className="flex items-center gap-2">
           <span
             className={cn('h-2 w-2 rounded-full', isConnected ? 'bg-success' : 'bg-destructive')}
           />
-          <span>{isConnected ? '接続中' : '切断'}</span>
+          <span>{isConnected ? t('connectionConnected') : t('connectionDisconnected')}</span>
         </div>
       </div>
 
@@ -473,7 +490,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Wifi className="h-4 w-4" />
-              ネットワーク安定性
+              {t('networkStability')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -487,7 +504,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
                 {networkStability || '-'}
               </span>
               <span className="text-sm text-muted-foreground">
-                {networkStability ? '直近5分' : '監視データ未連携'}
+                {networkStability ? t('recent5Min') : t('networkNotConnected')}
               </span>
             </div>
           </CardContent>
@@ -498,7 +515,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Store className="h-4 w-4" />
-              障害対応店舗
+              {t('incidentStores')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -508,12 +525,12 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
                   <div key={store.name} className="flex items-center justify-between text-sm">
                     <span>{store.name}</span>
                     <Badge variant="destructive" className="text-xs">
-                      {store.issues}件
+                      {store.issues}{t('itemsCount')}
                     </Badge>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">対応中の店舗はありません</p>
+                <p className="text-sm text-muted-foreground">{t('noIncidentStores')}</p>
               )}
             </div>
           </CardContent>
@@ -524,15 +541,15 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2 text-primary">
               <Bell className="h-4 w-4" />
-              リアルタイム監視状況
+              {t('realtimeMonitoring')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm">
               <p>
                 {isConnected
-                  ? `リアルタイム接続中です。未読アラートは${unreadCount}件です。`
-                  : 'リアルタイム接続が切断されています。'}
+                  ? t('realtimeConnected', { count: unreadCount })
+                  : t('realtimeDisconnected')}
               </p>
               <Button
                 data-testid={TESTIDS.ALERT_NOTIFICATION_SETTINGS}
@@ -540,7 +557,7 @@ export function AlertListClient({ initialAlerts, monitoringSummary }: AlertListC
                 className="w-full"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                通知設定の確認
+                {t('checkNotificationSettings')}
               </Button>
             </div>
           </CardContent>

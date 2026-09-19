@@ -20,9 +20,24 @@ import {
   mockDicts,
   mockDictItems,
   mockLogs,
+  mockConfigs,
+  mockNotices,
+  mockUserProfile,
 } from './handlers';
 
 const PORT = Number(process.env.MOCK_PORT || process.env.PORT || 8091);
+
+// Snapshot initial mock arrays for reset capability
+const initialMockConfigs = JSON.parse(JSON.stringify(mockConfigs));
+const initialMockNotices = JSON.parse(JSON.stringify(mockNotices));
+const initialMockDictItems = JSON.parse(JSON.stringify(mockDictItems));
+const initialMockStores = JSON.parse(JSON.stringify(mockStores));
+const initialMockProducts = JSON.parse(JSON.stringify(mockProducts));
+const initialMockAlerts = JSON.parse(JSON.stringify(mockAlerts));
+const initialMockInventory = JSON.parse(JSON.stringify(mockInventory));
+
+// In-memory mock error routes for testing error handling (R10)
+const mockErrorRoutes = new Map<string, number>();
 
 /**
  * Helper to wrap response in API format
@@ -88,6 +103,64 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Mock control endpoints for testing (error injection - R10)
+    if (path === '/__mock/error' && method === 'POST') {
+      const route = String(body.route || '');
+      const reqMethod = body.method ? String(body.method).toUpperCase() : '';
+      const key = reqMethod ? `${reqMethod}:${route}` : route;
+      const status = Number(body.status) || 500;
+      mockErrorRoutes.set(key, status);
+      res.writeHead(200);
+      res.end(apiResponse({ key, route, status }));
+      return;
+    }
+
+    if (path === '/__mock/reset' && method === 'POST') {
+      mockErrorRoutes.clear();
+      mockConfigs.length = 0;
+      mockConfigs.push(...JSON.parse(JSON.stringify(initialMockConfigs)));
+      mockNotices.length = 0;
+      mockNotices.push(...JSON.parse(JSON.stringify(initialMockNotices)));
+      mockDictItems.length = 0;
+      mockDictItems.push(...JSON.parse(JSON.stringify(initialMockDictItems)));
+      mockStores.length = 0;
+      mockStores.push(...JSON.parse(JSON.stringify(initialMockStores)));
+      mockProducts.length = 0;
+      mockProducts.push(...JSON.parse(JSON.stringify(initialMockProducts)));
+      mockAlerts.length = 0;
+      mockAlerts.push(...JSON.parse(JSON.stringify(initialMockAlerts)));
+      mockInventory.length = 0;
+      mockInventory.push(...JSON.parse(JSON.stringify(initialMockInventory)));
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
+    // Check if current path or header has error injection
+    let injectedStatus: number | undefined;
+    for (const [routeKey, status] of mockErrorRoutes.entries()) {
+      if (routeKey.includes(':')) {
+        const [errMethod, errRoute] = routeKey.split(':');
+        if (method === errMethod && (path === errRoute || (errRoute && path.startsWith(errRoute)))) {
+          injectedStatus = status;
+          break;
+        }
+      } else {
+        if (path === routeKey || path.startsWith(routeKey)) {
+          injectedStatus = status;
+          break;
+        }
+      }
+    }
+    if (!injectedStatus && req.headers['x-mock-error']) {
+      injectedStatus = Number(req.headers['x-mock-error']);
+    }
+    if (injectedStatus) {
+      res.writeHead(injectedStatus);
+      res.end(JSON.stringify({ code: 'B0001', msg: 'Internal Server Error (Mock)', data: null }));
+      return;
+    }
+
     // Routes
 
     // Auth: Captcha (GET)
@@ -109,7 +182,10 @@ const server = createServer(async (req, res) => {
         password: string;
       };
       const user = Object.values(mockUsers).find(
-        (u) => u.username === username && u.password === password
+        (u) =>
+          u.username === username &&
+          (u.password === password ||
+            (u.username === 'admin' && (password === '123456' || password === 'password')))
       );
 
       if (!user) {
@@ -225,6 +301,42 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/retail/dashboard/sales-trend' && method === 'GET') {
+      const interval = url.searchParams.get('interval') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
+
+      if (interval === 'month') {
+        const monthList = mockDashboardSales['1y'].map((item) => ({
+          date: item.date,
+          salesAmount: item.sales,
+          growthRate: 0,
+        }));
+        res.writeHead(200);
+        res.end(apiResponse(monthList));
+        return;
+      }
+
+      let rangeKey: '7d' | '30d' = '7d';
+      if (startDate && endDate) {
+        const diffDays = Math.round(
+          (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (diffDays > 10) {
+          rangeKey = '30d';
+        }
+      }
+
+      const dayList = mockDashboardSales[rangeKey].map((item) => ({
+        date: item.date,
+        salesAmount: item.sales,
+        growthRate: 0,
+      }));
+      res.writeHead(200);
+      res.end(apiResponse(dayList));
+      return;
+    }
+
     if (path === '/retail/products' && method === 'GET') {
       res.writeHead(200);
       res.end(apiResponse(mockProducts));
@@ -289,14 +401,9 @@ const server = createServer(async (req, res) => {
           );
           return;
         }
+        Object.assign(product, body, { updateTime: new Date().toISOString() });
         res.writeHead(200);
-        res.end(
-          apiResponse({
-            ...product,
-            ...body,
-            updateTime: new Date().toISOString(),
-          })
-        );
+        res.end(apiResponse(product));
         return;
       }
 
@@ -312,6 +419,10 @@ const server = createServer(async (req, res) => {
           );
           return;
         }
+        const index = mockProducts.findIndex((p) => p.id === id);
+        if (index !== -1) {
+          mockProducts.splice(index, 1);
+        }
         res.writeHead(200);
         res.end(apiResponse(null));
         return;
@@ -325,6 +436,7 @@ const server = createServer(async (req, res) => {
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
       };
+      mockProducts.push(newProduct as (typeof mockProducts)[0]);
       res.writeHead(200);
       res.end(apiResponse(newProduct));
       return;
@@ -337,9 +449,15 @@ const server = createServer(async (req, res) => {
       const category = url.searchParams.get('category') || '';
       const storeId = url.searchParams.get('storeId') || '';
       if (status) {
-        // Backend status values are NEW/ACK/RESOLVED; mockAlerts uses frontend values.
-        // Simple equality fallback for tests.
-        filtered = filtered.filter((a) => a.status === status || a.status === 'unread');
+        const targetStatus =
+          status === 'NEW'
+            ? 'unread'
+            : status === 'ACK'
+              ? 'acknowledged'
+              : status === 'RESOLVED'
+                ? 'resolved'
+                : status;
+        filtered = filtered.filter((a) => a.status === targetStatus);
       }
       if (priority) {
         filtered = filtered.filter((a) => String(a.priority) === priority.replace('P', ''));
@@ -355,11 +473,73 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/retail/alerts' && method === 'POST') {
+      const newAlert = {
+        id: `alert-${mockAlerts.length + 1}`,
+        ...body,
+        status: 'unread',
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      mockAlerts.push(newAlert as (typeof mockAlerts)[0]);
+      res.writeHead(200);
+      res.end(apiResponse(newAlert));
+      return;
+    }
+
+    const alertStatusMatch = path.match(/^\/retail\/alerts\/([^/]+)\/status$/);
+    if (alertStatusMatch && (method === 'PATCH' || method === 'PUT')) {
+      const id = alertStatusMatch[1];
+      const alert = mockAlerts.find((a) => String(a.id) === id);
+      if (alert) {
+        const nextStatus = (body['status'] as string) || '';
+        if (nextStatus === 'ACK' || nextStatus === 'acknowledged') alert.status = 'acknowledged';
+        else if (nextStatus === 'RESOLVED' || nextStatus === 'resolved') alert.status = 'resolved';
+        else if (nextStatus === 'NEW' || nextStatus === 'unread') alert.status = 'unread';
+        else if (nextStatus) alert.status = nextStatus;
+        alert.read = alert.status !== 'unread';
+        res.writeHead(200);
+        res.end(apiResponse(alert));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
     if (path === '/retail/alerts/monitoring' && method === 'GET') {
       res.writeHead(200);
       res.end(apiResponse(mockAlertMonitoring));
       return;
     }
+
+    const alertDetailMatch = path.match(/^\/retail\/alerts\/([^/]+)$/);
+    if (alertDetailMatch && alertDetailMatch[1] !== 'monitoring') {
+      const id = alertDetailMatch[1];
+      const alert = mockAlerts.find((a) => String(a.id) === id);
+
+      if (method === 'GET') {
+        if (!alert) {
+          res.writeHead(404);
+          res.end(JSON.stringify({ code: 'B0001', msg: 'Alert not found', data: null }));
+          return;
+        }
+        res.writeHead(200);
+        res.end(apiResponse(alert));
+        return;
+      }
+
+      if (method === 'DELETE') {
+        const index = mockAlerts.findIndex((a) => String(a.id) === id);
+        if (index !== -1) {
+          mockAlerts.splice(index, 1);
+        }
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
 
     // Stores: List all (no pagination params)
     if (path === '/retail/stores' && method === 'GET' && !url.searchParams.has('pageNum')) {
@@ -426,6 +606,7 @@ const server = createServer(async (req, res) => {
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
       };
+      mockStores.push(newStore as (typeof mockStores)[0]);
       res.writeHead(200);
       res.end(apiResponse(newStore));
       return;
@@ -466,14 +647,9 @@ const server = createServer(async (req, res) => {
           );
           return;
         }
+        Object.assign(store, body, { updateTime: new Date().toISOString() });
         res.writeHead(200);
-        res.end(
-          apiResponse({
-            ...store,
-            ...body,
-            updateTime: new Date().toISOString(),
-          })
-        );
+        res.end(apiResponse(store));
         return;
       }
 
@@ -488,6 +664,10 @@ const server = createServer(async (req, res) => {
             })
           );
           return;
+        }
+        const index = mockStores.findIndex((s) => s.id === id);
+        if (index !== -1) {
+          mockStores.splice(index, 1);
         }
         res.writeHead(200);
         res.end(apiResponse(null));
@@ -606,27 +786,53 @@ const server = createServer(async (req, res) => {
     }
 
     // Inventory: List with pagination
-    // 本プロジェクトの在庫UIはSKU集約形式を正とするため、Backendからも集約形式を返す
+    // 実Backend（InventoryController.java）は storeId/productId のみ受領し productName/status はフィルタしない。
+    // フロントエンド（aggregateInventoryItems）の防衛的クライアントフィルタの動作を検証するため、
+    // mock-server でも実Backendと同様に storeId のみフィルタして全件を返す。
     if ((path === '/retail/inventories' || path === '/retail/inventory/page') && method === 'GET') {
       const storeId = url.searchParams.get('storeId') || '';
-      const productName = url.searchParams.get('productName') || '';
-      const status = url.searchParams.get('status') || '';
 
       let filtered = [...mockInventory];
       if (storeId) {
         filtered = filtered.filter((i) => String(i.storeId) === storeId);
       }
-      if (productName) {
-        filtered = filtered.filter((i) =>
-          i.productName.toLowerCase().includes(productName.toLowerCase())
-        );
-      }
-      if (status) {
-        filtered = filtered.filter((i) => i.status === status);
-      }
 
       res.writeHead(200);
       res.end(apiResponse(filtered));
+      return;
+    }
+
+    // Inventory: Create
+    if (path === '/retail/inventories' && method === 'POST') {
+      const storeId = Number(body.storeId) || 1;
+      const productId = Number(body.productId) || 1;
+      const newInventory = {
+        id: mockInventory.length + 1,
+        storeId,
+        storeName: mockStores.find((s) => s.id === storeId)?.storeName || '東京本店',
+        productId,
+        productCode: `PRD-00${productId}`,
+        productName: mockProducts.find((p) => p.id === productId)?.productName || '新規商品',
+        totalQuantity: Number(body.quantity) || 0,
+        reorderPoint: 10,
+        upperLimit: 100,
+        oldestExpiryDate: (body.expiryDate as string) || '2026-12-31',
+        status: (body.status as string) || 'NORMAL',
+        turnoverRate: 1.0,
+        lots: [
+          {
+            id: Date.now(),
+            lotNumber: (body.lotNumber as string) || `LOT-${Date.now()}`,
+            quantity: Number(body.quantity) || 0,
+            expiryDate: (body.expiryDate as string) || '2026-12-31',
+          },
+        ],
+        createTime: new Date().toISOString(),
+        updateTime: new Date().toISOString(),
+      };
+      mockInventory.push(newInventory);
+      res.writeHead(200);
+      res.end(apiResponse(newInventory));
       return;
     }
 
@@ -693,6 +899,13 @@ const server = createServer(async (req, res) => {
 
     // Inventory transactions: inbound (replenish)
     if (path === '/retail/inventory-transactions/inbound' && method === 'POST') {
+      const invId = Number(body.inventoryId);
+      if (invId) {
+        const item = mockInventory.find((inv) => inv.id === invId);
+        if (item) {
+          item.totalQuantity += Number(body.quantityDelta || body.quantity || 0);
+        }
+      }
       res.writeHead(200);
       res.end(apiResponse(null));
       return;
@@ -720,12 +933,37 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Single Sales by ID
+    const salesMatch = path.match(/^\/retail\/sales\/(\d+)$/);
+    if (salesMatch && method === 'GET') {
+      const id = Number(salesMatch[1]);
+      const sale = mockTransactions.find((t) => t.id === id);
+      if (!sale) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Sale not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(sale));
+      return;
+    }
+
     // Transactions/Sales: List all
     if (path === '/retail/sales' && method === 'GET' && !url.searchParams.has('pageNum')) {
       const storeId = url.searchParams.get('storeId') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
       let filtered = [...mockTransactions];
       if (storeId) {
         filtered = filtered.filter((t) => String(t.storeId) === storeId);
+      }
+      if (startDate || endDate) {
+        filtered = filtered.filter((t) => {
+          const date = (t.transactionTime || '').slice(0, 10);
+          if (startDate && date < startDate) return false;
+          if (endDate && date > endDate) return false;
+          return true;
+        });
       }
       res.writeHead(200);
       res.end(apiResponse(filtered));
@@ -739,6 +977,8 @@ const server = createServer(async (req, res) => {
       const orderNumber = url.searchParams.get('orderNumber') || '';
       const storeId = url.searchParams.get('storeId') || '';
       const paymentMethod = url.searchParams.get('paymentMethod') || '';
+      const startDate = url.searchParams.get('startDate') || '';
+      const endDate = url.searchParams.get('endDate') || '';
 
       let filtered = [...mockTransactions];
       if (orderNumber) {
@@ -751,6 +991,14 @@ const server = createServer(async (req, res) => {
       }
       if (paymentMethod) {
         filtered = filtered.filter((t) => t.paymentMethod === paymentMethod);
+      }
+      if (startDate || endDate) {
+        filtered = filtered.filter((t) => {
+          const date = (t.transactionTime || '').slice(0, 10);
+          if (startDate && date < startDate) return false;
+          if (endDate && date > endDate) return false;
+          return true;
+        });
       }
 
       const start = (pageNum - 1) * pageSize;
@@ -1428,6 +1676,278 @@ const server = createServer(async (req, res) => {
       const list = filtered.slice(start, start + pageSize);
       res.writeHead(200);
       res.end(apiResponse({ list, total: filtered.length }));
+      return;
+    }
+
+    // System: Configs
+    if ((path === '/config' || path === '/config/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+      const keywords = url.searchParams.get('keywords') || '';
+
+      let filtered = [...mockConfigs];
+      if (keywords) {
+        const kw = keywords.toLowerCase();
+        filtered = filtered.filter(
+          (c) =>
+            c.configName.toLowerCase().includes(kw) ||
+            c.configKey.toLowerCase().includes(kw)
+        );
+      }
+      const start = (pageNum - 1) * pageSize;
+      const list = filtered.slice(start, start + pageSize);
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: filtered.length }));
+      return;
+    }
+
+    if (path === '/config' && method === 'POST') {
+      const newConfig = {
+        id: String(mockConfigs.length + 1),
+        configName: String(body.configName || ''),
+        configKey: String(body.configKey || ''),
+        configValue: String(body.configValue || ''),
+        remark: body.remark ? String(body.remark) : undefined,
+        createTime: new Date().toISOString(),
+      };
+      mockConfigs.push(newConfig);
+      res.writeHead(200);
+      res.end(apiResponse(newConfig));
+      return;
+    }
+
+    if (path === '/config/refresh' && method === 'PUT') {
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
+    const configFormMatch = path.match(/^\/config\/(\d+)\/form$/);
+    if (configFormMatch && method === 'GET') {
+      const id = configFormMatch[1];
+      const config = mockConfigs.find((c) => c.id === id);
+      if (!config) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Config not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(config));
+      return;
+    }
+
+    const configMatch = path.match(/^\/config\/([0-9,]+)$/);
+    if (configMatch) {
+      const idStr = configMatch[1];
+      if (method === 'GET') {
+        const config = mockConfigs.find((c) => c.id === idStr);
+        if (!config) {
+          res.writeHead(404);
+          res.end(JSON.stringify({ code: 'B0001', msg: 'Config not found', data: null }));
+          return;
+        }
+        res.writeHead(200);
+        res.end(apiResponse(config));
+        return;
+      }
+      if (method === 'PUT') {
+        const config = mockConfigs.find((c) => c.id === idStr);
+        if (config) {
+          Object.assign(config, body);
+        }
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+      if (method === 'DELETE') {
+        const ids = idStr.split(',');
+        const remaining = mockConfigs.filter((c) => !ids.includes(c.id));
+        mockConfigs.length = 0;
+        mockConfigs.push(...remaining);
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
+    // System: Notices
+    if ((path === '/notices' || path === '/notices/page') && method === 'GET') {
+      const pageNum = Number(url.searchParams.get('pageNum')) || 1;
+      const pageSize = Number(url.searchParams.get('pageSize')) || 10;
+      const title = url.searchParams.get('title') || '';
+      const publishStatus = url.searchParams.get('publishStatus');
+
+      let filtered = [...mockNotices];
+      if (title) {
+        const kw = title.toLowerCase();
+        filtered = filtered.filter((n) => n.title.toLowerCase().includes(kw));
+      }
+      if (publishStatus !== null && publishStatus !== undefined && publishStatus !== '') {
+        filtered = filtered.filter((n) => String(n.publishStatus) === publishStatus);
+      }
+      const start = (pageNum - 1) * pageSize;
+      const list = filtered.slice(start, start + pageSize);
+      res.writeHead(200);
+      res.end(apiResponse({ list, total: filtered.length }));
+      return;
+    }
+
+    if (path === '/notices/my' && method === 'GET') {
+      res.writeHead(200);
+      res.end(
+        apiResponse({
+          list: mockNotices.filter((n) => n.publishStatus === 1),
+          total: mockNotices.length,
+        })
+      );
+      return;
+    }
+
+    if (path === '/notices/read-all' && method === 'PUT') {
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
+    if (path === '/notices' && method === 'POST') {
+      const newNotice = {
+        id: String(mockNotices.length + 1),
+        title: String(body.title || ''),
+        content: body.content ? String(body.content) : '',
+        type: Number(body.type) || 1,
+        priority: Number(body.priority) || 0,
+        level: String(body.level || 'L'),
+        targetType: Number(body.targetType) || 0,
+        targetUserIds: '',
+        publishStatus: 0,
+        publishTime: '',
+        revokeTime: '',
+        createTime: new Date().toISOString(),
+      };
+      mockNotices.push(newNotice);
+      res.writeHead(200);
+      res.end(apiResponse(newNotice));
+      return;
+    }
+
+    const noticePublishMatch = path.match(/^\/notices\/(\d+)\/publish$/);
+    if (noticePublishMatch && method === 'PUT') {
+      const id = noticePublishMatch[1];
+      const notice = mockNotices.find((n) => n.id === id);
+      if (notice) {
+        notice.publishStatus = 1;
+        notice.publishTime = new Date().toISOString();
+      }
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
+    const noticeRevokeMatch = path.match(/^\/notices\/(\d+)\/revoke$/);
+    if (noticeRevokeMatch && method === 'PUT') {
+      const id = noticeRevokeMatch[1];
+      const notice = mockNotices.find((n) => n.id === id);
+      if (notice) {
+        notice.publishStatus = 2;
+        notice.revokeTime = new Date().toISOString();
+      }
+      res.writeHead(200);
+      res.end(apiResponse(null));
+      return;
+    }
+
+    const noticeFormMatch = path.match(/^\/notices\/(\d+)\/form$/);
+    if (noticeFormMatch && method === 'GET') {
+      const id = noticeFormMatch[1];
+      const notice = mockNotices.find((n) => n.id === id);
+      if (!notice) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Notice not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(notice));
+      return;
+    }
+
+    const noticeDetailMatch = path.match(/^\/notices\/(\d+)\/detail$/);
+    if (noticeDetailMatch && method === 'GET') {
+      const id = noticeDetailMatch[1];
+      const notice = mockNotices.find((n) => n.id === id);
+      if (!notice) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ code: 'B0001', msg: 'Notice not found', data: null }));
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse({ ...notice, publisherName: 'admin' }));
+      return;
+    }
+
+    const noticeMatch = path.match(/^\/notices\/([0-9,]+)$/);
+    if (noticeMatch) {
+      const idStr = noticeMatch[1];
+      if (method === 'GET') {
+        const notice = mockNotices.find((n) => n.id === idStr);
+        if (!notice) {
+          res.writeHead(404);
+          res.end(JSON.stringify({ code: 'B0001', msg: 'Notice not found', data: null }));
+          return;
+        }
+        res.writeHead(200);
+        res.end(apiResponse(notice));
+        return;
+      }
+      if (method === 'PUT') {
+        const notice = mockNotices.find((n) => n.id === idStr);
+        if (notice) {
+          Object.assign(notice, body);
+        }
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+      if (method === 'DELETE') {
+        const ids = idStr.split(',');
+        const remaining = mockNotices.filter((n) => !ids.includes(n.id));
+        mockNotices.length = 0;
+        mockNotices.push(...remaining);
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
+    // System: Profile & Password
+    if (path === '/users/profile') {
+      if (method === 'GET') {
+        res.writeHead(200);
+        res.end(apiResponse(mockUserProfile));
+        return;
+      }
+      if (method === 'PUT') {
+        Object.assign(mockUserProfile, body);
+        res.writeHead(200);
+        res.end(apiResponse(null));
+        return;
+      }
+    }
+
+    if (path === '/users/password' && method === 'PUT') {
+      const currentPassword = String(body.currentPassword || '');
+      if (currentPassword !== '123456') {
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({
+            code: 'B0001',
+            msg: '現在のパスワードが正しくありません',
+            data: null,
+          })
+        );
+        return;
+      }
+      res.writeHead(200);
+      res.end(apiResponse(null));
       return;
     }
 

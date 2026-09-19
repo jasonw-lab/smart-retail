@@ -179,7 +179,7 @@ export function Sidebar() {
         {/* Main Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 space-y-1" data-testid={TESTIDS.SIDEBAR_NAV}>
           {/* Main menu items */}
-          {navSections[0].items.map((item) => (
+          {navSections[0]?.items.map((item) => (
             <NavItemComponent
               key={item.href}
               item={item}
@@ -212,7 +212,7 @@ export function Sidebar() {
                 </button>
                 {systemExpanded && (
                   <div className="ml-6 mt-1 space-y-1 border-l border-sidebar-border pl-2">
-                    {navSections[1].items.map((item) => (
+                    {navSections[1]?.items.map((item) => (
                       <NavItemComponent
                         key={item.href}
                         item={item}

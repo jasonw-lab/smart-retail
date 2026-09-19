@@ -10,11 +10,15 @@ export interface Product {
   categoryId: number;
   categoryName?: string;
   unitPrice: number;
+  costPrice?: number;
+  unit?: string;
   description?: string;
   imageUrl?: string;
+  stock?: number;
   stockQuantity?: number;
+  sales?: number;
   salesCount?: number;
-  status: number;
+  status: number | string;
   createTime?: string;
   updateTime?: string;
 }

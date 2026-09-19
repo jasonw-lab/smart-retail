@@ -6,6 +6,8 @@ import type {
   CreateSalesDto,
 } from '../types/transaction';
 
+import { aggregateTransactions, mapTransactionItem } from './transaction-mapper';
+
 // Backend: /api/v1/retail/sales (売上履歴)
 const BASE_URL = '/api/proxy/api/v1/retail/sales';
 
@@ -30,7 +32,9 @@ export const transactionApiClient = {
     const searchParams = new URLSearchParams();
     if (params.storeId) searchParams.set('storeId', String(params.storeId));
     const query = searchParams.toString();
-    return fetchApi<Transaction[]>(`${BASE_URL}${query ? `?${query}` : ''}`);
+    const data = await fetchApi<unknown>(`${BASE_URL}${query ? `?${query}` : ''}`);
+    const result = aggregateTransactions(data, { storeId: params.storeId, pageNum: 1, pageSize: 9999 });
+    return result.list;
   },
 
   /**
@@ -39,14 +43,16 @@ export const transactionApiClient = {
    */
   async getPage(params: TransactionQuery): Promise<TransactionPageResult> {
     const searchParams = buildSearchParams(params);
-    return fetchApi<TransactionPageResult>(`${BASE_URL}?${searchParams.toString()}`);
+    const data = await fetchApi<unknown>(`${BASE_URL}?${searchParams.toString()}`);
+    return aggregateTransactions(data, params);
   },
 
   /**
    * 決済詳細取得
    */
   async getById(id: number): Promise<Transaction> {
-    return fetchApi<Transaction>(`${BASE_URL}/${id}`);
+    const data = await fetchApi<unknown>(`${BASE_URL}/${id}`);
+    return mapTransactionItem(data);
   },
 
   /**

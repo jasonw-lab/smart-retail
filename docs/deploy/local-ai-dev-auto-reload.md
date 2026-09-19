@@ -4,8 +4,8 @@
 > **対象環境**: Apple Silicon M5 Mac (64GB RAM), macOS, OrbStack  
 > **更新日**: 2026-09-12  
 > **ステータス**: 実装・配備完了（Implemented & Verified）  
-> **HTML 版**: [`kb/react/10-cicd-deploy/local-ai-dev-auto-reload.html`](file:///Volumes/Dev/Git/learning/ai-prompt/react/10-cicd-deploy/local-ai-dev-auto-reload.html)  
-> ※ **重要運用ルール**: 本 Markdown（`.md`）修正後は、必ず上記 HTML 版（`kb/react/10-cicd-deploy/`）も同期・更新すること。
+> **HTML 版**: `{kb}/react/10-cicd-deploy/local-ai-dev-auto-reload.html`  
+> ※ **重要運用ルール**: 本 Markdown（`.md`）修正後は、必ず上記 HTML 版（`{kb}/react/10-cicd-deploy/`）も同期・更新すること。
 
 ---
 

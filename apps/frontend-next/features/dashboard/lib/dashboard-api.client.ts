@@ -26,13 +26,20 @@ export const dashboardApiClient = {
   /**
    * 売上推移を取得する
    */
-  getSalesTrend: (params?: { startDate?: string; endDate?: string }): Promise<SalesChartData> => {
+  getSalesTrend: (params?: {
+    startDate?: string;
+    endDate?: string;
+    interval?: string;
+  }): Promise<SalesChartData> => {
     const searchParams = new URLSearchParams();
     if (params?.startDate) {
       searchParams.set('startDate', params.startDate);
     }
     if (params?.endDate) {
       searchParams.set('endDate', params.endDate);
+    }
+    if (params?.interval) {
+      searchParams.set('interval', params.interval);
     }
     const query = searchParams.toString();
     return fetchApi<SalesChartData>(`${BASE_URL}/sales-trend${query ? `?${query}` : ''}`);

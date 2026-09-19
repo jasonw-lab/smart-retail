@@ -861,7 +861,7 @@
             <!-- PLAN:STATS -->
             <div>
               <dt>完了</dt>
-              <dd>5 / 16</dd>
+              <dd>12 / 16</dd>
             </div>
             <div>
               <dt>進行中</dt>
@@ -869,7 +869,7 @@
             </div>
             <div>
               <dt>残り</dt>
-              <dd>11</dd>
+              <dd>4</dd>
             </div>
             <!-- /PLAN:STATS -->
           </dl>
@@ -888,9 +888,7 @@
           <!-- PLAN:CURRENT -->
           <div class="callout callout-primary">
             <h4>いま着手中のユニットはありません</h4>
-            <p>
-              次に着手するのは <strong>U5 i18n: products（基準実装）</strong>（i18n(0710#25)）。
-            </p>
+            <p>次に着手するのは <strong>U12 i18n: system</strong>（i18n）。</p>
           </div>
           <!-- /PLAN:CURRENT -->
 
@@ -1206,70 +1204,72 @@
                   <td>i18n: products（基準実装）</td>
                   <td>i18n(0710#25)</td>
                   <td>U0</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-13</td>
+                  <td>基準実装確定・schema生成関数(方式b)・i18n.spec追加・全12テストパス</td>
                 </tr>
                 <tr>
                   <td>U6</td>
                   <td>i18n: stores</td>
                   <td>i18n</td>
                   <td>U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>stores i18n化・8大パターンE2E拡充・全10テストパス</td>
                 </tr>
                 <tr>
                   <td>U7</td>
                   <td>i18n: devices</td>
                   <td>i18n</td>
                   <td>U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>devices i18n化・8大パターン/CRUD E2E拡充・全12テストパス</td>
                 </tr>
                 <tr>
                   <td>U8</td>
                   <td>i18n: inventory</td>
                   <td>i18n</td>
                   <td>U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>inventory i18n化・CRUD/検索条件網羅E2E・全16テストパス</td>
                 </tr>
                 <tr>
                   <td>U9</td>
                   <td>i18n: transactions</td>
                   <td>i18n</td>
                   <td>U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>
+                    transactions i18n化・多層防衛マッパー・E2E 8大パターン/スモーク全11テストパス
+                  </td>
                 </tr>
                 <tr>
                   <td>U10</td>
                   <td>i18n: alerts</td>
                   <td>i18n</td>
                   <td>U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>alerts i18n化・API正規化・多層防衛・E2E全7テストパス</td>
                 </tr>
                 <tr>
                   <td>U11</td>
                   <td>i18n: dashboard</td>
                   <td>i18n</td>
                   <td>U4, U5</td>
-                  <td><span class="badge badge-outline">未着手</span></td>
+                  <td><span class="badge badge-secondary">完了</span></td>
                   <td>-</td>
-                  <td>-</td>
-                  <td></td>
+                  <td>2026-09-14</td>
+                  <td>dashboard i18n化・売上推移安定化・E2E/VRT全6テストパス</td>
                 </tr>
                 <tr>
                   <td>U12</td>
@@ -2016,7 +2016,7 @@ pnpm lint &amp;&amp; pnpm typecheck</code></pre>
             <div class="week-meta">
               <span class="week-id">U5-U13</span>
               <!-- PLAN:BADGE:U5-U13 -->
-              <span class="badge badge-outline">0/9 完了</span>
+              <span class="badge badge-outline">7/9 完了</span>
               <!-- /PLAN:BADGE:U5-U13 -->
               <span class="badge badge-outline">i18n / 0710 指摘25</span>
               <span class="week-time">9ユニット</span>
@@ -2403,7 +2403,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U5 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U5 -->
                   </td>
                 </tr>
@@ -2414,7 +2414,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td></td>
                   <td>
                     <!-- PLAN:BADGE:U6 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U6 -->
                   </td>
                 </tr>
@@ -2425,7 +2425,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td>U3 でサイドバーに載るので表記の整合を取る</td>
                   <td>
                     <!-- PLAN:BADGE:U7 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U7 -->
                   </td>
                 </tr>
@@ -2436,7 +2436,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td><code>inventory-form.tsx</code> / 各ダイアログを含む</td>
                   <td>
                     <!-- PLAN:BADGE:U8 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U8 -->
                   </td>
                 </tr>
@@ -2447,7 +2447,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   <td>CSV エクスポートのヘッダ文言も対象</td>
                   <td>
                     <!-- PLAN:BADGE:U9 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U9 -->
                   </td>
                 </tr>
@@ -2461,7 +2461,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U10 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U10 -->
                   </td>
                 </tr>
@@ -2474,7 +2474,7 @@ node -e "const a=require('./messages/ja.json'),b=require('./messages/en.json');c
                   </td>
                   <td>
                     <!-- PLAN:BADGE:U11 -->
-                    <span class="badge badge-outline">未着手</span>
+                    <span class="badge badge-secondary">完了</span>
                     <!-- /PLAN:BADGE:U11 -->
                   </td>
                 </tr>

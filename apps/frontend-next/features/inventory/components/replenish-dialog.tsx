@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,8 @@ interface ReplenishDialogProps {
 }
 
 export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogProps) {
+  const t = useTranslations('inventory');
+  const tCommon = useTranslations('common');
   const replenish = useReplenish();
   const [form, setForm] = useState({
     quantity: '',
@@ -38,7 +41,7 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
 
     const quantity = parseInt(form.quantity, 10);
     if (isNaN(quantity) || quantity <= 0) {
-      toast.error('補充数量は1以上を入力してください');
+      toast.error(t('replenishQuantityError'));
       return;
     }
 
@@ -52,11 +55,11 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
         expiryDate: form.expiryDate || undefined,
         note: form.note || undefined,
       });
-      toast.success('補充を記録しました');
+      toast.success(t('replenishSuccess'));
       setForm({ quantity: '', lotNumber: '', expiryDate: '', note: '' });
       onClose();
     } catch {
-      toast.error('登録に失敗しました');
+      toast.error(t('replenishFailed'));
     }
   };
 
@@ -66,22 +69,22 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent data-testid={TESTIDS.INVENTORY_REPLENISH_DIALOG}>
         <DialogHeader>
-          <DialogTitle>📦 補充記録</DialogTitle>
+          <DialogTitle>{t('replenishDialogTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">店舗名</span>
+              <span className="text-muted-foreground">{t('storeName')}</span>
               <span>{inventory.storeName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">商品名</span>
+              <span className="text-muted-foreground">{t('productName')}</span>
               <span>{inventory.productName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">現在在庫</span>
-              <span>{inventory.totalQuantity}個</span>
+              <span className="text-muted-foreground">{t('currentStock')}</span>
+              <span>{inventory.totalQuantity}{t('pieces')}</span>
             </div>
           </div>
 
@@ -89,7 +92,7 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
 
           <div className="space-y-2">
             <Label htmlFor="quantity">
-              補充数量 <span className="text-destructive">*</span>
+              {t('replenishQuantity')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="quantity"
@@ -103,7 +106,7 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lotNumber">ロット番号</Label>
+            <Label htmlFor="lotNumber">{t('lotNumber')}</Label>
             <Input
               id="lotNumber"
               data-testid={TESTIDS.INVENTORY_REPLENISH_LOT}
@@ -114,7 +117,7 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="expiryDate">賞味期限</Label>
+            <Label htmlFor="expiryDate">{t('expiryDate')}</Label>
             <Input
               id="expiryDate"
               data-testid={TESTIDS.INVENTORY_REPLENISH_EXPIRY}
@@ -125,13 +128,13 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">備考</Label>
+            <Label htmlFor="note">{t('remarks')}</Label>
             <Textarea
               id="note"
               data-testid={TESTIDS.INVENTORY_REPLENISH_NOTE}
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              placeholder="定期補充"
+              placeholder={t('replenishNotePlaceholder')}
               rows={2}
             />
           </div>
@@ -143,14 +146,14 @@ export function ReplenishDialog({ inventory, open, onClose }: ReplenishDialogPro
               variant="outline"
               onClick={onClose}
             >
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button
               data-testid={TESTIDS.INVENTORY_REPLENISH_SUBMIT}
               type="submit"
               disabled={replenish.isPending}
             >
-              {replenish.isPending ? '登録中...' : '登録'}
+              {replenish.isPending ? tCommon('saving') : t('submitRegister')}
             </Button>
           </DialogFooter>
         </form>

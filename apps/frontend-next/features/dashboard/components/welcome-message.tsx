@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,24 +12,25 @@ interface WelcomeMessageProps {
   avatarUrl?: string;
 }
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'おはようございます';
-  if (hour < 18) return 'こんにちは';
-  return 'こんばんは';
-}
-
 export function WelcomeMessage({ userName, avatarUrl }: WelcomeMessageProps) {
+  const t = useTranslations('dashboard');
   const [isVisible, setIsVisible] = useState(true);
   const [weather] = useState({
     condition: 'cloudy',
     temperature: 15,
-    description: '曇り',
   });
 
   if (!isVisible) return null;
 
+  const getGreeting = (): string => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('welcomeMorning');
+    if (hour < 18) return t('welcomeAfternoon');
+    return t('welcomeEvening');
+  };
+
   const greeting = getGreeting();
+  const weatherCondition = t('weatherDescriptionCondition');
 
   return (
     <Card className="bg-gradient-to-r from-teal-50 via-white to-white border-teal-100 shadow-sm">
@@ -56,11 +58,13 @@ export function WelcomeMessage({ userName, avatarUrl }: WelcomeMessageProps) {
 
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
-              {greeting}、{userName}さん！
+              {t('welcomeMessage', { greeting, name: userName })}
             </h2>
             <p className="text-sm text-gray-500">
-              今日は{weather.description}、気温は{weather.temperature}
-              度から25度で、来客の増。
+              {t('weatherDescription', {
+                description: weatherCondition,
+                temperature: weather.temperature,
+              })}
             </p>
           </div>
         </div>
@@ -69,7 +73,7 @@ export function WelcomeMessage({ userName, avatarUrl }: WelcomeMessageProps) {
           size="icon"
           onClick={() => setIsVisible(false)}
           className="text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-          aria-label="メッセージを閉じる"
+          aria-label={t('closeMessage')}
         >
           <X className="h-4 w-4" />
         </Button>

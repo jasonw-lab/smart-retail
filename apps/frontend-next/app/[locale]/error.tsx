@@ -14,7 +14,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+    <div data-testid="error-boundary" className="flex min-h-screen flex-col items-center justify-center gap-4">
       <h2 className="text-xl font-semibold">エラーが発生しました</h2>
       <p className="text-muted-foreground">予期しないエラーが発生しました。再度お試しください。</p>
       <button

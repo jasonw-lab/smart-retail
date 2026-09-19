@@ -71,3 +71,104 @@ pnpm generate:api-types # OpenAPI 型生成
 - 新規 UI コンポーネントには `e2e/testids.ts` で定義された `data-testid` を付与する
 - 状態を変更する Route Handler (`POST`/`PUT`/`PATCH`/`DELETE`) には CSRF トークン検証を入れる
 - 新規ページは `pnpm exec playwright test e2e/specs/accessibility.spec.ts` でアクセシビリティ違反がないことを確認する
+
+## i18n の書き方
+
+多言語化（next-intl）は機能単位（1機能＝1コミット）で適用します。
+
+### 1. 基本作法
+- **Client Component**: `const t = useTranslations('<namespace>');`
+- **Server Component**: `const t = await getTranslations('<namespace>');`
+- **メタデータ**: `export async function generateMetadata(): Promise<Metadata> { ... }` 内で `await getTranslations()` を使用
+- **ナビゲーション**: `@/i18n/navigation` の `Link`, `useRouter`, `usePathname` を使用（ESLint で強制）
+- **辞書ファイル**: `messages/ja.json` と `messages/en.json`。**両方に必ず同一のキー構造を追加する**（値の日本語漏れは禁止）
+
+### 2. Zod スキーマのバリデーションメッセージ（方式 b: スキーマ生成関数）
+スキーマ定義では `t` を引数に受け取る生成関数パターンを採用します。
+
+```ts
+// features/<domain>/schemas/<domain>-schema.ts
+import { z } from 'zod';
+import type { useTranslations } from 'next-intl';
+
+type ValidationTranslation = ReturnType<typeof useTranslations<'validation'>>;
+
+export const create<Domain>FormSchema = (t: ValidationTranslation) =>
+  z.object({
+    code: z.string().min(1, t('required')),
+    name: z.string().min(1, t('required')).max(100, t('maxLength', { max: 100 })),
+    price: z.number().min(0, t('minValue', { min: 0 })),
+  });
+
+export type <Domain>FormValues = z.infer<ReturnType<typeof create<Domain>FormSchema>>;
+```
+
+Component 側では `useMemo` でスキーマを生成して `zodResolver` に渡します（毎レンダーの再生成を防ぐため `useMemo` 必須）。
+
+```tsx
+const tValidation = useTranslations('validation');
+const schema = useMemo(() => create<Domain>FormSchema(tValidation), [tValidation]);
+const form = useForm<<Domain>FormValues>({ resolver: zodResolver(schema), ... });
+```
+
+### 3. validation namespace の共通キー
+- `required`: "この項目は必須です" / "This field is required"
+- `email`: "有効なメールアドレスを入力してください" / "Please enter a valid email address"
+- `minLength`: "{min}文字以上で入力してください" / "Must be at least {min} characters"
+- `maxLength`: "{max}文字以内で入力してください" / "Must be at most {max} characters"
+- `minValue`: "{min}以上で入力してください" / "Must be at least {min}"
+- `invalidUrl`: "有効なURLを入力してください" / "Please enter a valid URL"
+- `number`: "数値を入力してください" / "Please enter a number"
+- `positive`: "正の数を入力してください" / "Please enter a positive number"
+
+### 4. E2E テストとの整合性
+- 既存の E2E spec が `getByText` / `getByRole` / `getByPlaceholder` などでテキスト照合している文字列は、`messages/ja.json` の値を現行表示と完全に一致させること。
+
+
+## E2E テストケースの書き方
+
+テストケース一覧（`_docs/testing/e2e-test-cases.xlsx` / `.md`）は spec のメタ情報から自動生成します。**一覧ファイルは直接編集しません。**
+
+### 1. test() に caseMeta() を付ける
+
+```ts
+import { caseMeta, suiteMeta } from '../fixtures/case-meta';
+
+test.describe('店舗管理', suiteMeta({ precondition: 'admin でログイン済み' }), () => {
+  test(
+    '単一検索: 店舗名で絞り込む',
+    caseMeta({
+      id: 'STR-002', // spec ごとの接頭辞 + 3桁。重複不可
+      screen: '店舗管理', // e2e/fixtures/case-meta.ts の SCREENS から選ぶ
+      priority: 'P1', // P0 表示確認 / P1 主要操作 / P2 周辺機能
+      perspectives: ['search-text', 'exclude'], // PERSPECTIVES から選ぶ（複数可）
+      steps: ['店舗名に「東京本店」を入力する', '検索ボタンを押す'],
+      expected: ['東京本店が表示される', '大阪支店は表示されない'],
+      note: '既知の弱点や未検証事項があれば書く', // 任意
+    }),
+    async ({ page }) => {
+      // ...
+    }
+  );
+});
+```
+
+- `perspectives` には**実際にアサーションしている観点だけ**を付ける（ダイアログを開いてキャンセルするだけなら `delete` ではなく `dialog`）。カバレッジ表が実態とずれないようにするため
+- 未実装のケースは `test.fixme(title, caseMeta({...}), async () => {})` で登録する。一覧では「未実装」（黄色）になる。実装したら `test` に変えて本体を書く
+
+### 2. 一覧を再生成する
+
+```bash
+pnpm e2e:cases          # xlsx / md を生成（pnpm test:e2e の後に実行すると実行結果も入る）
+pnpm e2e:cases:check    # メタ情報の記入漏れと md の再生成し忘れを検出
+```
+
+spec を追加・変更したコミットには、再生成した `e2e-test-cases.xlsx` / `.md` も含めます。
+
+### 3. タグで絞り込んで実行する
+
+```bash
+pnpm exec playwright test --grep @STR-002       # 1件だけ
+pnpm exec playwright test --grep @p0            # P0 のみ
+pnpm exec playwright test --grep @search-text   # 観点で
+```

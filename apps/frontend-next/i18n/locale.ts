@@ -5,12 +5,13 @@ export function getUserLocale(): Locale {
 
   const pathname = window.location.pathname;
   const matched = pathname.match(/^\/(ja|en)(?:\/|$)/);
-  if (matched && (locales as readonly string[]).includes(matched[1])) {
-    return matched[1] as Locale;
+  const matchedLocale = matched?.[1];
+  if (matchedLocale && (locales as readonly string[]).includes(matchedLocale)) {
+    return matchedLocale as Locale;
   }
 
   const browserLang = navigator.language.split('-')[0];
-  if ((locales as readonly string[]).includes(browserLang)) {
+  if (browserLang && (locales as readonly string[]).includes(browserLang)) {
     return browserLang as Locale;
   }
 

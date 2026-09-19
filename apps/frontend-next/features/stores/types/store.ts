@@ -11,10 +11,13 @@ export const StoreStatus = {
 
 export type StoreStatusType = (typeof StoreStatus)[keyof typeof StoreStatus];
 
+/**
+ * @deprecated i18n messages (stores.statusActive, etc.) を使用してください
+ */
 export const StoreStatusLabel: Record<StoreStatusType, string> = {
-  ACTIVE: '稼働中',
-  MAINTENANCE: 'メンテナンス中',
-  INACTIVE: '停止中',
+  ACTIVE: 'Active',
+  MAINTENANCE: 'Maintenance',
+  INACTIVE: 'Inactive',
 };
 
 export const StoreStatusColor: Record<StoreStatusType, 'success' | 'warning' | 'error'> = {

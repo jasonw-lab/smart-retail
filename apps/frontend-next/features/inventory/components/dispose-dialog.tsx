@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,16 +33,18 @@ interface DisposeDialogProps {
   onClose: () => void;
 }
 
-const disposeReasons = [
-  { value: 'EXPIRED', label: '期限切れ' },
-  { value: 'DAMAGED', label: '破損' },
-  { value: 'QUALITY', label: '品質不良' },
-  { value: 'INVENTORY_ADJUSTMENT', label: '棚卸差異' },
-  { value: 'OTHER', label: 'その他' },
-];
-
 export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogProps) {
+  const t = useTranslations('inventory');
+  const tCommon = useTranslations('common');
   const dispose = useDispose();
+
+  const disposeReasons = [
+    { value: 'EXPIRED', label: t('reasonExpired') },
+    { value: 'DAMAGED', label: t('reasonDamaged') },
+    { value: 'QUALITY', label: t('reasonQuality') },
+    { value: 'INVENTORY_ADJUSTMENT', label: t('reasonAdjustment') },
+    { value: 'OTHER', label: t('reasonOther') },
+  ];
 
   // デフォルト理由: 期限切れの場合は「期限切れ」
   const isExpired = lot?.expiryDate && new Date(lot.expiryDate) < new Date();
@@ -57,11 +60,11 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
 
     const quantity = parseInt(form.quantity, 10);
     if (isNaN(quantity) || quantity <= 0 || quantity > lot.quantity) {
-      toast.error(`廃棄数量は1〜${lot.quantity}を入力してください`);
+      toast.error(t('quantityRangeError', { max: lot.quantity }));
       return;
     }
     if (!form.reason) {
-      toast.error('理由を選択してください');
+      toast.error(t('reasonRequired'));
       return;
     }
 
@@ -75,11 +78,11 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
         reason: form.reason,
         note: form.note || undefined,
       });
-      toast.success('廃棄を記録しました');
+      toast.success(t('disposeSuccess'));
       setForm({ quantity: '', reason: '', note: '' });
       onClose();
     } catch {
-      toast.error('登録に失敗しました');
+      toast.error(t('disposeFailed'));
     }
   };
 
@@ -89,33 +92,33 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent data-testid={TESTIDS.INVENTORY_DISPOSE_DIALOG}>
         <DialogHeader>
-          <DialogTitle>🗑️ 廃棄（在庫調整）</DialogTitle>
+          <DialogTitle>{t('disposeDialogTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">店舗名</span>
+              <span className="text-muted-foreground">{t('storeName')}</span>
               <span>{inventory.storeName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">商品名</span>
+              <span className="text-muted-foreground">{t('productName')}</span>
               <span>{inventory.productName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">ロット</span>
+              <span className="text-muted-foreground">{t('lotNumber')}</span>
               <span>{lot.lotNumber}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">賞味期限</span>
+              <span className="text-muted-foreground">{t('expiryDate')}</span>
               <span className={isExpired ? 'text-destructive font-medium' : ''}>
                 {lot.expiryDate ? formatDate(lot.expiryDate) : '-'}
-                {isExpired && ' (期限切れ)'}
+                {isExpired && t('expiredTag')}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">現在在庫</span>
-              <span>{lot.quantity}個</span>
+              <span className="text-muted-foreground">{t('currentStock')}</span>
+              <span>{lot.quantity}{t('pieces')}</span>
             </div>
           </div>
 
@@ -123,7 +126,7 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
 
           <div className="space-y-2">
             <Label htmlFor="quantity">
-              廃棄数量 <span className="text-destructive">*</span>
+              {t('disposeQuantity')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="quantity"
@@ -139,11 +142,11 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
 
           <div className="space-y-2">
             <Label>
-              理由 <span className="text-destructive">*</span>
+              {t('disposeReason')} <span className="text-destructive">*</span>
             </Label>
             <Select value={form.reason} onValueChange={(v) => setForm({ ...form, reason: v })}>
               <SelectTrigger data-testid={TESTIDS.INVENTORY_DISPOSE_REASON}>
-                <SelectValue placeholder="理由を選択" />
+                <SelectValue placeholder={t('selectReason')} />
               </SelectTrigger>
               <SelectContent>
                 {disposeReasons.map((r) => (
@@ -156,7 +159,7 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">備考</Label>
+            <Label htmlFor="note">{t('remarks')}</Label>
             <Textarea
               id="note"
               data-testid={TESTIDS.INVENTORY_DISPOSE_NOTE}
@@ -173,7 +176,7 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
               variant="outline"
               onClick={onClose}
             >
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button
               data-testid={TESTIDS.INVENTORY_DISPOSE_SUBMIT}
@@ -181,7 +184,7 @@ export function DisposeDialog({ inventory, lot, open, onClose }: DisposeDialogPr
               variant="destructive"
               disabled={dispose.isPending}
             >
-              {dispose.isPending ? '登録中...' : '登録'}
+              {dispose.isPending ? tCommon('saving') : t('submitRegister')}
             </Button>
           </DialogFooter>
         </form>

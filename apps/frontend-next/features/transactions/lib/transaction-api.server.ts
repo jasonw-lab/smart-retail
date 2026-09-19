@@ -13,6 +13,8 @@ function buildSearchParams(params: TransactionQuery): URLSearchParams {
   return searchParams;
 }
 
+import { aggregateTransactions, mapTransactionItem } from './transaction-mapper';
+
 /**
  * Server Component専用のTransaction/Sales API
  * Backend直接fetch（Route Handler経由しない）
@@ -21,25 +23,29 @@ export const transactionApiServer = {
   /**
    * 売上一覧取得（リスト）
    */
-  getList: (params: { storeId?: number }): Promise<Transaction[]> => {
+  getList: async (params: { storeId?: number }): Promise<Transaction[]> => {
     const searchParams = new URLSearchParams();
     if (params.storeId) searchParams.set('storeId', String(params.storeId));
     const query = searchParams.toString();
-    return fetchFromBackend<Transaction[]>(`retail/sales${query ? `?${query}` : ''}`);
+    const data = await fetchFromBackend<unknown>(`retail/sales${query ? `?${query}` : ''}`);
+    const result = aggregateTransactions(data, { storeId: params.storeId, pageNum: 1, pageSize: 9999 });
+    return result.list;
   },
 
   /**
    * 決済履歴一覧取得（ページング）
    */
-  getPage: (params: TransactionQuery): Promise<TransactionPageResult> => {
+  getPage: async (params: TransactionQuery): Promise<TransactionPageResult> => {
     const searchParams = buildSearchParams(params);
-    return fetchFromBackend<TransactionPageResult>(`retail/sales?${searchParams.toString()}`);
+    const data = await fetchFromBackend<unknown>(`retail/sales?${searchParams.toString()}`);
+    return aggregateTransactions(data, params);
   },
 
   /**
    * 決済詳細取得
    */
-  getById: (id: number): Promise<Transaction> => {
-    return fetchFromBackend<Transaction>(`retail/sales/${id}`);
+  getById: async (id: number): Promise<Transaction> => {
+    const data = await fetchFromBackend<unknown>(`retail/sales/${id}`);
+    return mapTransactionItem(data);
   },
 };

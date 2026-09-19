@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { InventoryTableClient } from '@/features/inventory/components/inventory-table-client';
 import { inventoryApiServer } from '@/features/inventory/lib/inventory-api.server';
 import type {
@@ -6,6 +8,13 @@ import type {
   InventoryPageResult,
   InventoryStatusType,
 } from '@/features/inventory/types/inventory';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('inventory');
+  return {
+    title: t('title'),
+  };
+}
 
 interface SearchParams {
   page?: string;
@@ -23,6 +32,8 @@ export default async function InventoryPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  const t = await getTranslations('inventory');
+  const tCommon = await getTranslations('common');
   const resolvedSearchParams = await searchParams;
   const params: InventoryQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
@@ -37,13 +48,11 @@ export default async function InventoryPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">在庫一覧</h1>
-        <p className="text-muted-foreground">
-          店舗×商品別の在庫状況を確認し、補充・廃棄を記録します
-        </p>
+        <h1 className="text-2xl font-bold">{t('listTitle')}</h1>
+        <p className="text-muted-foreground">{t('listDescription')}</p>
       </div>
 
-      <Suspense fallback={<div>読み込み中...</div>}>
+      <Suspense fallback={<div>{tCommon('loading')}</div>}>
         <InventoryTableClient initialData={data} initialParams={params} />
       </Suspense>
     </div>

@@ -2,12 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 // E2E用ポート設定（環境変数で上書き可能）
 const E2E_PORT = process.env.E2E_PORT || '3002';
-const MOCK_PORT = process.env.MOCK_PORT || '8091';
+const MOCK_PORT = process.env.MOCK_PORT || '8095';
 const BASE_URL = `http://localhost:${E2E_PORT}`;
 const MOCK_URL = `http://localhost:${MOCK_PORT}`;
 
 export default defineConfig({
   testDir: './e2e/specs',
+  testIgnore: /live-smoke/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
@@ -37,6 +38,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: BASE_URL,
+    locale: 'ja-JP',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     actionTimeout: 15000, // Increase action timeout
@@ -55,12 +57,12 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 30 * 1000,
     },
-    // Next.js production server (build first if needed)
+    // Next.js production server
     {
-      command: `pnpm build && DISABLE_RATE_LIMIT=true BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
+      command: `DISABLE_RATE_LIMIT=true BACKEND_URL=${MOCK_URL}/api/v1 next start -p ${E2E_PORT}`,
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
-      timeout: 180 * 1000, // Build can take time
+      timeout: 60 * 1000,
     },
   ],
 });

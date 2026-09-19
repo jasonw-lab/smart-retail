@@ -29,6 +29,11 @@ export const AlertPriorityColor: Record<AlertPriority, string> = {
   4: 'bg-info text-info-foreground',
 };
 
+export const DEFAULT_PRIORITY_LABEL = 'P-';
+export const DEFAULT_PRIORITY_COLOR = 'bg-muted text-muted-foreground';
+export const DEFAULT_ALERT_STATUS_COLOR = 'bg-muted text-muted-foreground';
+export const DEFAULT_ALERT_STATUS_LABEL = '未設定';
+
 /**
  * アラートカテゴリ
  */
@@ -150,19 +155,13 @@ export function mapBackendAlertType(alertType: string): AlertType {
 /**
  * Backend 優先度 -> Frontend 優先度
  */
-export function mapBackendPriority(priority: string): AlertPriority {
-  switch (priority) {
-    case 'P1':
-      return 1;
-    case 'P2':
-      return 2;
-    case 'P3':
-      return 3;
-    case 'P4':
-      return 4;
-    default:
-      return 2;
-  }
+export function mapBackendPriority(priority: string | number | undefined | null): AlertPriority {
+  const str = String(priority ?? '').trim().toUpperCase();
+  if (str === 'P1' || str === '1') return 1;
+  if (str === 'P2' || str === '2') return 2;
+  if (str === 'P3' || str === '3') return 3;
+  if (str === 'P4' || str === '4') return 4;
+  return 2;
 }
 
 /**
@@ -175,12 +174,15 @@ export function mapFrontendPriorityToBackend(priority: AlertPriority): string {
 /**
  * Backend ステータス -> Frontend ステータス
  */
-export function mapBackendStatus(status: string): Alert['status'] {
-  switch (status) {
+export function mapBackendStatus(status: string | undefined | null): Alert['status'] {
+  const str = String(status ?? '').trim().toUpperCase();
+  switch (str) {
     case 'NEW':
+    case 'UNREAD':
       return 'unread';
     case 'ACK':
     case 'IN_PROGRESS':
+    case 'ACKNOWLEDGED':
       return 'acknowledged';
     case 'RESOLVED':
     case 'CLOSED':
@@ -225,32 +227,71 @@ export function getCategoryFromAlertType(type: AlertType): AlertCategory {
 }
 
 /**
- * Backend VO -> Frontend Alert
+ * APIレスポンスを配列形式に安全に正規化（配列、{list}, {records}, {data}に対応）
  */
-export function normalizeBackendAlert(vo: BackendAlertVO): Alert {
-  const type = mapBackendAlertType(vo.alertType);
-  const status = mapBackendStatus(vo.status);
-  const priority = mapBackendPriority(vo.priority);
+export function normalizeBackendAlertList(data: unknown): BackendAlertVO[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data as BackendAlertVO[];
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as Record<string, unknown>;
+    if (Array.isArray(obj['list'])) return obj['list'] as BackendAlertVO[];
+    if (Array.isArray(obj['records'])) return obj['records'] as BackendAlertVO[];
+    if (Array.isArray(obj['data'])) return obj['data'] as BackendAlertVO[];
+  }
+  return [];
+}
+
+/**
+ * Backend VO -> Frontend Alert (多層防衛)
+ */
+export function normalizeBackendAlert(vo: unknown): Alert {
+  const rawVo = (typeof vo === 'object' && vo !== null ? vo : {}) as Partial<BackendAlertVO> & {
+    type?: string;
+    createdAt?: string;
+  };
+
+  const alertTypeStr = String(rawVo.alertType ?? rawVo.type ?? '');
+  const type = mapBackendAlertType(alertTypeStr);
+  const status = mapBackendStatus(rawVo.status);
+  const priority = mapBackendPriority(rawVo.priority);
 
   return {
-    id: String(vo.id),
+    id: String(rawVo.id ?? Math.random().toString(36).substring(2, 9)),
     type,
-    category: (vo.category as AlertCategory) || getCategoryFromAlertType(type),
-    message: vo.message,
-    productId: vo.productId,
-    productName: vo.productName,
-    deviceId: vo.deviceId !== undefined ? String(vo.deviceId) : undefined,
-    deviceName: vo.deviceName,
-    storeId: vo.storeId,
-    storeName: vo.storeName,
+    category: (rawVo.category as AlertCategory) || getCategoryFromAlertType(type),
+    message: String(rawVo.message ?? ''),
+    productId: typeof rawVo.productId === 'number' ? rawVo.productId : undefined,
+    productName: rawVo.productName,
+    deviceId: rawVo.deviceId !== undefined ? String(rawVo.deviceId) : undefined,
+    deviceName: rawVo.deviceName,
+    storeId: typeof rawVo.storeId === 'number' ? rawVo.storeId : undefined,
+    storeName: rawVo.storeName,
     severity: priority <= 2 ? 'error' : priority === 3 ? 'warning' : 'info',
     priority,
     status,
-    read: vo.read ?? status !== 'unread',
-    createdAt: vo.detectedAt || vo.createTime || new Date().toISOString(),
-    acknowledgedAt: vo.acknowledgedAt,
-    resolvedAt: vo.resolvedAt,
+    read: typeof rawVo.read === 'boolean' ? rawVo.read : status !== 'unread',
+    createdAt: rawVo.detectedAt || rawVo.createTime || rawVo.createdAt || new Date().toISOString(),
+    acknowledgedAt: rawVo.acknowledgedAt,
+    resolvedAt: rawVo.resolvedAt,
   };
+}
+
+/**
+ * APIレスポンスを安全に AlertPageResult に正規化（配列、{list, total}両対応）
+ */
+export function normalizeAlertPageResult(data: unknown): AlertPageResult {
+  const rawList = normalizeBackendAlertList(data);
+  const list = rawList.map(normalizeBackendAlert);
+  let total = list.length;
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'total' in data &&
+    typeof (data as Record<string, unknown>)['total'] === 'number'
+  ) {
+    total = (data as Record<string, unknown>)['total'] as number;
+  }
+  return { list, total };
 }
 
 export interface AlertMonitoringSummary {

@@ -61,6 +61,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   images: {
     remotePatterns: [
       {
@@ -91,8 +92,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withAnalyzer(withNextIntl(nextConfig)), {
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-});
+const baseConfig = withAnalyzer(withNextIntl(nextConfig));
+
+export default (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN)
+  ? withSentryConfig(baseConfig, {
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    })
+  : baseConfig;

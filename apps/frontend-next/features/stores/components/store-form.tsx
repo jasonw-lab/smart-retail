@@ -1,7 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -16,9 +18,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TESTIDS } from '@/lib/testing/testids';
-import { storeFormSchema, type StoreFormValues } from '../schemas/store-schema';
+import { createStoreFormSchema, type StoreFormValues } from '../schemas/store-schema';
 import { useCreateStore, useUpdateStore } from '../hooks/use-stores';
-import { StoreStatus, StoreStatusLabel, type Store } from '../types/store';
+import { StoreStatus, type Store } from '../types/store';
 
 interface StoreFormProps {
   store?: Store;
@@ -27,11 +29,17 @@ interface StoreFormProps {
 
 export function StoreForm({ store, mode }: StoreFormProps) {
   const router = useRouter();
+  const t = useTranslations('stores');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
+
   const createStore = useCreateStore();
   const updateStore = useUpdateStore();
 
+  const schema = useMemo(() => createStoreFormSchema(tValidation), [tValidation]);
+
   const form = useForm<StoreFormValues>({
-    resolver: zodResolver(storeFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       storeCode: store?.storeCode || '',
       storeName: store?.storeName || '',
@@ -44,6 +52,12 @@ export function StoreForm({ store, mode }: StoreFormProps) {
 
   const isSubmitting = createStore.isPending || updateStore.isPending;
 
+  const statusOptions = [
+    { value: StoreStatus.ACTIVE, label: t('statusActive') },
+    { value: StoreStatus.MAINTENANCE, label: t('statusMaintenance') },
+    { value: StoreStatus.INACTIVE, label: t('statusInactive') },
+  ];
+
   const onSubmit = async (values: StoreFormValues) => {
     try {
       if (mode === 'create') {
@@ -55,7 +69,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
           email: values.email || undefined,
           status: values.status,
         });
-        toast.success('店舗を登録しました');
+        toast.success(t('createSuccess'));
       } else if (store) {
         await updateStore.mutateAsync({
           id: store.id,
@@ -67,18 +81,18 @@ export function StoreForm({ store, mode }: StoreFormProps) {
             status: values.status,
           },
         });
-        toast.success('店舗を更新しました');
+        toast.success(t('updateSuccess'));
       }
       router.push('/stores');
-    } catch (error) {
-      toast.error(mode === 'create' ? '登録に失敗しました' : '更新に失敗しました');
+    } catch {
+      toast.error(mode === 'create' ? t('createFailed') : t('updateFailed'));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{mode === 'create' ? '店舗登録' : '店舗編集'}</CardTitle>
+        <CardTitle>{mode === 'create' ? t('newStoreTitle') : t('editStoreTitle')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form
@@ -89,7 +103,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="storeCode">
-                店舗コード <span className="text-destructive">*</span>
+                {t('storeCode')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="storeCode"
@@ -107,13 +121,13 @@ export function StoreForm({ store, mode }: StoreFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="storeName">
-                店舗名 <span className="text-destructive">*</span>
+                {t('storeName')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="storeName"
                 data-testid={TESTIDS.STORE_FORM_NAME}
                 {...form.register('storeName')}
-                placeholder="東京本店"
+                placeholder={t('namePlaceholder')}
               />
               {form.formState.errors.storeName && (
                 <p className="text-sm text-destructive">
@@ -124,12 +138,12 @@ export function StoreForm({ store, mode }: StoreFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">住所</Label>
+            <Label htmlFor="address">{t('address')}</Label>
             <Input
               id="address"
               data-testid={TESTIDS.STORE_FORM_ADDRESS}
               {...form.register('address')}
-              placeholder="東京都千代田区..."
+              placeholder={t('addressPlaceholder')}
             />
             {form.formState.errors.address && (
               <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
@@ -138,7 +152,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="phone">電話番号</Label>
+              <Label htmlFor="phone">{t('phone')}</Label>
               <Input
                 id="phone"
                 data-testid={TESTIDS.STORE_FORM_PHONE}
@@ -151,7 +165,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 data-testid={TESTIDS.STORE_FORM_EMAIL}
@@ -166,7 +180,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>ステータス</Label>
+            <Label>{t('status')}</Label>
             <Select
               value={form.watch('status')}
               onValueChange={(value) => form.setValue('status', value as StoreFormValues['status'])}
@@ -175,7 +189,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(StoreStatusLabel).map(([value, label]) => (
+                {statusOptions.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -186,7 +200,11 @@ export function StoreForm({ store, mode }: StoreFormProps) {
 
           <div className="flex gap-2 pt-4">
             <Button data-testid={TESTIDS.STORE_FORM_SUBMIT} type="submit" disabled={isSubmitting}>
-              {isSubmitting ? '保存中...' : mode === 'create' ? '登録' : '更新'}
+              {isSubmitting
+                ? tCommon('saving')
+                : mode === 'create'
+                  ? tCommon('create')
+                  : tCommon('update')}
             </Button>
             <Button
               data-testid={TESTIDS.STORE_FORM_CANCEL}
@@ -194,7 +212,7 @@ export function StoreForm({ store, mode }: StoreFormProps) {
               variant="outline"
               onClick={() => router.push('/stores')}
             >
-              キャンセル
+              {tCommon('cancel')}
             </Button>
           </div>
         </form>

@@ -1,18 +1,24 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { ProductForm } from '@/features/products/components/product-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export const metadata: Metadata = {
-  title: '商品新規作成',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('products');
+  return {
+    title: t('newProductTitle'),
+  };
+}
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  const t = await getTranslations('products');
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">商品新規作成</h1>
+      <h1 className="text-2xl font-bold">{t('newProductTitle')}</h1>
       <Card>
         <CardHeader>
-          <CardTitle>商品情報</CardTitle>
+          <CardTitle>{t('productInfo')}</CardTitle>
         </CardHeader>
         <CardContent>
           <ProductForm />

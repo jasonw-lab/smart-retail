@@ -59,6 +59,7 @@ export interface DataTableProps<T> {
   getRowColorBar?: (row: T) => string | null;
   isRowHighlighted?: (row: T) => boolean;
   dataTestId?: string;
+  getRowTestId?: (row: T, index: number) => string;
 }
 
 export function DataTable<T>({
@@ -79,6 +80,7 @@ export function DataTable<T>({
   getRowColorBar,
   isRowHighlighted,
   dataTestId = TESTIDS.DATA_TABLE,
+  getRowTestId,
 }: DataTableProps<T>) {
   const handleSort = (key: string) => {
     if (!onSort) return;
@@ -209,6 +211,7 @@ export function DataTable<T>({
                 return (
                   <TableRow
                     key={rowKey}
+                    data-testid={getRowTestId?.(row, rowIndex)}
                     className={cn(
                       'hover:bg-surface-container-low transition-colors group',
                       rowClickable && 'cursor-pointer',

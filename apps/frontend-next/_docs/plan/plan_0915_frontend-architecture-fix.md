@@ -150,7 +150,7 @@ flowchart TD
 
 ### 🚀 Phase 1 投入プロンプト
 ```text
-/Volumes/Dev/Git/learning/kb/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 1 (A01, A02, A03, A12) の改修を実施してください。
+{kb}/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 1 (A01, A02, A03, A12) の改修を実施してください。
 
 【対象と要件】
 1. apps/frontend-next/lib/api/client.ts (A02, A12):
@@ -175,7 +175,7 @@ flowchart TD
 
 ### 🚀 Phase 2 投入プロンプト
 ```text
-/Volumes/Dev/Git/learning/kb/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 2 (A04, A06, A11) の改修を実施してください。
+{kb}/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 2 (A04, A06, A11) の改修を実施してください。
 
 【対象と要件】
 1. apps/frontend-next/features/alerts/hooks/use-stomp.ts (A04):
@@ -201,7 +201,7 @@ flowchart TD
 
 ### 🚀 Phase 3 投入プロンプト
 ```text
-/Volumes/Dev/Git/learning/kb/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 3 (A07, A08, A09) の改修を実施してください。
+{kb}/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 3 (A07, A08, A09) の改修を実施してください。
 
 【対象と要件】
 1. apps/frontend-next/app/[locale]/(dashboard)/products/page.tsx & features/products/components/product-table-client.tsx (A07):
@@ -224,7 +224,7 @@ flowchart TD
 
 ### 🚀 Phase 4 投入プロンプト
 ```text
-/Volumes/Dev/Git/learning/kb/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 4 (A10, A13, A05) の改修を実施してください。
+{kb}/project/smart-retail/review_0914_frontend-architecture.codex.md の指摘に基づき、Phase 4 (A10, A13, A05) の改修を実施してください。
 
 【対象と要件】
 1. apps/frontend-next/package.json & eslint.config.mjs (A10):

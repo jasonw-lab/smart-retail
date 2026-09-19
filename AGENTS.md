@@ -17,7 +17,7 @@
 
 > [!IMPORTANT]
 > 本プロジェクトでは、API契約乖離によるランタイムクラッシュ防止とトークン消費最適化のため、以下の開発ルールを必須とします。
-> 詳細な背景・ノウハウは **Knowledge Base 側の正本** `{kb}/workflow/ai-dev.md`（HTML版: `{kb}/workflow/ai-dev.html`、実体: `/Volumes/Dev/Git/learning/kb/workflow/`）を参照してください。本リポジトリにはコピーを置きません。
+> 詳細な背景・ノウハウは **Knowledge Base 側の正本** `{kb}/workflow/ai-dev.md`（HTML版: `{kb}/workflow/ai-dev.html`）を参照してください。本リポジトリにはコピーを置きません。
 
 ### 1. ランタイムクラッシュ防止の必須ルール
 

@@ -22,9 +22,9 @@
 
 ## ドキュメントと HTML の同期ルール
 
-- `docs/deploy/local-ai-dev-auto-reload.md` を修正した際は、必ず対応する HTML（`kb/react/10-cicd-deploy/local-ai-dev-auto-reload.html`、実体: `/Volumes/Dev/Git/learning/kb/react/10-cicd-deploy/`）も同期・更新すること
-- AI駆動開発ガイド `ai-dev` の正本は **`kb/workflow/ai-dev.md` と `kb/workflow/ai-dev.html` の2ファイルのみ**（実体: `/Volumes/Dev/Git/learning/kb/workflow/`）。本リポジトリ内にコピーを作らず、参照はこのパスを使うこと。md を更新した際は必ず HTML も同期する
-- `ai-common.md` 規約に従い、Knowledge Base は `kb` 配下を参照し、旧称 `ai-asset` は使用しない
+- `docs/deploy/local-ai-dev-auto-reload.md` を修正した際は、必ず対応する HTML（`{kb}/react/10-cicd-deploy/local-ai-dev-auto-reload.html`）も同期・更新すること
+- AI駆動開発ガイド `ai-dev` の正本は **`{kb}/workflow/ai-dev.md` と `{kb}/workflow/ai-dev.html` の2ファイルのみ**。本リポジトリ内にコピーを作らず、参照はこのパスを使うこと。md を更新した際は必ず HTML も同期する
+- `ai-common.md` 規約に従い、Knowledge Base は `{kb}` 配下を参照し、旧称 `ai-asset` は使用しない
 
 
 

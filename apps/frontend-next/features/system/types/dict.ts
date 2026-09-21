@@ -4,6 +4,7 @@ export interface Dict {
   id: number;
   name: string;
   dictCode: string;
+  code?: string;
   status: number; // 1: 有効, 0: 無効
   remark?: string;
   createTime?: string;

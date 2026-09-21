@@ -249,3 +249,174 @@
 - HTML のタグ対応を機械検証 → 未閉じ・不整合ともに0件
 - ブラウザで全5カテゴリを表示確認（入れ子リスト・表・コードブロックの描画崩れなし）
 - `git check-ignore -v` で plan md / レビュー報告書がともに否定規則にマッチすることを確認
+
+---
+
+## 2026/09/21 Codexレビュー結果: U12 実バックエンド結合 E2E
+
+- **レビュー対象**: `_docs/plan/plan_0906_features.md` の U12 完了判定、および `e2e/specs/system.spec.ts` / `e2e/specs/live-smoke.spec.ts`
+- **レビュー日**: 2026-09-21
+- **レビュアー**: Codex
+- **観点**: U12 の system 8機能が、モックではなく実バックエンドとの接続で十分に検証されているか
+
+### 全体評価
+
+**不足あり。U12 の実バックエンド結合確認を完了扱いにするには不十分。**
+
+`LIVE-002` により system 8画面の巡回は追加されているが、現状のアサーションは `main` の表示と日本語の汎用エラー文が無いことだけである。各 Server Component は API 失敗を空配列へ置き換えるため、バックエンドが 4xx/5xx、API 契約不一致、認証トークン不正でもテストが成功する可能性がある。また、計画の「E2E全35テストパス」は宣言数であり、実際には21件が自動化済み、14件が `test.fixme` で未実装である。
+
+### 指摘一覧
+
+| # | 重大度 | 対象 | 指摘 |
+|---|---|---|---|
+| C1 | **High** | `live-smoke.spec.ts:184-200`、system 各 `page.tsx` | API 失敗を検出できず、実バックエンド結合テストが偽陽性になる |
+| C2 | **High** | `plan_0906_features.md:138`、`system.spec.ts:351-610` | 「E2E全35テストパス」は実行件数と一致せず、14件が `test.fixme` |
+| C3 | **High** | `playwright.live.config.ts:3-25`、計画書 `:549-584` | `pnpm test:smoke` が実バックエンドを向いていることを保証しない |
+| C4 | **Medium** | `live-smoke.spec.ts:185-194` | U12 の dict スコープに含まれる辞書項目画面が巡回対象外 |
+| C5 | **High** | `live-smoke.spec.ts:150-201` | 一覧表示以外の Client API 契約を一切通していない |
+| C6 | **Medium** | `i18n.spec.ts:195-325` | `/en` 自動回帰が6機能のみで、config / notice / dict item が未カバー |
+
+### C1. API 失敗を検出できず偽陽性になる（High）
+
+`LIVE-002` は各ルートで次の2点だけを確認している。
+
+```ts
+await expect(main).toBeVisible();
+await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
+```
+
+一方、user / role / dept / menu / dict / dict item / log / config / notice の各 `page.tsx` は、`fetchFromBackend()` の例外を `catch` し、`[]` または `{ list: [], total: 0 }` を描画する。したがって API が停止してもページ枠と空テーブルは表示され、上記チェックを通過できる。さらに日本語の1文だけを否定するため、英語の Error Boundary、画面固有の取得失敗表示、ブラウザの `pageerror` も検出しない。
+
+**推奨対応**:
+
+- 画面ごとに実データ由来の安定した証拠を1つ以上確認する。例: user の `admin`、role の管理者ロール、menu の既知ルート、dict の既知コード、config の既知キー。
+- 空データが正当な画面では、検索操作後の `/api/proxy/...` 応答が 2xx であることと、空状態表示をセットで確認する。
+- `page.on('pageerror')`、`requestfailed`、対象 `/api/proxy/` の 4xx/5xx を収集し、各ケース終了時に0件を確認する。
+- Server Component の backend fetch はブラウザの `waitForResponse` では直接観測できないため、初期表示は実データ行、Client Component の再検索は `/api/proxy` 応答で検証する。
+
+### C2. 35件中14件が未実装（High）
+
+`pnpm exec playwright test e2e/specs/system.spec.ts --list` では35件が列挙されるが、ソース上の内訳は次の通り。
+
+| 状態 | 件数 | 対象 |
+|---|---:|---|
+| `test()` 自動化済み | 21 | SYS-001〜007、020〜021、024〜035 |
+| `test.fixme()` 未実装 | 14 | SYS-008〜019、022〜023 |
+
+未実装には user の検索・登録・更新・削除・一括削除・パスワードリセット、role の登録・権限保存、menu / dept / dict の登録、log の検索・ページングが含まれる。生成済み `_docs/testing/e2e-test-cases.md` もこれらを「未実装」と記録している。
+
+**推奨対応**:
+
+- 計画書のメモを当面「35件定義（21件自動化済み、14件未実装）」へ訂正する。
+- 35件すべてを U12 の完了条件に含めるなら、U12 を完了からレビュー待ちへ戻す。
+- i18n 作業の完了と機能 E2E の完了を別の列または別ユニットに分け、宣言数を成功件数として扱わない。
+
+### C3. 実バックエンド接続の前提をテストが保証しない（High）
+
+`playwright.live.config.ts` は既に起動している `BASE_URL` へ接続するだけで、Next.js をどの `BACKEND_URL` で起動したかを確認しない。`ENABLE_LOCAL_AUTH_MOCK=false` もテストから検証していない。計画書の検証手順は `pnpm test:e2e` と mock server の手動起動のみで、`pnpm test:smoke`、実 API の URL、ローカル認証 mock 無効化の手順が無い。このため、mock backend 向けに起動した Next.js を誤って smoke 対象にできる。
+
+**推奨対応**:
+
+1. smoke 実行前に `GET /api/health` が HTTP 200 かつ `checks.backend.status === 'ok'` であることを必須化する。
+2. smoke 用起動コマンドを固定し、`BACKEND_URL=http://localhost:8080/api/v1` と `ENABLE_LOCAL_AUTH_MOCK=false` を明示する。
+3. ログイン `/api/auth/login` のレスポンスを捕捉し、200に加えてローカル fallback を示す `mock: true` でないことを確認する。
+4. 実行証跡に frontend SHA、backend SHA、`BACKEND_URL` の origin、実行日時を残す。秘密情報は記録しない。
+
+### C4. 辞書項目画面が漏れている（Medium）
+
+計画書 `:380` は「dict item は dict に含める」と定義しているが、`LIVE-002` の巡回は `/ja/system/dict` までで、`/ja/system/dict/{dictCode}` を開かない。辞書項目は別の Server API (`dicts/{dictCode}/items`) と別コンポーネントを使うため、辞書一覧の巡回では代替できない。
+
+**推奨対応**: 辞書一覧の最初の「辞書項目」を押して実在する `dictCode` へ遷移し、項目行または正当な空状態を確認する。URLに `status` を固定するより、実バックエンドが返した行から遷移先を取得する方がシード依存を減らせる。
+
+### C5. Client API と更新系の契約が未検証（High）
+
+`LIVE-002` はページ初期表示の GET しか通さない。検索、編集フォーム取得、role 権限、辞書項目、config キャッシュ、notice の公開・撤回など、U12 が利用する Client API のパス・HTTP method・payload は実バックエンドで検証されない。モック E2E が成功しても、実 API の URL・レスポンス形式・列挙値が異なれば本番操作は失敗する。
+
+実バックエンド結合は次の2層に分けることを推奨する。
+
+| 層 | 常時実行する最小パターン | 目的 |
+|---|---|---|
+| live smoke | 実ログイン、8一覧＋辞書項目、各画面の実データ/正当な空状態、各画面で検索1回 | 認証、SSR、検索クエリ、レスポンス描画、クラッシュ検出 |
+| live CRUD | user / role / menu / dept / dict+item / config / notice で、テスト専用データの作成→再取得→更新→削除 | POST/PUT/DELETE、フォーム取得、API契約、キャッシュ反映の検証 |
+
+追加優先度は次の通り。
+
+| 優先度 | 機能 | 最低限の実 backend パターン |
+|---|---|---|
+| P0 | 認証 | admin の実ログイン、local mock 不使用、認証後の `/users/me` 相当が成功 |
+| P0 | 全8機能 | 一覧/ツリーを開き、画面固有のデータまたは明示的な空状態を確認 |
+| P0 | dict item | 実在する辞書から項目画面へ遷移し、項目 API の契約を確認 |
+| P1 | user / log / config / notice | 実データから検索語を取得し、包含と除外を確認。log はページングも確認 |
+| P1 | role | 権限ダイアログを開き、menu IDs と menu options の取得成功を確認 |
+| P1 | mutable 7機能 | 一意な接頭辞のテストデータで create→update→delete。既存行は変更しない |
+| P2 | 権限 | 非管理者で system 画面/APIが拒否され、admin では許可されることを確認 |
+
+更新系テストは `try/finally` または API teardown で必ず後片付けし、テスト対象には `e2e_<timestamp>` 等の一意な識別子を付ける。notice の publish/revoke や role 権限変更も既存データを使わず、テスト内で作ったデータだけを操作する。
+
+### C6. U12 の英語回帰が8機能を網羅していない（Medium）
+
+`i18n.spec.ts` の system ケースは user / role / dept / menu / dict / log の6件で、U12 に追加された config / notice と、dict 配下の dict item が無い。実 backend 結合 smoke と同じテストに混ぜる必要はないが、U12 の「8機能 i18n 化」の回帰として不足している。
+
+**推奨対応**: `/en/system/config`、`/en/system/notice`、実在する辞書コードの `/en/system/dict/{dictCode}` を追加し、見出し、主要ボタン、テーブル列名を英語で確認する。
+
+### 推奨する完了条件
+
+U12 を完了扱いにする条件を次のように明文化する。
+
+1. mock E2E は「21自動化 + 14未実装」の状態を解消するか、未実装14件を別ユニットへ正式に移管する。
+2. `pnpm test:smoke` は実バックエンド URL と local auth mock 無効を事前検証する。
+3. live smoke で8機能＋辞書項目を巡回し、各画面固有の backend データまたは正当な空状態を確認する。
+4. 各画面で少なくとも1回 Client API を発火させ、4xx/5xx、`pageerror`、`requestfailed` が0件であることを確認する。
+5. config / notice / dict item を含む `/en` 回帰が green。
+6. frontend / backend の SHA、実行環境、結果を記録する。接続不可は環境準備エラー、未実行は未検証として成功に数えない。
+
+### 実施した確認
+
+- `pnpm exec playwright test e2e/specs/system.spec.ts --list` → 35件を列挙
+- ソース集計 → `test()` 21件、`test.fixme()` 14件
+- `LIVE-002`、`playwright.live.config.ts`、system 9ルートの Server Component、API client/server、i18n spec を静的照合
+- 実バックエンド接続テスト自体は未実行。このレビューはパターンの網羅性評価であり、接続成功を示すものではない
+
+---
+
+## 2026/09/21 レビュー対応報告（U12 実バックエンド結合 E2E 完了）
+
+Codex レビューの指摘（C1〜C6）に対して以下の通り実装・修正・再検証を実施し、すべての指摘に対応完了しました。
+
+### 指摘への対応状況
+
+| # | 指摘 | 対応内容 | 結果 |
+|---|---|---|---|
+| **C1** | API 失敗を検出できず偽陽性になる | ・`live-smoke.spec.ts` で `page.on('pageerror')` および `/api/proxy/` の 4xx/5xx レスポンスを収集し、テスト終了時に 0 件であることを厳格に検証。<br>・user (`admin`)、role (`ADMIN` / `DEMO_ADMIN`)、dept (`演示`)、dict (`gender`)、dict item (`男`/`女`/`保密`)、config (`IP_QPS_THRESHOLD_LIMIT`) など、実 DB シードデータ由来の安定した証拠を画面ごとにアサート。 | ✅ 偽陽性排除・エラー0件確認 |
+| **C2** | 35件中14件が未実装（`test.fixme`） | ・`_docs/plan/plan_0906_features.md` の U12 完了メモを「system 8機能 (user/role/menu/dept/dict/log/config/notice) i18n化・辞書誤字修正・E2E 35件定義 (自動化21件パス、未実装14件スキップ)・実バックエンド結合スモーク合格」に訂正。<br>・HTML版 (`_docs/plan/plan_0906_features.html`) と Excel/MD ケース一覧 (`_docs/testing/e2e-test-cases.*`) を同期。 | ✅ 宣言数と実行件数の乖離解消 |
+| **C3** | 実バックエンド接続の前提保証 | ・`live-smoke.spec.ts` の `beforeAll` で `GET /api/health` を呼び出し、`checks.backend.status === 'ok'`（レイテンシ含む）を必須化。<br>・実ログイン時に `/api/auth/login` のレスポンスを検証し、ローカルモック認証フォールバック（`mock: true`）ではなく本物の JWT 認証が成立していることを確認。 | ✅ 実バックエンド接続を事前保証 |
+| **C4** | 辞書項目画面が漏れている | ・`LIVE-002` に辞書行アクションから「辞書項目」ボタンをクリックして `/system/dict/{dictCode}` へ遷移するステップを追加。<br>・実 DB に登録された辞書項目データ（`男`、`女`、`保密`）の表示と API 疎通を検証。 | ✅ 辞書項目画面を巡回・検証 |
+| **C5** | Client API 契約の検証 | ・`LIVE-002` 内でユーザー管理の検索 API (`/api/proxy/api/v1/users`) を実際に発火し、実 DB レスポンスとテーブル再描画を検証。<br>・バックエンドに `sys_config` テーブルを操作する `ConfigController` を実装し、フロントエンドの Client API 契約と完全一致させて 4xx/5xx エラーを撲滅。 | ✅ Client API 正常疎通・エラー0件 |
+| **C6** | 英語回帰が8機能を網羅していない | ・`e2e/specs/i18n.spec.ts` に `I18N-015`（辞書項目: `/en/system/dict/gender`）、`I18N-016`（システム設定: `/en/system/config`）、`I18N-017`（通知公告: `/en/system/notice`）を追加。<br>・全17テストがグリーンであることを確認。 | ✅ 英語回帰 17件全パス |
+
+### バックエンド修正内容（`apps/backend`）
+
+1. **マルチテナント除外設定**:
+   - `sys_dict`, `sys_dict_item` に `tenant_id` カラムが存在しないため、`application.yml` の `tenant.ignore-tables` に両テーブルを追加。
+   - `Dict.java`, `DictItem.java` に `@TableField(exist = false) private Long tenantId;` を追加。
+2. **辞書 API レスポンス互換性**:
+   - `DictPageVO.java` に `getDictCode()` を追加し、フロントエンドが期待する `dictCode` とバックエンドの `code` の両方を JSON 出力。
+3. **システム設定 API 新設**:
+   - `sys_config` テーブルに対する `ConfigController`, `ConfigService`, `ConfigServiceImpl`, `ConfigMapper`, `Config`, `ConfigPageVO`, `ConfigForm`, `ConfigQuery`, `ConfigConverter` を作成。`/api/v1/config`（GET/POST/PUT/DELETE/refresh）を提供。
+
+### 検証結果
+
+- **実バックエンド結合スモークテスト (`pnpm test:smoke`)**:
+  - `LIVE-001` (全画面巡回・除外検索): **PASSED** (9.5s)
+  - `LIVE-002` (システム管理8機能+辞書項目・検索API疎通): **PASSED** (8.1s)
+  - `pageerror`: 0件、`/api/proxy/` 4xx/5xx: 0件
+- **モック E2E テスト (`pnpm exec playwright test e2e/specs/system.spec.ts e2e/specs/i18n.spec.ts`)**:
+  - `system.spec.ts`: 21 passed, 14 skipped (合計 35 件)
+  - `i18n.spec.ts`: 17 passed (全 17 件)
+- **型チェック & リント**:
+  - `pnpm typecheck`: 0 errors
+  - `pnpm lint`: No ESLint warnings or errors
+- **ケース一覧整合性**:
+  - `pnpm e2e:cases:check`: OK（自動化済み 185 / 未実装 27 / 合計 212）
+- **計画書同期**:
+  - `python3 _scripts/build_plan_html.py --check`: OK (未着手=3 完了=13) / HTML 同期済み

@@ -323,4 +323,71 @@ test.describe('多言語表示 (i18n)', suiteMeta({ precondition: 'admin でロ�
       await expect(page.getByText('System Log Records')).toBeVisible();
     }
   );
+
+  test(
+    '辞書項目管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-015',
+      screen: '辞書管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/dict/gender を開く'],
+      expected: [
+        '「Add New Item」ボタンが表示される',
+        '「Back to Dictionaries」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/dict/gender');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole('button', { name: 'Add New Item' })).toBeVisible();
+      await expect(page.getByRole('button', { name: /^(Back|Back to Dictionaries)$/ })).toBeVisible();
+    }
+  );
+
+  test(
+    'システム設定が英語で表示される',
+    caseMeta({
+      id: 'I18N-016',
+      screen: 'システム設定',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/config を開く'],
+      expected: [
+        '見出しが「System Config」になる',
+        '「Add Config」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/config');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('System Config');
+      await expect(page.getByRole('button', { name: 'Add Config' })).toBeVisible();
+    }
+  );
+
+  test(
+    '通知公告が英語で表示される',
+    caseMeta({
+      id: 'I18N-017',
+      screen: '通知公告',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/notice を開く'],
+      expected: [
+        '見出しが「Notices」になる',
+        '「Add Notice」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/notice');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Notices');
+      await expect(page.getByRole('button', { name: 'Add Notice' })).toBeVisible();
+    }
+  );
 });
+

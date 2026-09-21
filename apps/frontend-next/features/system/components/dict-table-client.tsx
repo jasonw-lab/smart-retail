@@ -107,7 +107,8 @@ export function DictTableClient({ initialData, initialParams }: DictTableClientP
   };
 
   const handleOpenDictItems = (dict: Dict) => {
-    router.push(`/system/dict/${dict.dictCode}?title=${encodeURIComponent(dict.name)}`);
+    const code = dict.dictCode || dict.code || '';
+    router.push(`/system/dict/${code}?title=${encodeURIComponent(dict.name)}`);
   };
 
   const totalPages = Math.ceil((displayData.total || 0) / params.pageSize);
@@ -244,7 +245,7 @@ export function DictTableClient({ initialData, initialParams }: DictTableClientP
                     </TableCell>
                     <TableCell>
                       <code className="text-sm px-2 py-0.5 bg-orange-100 text-orange-700 rounded">
-                        {dict.dictCode}
+                        {dict.dictCode || dict.code}
                       </code>
                     </TableCell>
                     <TableCell>

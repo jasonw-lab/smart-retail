@@ -146,5 +146,60 @@ test.describe(
         await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
       }
     );
+
+    test(
+      'システム管理画面巡回（ユーザー・ロール・部門・メニュー・辞書・ログ・設定・通知）がエラーなく完了する',
+      caseMeta({
+        id: 'LIVE-002',
+        screen: '全画面共通',
+        priority: 'P1',
+        perspectives: ['smoke', 'display'],
+        steps: [
+          'ログイン画面で管理者としてログインする',
+          'システム管理配下の8画面（ユーザー、ロール、部門、メニュー、辞書、ログ、設定、通知）を順に開く',
+        ],
+        expected: [
+          'どの画面もエラー画面にならず、テーブルまたはメインコンテンツが表示される',
+        ],
+      }),
+      async ({ page }) => {
+        // 1. ログイン画面へアクセス
+        await page.goto('/login');
+        await page.waitForLoadState('domcontentloaded');
+
+        // 2. 「管理者 (admin)」ボタンをクリックして自動入力
+        const adminBtn = page.getByRole('button', { name: /管理者/ });
+        await expect(adminBtn).toBeVisible({ timeout: 10000 });
+        await adminBtn.click();
+        await page.waitForTimeout(300);
+
+        // 3. ログインボタンをクリック
+        await page.click('button[type="submit"]');
+
+        // 4. ダッシュボードへ遷移したことを確認
+        await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 30000 });
+        const main = page.getByRole('main');
+        await expect(main).toBeVisible({ timeout: 10000 });
+
+        // 5. システム管理配下の全8画面を順に巡回
+        const systemRoutes = [
+          '/ja/system/user',
+          '/ja/system/role',
+          '/ja/system/dept',
+          '/ja/system/menu',
+          '/ja/system/dict',
+          '/ja/system/log',
+          '/ja/system/config',
+          '/ja/system/notice',
+        ];
+
+        for (const route of systemRoutes) {
+          await page.goto(route);
+          await expect(main).toBeVisible({ timeout: 10000 });
+          await expect(page.getByText('エラーが発生しました')).not.toBeVisible();
+        }
+      }
+    );
   }
 );
+

@@ -1,10 +1,19 @@
 import { z } from 'zod';
+import type { useTranslations } from 'next-intl';
 
-export const dictFormSchema = z.object({
-  name: z.string().min(1, '名前は必須です'),
-  dictCode: z.string().min(1, 'コードは必須です'),
-  status: z.number(),
-  remark: z.string().optional(),
-});
+type ValidationTranslation = ReturnType<typeof useTranslations<'validation'>>;
 
-export type DictFormValues = z.infer<typeof dictFormSchema>;
+export const createDictFormSchema = (t: ValidationTranslation) =>
+  z.object({
+    name: z.string().min(1, t('required')),
+    dictCode: z.string().min(1, t('required')),
+    status: z.number(),
+    remark: z.string().optional(),
+  });
+
+export type DictFormValues = z.infer<ReturnType<typeof createDictFormSchema>>;
+
+export const dictFormSchema = createDictFormSchema(
+  ((key: string) => (key === 'required' ? '必須です' : 'エラー')) as unknown as ValidationTranslation
+);
+

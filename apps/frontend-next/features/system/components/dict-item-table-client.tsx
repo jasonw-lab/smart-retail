@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import {
   Plus,
@@ -28,13 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useDictItems, useDeleteDictItems } from '../hooks/use-dict-items';
 import { DictItemDialog } from './dict-item-dialog';
@@ -51,6 +45,8 @@ export function DictItemTableClient({
   initialData,
   initialParams,
 }: DictItemTableClientProps) {
+  const t = useTranslations('system.dict');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [params, setParams] = useState<DictItemQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
@@ -114,14 +110,14 @@ export function DictItemTableClient({
           <div className="flex flex-wrap items-center gap-4">
             <Button variant="outline" size="sm" onClick={() => router.back()}>
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Back
+              {tCommon('back')}
             </Button>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Item Search</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t('keyword')}</span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="Label / Value"
+                placeholder={t('itemLabelPlaceholder')}
                 className="w-48"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
@@ -129,11 +125,11 @@ export function DictItemTableClient({
             <div className="flex items-center gap-2">
               <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
-                Search
+                {tCommon('search')}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
-                Reset
+                {tCommon('reset')}
               </Button>
             </div>
           </div>
@@ -150,7 +146,7 @@ export function DictItemTableClient({
             }}
           >
             <Plus className="mr-1 h-4 w-4" />
-            Add New Item
+            {t('addItem')}
           </Button>
           <Button
             variant="destructive"
@@ -158,7 +154,7 @@ export function DictItemTableClient({
             onClick={() => setDeleteTarget(selectedIds)}
           >
             <Trash2 className="mr-1 h-4 w-4" />
-            Batch Delete
+            {tCommon('batchDelete')}
           </Button>
         </div>
         <div className="flex items-center gap-2">
@@ -184,25 +180,25 @@ export function DictItemTableClient({
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>LABEL</TableHead>
-                <TableHead className="w-[200px]">VALUE</TableHead>
-                <TableHead className="w-24">SORT</TableHead>
-                <TableHead className="w-24">STATUS</TableHead>
-                <TableHead className="w-[200px]">OPERATIONS</TableHead>
+                <TableHead>{t('itemLabel')}</TableHead>
+                <TableHead className="w-[200px]">{t('itemValue')}</TableHead>
+                <TableHead className="w-24">{t('itemSort')}</TableHead>
+                <TableHead className="w-24">{t('status')}</TableHead>
+                <TableHead className="w-[200px]">{t('operations')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    Loading...
+                    {tCommon('loading')}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No items found
+                    {t('itemNoData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -229,7 +225,7 @@ export function DictItemTableClient({
                     <TableCell>{item.sort}</TableCell>
                     <TableCell>
                       <StatusBadge variant={item.status === 1 ? 'success' : 'muted'}>
-                        {item.status === 1 ? 'Enabled' : 'Disabled'}
+                        {item.status === 1 ? t('statusEnabled') : t('statusDisabled')}
                       </StatusBadge>
                     </TableCell>
                     <TableCell>
@@ -244,7 +240,7 @@ export function DictItemTableClient({
                           }}
                         >
                           <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          {tCommon('edit')}
                         </Button>
                         <Button
                           variant="link"
@@ -253,7 +249,7 @@ export function DictItemTableClient({
                           onClick={() => setDeleteTarget([item.id])}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tCommon('delete')}
                         </Button>
                       </div>
                     </TableCell>
@@ -267,51 +263,41 @@ export function DictItemTableClient({
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing 1-{Math.min(params.pageSize, displayData.total)} of {displayData.total} items
+            {(params.pageNum - 1) * params.pageSize + 1} -{' '}
+            {Math.min(params.pageNum * params.pageSize, displayData.total)} / {displayData.total}
           </p>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Lines per page</span>
-              <Select
-                value={String(params.pageSize)}
-                onValueChange={(v) => setParams({ ...params, pageSize: Number(v) })}
-              >
-                <SelectTrigger className="w-16">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(params.pageNum - 1)}
-                disabled={params.pageNum === 1}
-              >
-                Previous
-              </Button>
-              <Button variant="default" size="sm" className="bg-teal-600">
-                {params.pageNum}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(params.pageNum + 1)}
-                disabled={params.pageNum >= totalPages}
-              >
-                Next
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Go to</span>
-              <Input className="w-16" placeholder="1" />
-              <span className="text-sm text-muted-foreground">Page</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(params.pageNum - 1)}
+              disabled={params.pageNum === 1}
+            >
+              {tCommon('previous')}
+            </Button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              const page = i + 1;
+              return (
+                <Button
+                  key={page}
+                  variant={params.pageNum === page ? 'default' : 'outline'}
+                  size="sm"
+                  className={params.pageNum === page ? 'bg-teal-600' : ''}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </Button>
+              );
+            })}
+            {totalPages > 5 && <span className="px-2">...</span>}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(params.pageNum + 1)}
+              disabled={params.pageNum >= totalPages}
+            >
+              {tCommon('next')}
+            </Button>
           </div>
         </div>
       )}
@@ -321,27 +307,24 @@ export function DictItemTableClient({
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <List className="h-5 w-5" />
-              Dictionary Items
+              {t('itemTipTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm opacity-90">
-              Items define the actual values shown in dropdowns across the platform. Keep labels
-              clear and values stable.
-            </p>
+            <p className="text-sm opacity-90">{t('itemTipDescription')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">RECENT CHANGE</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('recentChange')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <RefreshCw className="h-8 w-8 text-teal-600" />
               <div>
                 <div className="text-2xl font-bold">02</div>
-                <div className="text-sm text-muted-foreground">New items added this week</div>
+                <div className="text-sm text-muted-foreground">{t('itemRecentChangeDesc')}</div>
               </div>
             </div>
           </CardContent>
@@ -349,14 +332,14 @@ export function DictItemTableClient({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">PLATFORM STATUS</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('platformStatus')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-8 w-8 text-green-500" />
               <div>
-                <div className="text-lg font-bold text-green-600">Synchronized</div>
-                <div className="text-sm text-muted-foreground">Last sync: 2 mins ago</div>
+                <div className="text-lg font-bold text-green-600">{t('syncStatus')}</div>
+                <div className="text-sm text-muted-foreground">{t('lastSync')}</div>
               </div>
             </div>
           </CardContent>
@@ -377,12 +360,14 @@ export function DictItemTableClient({
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete Dictionary Item"
-        description="Are you sure you want to delete the selected item(s)? This action cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteItem')}
+        description={t('deleteItemConfirm')}
+        confirmLabel={tCommon('delete')}
+        cancelLabel={tCommon('cancel')}
         variant="destructive"
         isLoading={deleteMutation.isPending}
       />
     </div>
   );
 }
+

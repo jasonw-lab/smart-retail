@@ -23,7 +23,7 @@ fi
 # パス設定（スクリプトの場所を基準に相対パス）
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR"
-BASEPATH="${BASEPATH:-/Users/wangjw/Dev/_Env/_demo/seata-mode}"
+BASEPATH="${BASEPATH:-${HOME}/Dev/_Env/_demo/seata-mode}"
 BACKUP_DIR="${BASEPATH}/nginx/apps-env/mall-retail"
 
 # バックアップ対象ファイル（プロジェクト相対パス）

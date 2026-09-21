@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronRight, ChevronDown, Building2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { useDepts } from '../hooks/use-dept';
 import type { Dept } from '../types/dept';
@@ -12,6 +13,8 @@ interface DeptTreeProps {
 }
 
 export function DeptTree({ selectedId, onSelect }: DeptTreeProps) {
+  const t = useTranslations('system.dept');
+  const tCommon = useTranslations('common');
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const { data: depts = [], isLoading } = useDepts();
 
@@ -66,11 +69,11 @@ export function DeptTree({ selectedId, onSelect }: DeptTreeProps) {
 
   return (
     <div className="border rounded-lg p-3">
-      <h3 className="font-medium mb-3 text-sm text-muted-foreground">部門</h3>
+      <h3 className="font-medium mb-3 text-sm text-muted-foreground">{t('deptName')}</h3>
       {isLoading ? (
-        <div className="text-center py-4 text-sm text-muted-foreground">読み込み中...</div>
+        <div className="text-center py-4 text-sm text-muted-foreground">{tCommon('loading')}</div>
       ) : depts.length === 0 ? (
-        <div className="text-center py-4 text-sm text-muted-foreground">部門がありません</div>
+        <div className="text-center py-4 text-sm text-muted-foreground">{t('noDepts')}</div>
       ) : (
         <div className="space-y-0.5">
           <div
@@ -81,7 +84,7 @@ export function DeptTree({ selectedId, onSelect }: DeptTreeProps) {
             onClick={() => onSelect(undefined)}
           >
             <Building2 className="h-4 w-4" />
-            <span className="text-sm">すべての部門</span>
+            <span className="text-sm">{t('allDepts')}</span>
           </div>
           {depts.map((dept) => renderNode(dept))}
         </div>

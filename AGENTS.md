@@ -194,7 +194,7 @@ make local       # Docker context を default に戻す
 
 ```bash
 cd smart-dx-backend/apps/backend
-export DOCKER_HOST=unix:///Users/wangjw/.orbstack/run/docker.sock
+export DOCKER_HOST="unix://${HOME}/.orbstack/run/docker.sock"
 mvn test -pl services/retail-be -Dtest='com.smartdx.retail.e2e.*E2ETest'
 ```
 

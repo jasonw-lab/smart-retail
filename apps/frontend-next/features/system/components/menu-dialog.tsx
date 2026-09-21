@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -18,10 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateMenu, useUpdateMenu, useMenuOptionsQuery } from '../hooks/use-menu';
-import { menuFormSchema, type MenuFormValues } from '../schemas/menu-schema';
+import { createMenuFormSchema, type MenuFormValues } from '../schemas/menu-schema';
 import { MenuType, type Menu, type MenuForm, type MenuOption } from '../types/menu';
-
-const menuSchema = menuFormSchema;
 
 type MenuFormData = MenuFormValues;
 
@@ -34,10 +32,14 @@ interface MenuDialogProps {
 
 export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
   const t = useTranslations('system.menu');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
   const createMutation = useCreateMenu();
   const updateMutation = useUpdateMenu();
   const { data: menuOptions = [] } = useMenuOptionsQuery(true);
   const isEditing = !!menu;
+
+  const menuSchema = useMemo(() => createMenuFormSchema(tValidation), [tValidation]);
 
   const form = useForm<MenuFormData>({
     resolver: zodResolver(menuSchema),
@@ -127,18 +129,18 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
     return result;
   };
 
-  const flatOptions = [{ value: 0, label: 'トップメニュー' }, ...flattenOptions(menuOptions)];
+  const flatOptions = [{ value: 0, label: t('topLevel') }, ...flattenOptions(menuOptions)];
 
   return (
     <Sheet open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'メニューの編集' : 'メニューの追加'}</SheetTitle>
+          <SheetTitle>{isEditing ? t('editTitle') : t('addTitle')}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>親メニュー</Label>
+            <Label>{t('parentMenu')}</Label>
             <Select
               value={String(form.watch('parentId'))}
               onValueChange={(v: string) => form.setValue('parentId', parseInt(v))}
@@ -157,15 +159,15 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name">メニュー名 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="メニュー名を入力" />
+            <Label htmlFor="name">{t('menuName')} *</Label>
+            <Input id="name" {...form.register('name')} placeholder={t('menuNamePlaceholder')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>タイプ</Label>
+            <Label>{t('menuType')}</Label>
             <RadioGroup
               value={String(form.watch('type'))}
               onValueChange={(v: string) => form.setValue('type', parseInt(v))}
@@ -173,15 +175,15 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value={String(MenuType.CATALOG)} id="type-catalog" />
-                <Label htmlFor="type-catalog">カタログ</Label>
+                <Label htmlFor="type-catalog">{t('typeDir')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value={String(MenuType.MENU)} id="type-menu" />
-                <Label htmlFor="type-menu">メニュー</Label>
+                <Label htmlFor="type-menu">{t('typeMenu')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value={String(MenuType.BUTTON)} id="type-button" />
-                <Label htmlFor="type-button">ボタン</Label>
+                <Label htmlFor="type-button">{t('typeButton')}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value={String(MenuType.EXTLINK)} id="type-extlink" />
@@ -199,11 +201,11 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
           {(menuType === MenuType.CATALOG || menuType === MenuType.MENU) && (
             <div className="space-y-2">
-              <Label htmlFor="routePath">パス</Label>
+              <Label htmlFor="routePath">{t('path')}</Label>
               <Input
                 id="routePath"
                 {...form.register('routePath')}
-                placeholder={menuType === MenuType.CATALOG ? '例: /system' : '例: list'}
+                placeholder={menuType === MenuType.CATALOG ? '例: /system' : t('routePathPlaceholder')}
               />
             </div>
           )}
@@ -221,13 +223,13 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
           {menuType === MenuType.MENU && (
             <div className="space-y-2">
-              <Label htmlFor="component">コンポーネント</Label>
+              <Label htmlFor="component">{t('component')}</Label>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-muted-foreground">src/views/</span>
                 <Input
                   id="component"
                   {...form.register('component')}
-                  placeholder="system/user/index"
+                  placeholder={t('componentPlaceholder')}
                   className="flex-1"
                 />
                 <span className="text-sm text-muted-foreground">.vue</span>
@@ -237,21 +239,21 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
           {menuType === MenuType.BUTTON && (
             <div className="space-y-2">
-              <Label htmlFor="perm">権限標識</Label>
-              <Input id="perm" {...form.register('perm')} placeholder="例: sys:user:add" />
+              <Label htmlFor="perm">{t('perm')}</Label>
+              <Input id="perm" {...form.register('perm')} placeholder={t('permPlaceholder')} />
             </div>
           )}
 
           {menuType !== MenuType.BUTTON && (
             <div className="space-y-2">
-              <Label htmlFor="icon">アイコン</Label>
-              <Input id="icon" {...form.register('icon')} placeholder="例: Settings, Users" />
+              <Label htmlFor="icon">{t('icon')}</Label>
+              <Input id="icon" {...form.register('icon')} placeholder={t('iconPlaceholder')} />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sort">並び順</Label>
+              <Label htmlFor="sort">{t('sort')}</Label>
               <Input
                 id="sort"
                 type="number"
@@ -261,7 +263,7 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
             </div>
             {menuType !== MenuType.BUTTON && (
               <div className="space-y-2">
-                <Label>表示状態</Label>
+                <Label>{t('visible')}</Label>
                 <Select
                   value={String(form.watch('visible'))}
                   onValueChange={(v: string) => form.setValue('visible', parseInt(v))}
@@ -270,8 +272,8 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">表示</SelectItem>
-                    <SelectItem value="0">非表示</SelectItem>
+                    <SelectItem value="1">{t('statusVisible')}</SelectItem>
+                    <SelectItem value="0">{t('statusHidden')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -287,10 +289,10 @@ export function MenuDialog({ open, onClose, parentId, menu }: MenuDialogProps) {
 
           <SheetFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </SheetFooter>
         </form>

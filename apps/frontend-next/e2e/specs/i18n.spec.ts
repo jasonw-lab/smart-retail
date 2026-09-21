@@ -191,4 +191,136 @@ test.describe('多言語表示 (i18n)', suiteMeta({ precondition: 'admin でロ�
       await expect(main.locator('h1')).toHaveText('Store List');
     }
   );
+
+  test(
+    'ユーザー管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-009',
+      screen: 'ユーザー管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/user を開く'],
+      expected: [
+        '見出しが「User Management」になる',
+        '「Add User」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/user');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('User Management');
+      await expect(page.getByRole('button', { name: 'Add User' })).toBeVisible();
+    }
+  );
+
+  test(
+    'ロール管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-010',
+      screen: 'ロール管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/role を開く'],
+      expected: [
+        '見出しが「Role Management」になる',
+        '「Add New Role」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/role');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Role Management');
+      await expect(page.getByRole('button', { name: /^(Add Role|Add New Role)$/ })).toBeVisible();
+    }
+  );
+
+  test(
+    '部門管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-011',
+      screen: '部門管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/dept を開く'],
+      expected: [
+        '見出しが「Department Management」になる',
+        '「Add Department」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/dept');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Department Management');
+      await expect(page.getByRole('button', { name: /^(Add Department|New Department)$/ })).toBeVisible();
+    }
+  );
+
+  test(
+    'メニュー管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-012',
+      screen: 'メニュー管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/menu を開く'],
+      expected: [
+        '見出しが「Menu Management」になる',
+        '「Create Menu」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/menu');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Menu Management');
+      await expect(page.getByRole('button', { name: 'Create Menu' })).toBeVisible();
+    }
+  );
+
+  test(
+    '辞書管理が英語で表示される',
+    caseMeta({
+      id: 'I18N-013',
+      screen: '辞書管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/dict を開く'],
+      expected: [
+        '見出しが「Dictionary Management」になる',
+        '「Add New Dictionary」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/dict');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Dictionary Management');
+      await expect(page.getByRole('button', { name: 'Add New Dictionary' })).toBeVisible();
+    }
+  );
+
+  test(
+    '操作ログが英語で表示される',
+    caseMeta({
+      id: 'I18N-014',
+      screen: 'ログ管理',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/system/log を開く'],
+      expected: [
+        '見出しが「Operation Log」になる',
+        '「System Log Records」カードが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/system/log');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText(/^(Operation Log|System Log)$/);
+      await expect(page.getByText('System Log Records')).toBeVisible();
+    }
+  );
 });

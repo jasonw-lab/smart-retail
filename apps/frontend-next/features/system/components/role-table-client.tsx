@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from 'next-intl';
 import { useRoles, useDeleteRoles } from '../hooks/use-role';
 import { RoleDialog } from './role-dialog';
 import { RolePermissionDialog } from './role-permission-dialog';
@@ -34,6 +35,8 @@ interface RoleTableClientProps {
 }
 
 export function RoleTableClient({ initialData, initialParams }: RoleTableClientProps) {
+  const t = useTranslations('system.role');
+  const tCommon = useTranslations('common');
   const [params, setParams] = useState<RoleQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [status, setStatus] = useState<string>(
@@ -101,40 +104,40 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Role Name / Keyword
+                {t('keyword')}
               </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="Enter role name..."
+                placeholder={t('searchPlaceholder')}
                 className="w-48"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t('status')}</span>
               <Select
                 value={status || 'all'}
                 onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
               >
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder={t('statusAll')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="1">Normal</SelectItem>
-                  <SelectItem value="0">Disabled</SelectItem>
+                  <SelectItem value="all">{t('statusAll')}</SelectItem>
+                  <SelectItem value="1">{t('statusActive')}</SelectItem>
+                  <SelectItem value="0">{t('statusDisabled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
-                Search
+                {tCommon('search')}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
-                Reset
+                {tCommon('reset')}
               </Button>
             </div>
           </div>
@@ -152,7 +155,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
             }}
           >
             <Plus className="mr-1 h-4 w-4" />
-            Add New Role
+            {t('add')}
           </Button>
           <Button
             variant="destructive"
@@ -160,7 +163,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
             onClick={() => setDeleteTarget(selectedIds)}
           >
             <Trash2 className="mr-1 h-4 w-4" />
-            Bulk Delete
+            {tCommon('batchDelete')}
           </Button>
         </div>
         <div className="flex items-center gap-2">
@@ -187,25 +190,25 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>ROLE NAME</TableHead>
-                <TableHead className="w-[140px]">ROLE CODE</TableHead>
-                <TableHead className="w-24">STATUS</TableHead>
-                <TableHead className="w-24 text-center">SORT ORDER</TableHead>
-                <TableHead className="w-[200px]">OPERATIONS</TableHead>
+                <TableHead>{t('roleName')}</TableHead>
+                <TableHead className="w-[140px]">{t('roleCode')}</TableHead>
+                <TableHead className="w-24">{t('status')}</TableHead>
+                <TableHead className="w-24 text-center">{t('sort')}</TableHead>
+                <TableHead className="w-[200px]">{t('operations')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    Loading...
+                    {tCommon('loading')}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No roles found
+                    {t('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -226,7 +229,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                     </TableCell>
                     <TableCell>
                       <StatusBadge variant={role.status === 1 ? 'success' : 'muted'}>
-                        {role.status === 1 ? 'Normal' : 'Disabled'}
+                        {role.status === 1 ? t('statusActive') : t('statusDisabled')}
                       </StatusBadge>
                     </TableCell>
                     <TableCell className="text-center">{role.sort}</TableCell>
@@ -239,7 +242,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                           onClick={() => setPermTarget(role)}
                         >
                           <Shield className="mr-1 h-3 w-3" />
-                          Permissions
+                          {t('permissions')}
                         </Button>
                         <Button
                           variant="link"
@@ -251,7 +254,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                           }}
                         >
                           <Edit className="mr-1 h-3 w-3" />
-                          Edit
+                          {tCommon('edit')}
                         </Button>
                         <Button
                           variant="link"
@@ -260,7 +263,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
                           onClick={() => setDeleteTarget([role.id])}
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
+                          {tCommon('delete')}
                         </Button>
                       </div>
                     </TableCell>
@@ -275,9 +278,8 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(params.pageNum - 1) * params.pageSize + 1} to{' '}
-            {Math.min(params.pageNum * params.pageSize, displayData.total)} of {displayData.total}{' '}
-            entries
+            {(params.pageNum - 1) * params.pageSize + 1} -{' '}
+            {Math.min(params.pageNum * params.pageSize, displayData.total)} / {displayData.total}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -286,7 +288,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
               onClick={() => handlePageChange(params.pageNum - 1)}
               disabled={params.pageNum === 1}
             >
-              Previous
+              {tCommon('previous')}
             </Button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const page = i + 1;
@@ -309,7 +311,7 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
               onClick={() => handlePageChange(params.pageNum + 1)}
               disabled={params.pageNum >= totalPages}
             >
-              Next
+              {tCommon('next')}
             </Button>
           </div>
         </div>
@@ -341,9 +343,9 @@ export function RoleTableClient({ initialData, initialParams }: RoleTableClientP
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete Role"
-        description="Are you sure you want to delete the selected role(s)? This action cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteConfirm')}
+        description={t('deleteConfirmMessage')}
+        confirmLabel={tCommon('delete')}
         variant="destructive"
         isLoading={deleteMutation.isPending}
       />

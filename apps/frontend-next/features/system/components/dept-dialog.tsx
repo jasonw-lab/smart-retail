@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -23,10 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateDept, useUpdateDept, useDeptOptions } from '../hooks/use-dept';
-import { deptFormSchema, type DeptFormValues } from '../schemas/dept-schema';
+import { createDeptFormSchema, type DeptFormValues } from '../schemas/dept-schema';
 import type { Dept, DeptOption } from '../types/dept';
-
-const deptSchema = deptFormSchema;
 
 type DeptFormData = DeptFormValues;
 
@@ -39,10 +37,14 @@ interface DeptDialogProps {
 
 export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
   const t = useTranslations('system.dept');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
   const createMutation = useCreateDept();
   const updateMutation = useUpdateDept();
   const { data: deptOptions = [] } = useDeptOptions();
   const isEditing = !!dept;
+
+  const deptSchema = useMemo(() => createDeptFormSchema(tValidation), [tValidation]);
 
   const form = useForm<DeptFormData>({
     resolver: zodResolver(deptSchema),
@@ -105,18 +107,18 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
     return result;
   };
 
-  const flatOptions = [{ value: 0, label: 'トップレベル' }, ...flattenOptions(deptOptions)];
+  const flatOptions = [{ value: 0, label: t('topLevel') }, ...flattenOptions(deptOptions)];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '部門の編集' : '部門の追加'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('editTitle') : t('addTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label>親部門</Label>
+            <Label>{t('parentDept')}</Label>
             <Select
               value={String(form.watch('parentId'))}
               onValueChange={(v) => form.setValue('parentId', parseInt(v))}
@@ -135,16 +137,16 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name">部門名 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="部門名を入力" />
+            <Label htmlFor="name">{t('deptName')} *</Label>
+            <Input id="name" {...form.register('name')} placeholder={t('deptNamePlaceholder')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="code">コード *</Label>
-            <Input id="code" {...form.register('code')} placeholder="例: SALES, HR" />
+            <Label htmlFor="code">{t('deptCode')} *</Label>
+            <Input id="code" {...form.register('code')} placeholder={t('deptCodePlaceholder')} />
             {form.formState.errors.code && (
               <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
             )}
@@ -152,7 +154,7 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sort">並び順</Label>
+              <Label htmlFor="sort">{t('orderNum')}</Label>
               <Input
                 id="sort"
                 type="number"
@@ -161,7 +163,7 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label>状態</Label>
+              <Label>{t('status')}</Label>
               <Select
                 value={String(form.watch('status'))}
                 onValueChange={(v) => form.setValue('status', parseInt(v))}
@@ -170,8 +172,8 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">有効</SelectItem>
-                  <SelectItem value="0">無効</SelectItem>
+                  <SelectItem value="1">{t('statusNormal')}</SelectItem>
+                  <SelectItem value="0">{t('statusDisabled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -179,10 +181,10 @@ export function DeptDialog({ open, onClose, parentId, dept }: DeptDialogProps) {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </DialogFooter>
         </form>

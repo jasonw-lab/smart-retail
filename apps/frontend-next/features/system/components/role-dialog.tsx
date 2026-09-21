@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateRole, useUpdateRole } from '../hooks/use-role';
-import { roleFormSchema, type RoleFormValues } from '../schemas/role-schema';
+import { createRoleFormSchema, type RoleFormValues } from '../schemas/role-schema';
 import type { Role } from '../types/role';
 
 interface RoleDialogProps {
@@ -31,12 +32,17 @@ interface RoleDialogProps {
 }
 
 export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
+  const t = useTranslations('system.role');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
   const createMutation = useCreateRole();
   const updateMutation = useUpdateRole();
   const isEditing = !!role;
 
+  const roleSchema = useMemo(() => createRoleFormSchema(tValidation), [tValidation]);
+
   const form = useForm<RoleFormValues>({
-    resolver: zodResolver(roleFormSchema),
+    resolver: zodResolver(roleSchema),
     defaultValues: {
       name: '',
       code: '',
@@ -83,28 +89,28 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '役割の編集' : '役割の追加'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('editTitle') : t('addTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">役割名 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="役割名を入力" />
+            <Label htmlFor="name">{t('roleName')} *</Label>
+            <Input id="name" {...form.register('name')} placeholder={t('roleNamePlaceholder')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="code">コード *</Label>
-            <Input id="code" {...form.register('code')} placeholder="例: ADMIN, USER" />
+            <Label htmlFor="code">{t('roleCode')} *</Label>
+            <Input id="code" {...form.register('code')} placeholder={t('roleCodePlaceholder')} />
             {form.formState.errors.code && (
               <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>データスコープ</Label>
+            <Label>{t('dataScope')}</Label>
             <Select
               value={String(form.watch('dataScope'))}
               onValueChange={(v) => form.setValue('dataScope', parseInt(v))}
@@ -113,17 +119,17 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">全データ</SelectItem>
-                <SelectItem value="2">部門＋子部門</SelectItem>
-                <SelectItem value="3">部門のみ</SelectItem>
-                <SelectItem value="4">本人のみ</SelectItem>
+                <SelectItem value="1">{t('dataScopeAll')}</SelectItem>
+                <SelectItem value="2">{t('dataScopeDeptAndSub')}</SelectItem>
+                <SelectItem value="3">{t('dataScopeDept')}</SelectItem>
+                <SelectItem value="4">{t('dataScopeSelf')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>状態</Label>
+              <Label>{t('status')}</Label>
               <Select
                 value={String(form.watch('status'))}
                 onValueChange={(v) => form.setValue('status', parseInt(v))}
@@ -132,13 +138,13 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">正常</SelectItem>
-                  <SelectItem value="0">停止</SelectItem>
+                  <SelectItem value="1">{t('statusActive')}</SelectItem>
+                  <SelectItem value="0">{t('statusDisabled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sort">並び順</Label>
+              <Label htmlFor="sort">{t('sort')}</Label>
               <Input
                 id="sort"
                 type="number"
@@ -150,10 +156,10 @@ export function RoleDialog({ open, onClose, role }: RoleDialogProps) {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </DialogFooter>
         </form>

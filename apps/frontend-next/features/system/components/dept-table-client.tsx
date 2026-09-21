@@ -77,6 +77,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
   const displayData = isError ? initialData : data;
   const deleteMutation = useDeleteDepts();
   const t = useTranslations('system.dept');
+  const tCommon = useTranslations('common');
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -214,7 +215,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
           </TableCell>
           <TableCell>
             <StatusBadge variant={dept.status === 1 ? 'success' : 'error'}>
-              {dept.status === 1 ? 'NORMAL' : 'DISABLED'}
+              {dept.status === 1 ? t('statusNormal') : t('statusDisabled')}
             </StatusBadge>
           </TableCell>
           <TableCell className="text-center">{dept.sort}</TableCell>
@@ -229,7 +230,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
                   setDialogOpen(true);
                 }}
               >
-                Edit
+                {tCommon('edit')}
               </Button>
               <Button
                 variant="link"
@@ -240,7 +241,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
                   setDialogOpen(true);
                 }}
               >
-                Add Sub
+                {t('addChild')}
               </Button>
               <Button
                 variant="link"
@@ -248,7 +249,7 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
                 className="text-red-600 p-0 h-auto"
                 onClick={() => setDeleteTarget([dept.id])}
               >
-                Delete
+                {tCommon('delete')}
               </Button>
             </div>
           </TableCell>
@@ -293,41 +294,41 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t('keyword')}</span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="Department Name"
+                placeholder={t('searchPlaceholder')}
                 className="w-48"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Department Status
+                {t('status')}
               </span>
               <Select
                 value={status || 'all'}
                 onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
               >
                 <SelectTrigger className="w-24">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder={t('statusAll')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="1">Normal</SelectItem>
-                  <SelectItem value="0">Disabled</SelectItem>
+                  <SelectItem value="all">{t('statusAll')}</SelectItem>
+                  <SelectItem value="1">{t('statusNormal')}</SelectItem>
+                  <SelectItem value="0">{t('statusDisabled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
-                Search
+                {tCommon('search')}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
-                Reset
+                {tCommon('reset')}
               </Button>
             </div>
           </div>
@@ -345,11 +346,11 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             }}
           >
             <Plus className="mr-1 h-4 w-4" />
-            New Department
+            {t('add')}
           </Button>
           <Button variant="outline" onClick={expandAll}>
             <ChevronDown className="mr-1 h-4 w-4" />
-            Expand All
+            {t('expandAll')}
           </Button>
         </div>
         <div className="flex items-center gap-2">
@@ -366,25 +367,25 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="w-12" />
-                <TableHead>Department Name</TableHead>
-                <TableHead className="w-[150px]">Department Code</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-24 text-center">Sort Order</TableHead>
-                <TableHead className="w-[200px]">Operations</TableHead>
+                <TableHead>{t('deptName')}</TableHead>
+                <TableHead className="w-[150px]">{t('deptCode')}</TableHead>
+                <TableHead className="w-24">{t('status')}</TableHead>
+                <TableHead className="w-24 text-center">{t('orderNum')}</TableHead>
+                <TableHead className="w-[200px]">{t('operations')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    Loading...
+                    {tCommon('loading')}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No departments found
+                    {t('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -399,13 +400,13 @@ export function DeptTableClient({ initialData }: DeptTableClientProps) {
         <p className="text-sm text-muted-foreground">Total {totalItems} items</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled>
-            Previous
+            {tCommon('previous')}
           </Button>
           <Button variant="default" size="sm" className="bg-teal-600">
             1
           </Button>
           <Button variant="outline" size="sm" disabled>
-            Next
+            {tCommon('next')}
           </Button>
         </div>
       </div>

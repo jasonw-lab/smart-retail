@@ -63,6 +63,7 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
   const displayData = isError ? initialData : data;
   const deleteMutation = useDeleteMenu();
   const t = useTranslations('system.menu');
+  const tCommon = useTranslations('common');
 
   const countTotal = (menus: Menu[]): number =>
     menus.reduce((acc, menu) => acc + 1 + (menu.children ? countTotal(menu.children) : 0), 0);
@@ -142,6 +143,19 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
     }
   };
 
+  const getMenuTypeLabel = (type: number): string => {
+    switch (type) {
+      case MenuType.CATALOG:
+        return t('typeDir');
+      case MenuType.MENU:
+        return t('typeMenu');
+      case MenuType.BUTTON:
+        return t('typeButton');
+      default:
+        return '-';
+    }
+  };
+
   const renderMenuRow = (menu: Menu, level: number = 0): React.ReactNode => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isExpanded = expandedIds.has(menu.id);
@@ -172,7 +186,7 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
           </TableCell>
           <TableCell>
             <StatusBadge variant={getTypeVariant(menu.type)}>
-              {MenuTypeLabel[menu.type]}
+              {getMenuTypeLabel(menu.type)}
             </StatusBadge>
           </TableCell>
           <TableCell className="font-mono text-sm text-muted-foreground">
@@ -183,7 +197,7 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
           </TableCell>
           <TableCell>
             <StatusBadge variant={menu.visible === 1 ? 'success' : 'muted'}>
-              {menu.visible === 1 ? 'Visible' : 'Hidden'}
+              {menu.visible === 1 ? t('statusVisible') : t('statusHidden')}
             </StatusBadge>
           </TableCell>
           <TableCell className="text-center">{menu.sort}</TableCell>
@@ -265,40 +279,40 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Keyword Search
+                {t('keyword')}
               </span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="Enter menu name..."
+                placeholder={t('searchPlaceholder')}
                 className="w-48"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t('status')}</span>
               <Select
                 value={status || 'all'}
                 onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
               >
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder={t('statusAll')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="1">Visible</SelectItem>
-                  <SelectItem value="0">Hidden</SelectItem>
+                  <SelectItem value="all">{t('statusAll')}</SelectItem>
+                  <SelectItem value="1">{t('statusVisible')}</SelectItem>
+                  <SelectItem value="0">{t('statusHidden')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
-                Search
+                {tCommon('search')}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
-                Reset
+                {tCommon('reset')}
               </Button>
             </div>
             <div className="ml-auto">
@@ -310,7 +324,7 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
                 }}
               >
                 <Plus className="mr-1 h-4 w-4" />
-                Create Menu
+                {t('createMenu')}
               </Button>
             </div>
           </div>
@@ -323,27 +337,27 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="min-w-[250px]">MENU NAME</TableHead>
-                <TableHead className="w-24">TYPE</TableHead>
-                <TableHead className="w-[150px]">ROUTE PATH</TableHead>
-                <TableHead className="w-[200px]">COMPONENT</TableHead>
-                <TableHead className="w-24">STATUS</TableHead>
-                <TableHead className="w-20 text-center">SORT</TableHead>
-                <TableHead className="w-32">OPER</TableHead>
+                <TableHead className="min-w-[250px]">{t('menuName')}</TableHead>
+                <TableHead className="w-24">{t('menuType')}</TableHead>
+                <TableHead className="w-[150px]">{t('routePath')}</TableHead>
+                <TableHead className="w-[200px]">{t('component')}</TableHead>
+                <TableHead className="w-24">{t('visible')}</TableHead>
+                <TableHead className="w-20 text-center">{t('sort')}</TableHead>
+                <TableHead className="w-32">{t('operations')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    Loading...
+                    {tCommon('loading')}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    No menus found
+                    {t('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -358,13 +372,13 @@ export function MenuTableClient({ initialData }: MenuTableClientProps) {
         <p className="text-sm text-muted-foreground">Total {totalItems} items</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled>
-            Previous
+            {tCommon('previous')}
           </Button>
           <Button variant="default" size="sm" className="bg-teal-600">
             1
           </Button>
           <Button variant="outline" size="sm" disabled>
-            Next
+            {tCommon('next')}
           </Button>
         </div>
       </div>

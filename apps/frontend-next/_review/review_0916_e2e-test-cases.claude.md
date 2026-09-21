@@ -57,7 +57,7 @@
 
 | # | 対象箇所 | 指摘内容 | 推奨対応 | 追加ケース |
 | :--- | :--- | :--- | :--- | :--- |
-| **R05** | `playwright.config.ts:10`、`live-smoke.spec.ts:9,54,65`（LIVE-001） | 実機用スモークが `testIgnore` 無しでモック環境の `pnpm test:e2e` にも含まれ、**モック相手に green になる**（実機を検証した気になる）。スクリーンショットを個人の絶対パス `/Users/wangjw/.gemini/...` へ保存しており、他環境・CI で書き込みに失敗する | `playwright.config.ts` に `testIgnore: /live-smoke/` を追加。保存先は `testInfo.outputPath()` に変更 | － |
+| **R05** | `playwright.config.ts:10`、`live-smoke.spec.ts:9,54,65`（LIVE-001） | 実機用スモークが `testIgnore` 無しでモック環境の `pnpm test:e2e` にも含まれ、**モック相手に green になる**（実機を検証した気になる）。スクリーンショットを個人の絶対パス `~/.gemini/...` へ保存しており、他環境・CI で書き込みに失敗する | `playwright.config.ts` に `testIgnore: /live-smoke/` を追加。保存先は `testInfo.outputPath()` に変更 | － |
 | **R06** | `system.spec.ts:11,64,116,155,202,249`（SYS-001〜006） | システム管理は **ダイアログの開閉だけ**。Search / Reset は押すだけで結果を確認していない。パスワードリセット・一括削除・権限保存・ログのページ送りが未カバー | 画面ごとに検索・登録・更新・削除を分けたケースにする（plan_0906 U12 の i18n 対応と同時に進めると文言照合の手戻りが少ない） | SYS-008〜019, SYS-022, SYS-023 |
 | **R07** | `products-crud.spec.ts`、`products.spec.ts` | 商品管理だけ 8 大パターンが未適用（U6 以降で他画面は拡充済み）。カテゴリ絞り込み（`product-table-client.tsx:81`）・除外・0件・ページ送り・リセット後の全件復帰が無い | stores / devices spec と同じ構成で追加する | PRD-007〜010, PRD-013 |
 | **R08** | `products-crud.spec.ts:97,119`、`stores.spec.ts:203,242`、`inventory.spec.ts:318,438`、`alerts.spec.ts:31,76`、`dashboard.spec.ts:55` | **件数に含まれているが、結果まで検証していない。** 編集は初期値の確認のみ（PRD-005 / STR-008）、削除は反映未確認（PRD-006 / STR-010）、補充はトースト・数量未確認（INV-012）、CSV はボタン活性のみ（INV-017）、優先度タブは絞り込み結果未確認（ALT-002）、通知設定はクリックのみ（ALT-004）、KPI はタイトルのみ（DASH-003） | 各テストの `note` に弱点を明記済み。補完ケースを実装したら、元テストと統合するか `note` を消す | PRD-011, PRD-012, STR-011, STR-012, INV-020, INV-021, ALT-008, ALT-010, DASH-007 |

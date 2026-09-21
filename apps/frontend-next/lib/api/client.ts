@@ -47,6 +47,11 @@ function isMutatingMethod(method?: string): boolean {
   return m === 'POST' || m === 'PUT' || m === 'PATCH' || m === 'DELETE';
 }
 
+function isIdempotentMethod(method?: string): boolean {
+  const m = method?.toUpperCase() ?? 'GET';
+  return m === 'GET' || m === 'HEAD';
+}
+
 class ApiError extends Error {
   constructor(
     message: string,
@@ -91,7 +96,10 @@ function redirectToLogin(redirectPath?: string) {
   if (typeof window === 'undefined') return;
   const locale = getUserLocale();
   const base = locale === 'ja' ? '' : `/${locale}`;
-  const redirect = redirectPath ?? window.location.pathname;
+  let redirect = redirectPath;
+  if (!redirect || redirect.startsWith('/api/')) {
+    redirect = window.location.pathname + window.location.search;
+  }
   window.location.href = `${base}/login?redirect=${encodeURIComponent(redirect)}`;
 }
 
@@ -132,8 +140,9 @@ export async function fetchApi<T>(
   const needsCsrf = isMutatingMethod(options?.method);
   let csrfToken = needsCsrf ? await fetchCsrfToken() : null;
   let csrfRetried = false;
+  const canRetry = isIdempotentMethod(options?.method);
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= (canRetry ? MAX_RETRIES : 0); attempt++) {
     const { signal, cleanup } = createAbortSignal(timeoutMs, options?.signal);
     try {
       const response = await fetch(path, {
@@ -148,7 +157,6 @@ export async function fetchApi<T>(
         credentials: 'include', // Cookie送信
         signal,
       });
-      cleanup();
 
       if (response.status === 401 && !isRetry) {
         // 401かつ初回リクエストの場合、リフレッシュを試行
@@ -157,7 +165,7 @@ export async function fetchApi<T>(
         if (isRefreshing && refreshPromise) {
           const refreshed = await refreshPromise;
           if (refreshed) {
-            return fetchApi<T>(path, options, true);
+            return await fetchApi<T>(path, options, true);
           }
         } else {
           // リフレッシュ開始
@@ -168,7 +176,7 @@ export async function fetchApi<T>(
             const refreshed = await refreshPromise;
             if (refreshed) {
               // リフレッシュ成功 - 元のリクエストをリトライ
-              return fetchApi<T>(path, options, true);
+              return await fetchApi<T>(path, options, true);
             }
           } finally {
             isRefreshing = false;
@@ -177,13 +185,13 @@ export async function fetchApi<T>(
         }
 
         // リフレッシュ失敗 - ログインページへ
-        redirectToLogin(path);
+        redirectToLogin();
         throw new ApiError('Unauthorized', 401);
       }
 
       if (response.status === 401) {
         // リトライ後も401 - ログインページへ
-        redirectToLogin(path);
+        redirectToLogin();
         throw new ApiError('Unauthorized', 401);
       }
 
@@ -208,17 +216,32 @@ export async function fetchApi<T>(
         return undefined as T;
       }
 
-      return response.json();
+      return (await response.json()) as T;
     } catch (error) {
-      cleanup();
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      // ユーザー中断やAbortErrorは即座に中断して再試行しない
+      if (lastError.name === 'AbortError' || options?.signal?.aborted) {
+        break;
+      }
+
+      // 非冪等メソッドまたはリトライ上限超過時は再試行しない
+      if (!canRetry || attempt >= MAX_RETRIES) {
+        break;
+      }
+
       const isNetworkError =
         lastError.name === 'TypeError' ||
-        lastError.message.includes('fetch') ||
-        lastError.name === 'AbortError';
-      if (!isNetworkError || attempt >= MAX_RETRIES) break;
+        lastError.message.includes('fetch');
+
+      if (!isNetworkError) {
+        break;
+      }
+
       // 簡易 exponential backoff (100ms, 200ms)
       await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** attempt));
+    } finally {
+      cleanup();
     }
   }
 

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { userApiServer } from '@/features/system/lib/user-api.server';
 import { UserTableClient } from '@/features/system/components/user-table-client';
 import type { UserQuery, UserPageResult } from '@/features/system/types/user';
@@ -14,6 +15,7 @@ interface SearchParams {
 
 export default async function UserPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations('system.user');
   const params: UserQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
     pageSize: 10,
@@ -34,8 +36,8 @@ export default async function UserPage({ searchParams }: { searchParams: Promise
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <p className="text-muted-foreground">Manage system user accounts and permissions</p>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

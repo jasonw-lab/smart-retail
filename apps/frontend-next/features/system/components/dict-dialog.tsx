@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateDict, useUpdateDict } from '../hooks/use-dict';
-import { dictFormSchema, type DictFormValues } from '../schemas/dict-schema';
+import { createDictFormSchema, type DictFormValues } from '../schemas/dict-schema';
 import type { Dict } from '../types/dict';
 
 interface DictDialogProps {
@@ -32,12 +33,18 @@ interface DictDialogProps {
 }
 
 export function DictDialog({ open, onClose, dict }: DictDialogProps) {
+  const t = useTranslations('system.dict');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
+
   const createMutation = useCreateDict();
   const updateMutation = useUpdateDict();
   const isEditing = !!dict;
 
+  const schema = useMemo(() => createDictFormSchema(tValidation), [tValidation]);
+
   const form = useForm<DictFormValues>({
-    resolver: zodResolver(dictFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       dictCode: '',
@@ -81,24 +88,24 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '字典の編集' : '字典の追加'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('editTitle') : t('addTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">名前 *</Label>
-            <Input id="name" {...form.register('name')} placeholder="字典名を入力" />
+            <Label htmlFor="name">{t('dictName')} *</Label>
+            <Input id="name" {...form.register('name')} placeholder={t('dictNamePlaceholder')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dictCode">コード *</Label>
+            <Label htmlFor="dictCode">{t('dictCode')} *</Label>
             <Input
               id="dictCode"
               {...form.register('dictCode')}
-              placeholder="例: gender, status"
+              placeholder={t('dictCodePlaceholder')}
               disabled={isEditing}
             />
             {form.formState.errors.dictCode && (
@@ -107,7 +114,7 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>状態</Label>
+            <Label>{t('status')}</Label>
             <Select
               value={String(form.watch('status'))}
               onValueChange={(v) => form.setValue('status', parseInt(v))}
@@ -116,23 +123,23 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">有効</SelectItem>
-                <SelectItem value="0">無効</SelectItem>
+                <SelectItem value="1">{t('statusEnabled')}</SelectItem>
+                <SelectItem value="0">{t('statusDisabled')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="remark">備考</Label>
-            <Textarea id="remark" {...form.register('remark')} placeholder="備考を入力" rows={3} />
+            <Label htmlFor="remark">{t('remark')}</Label>
+            <Textarea id="remark" {...form.register('remark')} placeholder={t('remarkPlaceholder')} rows={3} />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </DialogFooter>
         </form>
@@ -140,3 +147,4 @@ export function DictDialog({ open, onClose, dict }: DictDialogProps) {
     </Dialog>
   );
 }
+

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,6 +19,8 @@ interface RolePermissionDialogProps {
 }
 
 export function RolePermissionDialog({ open, onClose, role }: RolePermissionDialogProps) {
+  const t = useTranslations('system.role');
+  const tCommon = useTranslations('common');
   const [search, setSearch] = useState('');
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -150,7 +153,7 @@ export function RolePermissionDialog({ open, onClose, role }: RolePermissionDial
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-[500px] sm:max-w-[500px]">
         <SheetHeader>
-          <SheetTitle>【{role?.name}】権限設定</SheetTitle>
+          <SheetTitle>{t('permTitle', { roleName: role?.name ?? '' })}</SheetTitle>
         </SheetHeader>
 
         <div className="py-4">
@@ -159,7 +162,7 @@ export function RolePermissionDialog({ open, onClose, role }: RolePermissionDial
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="メニュー名で検索..."
+              placeholder={t('searchPlaceholder')}
               className="pl-9"
             />
           </div>
@@ -171,10 +174,10 @@ export function RolePermissionDialog({ open, onClose, role }: RolePermissionDial
 
         <SheetFooter>
           <Button variant="outline" onClick={onClose}>
-            キャンセル
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? '保存中...' : '保存'}
+            {updateMutation.isPending ? tCommon('saving') : tCommon('save')}
           </Button>
         </SheetFooter>
       </SheetContent>

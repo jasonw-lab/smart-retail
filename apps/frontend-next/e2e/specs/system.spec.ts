@@ -39,20 +39,20 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
         page.locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`).getByText('本社').first()
       ).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await page.getByRole('button', { name: 'Add User' }).click();
-      await expect(page.getByText('ユーザーの追加')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Add User|ユーザー追加)$/ }).click();
+      await expect(page.getByRole('heading', { name: /^(ユーザーの追加|Add User)$/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
-      await page.getByRole('button', { name: 'Edit' }).first().click();
-      await expect(page.getByText('ユーザーの編集')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Edit|編集)$/ }).first().click();
+      await expect(page.getByRole('heading', { name: /^(ユーザーの編集|Edit User)$/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
       await page
         .locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`)
-        .getByRole('button', { name: /^Delete$/ })
+        .getByRole('button', { name: /^(Delete|削除)$/ })
         .first()
         .click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
@@ -86,26 +86,28 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
     async ({ page }) => {
       await page.goto('/system/role');
       await expect(page.getByRole('main')).toBeVisible();
-      await expect(page.getByText('ADMIN')).toBeVisible();
+      await expect(
+        page.locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`).getByText('ADMIN').first()
+      ).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await page.getByRole('button', { name: 'Add New Role' }).click();
-      await expect(page.getByText('役割の追加')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Add Role|Add New Role|ロール追加)$/ }).click();
+      await expect(page.getByRole('heading', { name: /^(役割の追加|Add Role)$/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
-      await page.getByRole('button', { name: 'Permissions' }).first().click();
-      await expect(page.getByText('権限設定')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Permissions|権限設定)$/ }).first().click();
+      await expect(page.getByRole('heading', { name: /(権限設定|Set Permissions)/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
-      await page.getByRole('button', { name: 'Edit' }).first().click();
-      await expect(page.getByText('役割の編集')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Edit|編集)$/ }).first().click();
+      await expect(page.getByRole('heading', { name: /^(役割の編集|Edit Role)$/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
       await page
         .locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`)
-        .getByRole('button', { name: /^Delete$/ })
+        .getByRole('button', { name: /^(Delete|削除)$/ })
         .first()
         .click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
@@ -136,14 +138,14 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
     async ({ page }) => {
       await page.goto('/system/menu');
       await expect(page.getByRole('main')).toBeVisible();
-      await expect(page.getByRole('main').getByText('ダッシュボード').first()).toBeVisible();
+      await expect(page.getByRole('main').getByText(/^(ダッシュボード|Dashboard)$/).first()).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await page.getByRole('button', { name: 'Create Menu' }).click();
-      await expect(page.getByText('メニューの追加')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Create Menu|メニュー追加)$/ }).click();
+      await expect(page.getByText(/^(メニューの追加|Add Menu)$/)).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
       // メニュー行の削除アイコンをクリック
       await page.locator('table button:has(svg[class*="lucide-trash2"])').first().click();
@@ -178,20 +180,20 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
       await expect(page.getByRole('main')).toBeVisible();
       await expect(page.getByText('本社')).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await page.getByRole('button', { name: 'New Department' }).click();
-      await expect(page.getByText('部門の追加')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Add Department|New Department|部門追加)$/ }).click();
+      await expect(page.getByText(/^(部門の追加|Add Department)$/)).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
-      await page.getByRole('button', { name: 'Edit' }).first().click();
-      await expect(page.getByText('部門の編集')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Edit|編集)$/ }).first().click();
+      await expect(page.getByText(/^(部門の編集|Edit Department)$/)).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
       await page
         .locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`)
-        .getByRole('button', { name: /^Delete$/ })
+        .getByRole('button', { name: /^(Delete|削除)$/ })
         .first()
         .click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
@@ -215,30 +217,30 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
       ],
       expected: [
         'ステータスが一覧に表示される',
-        '「字典の追加」「字典の編集」ダイアログが開く',
+        '「辞書の追加」「辞書の編集」ダイアログが開く',
         '削除の確認ダイアログが開く',
       ],
-      note: 'ダイアログの開閉のみ。検索結果・保存・削除の確定は検証していない。「字典」は誤字で、plan_0906 U12 で「辞書」に直す予定',
+      note: 'ダイアログの開閉のみ。検索結果・保存・削除の確定は検証していない。「字典」は「辞書」に修正済み',
     }),
     async ({ page }) => {
       await page.goto('/system/dict');
       await expect(page.getByRole('main')).toBeVisible();
-      await expect(page.getByText('ステータス')).toBeVisible();
+      await expect(page.locator('tbody').getByText('ステータス')).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await page.getByRole('button', { name: 'Add New Dictionary' }).click();
-      await expect(page.getByText('字典の追加')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Add New Dictionary|辞書追加)$/ }).click();
+      await expect(page.getByRole('heading', { name: /((辞書|字典)の追加|Add Dictionary)/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
-      await page.getByRole('button', { name: 'Edit' }).first().click();
-      await expect(page.getByText('字典の編集')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
+      await page.getByRole('button', { name: /^(Edit|編集)$/ }).first().click();
+      await expect(page.getByRole('heading', { name: /((辞書|字典)の編集|Edit Dictionary)/ })).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
 
       await page
         .locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`)
-        .getByRole('button', { name: /^Delete$/ })
+        .getByRole('button', { name: /^(Delete|削除)$/ })
         .first()
         .click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
@@ -255,24 +257,24 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
       perspectives: ['display'],
       steps: ['/system/log を開く', 'Search・Reset を押す'],
       expected: [
-        '「System Log Records」と admin が表示される',
-        '「Module Activity」「Avg. Response Time」が表示される',
+        '「操作ログ一覧」と admin が表示される',
+        '「操作モジュール分布」「システム応答時間」が表示される',
       ],
       note: '検索結果・ページ送りは検証していない → SYS-022 / SYS-023',
     }),
     async ({ page }) => {
       await page.goto('/system/log');
       await expect(page.getByRole('main')).toBeVisible();
-      await expect(page.getByText('System Log Records')).toBeVisible();
+      await expect(page.getByText(/^(System Log Records|操作ログ一覧)$/)).toBeVisible();
       await expect(
         page.locator(`[data-testid="${TESTIDS.LAYOUT_MAIN}"]`).getByText('admin').first()
       ).toBeVisible();
 
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
-      await expect(page.getByText('Module Activity')).toBeVisible();
-      await expect(page.getByText('Avg. Response Time')).toBeVisible();
+      await expect(page.getByText(/^(Module Activity|操作モジュール分布)$/)).toBeVisible();
+      await expect(page.getByText(/^(Avg\. Response Time|システム応答時間)$/)).toBeVisible();
     }
   );
 
@@ -301,7 +303,7 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
       // 辞書一覧から Items ボタンで辞書項目画面へ遷移
       await page.goto('/system/dict');
       await expect(page.getByRole('main')).toBeVisible();
-      await page.getByRole('button', { name: 'Items' }).first().click();
+      await page.getByRole('button', { name: /^(Items|辞書項目)$/ }).first().click();
       await expect(page).toHaveURL(/\/system\/dict\/status/);
       await expect(page.getByRole('main')).toBeVisible();
 
@@ -310,28 +312,28 @@ test.describe('システム管理', suiteMeta({ precondition: 'admin でログ�
       await expect(page.getByText('無効').first()).toBeVisible();
 
       // 検索・リセット操作
-      await page.getByRole('button', { name: 'Search' }).click();
-      await page.getByRole('button', { name: 'Reset' }).first().click();
+      await page.getByRole('button', { name: /^(Search|検索)$/ }).click();
+      await page.getByRole('button', { name: /^(Reset|リセット)$/ }).first().click();
 
       // 辞書項目の追加
-      await page.getByRole('button', { name: 'Add New Item' }).click();
-      await expect(page.getByText('辞書項目の追加')).toBeVisible();
+      await page.getByRole('button', { name: /^(Add New Item|項目追加)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).toBeVisible();
       await page.fill('#label', 'テスト項目');
       await page.fill('#value', 'test');
-      await page.getByRole('button', { name: '保存' }).click();
-      await expect(page.getByText('辞書項目の追加')).not.toBeVisible();
+      await page.getByRole('button', { name: /^(保存|Save)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).not.toBeVisible();
       await expect(page.getByText('テスト項目').first()).toBeVisible();
 
       // 辞書項目の編集
-      await page.locator('table').getByRole('button', { name: 'Edit' }).first().click();
-      await expect(page.getByText('辞書項目の編集')).toBeVisible();
-      await page.getByRole('button', { name: 'キャンセル' }).click();
-      await expect(page.getByText('辞書項目の編集')).not.toBeVisible();
+      await page.locator('table').getByRole('button', { name: /^(Edit|編集)$/ }).first().click();
+      await expect(page.getByText(/^(辞書項目の編集|Edit Dictionary Item)$/)).toBeVisible();
+      await page.getByRole('button', { name: /^(キャンセル|Cancel)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の編集|Edit Dictionary Item)$/)).not.toBeVisible();
 
       // 辞書項目の削除（確認ダイアログキャンセル）
       await page
         .locator('table')
-        .getByRole('button', { name: /^Delete$/ })
+        .getByRole('button', { name: /^(Delete|削除)$/ })
         .first()
         .click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
@@ -526,21 +528,21 @@ test.describe('システム管理（未実装）', suiteMeta({ precondition: 'ad
       const editedLabel = `編集後_${Date.now()}`;
 
       // Add a disposable item to edit
-      await page.getByRole('button', { name: 'Add New Item' }).click();
-      await expect(page.getByText('辞書項目の追加')).toBeVisible();
+      await page.getByRole('button', { name: /^(Add New Item|項目追加)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).toBeVisible();
       await page.fill('#label', targetLabel);
       await page.fill('#value', 'edit_val');
-      await page.getByRole('button', { name: '保存' }).click();
-      await expect(page.getByText('辞書項目の追加')).not.toBeVisible();
+      await page.getByRole('button', { name: /^(保存|Save)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).not.toBeVisible();
       await expect(page.locator('table').getByText(targetLabel)).toBeVisible();
 
       // Edit that item
       const itemRow = page.locator('table tbody tr', { hasText: targetLabel });
-      await itemRow.getByRole('button', { name: 'Edit' }).click();
-      await expect(page.getByText('辞書項目の編集')).toBeVisible();
+      await itemRow.getByRole('button', { name: /^(Edit|編集)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の編集|Edit Dictionary Item)$/)).toBeVisible();
       await page.fill('#label', editedLabel);
-      await page.getByRole('button', { name: '保存' }).click();
-      await expect(page.getByText('辞書項目の編集')).not.toBeVisible();
+      await page.getByRole('button', { name: /^(保存|Save)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の編集|Edit Dictionary Item)$/)).not.toBeVisible();
       await expect(page.locator('table').getByText(editedLabel)).toBeVisible();
     }
   );
@@ -564,17 +566,17 @@ test.describe('システム管理（未実装）', suiteMeta({ precondition: 'ad
       const deleteLabel = `削除対象_${Date.now()}`;
 
       // Add a disposable item to delete
-      await page.getByRole('button', { name: 'Add New Item' }).click();
-      await expect(page.getByText('辞書項目の追加')).toBeVisible();
+      await page.getByRole('button', { name: /^(Add New Item|項目追加)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).toBeVisible();
       await page.fill('#label', deleteLabel);
       await page.fill('#value', 'del_val');
-      await page.getByRole('button', { name: '保存' }).click();
-      await expect(page.getByText('辞書項目の追加')).not.toBeVisible();
+      await page.getByRole('button', { name: /^(保存|Save)$/ }).click();
+      await expect(page.getByText(/^(辞書項目の追加|Add Dictionary Item)$/)).not.toBeVisible();
       await expect(page.locator('table').getByText(deleteLabel)).toBeVisible();
 
       // Delete that item
       const itemRow = page.locator('table tbody tr', { hasText: deleteLabel });
-      await itemRow.getByRole('button', { name: /^Delete$/ }).click();
+      await itemRow.getByRole('button', { name: /^(Delete|削除)$/ }).click();
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).toBeVisible();
       await page.click(`[data-testid="${TESTIDS.CONFIRM_DIALOG_OK}"]`);
       await expect(page.locator(`[data-testid="${TESTIDS.CONFIRM_DIALOG}"]`)).not.toBeVisible();

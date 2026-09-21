@@ -22,12 +22,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUsers, useDeleteUsers } from '../hooks/use-user';
 import { UserDialog } from './user-dialog';
 import { ResetPasswordDialog } from './reset-password-dialog';
 import { DeptTree } from './dept-tree';
-import { GenderLabel, type User, type UserQuery, type UserPageResult } from '../types/user';
+import { type User, type UserQuery, type UserPageResult } from '../types/user';
 
 interface UserTableClientProps {
   initialData: UserPageResult;
@@ -35,6 +36,8 @@ interface UserTableClientProps {
 }
 
 export function UserTableClient({ initialData, initialParams }: UserTableClientProps) {
+  const t = useTranslations('system.user');
+  const tCommon = useTranslations('common');
   const [params, setParams] = useState<UserQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [status, setStatus] = useState<string>(
@@ -115,7 +118,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
         <CardHeader className="py-3 px-4">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Search className="h-4 w-4" />
-            Department Name
+            {t('dept')}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
@@ -130,41 +133,41 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
           <CardContent className="py-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">{t('keyword')}</span>
                 <Input
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
-                  placeholder="Username/Nickname/Mobile"
+                  placeholder={t('searchPlaceholder')}
                   className="w-48"
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">Status</span>
+                <span className="text-sm text-muted-foreground whitespace-nowrap">{t('status')}</span>
                 <Select
                   value={status || 'all'}
                   onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
                 >
                   <SelectTrigger className="w-24">
-                    <SelectValue placeholder="All" />
+                    <SelectValue placeholder={t('statusAll')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="1">Active</SelectItem>
-                    <SelectItem value="0">Disabled</SelectItem>
+                    <SelectItem value="all">{t('statusAll')}</SelectItem>
+                    <SelectItem value="1">{t('statusActive')}</SelectItem>
+                    <SelectItem value="0">{t('statusDisabled')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Creation Date Range
+                  {t('dateRange')}
                 </span>
                 <Input
                   type="date"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   className="w-36"
-                  placeholder="Start Time"
+                  placeholder={t('startDate')}
                 />
                 <span className="text-muted-foreground">-</span>
                 <Input
@@ -172,17 +175,17 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   className="w-36"
-                  placeholder="End Time"
+                  placeholder={t('endDate')}
                 />
               </div>
               <div className="flex items-center gap-2">
                 <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                   <Search className="mr-1 h-4 w-4" />
-                  Search
+                  {tCommon('search')}
                 </Button>
                 <Button variant="outline" onClick={handleReset}>
                   <RotateCcw className="mr-1 h-4 w-4" />
-                  Reset
+                  {tCommon('reset')}
                 </Button>
               </div>
             </div>
@@ -200,7 +203,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
               }}
             >
               <Plus className="mr-1 h-4 w-4" />
-              Add User
+              {t('add')}
             </Button>
             <Button
               variant="destructive"
@@ -208,14 +211,14 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
               onClick={() => setDeleteTarget(selectedIds)}
             >
               <Trash2 className="mr-1 h-4 w-4" />
-              Bulk Delete
+              {tCommon('batchDelete')}
             </Button>
             <Button
               variant="outline"
               className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
             >
               <Upload className="mr-1 h-4 w-4" />
-              Import
+              {t('import')}
             </Button>
           </div>
           <div className="flex items-center gap-2">
@@ -240,27 +243,27 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Nickname</TableHead>
-                  <TableHead className="w-20">Gender</TableHead>
-                  <TableHead className="w-[120px]">Department</TableHead>
-                  <TableHead className="w-[130px]">Mobile Number</TableHead>
-                  <TableHead className="w-20">Status</TableHead>
-                  <TableHead className="w-[180px]">Operations</TableHead>
+                  <TableHead>{t('username')}</TableHead>
+                  <TableHead>{t('nickname')}</TableHead>
+                  <TableHead className="w-20">{t('gender')}</TableHead>
+                  <TableHead className="w-[120px]">{t('dept')}</TableHead>
+                  <TableHead className="w-[130px]">{t('mobile')}</TableHead>
+                  <TableHead className="w-20">{t('status')}</TableHead>
+                  <TableHead className="w-[180px]">{t('operations')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                      Loading...
+                      {tCommon('loading')}
                     </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && displayData.list.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                      No users found
+                      {t('noData')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -277,14 +280,18 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                       <TableCell>{user.nickname}</TableCell>
                       <TableCell>
                         <StatusBadge variant={user.gender === 1 ? 'info' : 'warning'}>
-                          {GenderLabel[user.gender] || '-'}
+                          {user.gender === 1
+                            ? t('genderMale')
+                            : user.gender === 2
+                            ? t('genderFemale')
+                            : t('genderUnknown')}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>{user.deptName || '-'}</TableCell>
                       <TableCell className="font-mono text-sm">{user.mobile || '-'}</TableCell>
                       <TableCell>
                         <StatusBadge variant={user.status === 1 ? 'success' : 'muted'}>
-                          {user.status === 1 ? 'Active' : 'Disabled'}
+                          {user.status === 1 ? t('statusActive') : t('statusDisabled')}
                         </StatusBadge>
                       </TableCell>
                       <TableCell>
@@ -298,7 +305,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                               setDialogOpen(true);
                             }}
                           >
-                            Edit
+                            {tCommon('edit')}
                           </Button>
                           <Button
                             variant="link"
@@ -306,7 +313,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                             className="text-red-600 p-0 h-auto"
                             onClick={() => setDeleteTarget([user.id])}
                           >
-                            Delete
+                            {tCommon('delete')}
                           </Button>
                           <Button
                             variant="link"
@@ -314,7 +321,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                             className="text-amber-600 p-0 h-auto"
                             onClick={() => setResetTarget(user)}
                           >
-                            Reset
+                            {t('reset')}
                           </Button>
                         </div>
                       </TableCell>
@@ -329,9 +336,8 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
         {totalPages > 0 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {(params.pageNum - 1) * params.pageSize + 1} to{' '}
-              {Math.min(params.pageNum * params.pageSize, displayData.total)} of {displayData.total}{' '}
-              entries
+              {(params.pageNum - 1) * params.pageSize + 1} -{' '}
+              {Math.min(params.pageNum * params.pageSize, displayData.total)} / {displayData.total}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -340,7 +346,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 onClick={() => handlePageChange(params.pageNum - 1)}
                 disabled={params.pageNum === 1}
               >
-                Previous
+                {tCommon('previous')}
               </Button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 const page = i + 1;
@@ -363,7 +369,7 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
                 onClick={() => handlePageChange(params.pageNum + 1)}
                 disabled={params.pageNum >= totalPages}
               >
-                Next
+                {tCommon('next')}
               </Button>
             </div>
           </div>
@@ -389,9 +395,9 @@ export function UserTableClient({ initialData, initialParams }: UserTableClientP
           open={!!deleteTarget}
           onOpenChange={(open) => !open && setDeleteTarget(null)}
           onConfirm={handleDelete}
-          title="Delete User"
-          description="Are you sure you want to delete the selected user(s)? This action cannot be undone."
-          confirmLabel="Delete"
+          title={t('deleteConfirm')}
+          description={t('deleteConfirmMessage')}
+          confirmLabel={tCommon('delete')}
           variant="destructive"
           isLoading={deleteMutation.isPending}
         />

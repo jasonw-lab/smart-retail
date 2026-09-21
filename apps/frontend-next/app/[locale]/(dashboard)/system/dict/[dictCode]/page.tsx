@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { dictApiServer } from '@/features/system/lib/dict-api.server';
 import { DictItemTableClient } from '@/features/system/components/dict-item-table-client';
 import type { DictItemQuery, DictItemPageResult } from '@/features/system/types/dict';
@@ -11,6 +12,7 @@ interface DictItemPageProps {
 export default async function DictItemPage({ params, searchParams }: DictItemPageProps) {
   const { dictCode } = await params;
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations('system.dict');
 
   const query: DictItemQuery = {
     dictCode,
@@ -30,9 +32,9 @@ export default async function DictItemPage({ params, searchParams }: DictItemPag
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          {resolvedSearchParams.title || dictCode} - Dictionary Items
+          {resolvedSearchParams.title || dictCode} - {t('itemTitle')}
         </h1>
-        <p className="text-muted-foreground">Manage items for this system dictionary</p>
+        <p className="text-muted-foreground">{t('itemDescription')}</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

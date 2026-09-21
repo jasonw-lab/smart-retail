@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +19,7 @@ import {
 import { useCreateUser, useUpdateUser } from '../hooks/use-user';
 import { useDeptOptions } from '../hooks/use-dept';
 import { useRoleOptions } from '../hooks/use-role';
-import { userFormSchema, type UserFormValues } from '../schemas/user-schema';
+import { createUserFormSchema, type UserFormValues } from '../schemas/user-schema';
 import type { User, DeptOption } from '../types';
 
 interface UserDialogProps {
@@ -28,6 +29,10 @@ interface UserDialogProps {
 }
 
 export function UserDialog({ open, onClose, user }: UserDialogProps) {
+  const t = useTranslations('system.user');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
+
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
   const { data: deptOptions = [] } = useDeptOptions();
@@ -35,7 +40,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
   const isEditing = !!user;
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+    resolver: zodResolver(createUserFormSchema(tValidation)),
     defaultValues: {
       username: '',
       nickname: '',
@@ -116,16 +121,16 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'ユーザーの編集' : 'ユーザーの追加'}</SheetTitle>
+          <SheetTitle>{isEditing ? t('editTitle') : t('addTitle')}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="username">ユーザー名 *</Label>
+            <Label htmlFor="username">{t('username')} *</Label>
             <Input
               id="username"
               {...form.register('username')}
-              placeholder="ユーザー名を入力"
+              placeholder={t('usernamePlaceholder')}
               disabled={isEditing}
             />
             {form.formState.errors.username && (
@@ -134,21 +139,21 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nickname">ニックネーム *</Label>
-            <Input id="nickname" {...form.register('nickname')} placeholder="ニックネームを入力" />
+            <Label htmlFor="nickname">{t('nickname')} *</Label>
+            <Input id="nickname" {...form.register('nickname')} placeholder={t('nicknamePlaceholder')} />
             {form.formState.errors.nickname && (
               <p className="text-sm text-destructive">{form.formState.errors.nickname.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>部門 *</Label>
+            <Label>{t('dept')} *</Label>
             <Select
               value={form.watch('deptId') > 0 ? String(form.watch('deptId')) : ''}
               onValueChange={(v) => form.setValue('deptId', parseInt(v))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="部門を選択" />
+                <SelectValue placeholder={t('selectDept')} />
               </SelectTrigger>
               <SelectContent>
                 {flatDeptOptions.map((opt) => (
@@ -164,7 +169,7 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>性別</Label>
+            <Label>{t('gender')}</Label>
             <Select
               value={String(form.watch('gender'))}
               onValueChange={(v) => form.setValue('gender', parseInt(v))}
@@ -173,15 +178,15 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">男性</SelectItem>
-                <SelectItem value="2">女性</SelectItem>
-                <SelectItem value="0">不明</SelectItem>
+                <SelectItem value="1">{t('genderMale')}</SelectItem>
+                <SelectItem value="2">{t('genderFemale')}</SelectItem>
+                <SelectItem value="0">{t('genderUnknown')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>役割 *</Label>
+            <Label>{t('role')} *</Label>
             <div className="flex flex-wrap gap-2 p-3 border rounded-md">
               {roleOptions.map((role) => (
                 <label
@@ -205,21 +210,21 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="mobile">電話</Label>
+              <Label htmlFor="mobile">{t('mobile')}</Label>
               <Input
                 id="mobile"
                 {...form.register('mobile')}
-                placeholder="090-xxxx-xxxx"
+                placeholder={t('mobilePlaceholder')}
                 maxLength={11}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">メール</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 {...form.register('email')}
-                placeholder="user@example.com"
+                placeholder={t('emailPlaceholder')}
               />
               {form.formState.errors.email && (
                 <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
@@ -228,22 +233,22 @@ export function UserDialog({ open, onClose, user }: UserDialogProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <Label>状態</Label>
+            <Label>{t('status')}</Label>
             <Switch
               checked={form.watch('status') === 1}
               onCheckedChange={(checked) => form.setValue('status', checked ? 1 : 0)}
             />
             <span className="text-sm text-muted-foreground">
-              {form.watch('status') === 1 ? '有効' : '無効'}
+              {form.watch('status') === 1 ? t('statusActive') : t('statusDisabled')}
             </span>
           </div>
 
           <SheetFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </SheetFooter>
         </form>

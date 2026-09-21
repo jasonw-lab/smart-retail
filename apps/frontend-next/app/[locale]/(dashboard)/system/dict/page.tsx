@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { dictApiServer } from '@/features/system/lib/dict-api.server';
 import { DictTableClient } from '@/features/system/components/dict-table-client';
 import type { DictQuery, DictPageResult } from '@/features/system/types/dict';
@@ -10,6 +11,7 @@ interface SearchParams {
 
 export default async function DictPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations('system.dict');
   const params: DictQuery = {
     pageNum: parseInt(resolvedSearchParams.page || '1', 10),
     pageSize: 10,
@@ -26,8 +28,8 @@ export default async function DictPage({ searchParams }: { searchParams: Promise
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dictionary Management</h1>
-        <p className="text-muted-foreground">Manage system dictionary data for dropdown options</p>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
       <Suspense fallback={<div>Loading...</div>}>

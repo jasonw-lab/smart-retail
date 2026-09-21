@@ -1,11 +1,20 @@
 import { z } from 'zod';
+import type { useTranslations } from 'next-intl';
 
-export const roleFormSchema = z.object({
-  name: z.string().min(1, '役割名は必須です'),
-  code: z.string().min(1, 'コードは必須です'),
-  dataScope: z.number(),
-  status: z.number(),
-  sort: z.number().min(0),
-});
+type ValidationTranslation = ReturnType<typeof useTranslations<'validation'>>;
 
-export type RoleFormValues = z.infer<typeof roleFormSchema>;
+export const createRoleFormSchema = (t: ValidationTranslation) =>
+  z.object({
+    name: z.string().min(1, t('required')),
+    code: z.string().min(1, t('required')),
+    dataScope: z.number(),
+    status: z.number(),
+    sort: z.number().min(0),
+  });
+
+export type RoleFormValues = z.infer<ReturnType<typeof createRoleFormSchema>>;
+
+export const roleFormSchema = createRoleFormSchema(
+  ((key: string) => (key === 'required' ? '必須です' : 'エラー')) as unknown as ValidationTranslation
+);
+

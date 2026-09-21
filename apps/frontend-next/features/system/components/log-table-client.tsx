@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { Search, RotateCcw, Download, Settings, Globe } from 'lucide-react';
+import { Search, RotateCcw, Globe } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -15,13 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   PieChart,
   Pie,
   Cell,
@@ -30,7 +24,6 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
-  Legend,
   Tooltip,
 } from 'recharts';
 import { useLogs } from '../hooks/use-log';
@@ -55,11 +48,12 @@ const MODULE_COLORS: Record<string, string> = {
 };
 
 export function LogTableClient({ initialData, initialParams }: LogTableClientProps) {
+  const t = useTranslations('system.log');
+  const tCommon = useTranslations('common');
   const [params, setParams] = useState<LogQuery>(initialParams);
   const [keywords, setKeywords] = useState(initialParams.keywords || '');
   const [startTime, setStartTime] = useState(initialParams.startTime || '');
   const [endTime, setEndTime] = useState(initialParams.endTime || '');
-  const [pageSize, setPageSize] = useState(String(params.pageSize));
 
   const { data = initialData, isLoading, isError } = useLogs(params);
   const displayData = isError ? initialData : data;
@@ -81,7 +75,7 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
   // Mock response time data
   const responseTimeData = [
     { time: '09:45 AM', value: 45 },
-    { time: 'PEAK HOUR (01:00 PM)', value: 120 },
+    { time: '01:00 PM', value: 120 },
     { time: '04:00 PM', value: 75 },
   ];
 
@@ -104,11 +98,6 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
 
   const handlePageChange = (page: number) => {
     setParams({ ...params, pageNum: page });
-  };
-
-  const handlePageSizeChange = (size: string) => {
-    setPageSize(size);
-    setParams({ ...params, pageNum: 1, pageSize: Number(size) });
   };
 
   const totalPages = Math.ceil((displayData.total || 0) / params.pageSize);
@@ -139,25 +128,25 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Keyword</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t('keyword')}</span>
               <Input
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="Enter log content"
+                placeholder={t('searchPlaceholder')}
                 className="w-48"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Operation Time Range
+                {t('timeRange')}
               </span>
               <Input
                 type="date"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-36"
-                placeholder="Start Date"
+                placeholder={t('startDate')}
               />
               <span className="text-muted-foreground">-</span>
               <Input
@@ -165,17 +154,17 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 className="w-36"
-                placeholder="End Date"
+                placeholder={t('endDate')}
               />
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleSearch} className="bg-teal-600 hover:bg-teal-700">
                 <Search className="mr-1 h-4 w-4" />
-                Search
+                {tCommon('search')}
               </Button>
               <Button variant="outline" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
-                Reset
+                {tCommon('reset')}
               </Button>
             </div>
           </div>
@@ -185,33 +174,33 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
       {/* Table Header */}
       <Card>
         <CardHeader className="py-3 px-4 border-b">
-          <CardTitle className="text-base flex items-center gap-2">System Log Records</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">{t('records')}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="w-[160px]">OPERATION TIME</TableHead>
-                <TableHead className="w-[100px]">OPERATOR</TableHead>
-                <TableHead className="w-[100px]">MODULE</TableHead>
-                <TableHead>CONTENT</TableHead>
-                <TableHead className="w-[130px]">IP ADDRESS</TableHead>
-                <TableHead className="w-[80px]">REGION</TableHead>
-                <TableHead className="w-[100px]">BROWSER</TableHead>
+                <TableHead className="w-[160px]">{t('timestamp')}</TableHead>
+                <TableHead className="w-[100px]">{t('operator')}</TableHead>
+                <TableHead className="w-[100px]">{t('module')}</TableHead>
+                <TableHead>{t('content')}</TableHead>
+                <TableHead className="w-[130px]">{t('ip')}</TableHead>
+                <TableHead className="w-[80px]">{t('location')}</TableHead>
+                <TableHead className="w-[100px]">{t('browser')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    Loading...
+                    {tCommon('loading')}
                   </TableCell>
                 </TableRow>
               )}
               {!isLoading && displayData.list.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    No logs found
+                    {t('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -251,22 +240,12 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
       </Card>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Total {displayData.total} records</p>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Page size</span>
-            <Select value={pageSize} onValueChange={handlePageSizeChange}>
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10 / page</SelectItem>
-                <SelectItem value="20">20 / page</SelectItem>
-                <SelectItem value="50">50 / page</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      {totalPages > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {(params.pageNum - 1) * params.pageSize + 1} -{' '}
+            {Math.min(params.pageNum * params.pageSize, displayData.total)} / {displayData.total}
+          </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -274,7 +253,7 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               onClick={() => handlePageChange(params.pageNum - 1)}
               disabled={params.pageNum === 1}
             >
-              Previous
+              {tCommon('previous')}
             </Button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const page = i + 1;
@@ -291,45 +270,24 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               );
             })}
             {totalPages > 5 && <span className="px-2">...</span>}
-            {totalPages > 5 && (
-              <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)}>
-                {totalPages}
-              </Button>
-            )}
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(params.pageNum + 1)}
               disabled={params.pageNum >= totalPages}
             >
-              Next
+              {tCommon('next')}
             </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Goto</span>
-            <Input
-              className="w-16"
-              placeholder=""
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const target = e.target as HTMLInputElement;
-                  const page = parseInt(target.value);
-                  if (page >= 1 && page <= totalPages) {
-                    handlePageChange(page);
-                  }
-                }
-              }}
-            />
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-2 gap-4">
         {/* Module Activity Pie Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">Module Activity</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">{t('moduleActivity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
@@ -355,7 +313,7 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
               </div>
               <div className="space-y-2 flex-1">
                 {moduleStats.length === 0 && (
-                  <div className="text-sm text-muted-foreground">No data</div>
+                  <div className="text-sm text-muted-foreground">{tCommon('noData')}</div>
                 )}
                 {moduleStats.map((entry) => (
                   <div key={entry.name} className="flex items-center gap-2">
@@ -375,7 +333,7 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
         {/* Avg Response Time Bar Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">Avg. Response Time</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">{t('responseTimes')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-40">
@@ -404,3 +362,4 @@ export function LogTableClient({ initialData, initialParams }: LogTableClientPro
     </div>
   );
 }
+

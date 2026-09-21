@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,10 @@ interface ResetPasswordDialogProps {
 }
 
 export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialogProps) {
+  const t = useTranslations('system.user');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
+
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const resetMutation = useResetPassword();
@@ -30,7 +35,7 @@ export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialog
     if (!user) return;
 
     if (!password || password.length < 6) {
-      setError('パスワードは6文字以上で入力してください');
+      setError(tValidation('minLength', { min: 6 }));
       return;
     }
 
@@ -50,15 +55,15 @@ export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialog
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>パスワードリセット</DialogTitle>
+          <DialogTitle>{t('resetPassword')}</DialogTitle>
           <DialogDescription>
-            {user?.username} の新しいパスワードを入力してください
+            {t('resetPasswordDesc', { username: user?.username ?? '' })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="password">新しいパスワード</Label>
+            <Label htmlFor="password">{t('newPassword')}</Label>
             <Input
               id="password"
               type="password"
@@ -67,7 +72,7 @@ export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialog
                 setPassword(e.target.value);
                 setError('');
               }}
-              placeholder="6文字以上"
+              placeholder={t('newPasswordPlaceholder')}
               autoComplete="new-password"
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -76,10 +81,10 @@ export function ResetPasswordDialog({ open, onClose, user }: ResetPasswordDialog
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleClose}>
-            キャンセル
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={resetMutation.isPending}>
-            {resetMutation.isPending ? 'リセット中...' : 'リセット'}
+            {resetMutation.isPending ? t('reset') + '...' : t('reset')}
           </Button>
         </DialogFooter>
       </DialogContent>

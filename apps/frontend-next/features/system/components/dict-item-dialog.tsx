@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCreateDictItem, useUpdateDictItem } from '../hooks/use-dict-items';
-import { dictItemFormSchema, type DictItemFormValues } from '../schemas/dict-item-schema';
+import { createDictItemFormSchema, type DictItemFormValues } from '../schemas/dict-item-schema';
 import type { DictItem } from '../types/dict';
 
 interface DictItemDialogProps {
@@ -33,12 +34,18 @@ interface DictItemDialogProps {
 }
 
 export function DictItemDialog({ open, onClose, dictCode, dictItem }: DictItemDialogProps) {
+  const t = useTranslations('system.dict');
+  const tCommon = useTranslations('common');
+  const tValidation = useTranslations('validation');
+
   const createMutation = useCreateDictItem();
   const updateMutation = useUpdateDictItem();
   const isEditing = !!dictItem;
 
+  const schema = useMemo(() => createDictItemFormSchema(tValidation), [tValidation]);
+
   const form = useForm<DictItemFormValues>({
-    resolver: zodResolver(dictItemFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       label: '',
       value: '',
@@ -86,28 +93,28 @@ export function DictItemDialog({ open, onClose, dictCode, dictItem }: DictItemDi
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? '辞書項目の編集' : '辞書項目の追加'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('editItemTitle') : t('addItemTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="label">ラベル *</Label>
-            <Input id="label" {...form.register('label')} placeholder="表示ラベルを入力" />
+            <Label htmlFor="label">{t('itemLabel')} *</Label>
+            <Input id="label" {...form.register('label')} placeholder={t('itemLabelPlaceholder')} />
             {form.formState.errors.label && (
               <p className="text-sm text-destructive">{form.formState.errors.label.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="value">値 *</Label>
-            <Input id="value" {...form.register('value')} placeholder="例: 1, active" />
+            <Label htmlFor="value">{t('itemValue')} *</Label>
+            <Input id="value" {...form.register('value')} placeholder={t('itemValuePlaceholder')} />
             {form.formState.errors.value && (
               <p className="text-sm text-destructive">{form.formState.errors.value.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="sort">表示順</Label>
+            <Label htmlFor="sort">{t('itemSort')}</Label>
             <Input
               id="sort"
               type="number"
@@ -120,7 +127,7 @@ export function DictItemDialog({ open, onClose, dictCode, dictItem }: DictItemDi
           </div>
 
           <div className="space-y-2">
-            <Label>状態</Label>
+            <Label>{t('status')}</Label>
             <Select
               value={String(form.watch('status'))}
               onValueChange={(v) => form.setValue('status', parseInt(v))}
@@ -129,23 +136,23 @@ export function DictItemDialog({ open, onClose, dictCode, dictItem }: DictItemDi
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">有効</SelectItem>
-                <SelectItem value="0">無効</SelectItem>
+                <SelectItem value="1">{t('statusEnabled')}</SelectItem>
+                <SelectItem value="0">{t('statusDisabled')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="remark">備考</Label>
-            <Textarea id="remark" {...form.register('remark')} placeholder="備考を入力" rows={3} />
+            <Label htmlFor="remark">{t('itemRemark')}</Label>
+            <Textarea id="remark" {...form.register('remark')} placeholder={t('itemRemarkPlaceholder')} rows={3} />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? '保存中...' : '保存'}
+              {isLoading ? tCommon('saving') : tCommon('save')}
             </Button>
           </DialogFooter>
         </form>
@@ -153,3 +160,4 @@ export function DictItemDialog({ open, onClose, dictCode, dictItem }: DictItemDi
     </Dialog>
   );
 }
+

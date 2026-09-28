@@ -28,7 +28,9 @@
     "deleting": "削除中...",
     "noData": "データがありません",
     "notFound": "ページが見つかりません",
-    "notFoundDescription": "お探しのページは存在しないか、移動された可能性があります。"
+    "notFoundDescription": "お探しのページは存在しないか、移動された可能性があります。",
+    "unexpectedError": "予期しないエラーが発生しました。再度お試しください。",
+    "fetchError": "データの取得に失敗しました。再度お試しください。"
   },
   "auth": {
     "login": "ログイン",
@@ -46,7 +48,24 @@
     "description": "在庫管理、売上パフォーマンスの追跡、実用的なインサイトを一つの統合ダッシュボードで。",
     "feature1": "リアルタイム分析",
     "feature2": "在庫管理",
-    "feature3": "売上インサイト"
+    "feature3": "売上インサイト",
+    "welcomeBack": "Welcome Back",
+    "welcomeSubtitle": "ダッシュボードにアクセスするには詳細を入力してください。",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "register": "新規登録",
+    "retailManagement": "店舗小売管理",
+    "invalidCredentials": "ユーザー名またはパスワードが正しくありません (admin: 123456 / demo: demo123)",
+    "invalidCaptcha": "認証コード（キャプチャ）が正しくありません",
+    "devAccountTitle": "開発用アカウント",
+    "devAccountAutoFill": "クリックで自動入力",
+    "adminAccount": "管理者 (admin)",
+    "demoAccount": "デモ (demo)",
+    "usernamePlaceholder": "admin または demo",
+    "hidePassword": "パスワードを隠す",
+    "showPassword": "パスワードを表示",
+    "captchaOptionalDev": "開発環境では入力省略可",
+    "captchaPlaceholder": "省略可能（入力時は画像と一致要）",
+    "refreshCaptcha": "キャプチャを更新"
   },
   "navigation": {
     "dashboard": "ダッシュボード",
@@ -64,7 +83,9 @@
     "dict": "辞書管理",
     "log": "操作ログ",
     "config": "システム設定",
-    "notice": "通知公告"
+    "notice": "通知公告",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "expandSidebar": "サイドバーを展開する"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -828,7 +849,10 @@
     "notifications": "通知",
     "profile": "プロフィール",
     "settings": "設定",
-    "language": "言語"
+    "language": "言語",
+    "toggleSidebar": "サイドバーを開閉",
+    "fullscreen": "全画面表示",
+    "userMenu": "ユーザーメニュー"
   },
   "profile": {
     "title": "プロフィール",

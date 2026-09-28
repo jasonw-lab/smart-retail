@@ -278,7 +278,7 @@ export function Sidebar() {
           <button
             data-testid={TESTIDS.SIDEBAR_TOGGLE}
             onClick={toggleSidebarCollapse}
-            aria-label="サイドバーを折りたたむ"
+            aria-label={sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')}
             className="flex h-10 w-full items-center justify-center rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-white transition-all mt-2"
           >
             {sidebarCollapsed ? (

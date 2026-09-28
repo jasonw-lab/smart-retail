@@ -15,14 +15,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
 import { TESTIDS } from '@/lib/testing/testids';
 
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
-  captchaCode: z.string().optional(),
-  rememberMe: z.boolean().optional(),
-});
+type ValidationTranslation = ReturnType<typeof useTranslations<'validation'>>;
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+export const createLoginSchema = (t: ValidationTranslation) =>
+  z.object({
+    username: z.string().min(1, t('required')),
+    password: z.string().min(1, t('required')),
+    captchaCode: z.string().optional(),
+    rememberMe: z.boolean().optional(),
+  });
+
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
 
 interface CaptchaData {
   captchaId: string;
@@ -43,7 +46,7 @@ export function LoginForm() {
   const [captchaLoading, setCaptchaLoading] = useState(false);
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(createLoginSchema(tValidation)),
     defaultValues: {
       username: 'admin',
       password: '123456',
@@ -95,9 +98,9 @@ export function LoginForm() {
         const data = await response.json();
         let displayError = data.error || t('loginFailed');
         if (displayError === 'Invalid username or password') {
-          displayError = 'ユーザー名またはパスワードが正しくありません (admin: 123456 / demo: demo123)';
+          displayError = t('invalidCredentials');
         } else if (displayError === 'Invalid captcha') {
-          displayError = '認証コード（キャプチャ）が正しくありません';
+          displayError = t('invalidCaptcha');
         }
         setError(displayError);
         fetchCaptcha();
@@ -134,9 +137,9 @@ export function LoginForm() {
         <div className="font-medium text-on-surface flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-primary font-semibold">
             <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
-            開発用アカウント
+            {t('devAccountTitle')}
           </span>
-          <span className="text-[11px] text-on-surface-variant">クリックで自動入力</span>
+          <span className="text-[11px] text-on-surface-variant">{t('devAccountAutoFill')}</span>
         </div>
         <div className="grid grid-cols-2 gap-2 pt-1">
           <button
@@ -148,7 +151,7 @@ export function LoginForm() {
             }}
             className="px-2.5 py-1.5 rounded bg-surface border border-outline-variant hover:border-primary text-on-surface hover:text-primary transition-all text-left shadow-2xs hover:shadow-xs"
           >
-            <div className="font-medium text-[12px]">管理者 (admin)</div>
+            <div className="font-medium text-[12px]">{t('adminAccount')}</div>
             <div className="text-[10px] text-on-surface-variant font-mono">PW: 123456</div>
           </button>
           <button
@@ -160,7 +163,7 @@ export function LoginForm() {
             }}
             className="px-2.5 py-1.5 rounded bg-surface border border-outline-variant hover:border-primary text-on-surface hover:text-primary transition-all text-left shadow-2xs hover:shadow-xs"
           >
-            <div className="font-medium text-[12px]">デモ (demo)</div>
+            <div className="font-medium text-[12px]">{t('demoAccount')}</div>
             <div className="text-[10px] text-on-surface-variant font-mono">PW: demo123</div>
           </button>
         </div>
@@ -178,7 +181,7 @@ export function LoginForm() {
           <Input
             id="username"
             type="text"
-            placeholder="admin または demo"
+            placeholder={t('usernamePlaceholder')}
             autoComplete="username"
             disabled={isLoading}
             className="pl-10 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -187,7 +190,9 @@ export function LoginForm() {
           />
         </div>
         {form.formState.errors.username && (
-          <p className="text-sm text-error">{tValidation('required')}</p>
+          <p className="text-sm text-error">
+            {form.formState.errors.username.message || tValidation('required')}
+          </p>
         )}
       </div>
 
@@ -213,14 +218,16 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
+            aria-label={showPassword ? t('hidePassword') : t('showPassword')}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline-variant hover:text-on-surface transition-colors"
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
         {form.formState.errors.password && (
-          <p className="text-sm text-error">{tValidation('required')}</p>
+          <p className="text-sm text-error">
+            {form.formState.errors.password.message || tValidation('required')}
+          </p>
         )}
       </div>
 
@@ -230,7 +237,7 @@ export function LoginForm() {
           <Label htmlFor="captchaCode" className="text-xs font-medium text-on-surface-variant ml-1">
             {t('captcha')}
           </Label>
-          <span className="text-[10px] text-on-surface-variant">開発環境では入力省略可</span>
+          <span className="text-[10px] text-on-surface-variant">{t('captchaOptionalDev')}</span>
         </div>
         <div className="flex gap-4">
           <div className="relative flex-1 group">
@@ -240,7 +247,7 @@ export function LoginForm() {
             <Input
               id="captchaCode"
               type="text"
-              placeholder="省略可能（入力時は画像と一致要）"
+              placeholder={t('captchaPlaceholder')}
               disabled={isLoading}
               className="pl-10 py-3 bg-surface border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               data-testid={TESTIDS.LOGIN_CAPTCHA}
@@ -273,14 +280,16 @@ export function LoginForm() {
             size="icon"
             onClick={fetchCaptcha}
             disabled={captchaLoading}
-            aria-label="キャプチャを更新"
+            aria-label={t('refreshCaptcha')}
             className="shrink-0"
           >
             <RefreshCw className={`h-4 w-4 ${captchaLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
         {form.formState.errors.captchaCode && (
-          <p className="text-sm text-error">{tValidation('required')}</p>
+          <p className="text-sm text-error">
+            {form.formState.errors.captchaCode.message || tValidation('required')}
+          </p>
         )}
       </div>
 

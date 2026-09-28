@@ -32,7 +32,7 @@ export default async function AuthLayout({ children, params }: AuthLayoutProps) 
                 <h1 className="text-lg font-semibold text-on-surface tracking-tight">
                   {tCommon('appName')}
                 </h1>
-                <p className="text-xs text-on-surface-variant">Retail Management</p>
+                <p className="text-xs text-on-surface-variant">{t('retailManagement')}</p>
               </div>
             </div>
 

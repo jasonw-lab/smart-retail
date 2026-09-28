@@ -28,7 +28,9 @@
     "deleting": "Deleting...",
     "noData": "No data available",
     "notFound": "Page Not Found",
-    "notFoundDescription": "The page you are looking for does not exist or has been moved."
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "fetchError": "Failed to fetch data. Please try again."
   },
   "auth": {
     "login": "Login",
@@ -46,7 +48,24 @@
     "description": "Manage inventory, track sales performance, and gain actionable insights in one unified dashboard.",
     "feature1": "Real-time Analytics",
     "feature2": "Inventory Management",
-    "feature3": "Sales Insights"
+    "feature3": "Sales Insights",
+    "welcomeBack": "Welcome Back",
+    "welcomeSubtitle": "Please enter your details to access the dashboard.",
+    "noAccount": "Don't have an account?",
+    "register": "Register",
+    "retailManagement": "Retail Management",
+    "invalidCredentials": "Invalid username or password (admin: 123456 / demo: demo123)",
+    "invalidCaptcha": "Invalid verification code (captcha)",
+    "devAccountTitle": "Developer Accounts",
+    "devAccountAutoFill": "Click to auto-fill",
+    "adminAccount": "Admin (admin)",
+    "demoAccount": "Demo (demo)",
+    "usernamePlaceholder": "admin or demo",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "captchaOptionalDev": "Optional in development",
+    "captchaPlaceholder": "Optional (must match image if entered)",
+    "refreshCaptcha": "Refresh captcha"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -64,7 +83,9 @@
     "dict": "Dictionary",
     "log": "Logs",
     "config": "System Config",
-    "notice": "Notices"
+    "notice": "Notices",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -828,7 +849,10 @@
     "notifications": "Notifications",
     "profile": "Profile",
     "settings": "Settings",
-    "language": "Language"
+    "language": "Language",
+    "toggleSidebar": "Toggle sidebar",
+    "fullscreen": "Fullscreen",
+    "userMenu": "User menu"
   },
   "profile": {
     "title": "Profile",

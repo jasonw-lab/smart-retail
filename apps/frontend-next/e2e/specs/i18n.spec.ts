@@ -389,5 +389,55 @@ test.describe('多言語表示 (i18n)', suiteMeta({ precondition: 'admin でロ�
       await expect(page.getByRole('button', { name: 'Add Notice' })).toBeVisible();
     }
   );
+
+  test(
+    'プロフィール画面が英語で表示される',
+    caseMeta({
+      id: 'I18N-018',
+      screen: 'プロフィール',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['/en/profile を開く'],
+      expected: [
+        '見出しが「Profile」になる',
+        '「Basic Information」が表示される',
+        'カード見出しおよびボタン「Change Password」が表示される',
+        '「Update」ボタンが表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.goto('/en/profile');
+      const main = page.getByRole('main');
+      await expect(main).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('h1')).toHaveText('Profile');
+      await expect(page.getByText('Basic Information')).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Change Password' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Change Password' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Update' })).toBeVisible();
+    }
+  );
+
+  test(
+    'ログイン画面が英語で表示される',
+    caseMeta({
+      id: 'I18N-019',
+      screen: 'ログイン',
+      priority: 'P2',
+      perspectives: ['i18n'],
+      steps: ['Cookie をクリアして /en/login を開く'],
+      expected: [
+        '見出し「Welcome Back」が表示される',
+        '「Developer Accounts」が表示される',
+        'ログインボタン「Login」が表示される',
+      ],
+    }),
+    async ({ page }) => {
+      await page.context().clearCookies();
+      await page.goto('/en/login');
+      await expect(page.locator('h3')).toHaveText('Welcome Back');
+      await expect(page.getByText('Developer Accounts')).toBeVisible();
+      await expect(page.locator(`[data-testid="${TESTIDS.LOGIN_SUBMIT}"]`)).toContainText('Login');
+    }
+  );
 });
 

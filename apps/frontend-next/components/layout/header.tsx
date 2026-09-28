@@ -94,7 +94,7 @@ export function Header({ user }: HeaderProps) {
         <button
           data-testid={TESTIDS.HEADER_MENU_TOGGLE}
           onClick={toggleSidebarCollapse}
-          aria-label="サイドバーを開閉"
+          aria-label={tHeader('toggleSidebar')}
           className="p-2 rounded-full text-outline hover:bg-surface-container-low transition-colors"
         >
           <Menu className="h-5 w-5" />
@@ -127,7 +127,7 @@ export function Header({ user }: HeaderProps) {
         <button
           data-testid={TESTIDS.HEADER_FULLSCREEN}
           onClick={handleFullscreen}
-          aria-label="全画面表示"
+          aria-label={tHeader('fullscreen')}
           className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors"
         >
           <Maximize className="h-5 w-5" />
@@ -139,7 +139,7 @@ export function Header({ user }: HeaderProps) {
         {/* Notifications */}
         <button
           data-testid={TESTIDS.HEADER_NOTIFICATIONS}
-          aria-label="通知"
+          aria-label={tHeader('notifications')}
           className="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative"
         >
           <Bell className="h-5 w-5" />
@@ -154,7 +154,7 @@ export function Header({ user }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <button
               data-testid={TESTIDS.HEADER_USER_MENU}
-              aria-label="ユーザー メニュー"
+              aria-label={tHeader('userMenu')}
               className="flex items-center gap-3 pl-2 cursor-pointer group hover:bg-surface-container-low rounded-lg pr-2 py-1 transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary text-sm font-medium border border-outline-variant group-hover:border-primary transition-colors">

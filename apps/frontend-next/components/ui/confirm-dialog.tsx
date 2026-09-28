@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { TESTIDS } from '@/lib/testing/testids';
 import {
@@ -31,13 +32,17 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = '確認',
-  cancelLabel = 'キャンセル',
+  confirmLabel,
+  cancelLabel,
   variant = 'default',
   onConfirm,
   isLoading = false,
   children,
 }: ConfirmDialogProps) {
+  const t = useTranslations('common');
+  const resolvedConfirmLabel = confirmLabel ?? t('confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('cancel');
+
   const handleConfirm = async () => {
     await onConfirm();
     onOpenChange(false);
@@ -61,7 +66,7 @@ export function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </Button>
           <Button
             data-testid={TESTIDS.CONFIRM_DIALOG_OK}
@@ -69,7 +74,7 @@ export function ConfirmDialog({
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading ? '処理中...' : confirmLabel}
+            {isLoading ? t('loading') : resolvedConfirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

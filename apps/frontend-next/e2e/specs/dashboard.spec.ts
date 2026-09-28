@@ -45,6 +45,7 @@ test.describe(
         await page.clock.setFixedTime(new Date('2026-06-01T10:00:00+09:00'));
         await page.goto('/');
         await page.waitForLoadState('networkidle');
+        await page.mouse.move(0, 0);
         await expect(page).toHaveScreenshot('dashboard.png', {
           fullPage: true,
           threshold: 0.2,

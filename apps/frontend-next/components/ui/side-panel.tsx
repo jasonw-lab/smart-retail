@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ export interface SidePanelProps {
 }
 
 export function SidePanel({ open, onClose, title, children, width = 400, footer }: SidePanelProps) {
+  const t = useTranslations('common');
   // ESCキーでクローズ
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -61,7 +63,7 @@ export function SidePanel({ open, onClose, title, children, width = 400, footer 
           {title && <h2 className="text-lg font-semibold">{title}</h2>}
           <Button variant="ghost" size="icon" onClick={onClose} className="ml-auto">
             <X className="h-4 w-4" />
-            <span className="sr-only">閉じる</span>
+            <span className="sr-only">{t('close')}</span>
           </Button>
         </div>
         {/* コンテンツ */}

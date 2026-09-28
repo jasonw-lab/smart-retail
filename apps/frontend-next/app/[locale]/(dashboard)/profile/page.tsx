@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  profileFormSchema,
-  passwordChangeSchema,
+  createProfileFormSchema,
+  createPasswordChangeSchema,
   type ProfileFormValues,
   type PasswordChangeValues,
 } from '@/features/system/schemas/user-schema';
@@ -24,12 +24,13 @@ import {
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
+  const tValidation = useTranslations('validation');
   const { data: profile, isPending: isLoadingProfile, error } = useProfile();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
 
   const profileForm = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
+    resolver: zodResolver(createProfileFormSchema(tValidation)),
     defaultValues: {
       nickname: '',
       email: '',
@@ -39,7 +40,7 @@ export default function ProfilePage() {
   });
 
   const passwordForm = useForm<PasswordChangeValues>({
-    resolver: zodResolver(passwordChangeSchema),
+    resolver: zodResolver(createPasswordChangeSchema(tValidation)),
     defaultValues: {
       currentPassword: '',
       newPassword: '',

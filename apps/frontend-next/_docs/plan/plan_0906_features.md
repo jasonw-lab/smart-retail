@@ -136,7 +136,7 @@ app/[locale]/(dashboard)/<domain>/page.tsx   ← Server Component
 | U10 | 完了   | -    | 2026-09-14 | alerts i18n化・API正規化・多層防衛・E2E全7テストパス |
 | U11 | 完了   | -    | 2026-09-14 | dashboard i18n化・売上推移安定化・E2E/VRT全6テストパス |
 | U12 | 完了   | 8/8  | 2026-09-21 | system 8機能 (user/role/menu/dept/dict/log/config/notice) i18n化・辞書誤字修正・E2E 35件定義 (自動化21件パス、未実装14件スキップ)・実バックエンド結合スモーク合格 |
-| U13 | 未着手 | -    | -      |      |
+| U13 | 完了   | -    | 2026-09-28 | categories/files/payments/profile/auth i18n化・スキーマ生成関数化・E2E 2件拡充・全187テストPASS |
 | U14 | 未着手 | -    | -      |      |
 | U15 | 未着手 | -    | -      |      |
 
